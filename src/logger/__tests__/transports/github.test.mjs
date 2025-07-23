@@ -25,7 +25,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::notice ::[21:00:00.000] \x1B[34mDEBUG\x1B[39m: Test message\n',
+      '::debug::[21:00:00.000] \x1B[34mDEBUG\x1B[39m: Test message\n',
     ]);
   });
 
@@ -72,7 +72,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::notice ::[21:00:00.000] \x1B[35mERROR\x1B[39m: Test message\n',
+      '::error ::[21:00:00.000] \x1B[35mERROR\x1B[39m: Test message\n',
     ]);
   });
 
@@ -96,7 +96,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::notice ::[21:00:00.000] \x1B[31mFATAL\x1B[39m: Test message\n',
+      '::error ::[21:00:00.000] \x1B[31mFATAL\x1B[39m: Test message\n',
     ]);
   });
 
