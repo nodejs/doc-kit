@@ -2,15 +2,16 @@
 
 import * as core from '@actions/core';
 
+import { LogLevel } from '../constants.mjs';
 import { prettifyLevel } from '../utils/colors.mjs';
 import { prettifyTimestamp } from '../utils/time.mjs';
 
 const actions = {
-  debug: core.debug,
-  info: core.notice,
-  warn: core.warning,
-  error: core.error,
-  fatal: core.error,
+  [LogLevel.debug]: core.debug,
+  [LogLevel.info]: core.notice,
+  [LogLevel.warn]: core.warning,
+  [LogLevel.error]: core.error,
+  [LogLevel.fatal]: core.error,
 };
 
 /**
@@ -35,7 +36,7 @@ export const github = ({
 
   const logMessage = `[${time}] ${prettyLevel}${module ? ` (${module})` : ''}: ${message}`;
 
-  const logFn = actions[level] || core.notice;
+  const logFn = actions[level] ?? core.notice;
 
   logFn(logMessage, {
     file: file?.path,
