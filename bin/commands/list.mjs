@@ -13,6 +13,8 @@ export const types = ['generators', 'rules', 'transports'];
  * @param {'generators' | 'rules' | 'transports'} type - The type of items to list.
  */
 export default function list(type) {
+  Logger.init();
+
   const list =
     type === 'generators'
       ? Object.entries(publicGenerators).map(
