@@ -25,5 +25,5 @@ export default function list(type) {
         ? availableRules
         : availableTransports;
 
-  Logger.getInstance().info(list.join('\n'));
+  Logger.getInstance().info(list);
 }

@@ -1,5 +1,7 @@
 export type LogLevel = 'info' | 'warn' | 'error' | 'fatal' | 'trace' | 'debug';
 
+export type LogMessage = string | Error | string[];
+
 export interface Position {
   start: { line: number };
   end: { line: number };

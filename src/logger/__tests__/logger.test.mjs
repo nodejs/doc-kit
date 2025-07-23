@@ -181,4 +181,36 @@ describe('createLogger', () => {
 
     strictEqual(transport.mock.callCount(), 0);
   });
+
+  it('should log all messages if message is a string array', t => {
+    const transport = t.mock.fn();
+
+    const logger = createLogger(transport, LogLevel.info);
+
+    logger.info(['Hello, 1!', 'Hello, 2!', 'Hello, 3!']);
+
+    strictEqual(transport.mock.callCount(), 3);
+  });
+
+  it.only('should log error message', t => {
+    t.mock.timers.enable({ apis: ['Date'] });
+
+    const transport = t.mock.fn();
+
+    const logger = createLogger(transport, LogLevel.error);
+
+    logger.error(new Error('Hello, World!'));
+
+    strictEqual(transport.mock.callCount(), 1);
+
+    const call = transport.mock.calls[0];
+    deepStrictEqual(call.arguments, [
+      {
+        level: LogLevel.error,
+        message: 'Hello, World!',
+        metadata: {},
+        timestamp: 0,
+      },
+    ]);
+  });
 });

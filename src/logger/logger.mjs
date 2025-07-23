@@ -3,6 +3,11 @@
 import { LogLevel } from './constants.mjs';
 
 /**
+ * @typedef {import('./types').Metadata} Metadata
+ * @typedef {import('./types').LogMessage} LogMessage
+ */
+
+/**
  * Creates a logger instance with the specified transport, log level and an
  * optional module name.
  *
@@ -19,19 +24,27 @@ export const createLogger = (
    * Logs a message at the given level with optional metadata.
    *
    * @param {number} level - Log level for the message.
-   * @param {string} message - Message to log.
-   * @param {import('./types').Metadata} metadata - Additional metadata
+   * @param {LogMessage} message - Message to log.
+   * @param {Metadata} metadata - Additional metadata
+   * @returns {void}
    */
   const log = (level, message, metadata = {}) => {
     if (!shouldLog(level)) {
       return;
     }
 
+    if (Array.isArray(message)) {
+      return message.forEach(msg => log(level, msg, metadata));
+    }
+
     const timestamp = Date.now();
+
+    // Extract message string from Error object or use message as-is
+    const msg = message instanceof Error ? message.message : message;
 
     transport({
       level,
-      message,
+      message: msg,
       timestamp,
       metadata,
       ...(module && { module }),
@@ -41,8 +54,8 @@ export const createLogger = (
   /**
    * Logs an info message.
    *
-   * @param {string} message - Info message to log.
-   * @param {import('./types').Metadata} metadata - Additional metadata
+   * @param {LogMessage} message - Info message to log.
+   * @param {Metadata} metadata - Additional metadata
    * @returns {void}
    */
   const info = (message, metadata = {}) =>
@@ -51,8 +64,8 @@ export const createLogger = (
   /**
    * Logs a warning message.
    *
-   * @param {string} message - Warning message to log.
-   * @param {import('./types').Metadata} metadata - Additional metadata
+   * @param {LogMessage} message - Warning message to log.
+   * @param {Metadata} metadata - Additional metadata
    * @returns {void}
    */
   const warn = (message, metadata = {}) =>
@@ -61,34 +74,28 @@ export const createLogger = (
   /**
    * Logs an error message or Error object.
    *
-   * @param {string | Error} input - Error message or Error object to log.
-   * @param {import('./types').Metadata} metadata - Additional metadata
+   * @param {LogMessage} message - Error message or Error object to log.
+   * @param {Metadata} metadata - Additional metadata
    * @returns {void}
    */
-  const error = (input, metadata = {}) => {
-    const message = typeof input === 'string' ? input : input.message;
-
+  const error = (message, metadata = {}) =>
     log(LogLevel.error, message, metadata);
-  };
 
   /**
    * Logs a fatal error message or Error object.
    *
-   * @param {string | Error} input - Fatal error message or Error object to log.
-   * @param {import('./types').Metadata} metadata - Additional metadata
+   * @param {LogMessage} message - Fatal error message or Error object to log.
+   * @param {Metadata} metadata - Additional metadata
    * @returns {void}
    */
-  const fatal = (input, metadata = {}) => {
-    const message = typeof input === 'string' ? input : input.message;
-
+  const fatal = (message, metadata = {}) =>
     log(LogLevel.fatal, message, metadata);
-  };
 
   /**
    * Logs a debug message.
    *
-   * @param {string} message - Debug message to log.
-   * @param {import('./types').Metadata} metadata - Additional metadata
+   * @param {LogMessage} message - Debug message to log.
+   * @param {Metadata} metadata - Additional metadata
    * @returns {void}
    */
   const debug = (message, metadata = {}) =>
