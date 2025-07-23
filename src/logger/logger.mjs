@@ -12,7 +12,7 @@ import { LogLevel } from './constants.mjs';
  */
 export const createLogger = (
   transport,
-  loggerLevel = LogLevel.warn,
+  loggerLevel = LogLevel.info,
   module
 ) => {
   /**
