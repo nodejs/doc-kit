@@ -11,7 +11,7 @@ export const Logger = (function () {
   /**
    * Creates a new logger instance.
    *
-   * @returns {Logger}
+   * @returns {ReturnType<typeof createLogger>}
    */
   const createInstance = () => {
     return createLogger();
@@ -20,7 +20,7 @@ export const Logger = (function () {
   /**
    * Returns the singleton logger instance.
    *
-   * @returns {Logger}
+   * @returns {ReturnType<typeof createLogger>}
    */
   const getInstance = () => {
     if (!instance) {
