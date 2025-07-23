@@ -1,14 +1,13 @@
 import process from 'node:process';
 
 import createLinter from '../../src/linter/index.mjs';
-import reporters from '../../src/linter/reporters/index.mjs';
 import rules from '../../src/linter/rules/index.mjs';
 import { getEnabledRules } from '../../src/linter/utils/rules.mjs';
 import { Logger } from '../../src/logger/index.mjs';
+import { availableTransports } from '../../src/logger/transports/index.mjs';
 import { loadAndParse } from '../utils.mjs';
 
 const availableRules = Object.keys(rules);
-const availableReporters = Object.keys(reporters);
 
 /**
  * @typedef {Object} LinterOptions
@@ -16,7 +15,7 @@ const availableReporters = Object.keys(reporters);
  * @property {Array<string>|string} [ignore] - Glob/path for ignoring files.
  * @property {string[]} [disableRule] - Linter rules to disable.
  * @property {boolean} [dryRun] - Dry-run mode.
- * @property {keyof reporters} reporter - Reporter for linter output.
+ * @property {keyof transports} transport - Transport for logger output.
  */
 
 /**
@@ -63,13 +62,13 @@ export default {
         initialValue: false,
       },
     },
-    reporter: {
-      flags: ['-r', '--reporter <reporter>'],
-      desc: 'Linter reporter to use',
+    transport: {
+      flags: ['-r', '--transport <transport>'],
+      desc: 'Linter transport to use',
       prompt: {
         type: 'select',
-        message: 'Choose a reporter',
-        options: availableReporters.map(r => ({ label: r, value: r })),
+        message: 'Choose a transport',
+        options: availableTransports.map(t => ({ label: t, value: t })),
       },
     },
   },
@@ -81,6 +80,8 @@ export default {
    */
   async action(opts) {
     try {
+      Logger.init(opts.transport);
+
       const rules = getEnabledRules(opts.disableRule);
       const linter = createLinter(rules, opts.dryRun);
 
@@ -91,6 +92,7 @@ export default {
       process.exitCode = +linter.hasError();
     } catch (error) {
       Logger.getInstance().error('Error running the linter:', error);
+
       process.exitCode = 1;
     }
   },

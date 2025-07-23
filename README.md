@@ -79,12 +79,12 @@ Usage: @nodejs/doc-kit lint [options]
 Run linter independently
 
 Options:
-  -i, --input <patterns...>  Input file patterns (glob)
-  --ignore [patterns...]     Ignore patterns (comma-separated)
-  --disable-rule [rules...]  Disable linter rules (choices: "duplicate-stability-nodes", "invalid-change-version", "missing-introduced-in")
-  --dry-run                  Dry run mode (default: false)
-  -r, --reporter <reporter>  Linter reporter to use
-  -h, --help                 display help for command
+  -i, --input <patterns...>     Input file patterns (glob)
+  --ignore [patterns...]        Ignore patterns (comma-separated)
+  --disable-rule [rules...]     Disable linter rules (choices: "duplicate-stability-nodes", "invalid-change-version", "missing-introduced-in")
+  --dry-run                     Dry run mode (default: false)
+  -r, --transport <transport>   Logger transport to use
+  -h, --help                    display help for command
 ```
 
 ### `interactive`
@@ -106,7 +106,7 @@ Usage: @nodejs/doc-kit list [options] <types>
 List the given type
 
 Arguments:
-  types       The type to list (choices: "generators", "rules", "reporters")
+  types       The type to list (choices: "generators", "rules", "transports")
 
 Options:
   -h, --help  display help for command
