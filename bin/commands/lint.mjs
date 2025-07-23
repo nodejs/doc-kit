@@ -4,6 +4,7 @@ import createLinter from '../../src/linter/index.mjs';
 import reporters from '../../src/linter/reporters/index.mjs';
 import rules from '../../src/linter/rules/index.mjs';
 import { getEnabledRules } from '../../src/linter/utils/rules.mjs';
+import { Logger } from '../../src/logger/index.mjs';
 import { loadAndParse } from '../utils.mjs';
 
 const availableRules = Object.keys(rules);
@@ -89,7 +90,7 @@ export default {
 
       process.exitCode = +linter.hasError();
     } catch (error) {
-      console.error('Error running the linter:', error);
+      Logger.getInstance().error('Error running the linter:', error);
       process.exitCode = 1;
     }
   },

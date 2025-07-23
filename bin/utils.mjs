@@ -1,4 +1,5 @@
 import createMarkdownLoader from '../src/loaders/markdown.mjs';
+import { Logger } from '../src/logger/index.mjs';
 import createMarkdownParser from '../src/parsers/markdown.mjs';
 
 /**
@@ -43,7 +44,7 @@ export const errorWrap =
     try {
       return await fn(...args);
     } catch (err) {
-      console.error(err);
+      Logger.getInstance().error(err);
       process.exit(1);
     }
   };

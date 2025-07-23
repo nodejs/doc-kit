@@ -1,6 +1,7 @@
 import { publicGenerators } from '../../src/generators/index.mjs';
 import reporters from '../../src/linter/reporters/index.mjs';
 import rules from '../../src/linter/rules/index.mjs';
+import { Logger } from '../../src/logger/index.mjs';
 
 const availableRules = Object.keys(rules);
 const availableReporters = Object.keys(reporters);
@@ -23,5 +24,5 @@ export default function list(type) {
         ? availableRules
         : availableReporters;
 
-  console.log(list.join('\n'));
+  Logger.getInstance().info(list.join('\n'));
 }
