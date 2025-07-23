@@ -25,7 +25,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::debug::[21:00:00.000] \x1B[34mDEBUG\x1B[39m: Test message\n',
+      '::debug::[00:00:00.000] \x1B[34mDEBUG\x1B[39m: Test message\n',
     ]);
   });
 
@@ -48,7 +48,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::notice ::[21:00:00.000] \x1B[32mINFO\x1B[39m: Test message\n',
+      '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message\n',
     ]);
   });
 
@@ -72,7 +72,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::error ::[21:00:00.000] \x1B[35mERROR\x1B[39m: Test message\n',
+      '::error ::[00:00:00.000] \x1B[35mERROR\x1B[39m: Test message\n',
     ]);
   });
 
@@ -96,7 +96,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::error ::[21:00:00.000] \x1B[31mFATAL\x1B[39m: Test message\n',
+      '::error ::[00:00:00.000] \x1B[31mFATAL\x1B[39m: Test message\n',
     ]);
   });
 
@@ -129,7 +129,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::notice file=test.md,line=1,endLine=1::[21:00:00.000] \x1B[32mINFO\x1B[39m: Test message\n',
+      '::notice file=test.md,line=1,endLine=1::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message\n',
     ]);
   });
 
@@ -153,7 +153,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::notice ::[21:00:00.000] \x1B[32mINFO\x1B[39m (child1): Test message\n',
+      '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m (child1): Test message\n',
     ]);
   });
 
@@ -179,7 +179,7 @@ describe('github', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
     deepStrictEqual(callsArgs, [
-      '::notice ::[21:00:00.000] INFO: Test message\n',
+      '::notice ::[00:00:00.000] INFO: Test message\n',
     ]);
   });
 });

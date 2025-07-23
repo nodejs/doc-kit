@@ -25,7 +25,7 @@ describe('console', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 4);
     deepStrictEqual(callsArgs, [
-      '[21:00:00.000]',
+      '[00:00:00.000]',
       ' \x1B[34mDEBUG\x1B[39m',
       ': Test message',
       '\n',
@@ -51,7 +51,7 @@ describe('console', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 4);
     deepStrictEqual(callsArgs, [
-      '[21:00:00.000]',
+      '[00:00:00.000]',
       ' \x1B[32mINFO\x1B[39m',
       ': Test message',
       '\n',
@@ -78,7 +78,7 @@ describe('console', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 4);
     deepStrictEqual(callsArgs, [
-      '[21:00:00.000]',
+      '[00:00:00.000]',
       ' \x1B[35mERROR\x1B[39m',
       ': Test message',
       '\n',
@@ -105,7 +105,7 @@ describe('console', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 4);
     deepStrictEqual(callsArgs, [
-      '[21:00:00.000]',
+      '[00:00:00.000]',
       ' \x1B[31mFATAL\x1B[39m',
       ': Test message',
       '\n',
@@ -141,7 +141,7 @@ describe('console', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 6);
     deepStrictEqual(callsArgs, [
-      '[21:00:00.000]',
+      '[00:00:00.000]',
       ' \x1B[32mINFO\x1B[39m',
       ': Test message',
       ' at test.md',
@@ -171,7 +171,7 @@ describe('console', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 5);
     deepStrictEqual(callsArgs, [
-      '[21:00:00.000]',
+      '[00:00:00.000]',
       ' \x1B[32mINFO\x1B[39m',
       ' (child1)',
       ': Test message',
@@ -201,7 +201,7 @@ describe('console', () => {
 
     strictEqual(process.stdout.write.mock.callCount(), 4);
     deepStrictEqual(callsArgs, [
-      '[21:00:00.000]',
+      '[00:00:00.000]',
       ' INFO',
       ': Test message',
       '\n',
