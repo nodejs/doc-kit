@@ -192,7 +192,7 @@ describe('createLogger', () => {
     strictEqual(transport.mock.callCount(), 3);
   });
 
-  it.only('should log error message', t => {
+  it('should log error message', t => {
     t.mock.timers.enable({ apis: ['Date'] });
 
     const transport = t.mock.fn();
