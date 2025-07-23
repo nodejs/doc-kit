@@ -13,7 +13,7 @@ export const types = ['generators', 'rules', 'transports'];
  * @param {'generators' | 'rules' | 'transports'} type - The type of items to list.
  */
 export default function list(type) {
-  Logger.init();
+  const logger = Logger.init();
 
   const list =
     type === 'generators'
@@ -25,5 +25,5 @@ export default function list(type) {
         ? availableRules
         : availableTransports;
 
-  Logger.getInstance().info(list);
+  logger.info(list);
 }

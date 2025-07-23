@@ -79,9 +79,9 @@ export default {
    * @returns {Promise<void>}
    */
   async action(opts) {
-    try {
-      Logger.init(opts.transport);
+    const logger = Logger.init(opts.transport);
 
+    try {
       const rules = getEnabledRules(opts.disableRule);
       const linter = createLinter(rules, opts.dryRun);
 
@@ -91,7 +91,7 @@ export default {
 
       process.exitCode = +linter.hasError();
     } catch (error) {
-      Logger.getInstance().error('Error running the linter:', error);
+      logger.error('Error running the linter:', error);
 
       process.exitCode = 1;
     }

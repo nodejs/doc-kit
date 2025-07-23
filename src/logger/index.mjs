@@ -19,9 +19,10 @@ export const Logger = (() => {
   let instance;
 
   /**
+   * Inits the logger with the specified transport.
    *
    * @param {string} [transportName]
-   * @returns {void}
+   * @returns {LoggerInstance}
    */
   function init(transportName = 'console') {
     const transport = transports[transportName];
@@ -31,6 +32,7 @@ export const Logger = (() => {
     }
 
     instance = createLogger(transport);
+    return instance;
   }
 
   /**

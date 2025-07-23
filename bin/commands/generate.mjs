@@ -132,6 +132,8 @@ export default {
    * @returns {Promise<void>}
    */
   async action(opts) {
+    const logger = Logger.init();
+
     const rules = getEnabledRules(opts.disableRule);
     const linter = opts.skipLint ? undefined : createLinter(rules);
 
@@ -140,7 +142,7 @@ export default {
     linter?.report();
 
     if (linter?.hasError()) {
-      Logger.getInstance().error('Lint failed; aborting generation.');
+      logger.error('Lint failed; aborting generation.');
       process.exit(1);
     }
 
