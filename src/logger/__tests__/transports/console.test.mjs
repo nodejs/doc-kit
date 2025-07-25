@@ -2,7 +2,7 @@ import { deepStrictEqual, strictEqual } from 'assert';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../../constants.mjs';
-import { console } from '../../transports/console.mjs';
+import console from '../../transports/console.mjs';
 
 describe('console', () => {
   it('should print debug messages', t => {

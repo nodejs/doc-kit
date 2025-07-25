@@ -2,7 +2,7 @@ import { deepStrictEqual, strictEqual } from 'assert';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../../constants.mjs';
-import { github } from '../../transports/github.mjs';
+import github from '../../transports/github.mjs';
 
 describe('github', () => {
   it('should print debug messages', t => {
