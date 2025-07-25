@@ -21,13 +21,7 @@ const actions = {
  * @param {import('../types').TransportContext} context
  * @returns {void}
  */
-export const github = ({
-  level,
-  message,
-  timestamp,
-  metadata = {},
-  module,
-}) => {
+const github = ({ level, message, timestamp, metadata = {}, module }) => {
   const { file } = metadata;
 
   const time = prettifyTimestamp(timestamp);
@@ -44,3 +38,5 @@ export const github = ({
     endLine: file?.position?.end.line,
   });
 };
+
+export default github;
