@@ -9,13 +9,7 @@ import { prettifyTimestamp } from '../utils/time.mjs';
  * @param {import('../types').TransportContext} context
  * @returns {void}
  */
-export const console = ({
-  level,
-  message,
-  timestamp,
-  metadata = {},
-  module,
-}) => {
+const console = ({ level, message, timestamp, metadata = {}, module }) => {
   const { file } = metadata;
 
   const time = prettifyTimestamp(timestamp);
@@ -44,3 +38,5 @@ export const console = ({
 
   process.stdout.write('\n');
 };
+
+export default console;
