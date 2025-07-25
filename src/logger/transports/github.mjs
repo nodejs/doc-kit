@@ -1,17 +1,17 @@
 'use strict';
 
-import * as core from '@actions/core';
+import { debug, notice, warning, error } from '@actions/core';
 
 import { LogLevel } from '../constants.mjs';
 import { prettifyLevel } from '../utils/colors.mjs';
 import { prettifyTimestamp } from '../utils/time.mjs';
 
 const actions = {
-  [LogLevel.debug]: core.debug,
-  [LogLevel.info]: core.notice,
-  [LogLevel.warn]: core.warning,
-  [LogLevel.error]: core.error,
-  [LogLevel.fatal]: core.error,
+  [LogLevel.debug]: debug,
+  [LogLevel.info]: notice,
+  [LogLevel.warn]: warning,
+  [LogLevel.error]: error,
+  [LogLevel.fatal]: error,
 };
 
 /**
@@ -30,7 +30,7 @@ const github = ({ level, message, timestamp, metadata = {}, module }) => {
 
   const logMessage = `[${time}] ${prettyLevel}${module ? ` (${module})` : ''}: ${message}`;
 
-  const logFn = actions[level] ?? core.notice;
+  const logFn = actions[level] ?? notice;
 
   logFn(logMessage, {
     file: file?.path,
