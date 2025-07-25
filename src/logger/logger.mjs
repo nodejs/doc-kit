@@ -47,7 +47,7 @@ export const createLogger = (
       message: msg,
       timestamp,
       metadata,
-      ...(module && { module }),
+      module,
     });
   };
 
