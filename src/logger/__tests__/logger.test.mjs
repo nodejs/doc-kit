@@ -36,6 +36,7 @@ describe('createLogger', () => {
           level: LogLevel.debug,
           message: 'Hello, World!',
           metadata,
+          module: undefined,
           timestamp: 0,
         },
       ]);
@@ -74,6 +75,7 @@ describe('createLogger', () => {
             level: LogLevel.info,
             message: 'Hello, World!',
             metadata,
+            module: undefined,
             timestamp: 0,
           },
         ]);
@@ -112,6 +114,7 @@ describe('createLogger', () => {
             level: LogLevel.warn,
             message: 'Hello, World!',
             metadata,
+            module: undefined,
             timestamp: 0,
           },
         ]);
@@ -151,6 +154,7 @@ describe('createLogger', () => {
               level: LogLevel.error,
               message: 'Hello, World!',
               metadata,
+              module: undefined,
               timestamp: 0,
             },
           ]);
@@ -209,6 +213,7 @@ describe('createLogger', () => {
         level: LogLevel.error,
         message: 'Hello, World!',
         metadata: {},
+        module: undefined,
         timestamp: 0,
       },
     ]);
