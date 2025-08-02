@@ -113,7 +113,7 @@ const createMetadata = slugger => {
         updates = [],
         changes = [],
         tags = [],
-        llmDescription,
+        llm_description,
       } = internalMetadata.properties;
 
       // Also add the slug to the heading data as it is used to build the heading
@@ -140,7 +140,7 @@ const createMetadata = slugger => {
         content: section,
         tags,
         introduced_in,
-        llmDescription,
+        llm_description,
         yaml_position: internalMetadata.yaml_position,
       };
     },

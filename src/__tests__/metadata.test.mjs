@@ -73,7 +73,7 @@ describe('createMetadata', () => {
       heading,
       n_api_version: undefined,
       introduced_in: undefined,
-      llmDescription: undefined,
+      llm_description: undefined,
       removed_in: undefined,
       slug: 'test-heading',
       source_link: 'test.com',

@@ -30,7 +30,7 @@ describe('normalizeYamlSyntax', () => {
 source_link=lib/test.js
 type=module
 name=test_module
-llmDescription: This is a test module`;
+llm_description=This is a test module`;
 
     const normalizedYaml = normalizeYamlSyntax(input);
 
@@ -40,7 +40,7 @@ llmDescription: This is a test module`;
 source_link: lib/test.js
 type: module
 name: test_module
-llmDescription: This is a test module`
+llm_description: This is a test module`
     );
   });
 

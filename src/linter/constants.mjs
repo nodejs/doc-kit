@@ -2,7 +2,7 @@
 
 export const INTRODUCED_IN_REGEX = /<!--\s?introduced_in=.*-->/;
 
-export const LLM_DESCRIPTION_REGEX = /<!--\s?llmDescription:.*-->/;
+export const LLM_DESCRIPTION_REGEX = /<!--\s?llm_description=.*-->/;
 
 export const LINT_MESSAGES = {
   missingIntroducedIn: "Missing 'introduced_in' field in the API doc entry",
@@ -11,5 +11,5 @@ export const LINT_MESSAGES = {
   invalidChangeVersion: 'Invalid version number: {{version}}',
   duplicateStabilityNode: 'Duplicate stability node',
   missingLlmDescription:
-    'Missing llmDescription field or paragraph node in the API doc entry',
+    'Missing llm_description field or paragraph node in the API doc entry',
 };

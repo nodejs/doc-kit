@@ -3,15 +3,15 @@ import { transformNodeToString } from '../../../utils/unist.mjs';
 
 /**
  * Retrieves the description of a given API doc entry. It first checks whether
- * the entry has a llmDescription property. If not, it extracts the first
+ * the entry has a llm_description property. If not, it extracts the first
  * paragraph from the entry's content.
  *
  * @param {ApiDocMetadataEntry} entry
  * @returns {string}
  */
 export const getEntryDescription = entry => {
-  if (entry.llmDescription) {
-    return entry.llmDescription.trim();
+  if (entry.llm_description) {
+    return entry.llm_description.trim();
   }
 
   const descriptionNode = entry.content.children.find(

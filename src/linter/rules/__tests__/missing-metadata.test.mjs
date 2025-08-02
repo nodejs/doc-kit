@@ -8,14 +8,14 @@ describe('missingMetadata', () => {
   it('should not report when both fields are present', () => {
     const context = createContext([
       { type: 'html', value: '<!--introduced_in=12.0.0-->' },
-      { type: 'html', value: '<!--llmDescription:desc-->' },
+      { type: 'html', value: '<!--llm_description=desc-->' },
     ]);
 
     missingMetadata(context);
     strictEqual(context.report.mock.callCount(), 0);
   });
 
-  it('should report only llmDescription when introduced_in is present', () => {
+  it('should report only llm_description when introduced_in is present', () => {
     const context = createContext([
       { type: 'html', value: '<!--introduced_in=12.0.0-->' },
     ]);
@@ -25,7 +25,7 @@ describe('missingMetadata', () => {
     strictEqual(context.report.mock.calls[0].arguments[0].level, 'warn');
   });
 
-  it('should not report llmDescription when paragraph fallback exists', () => {
+  it('should not report llm_description when paragraph fallback exists', () => {
     const context = createContext([
       { type: 'html', value: '<!--introduced_in=12.0.0-->' },
       { type: 'paragraph', children: [{ type: 'text', value: 'desc' }] },
@@ -42,9 +42,9 @@ describe('missingMetadata', () => {
     strictEqual(context.report.mock.callCount(), 2);
   });
 
-  it('should report only introduced_in when llmDescription is present', () => {
+  it('should report only introduced_in when llm_description is present', () => {
     const context = createContext([
-      { type: 'html', value: '<!--llmDescription:desc-->' },
+      { type: 'html', value: '<!--llm_description=desc-->' },
     ]);
 
     missingMetadata(context);

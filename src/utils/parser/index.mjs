@@ -41,6 +41,7 @@ export const normalizeYamlSyntax = yamlContent => {
     .replace('source_link=', 'source_link: ')
     .replace('type=', 'type: ')
     .replace('name=', 'name: ')
+    .replace('llm_description=', 'llm_description: ')
     .replace(/^[\r\n]+|[\r\n]+$/g, ''); // Remove initial and final line breaks
 };
 
