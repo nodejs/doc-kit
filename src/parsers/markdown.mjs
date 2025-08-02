@@ -17,10 +17,8 @@ const NODE_LTS_VERSION_REGEX = /Long Term Support/i;
 
 /**
  * Creates an API doc parser for a given Markdown API doc file
- *
- * @param {import('../linter/types').Linter} [linter]
  */
-const createParser = linter => {
+const createParser = () => {
   // Creates an instance of the Remark processor with GFM support
   const remarkProcessor = getRemark();
 
@@ -42,8 +40,6 @@ const createParser = linter => {
 
     // Parses the API doc into an AST tree using `unified` and `remark`
     const apiDocTree = remarkProcessor.parse(resolvedApiDoc);
-
-    linter?.lint(resolvedApiDoc, apiDocTree);
 
     return {
       file: {

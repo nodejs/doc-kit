@@ -9,8 +9,6 @@ import {
 } from '../../src/constants.mjs';
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
-import createLinter from '../../src/linter/index.mjs';
-import { getEnabledRules } from '../../src/linter/utils/rules.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
 import { loadAndParse } from '../utils.mjs';
 
@@ -25,7 +23,6 @@ const availableGenerators = Object.keys(publicGenerators);
  * @property {string} changelog - Specifies the path to the Node.js CHANGELOG.md file.
  * @property {string} [gitRef] - Git ref/commit URL.
  * @property {number} [threads] - Number of threads to allow.
- * @property {boolean} [skipLint] - Skip lint before generate.
  */
 
 /**
@@ -115,15 +112,6 @@ export default {
         type: 'text',
       },
     },
-    skipLint: {
-      flags: ['--skip-lint'],
-      desc: 'Skip lint before generate',
-      prompt: {
-        type: 'confirm',
-        message: 'Skip lint before generate?',
-        initialValue: false,
-      },
-    },
   },
   /**
    * Handles the action for generating API docs
@@ -131,18 +119,7 @@ export default {
    * @returns {Promise<void>}
    */
   async action(opts) {
-    const rules = getEnabledRules(opts.disableRule);
-    const linter = opts.skipLint ? undefined : createLinter(rules);
-
-    const docs = await loadAndParse(opts.input, opts.ignore, linter);
-
-    linter?.report();
-
-    if (linter?.hasError()) {
-      console.error('Lint failed; aborting generation.');
-      process.exit(1);
-    }
-
+    const docs = await loadAndParse(opts.input, opts.ignore);
     const releases = await parseChangelog(opts.changelog);
     const index = opts.index && (await parseIndex(opts.index));
 

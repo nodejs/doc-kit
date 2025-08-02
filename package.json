@@ -38,7 +38,6 @@
     "prettier": "3.6.2"
   },
   "dependencies": {
-    "@actions/core": "^1.11.1",
     "@clack/prompts": "^0.11.0",
     "@heroicons/react": "^2.2.0",
     "@minify-html/node": "^0.16.4",
@@ -76,9 +75,7 @@
     "shiki": "^3.9.2",
     "unified": "^11.0.5",
     "unist-builder": "^4.0.0",
-    "unist-util-find": "^3.0.0",
     "unist-util-find-after": "^5.0.0",
-    "unist-util-find-before": "^4.0.1",
     "unist-util-position": "^5.0.0",
     "unist-util-remove": "^4.0.0",
     "unist-util-select": "^5.1.0",

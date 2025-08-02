@@ -23,12 +23,11 @@ const parser = lazy(createMarkdownParser);
  * Load and parse markdown API docs.
  * @param {string[]} input - Glob patterns for input files.
  * @param {string[]} [ignore] - Glob patterns to ignore.
- * @param {import('../src/linter/types').Linter} [linter] - Linter instance
  * @returns {Promise<Array<ParserOutput<import('mdast').Root>>>}
  */
-export async function loadAndParse(input, ignore, linter) {
+export async function loadAndParse(input, ignore) {
   const files = await loader().loadFiles(input, ignore);
-  return parser(linter).parseApiDocs(files);
+  return parser().parseApiDocs(files);
 }
 
 /**
@@ -49,7 +48,7 @@ export const errorWrap =
   };
 
 /**
- * Represents a command-line option for the linter CLI.
+ * Represents a command-line option for the CLI.
  * @typedef {Object} Option
  * @property {string[]} flags - Command-line flags, e.g., ['-i, --input <patterns...>'].
  * @property {string} desc - Description of the option.
