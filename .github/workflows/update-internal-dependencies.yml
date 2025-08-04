@@ -1,0 +1,53 @@
+name: Upgrade @node-core/* Dependencies
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 0' # Runs weekly on Sunday at 03:00 UTC
+
+env:
+  COMMIT_MESSAGE: 'chore: upgrade internal dependencies to latest versions'
+
+jobs:
+  upgrade-node-core-deps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Upgrade @node-core/* dependencies in package.json
+        run: |
+          # Parse package.json and find @node-core/* dependencies (both deps/devDeps)
+          for section in dependencies devDependencies; do
+            jq -r --arg section "$section" '.[$section] | keys[]' package.json | grep '^@node-core/' | while read dep; do
+              # Get latest version from npm
+              latest=$(npm view "$dep" version)
+              echo "Upgrading $dep to $latest"
+              # Use jq to update the version in package.json
+              jq --arg section "$section" --arg dep "$dep" --arg ver "^$latest" \
+                '(.[$section][$dep]) |= $ver' package.json > package.json.tmp && mv package.json.tmp package.json
+            done
+          done
+
+      - name: Install upgraded dependencies
+        run: npm install
+
+      - name: Create or update PR for upgraded dependencies
+        uses: gr2m/create-or-update-pull-request-action@b65137ca591da0b9f43bad7b24df13050ea45d1b # v1.10.1
+        with:
+          title: ${{ env.COMMIT_MESSAGE }}
+          body: 'This PR upgrades all @node-core/* dependencies in package.json to their latest versions.'
+          commit-message: ${{ env.COMMIT_MESSAGE }}
+          branch: 'upgrade-node-core-deps'
+          path: '.'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

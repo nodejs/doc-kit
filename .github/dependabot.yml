@@ -20,20 +20,56 @@ updates:
       interval: monthly
     commit-message:
       prefix: meta
+    ignore:
+      - dependency-name: '@node-core/*'
     cooldown:
       default-days: 3
     groups:
-      format:
-        patterns:
-          - 'prettier'
-      lint:
-        patterns:
-          - 'eslint'
-          - 'eslint-*'
-          - '@eslint/*'
-          - 'globals'
-          - 'stylelint-*'
       orama:
         patterns:
           - '@orama/*'
+      cli:
+        patterns:
+          - 'commander'
+          - '@clack/prompts'
+      lint:
+        patterns:
+          - 'prettier'
+          - 'eslint'
+          - 'eslint-*'
+          - 'lint-staged'
+          - 'globals'
+          - '@eslint/*'
+      unist:
+        patterns:
+          - 'unified'
+          - 'unist-*'
+          - 'vfile'
+      remark:
+        patterns:
+          - 'remark-*'
+          - 'shiki'
+      rehype:
+        patterns:
+          - 'rehype-*'
+      ast:
+        patterns:
+          - 'estree-*'
+          - 'hast-*'
+          - 'mdast-*'
+          - 'hastscript'
+          - 'acorn'
+      recma:
+        patterns:
+          - 'recma-*'
+      compiling:
+        patterns:
+          - '@minify-html/node'
+          - '@rollup/*'
+          - 'rolldown'
+          - 'lightningcss'
+      react:
+        patterns:
+          - 'preact'
+          - 'preact-*'
     open-pull-requests-limit: 10
