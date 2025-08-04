@@ -50,4 +50,4 @@ jobs:
           branch: 'upgrade-node-core-deps'
           path: '.'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DOC_KIT_PAT }}
