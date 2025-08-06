@@ -1,7 +1,6 @@
 'use strict';
 
-import { createHighlighterCoreSync } from '@shikijs/core';
-import { createOnigurumaEngine } from '@shikijs/engine-oniguruma';
+import { shiki } from '@node-core/rehype-shiki';
 import { toString } from 'hast-util-to-string';
 import { h as createElement } from 'hastscript';
 import { SKIP, visit } from 'unist-util-visit';
@@ -11,12 +10,6 @@ import shikiConfig from '../../shiki.config.mjs';
 // This is what Remark will use as prefix within a <pre> className
 // to attribute the current language of the <pre> element
 const languagePrefix = 'language-';
-
-// Creates a Singleton instance for Shiki's syntax highlighter using WASM
-const shikiHighlighter = createHighlighterCoreSync({
-  ...shikiConfig,
-  engine: await createOnigurumaEngine(import('shiki/wasm')),
-});
 
 // Creates a static button element which is used for the "copy" button
 // within codeboxes for copying the code to the clipboard
@@ -94,7 +87,7 @@ export default function rehypeShikiji() {
       const languageId = codeLanguage.slice(languagePrefix.length);
 
       // Parses the <pre> contents and returns a HAST tree with the highlighted code
-      const { children } = shikiHighlighter.codeToHast(preElementContents, {
+      const { children } = shiki.codeToHast(preElementContents, {
         lang: languageId,
         // Allows support for dual themes (light, dark) for Shiki
         themes: { light: shikiConfig.themes[0], dark: shikiConfig.themes[1] },
