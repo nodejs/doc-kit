@@ -1,7 +1,7 @@
 'use strict';
 
 import createContext from './context.mjs';
-import reporters from './reporters/index.mjs';
+import { Logger } from '../logger/index.mjs';
 
 /**
  * Creates a linter instance to validate API documentation ASTs against a
@@ -37,21 +37,37 @@ const createLinter = (rules, dryRun = false) => {
   };
 
   /**
-   * Reports collected issues using the specified reporter.
+   * Reports collected issues using the default logger.
    *
-   * @param {keyof typeof reporters} [reporterName] Reporter name
    * @returns {void}
    */
-  const report = (reporterName = 'console') => {
+  const report = () => {
     if (dryRun) {
       return;
     }
 
-    const reporter = reporters[reporterName];
-
     for (const issue of issues) {
-      reporter(issue);
+      logIssue(issue);
     }
+  };
+
+  /**
+   * Logs an issue using the default logger instance.
+   *
+   * @param {import('./types').LintIssue} issue
+   * @returns {void}
+   */
+  const logIssue = issue => {
+    const logger = Logger.getInstance();
+
+    const logFn = logger[issue.level];
+
+    logFn(issue.message, {
+      file: {
+        path: issue.location.path,
+        position: issue.location.position,
+      },
+    });
   };
 
   /**

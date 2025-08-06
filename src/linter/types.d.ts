@@ -1,5 +1,4 @@
 import { Root } from 'mdast';
-import reporters from './reporters/index.mjs';
 import { VFile } from 'vfile';
 
 export type IssueLevel = 'info' | 'warn' | 'error';
@@ -22,12 +21,10 @@ export interface LintIssue {
 
 type LintRule = (context: LintContext) => void;
 
-export type Reporter = (message: LintIssue) => void;
-
 export interface Linter {
   readonly issues: LintIssue[];
   lint: (file: VFile, tree: Root) => void;
-  report: (reporterName: keyof typeof reporters) => void;
+  report: () => void;
   hasError: () => boolean;
 }
 
