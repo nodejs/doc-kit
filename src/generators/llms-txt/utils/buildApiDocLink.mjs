@@ -11,7 +11,7 @@ import { transformNodeToString } from '../../../utils/unist.mjs';
  */
 export const getEntryDescription = entry => {
   if (entry.llm_description) {
-    return entry.llm_description;
+    return entry.llm_description.trim();
   }
 
   const descriptionNode = entry.content.children.find(
