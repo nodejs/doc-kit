@@ -3,10 +3,6 @@ import { toJs, jsx } from 'estree-util-to-js';
 
 import bundleCode from './bundle.mjs';
 
-// Generate a unique variable name to capture the result of the server-side code.
-// This prevents naming conflicts.
-const SSRvariable = `_${Math.random().toString(36).slice(2)}`;
-
 /**
  * Executes server-side JavaScript code in a safe, isolated context.
  * This function takes a string of JavaScript code, bundles it, and then runs it
@@ -26,12 +22,7 @@ export async function executeServerCode(serverCode, requireFn) {
   // Create a new Function from the bundled server code.
   // The `require` argument is passed into the function's scope, allowing the
   // `bundledServer` code to use it for dynamic imports.
-  // The `return ${variable};` statement ensures that the value assigned to
-  // the dynamic variable within the `bundledServer` code is returned by this function.
-  const executedFunction = new Function(
-    'require',
-    `${bundledServer}\nreturn ${SSRvariable};`
-  );
+  const executedFunction = new Function('require', bundledServer);
 
   // Execute the dynamically created function with the provided `requireFn`.
   // The result of this execution is the dehydrated content from the server-side rendering.
@@ -62,7 +53,7 @@ export async function processJSXEntry(
   // `buildServerProgram` takes the JSX-derived code and prepares it for server execution.
   // `executeServerCode` then runs this code in a Node.js environment to produce
   // the initial HTML content (dehydrated state) that will be sent to the client.
-  const serverCode = buildServerProgram(code, SSRvariable);
+  const serverCode = buildServerProgram(code);
   const dehydrated = await executeServerCode(serverCode, requireFn);
 
   // `buildClientProgram` prepares the JSX-derived code for client-side execution.
