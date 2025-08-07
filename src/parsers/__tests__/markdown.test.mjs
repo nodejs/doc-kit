@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
 
 import dedent from 'dedent';
+import { SemVer } from 'semver';
 
 let content;
 mock.module('../../utils/parser.mjs', {
@@ -23,9 +24,9 @@ describe('parseChangelog', () => {
 
     const results = await parseChangelog('...');
 
-    assert.partialDeepStrictEqual(results, [
-      { version: { raw: '24.0.0' }, isLts: false },
-      { version: { raw: '22.0.0' }, isLts: true },
+    assert.deepStrictEqual(results, [
+      { version: new SemVer('24.0.0'), isLts: false },
+      { version: new SemVer('22.0.0'), isLts: true },
     ]);
   });
 });
