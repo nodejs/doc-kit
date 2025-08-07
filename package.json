@@ -59,7 +59,7 @@
     "hastscript": "^9.0.1",
     "lightningcss": "^1.30.1",
     "mdast-util-slice-markdown": "^2.0.1",
-    "preact": "^10.26.9",
+    "preact": "^10.27.0",
     "preact-render-to-string": "^6.5.13",
     "reading-time": "^1.5.0",
     "recma-jsx": "^1.0.0",
