@@ -76,9 +76,8 @@ export default () => {
    * Builds a server-side rendering (SSR) program.
    *
    * @param {string} componentCode - Code expression representing a JSX component
-   * @param {string} variable - The variable to output it to
    */
-  const buildServerProgram = (componentCode, variable) => {
+  const buildServerProgram = componentCode => {
     return [
       // JSX component imports
       ...baseImports,
@@ -88,7 +87,7 @@ export default () => {
 
       // Render the component to an HTML string
       // The output can be embedded directly into the server's HTML template
-      `const ${variable} = render(${componentCode});`,
+      `return render(${componentCode});`,
     ].join('\n');
   };
 
