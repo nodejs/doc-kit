@@ -33,7 +33,7 @@ jobs:
               latest=$(npm view "$dep" version)
               echo "Upgrading $dep to $latest"
               # Use jq to update the version in package.json
-              jq --arg section "$section" --arg dep "$dep" --arg ver "^$latest" \
+              jq --arg section "$section" --arg dep "$dep" --arg ver "$latest" \
                 '(.[$section][$dep]) |= $ver' package.json > package.json.tmp && mv package.json.tmp package.json
             done
           done
