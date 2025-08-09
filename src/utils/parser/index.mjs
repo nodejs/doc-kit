@@ -81,7 +81,7 @@ export const transformTypeToReferenceLink = type => {
    */
   const transformType = lookupPiece => {
     // Transform JS primitive type references into Markdown links (MDN)
-    if (lookupPiece.toLowerCase() in DOC_TYPES_MAPPING_PRIMITIVES) {
+    if (DOC_TYPES_MAPPING_PRIMITIVES.includes(lookupPiece.toLowerCase())) {
       return `${DOC_MDN_BASE_URL_JS_PRIMITIVES}#${lookupPiece.toLowerCase()}_type`;
     }
 
