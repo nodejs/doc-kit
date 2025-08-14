@@ -72,15 +72,20 @@ export const DOC_API_HEADING_TYPES = [
 // This is a mapping for types within the Markdown content and their respective
 // JavaScript primitive types within the MDN JavaScript docs
 // @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Data_structures#primitive_values
-export const DOC_TYPES_MAPPING_PRIMITIVES = [
-  'null',
-  'undefined',
-  'boolean',
-  'number',
-  'bigint',
-  'string',
-  'symbol',
-];
+export const DOC_TYPES_MAPPING_PRIMITIVES = {
+  ...Object.fromEntries(
+    [
+      'null',
+      'undefined',
+      'boolean',
+      'number',
+      'bigint',
+      'string',
+      'symbol',
+    ].map(e => [e, e])
+  ),
+  integer: 'number',
+};
 
 // This is a mapping for types within the Markdown content and their respective
 // JavaScript globals types within the MDN JavaScript docs
