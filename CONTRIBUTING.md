@@ -38,28 +38,28 @@ The steps below will give you a general idea of how to prepare your local enviro
 
 1. **Fork the repository**
 
-   Click the fork button in the top right, or the link in this paragraph, to clone the [Node.js `api-docs-tooling` Repository](https://github.com/nodejs/api-docs-tooling/fork)
+   Click the fork button in the top right, or the link in this paragraph, to clone the [Node.js `doc-kit` Repository](https://github.com/nodejs/doc-kit/fork)
 
 2. **Clone your fork**
 
    ```bash
-   git clone git@github.com:<YOUR_GITHUB_USERNAME>/api-docs-tooling.git # SSH
-   git clone https://github.com/<YOUR_GITHUB_USERNAME>/api-docs-tooling.git # HTTPS
-   gh repo clone <YOUR_GITHUB_USERNAME>/api-docs-tooling # GitHub CLI
+   git clone git@github.com:<YOUR_GITHUB_USERNAME>/doc-kit.git # SSH
+   git clone https://github.com/<YOUR_GITHUB_USERNAME>/doc-kit.git # HTTPS
+   gh repo clone <YOUR_GITHUB_USERNAME>/doc-kit # GitHub CLI
    ```
 
 3. **Navigate to the project directory**
 
    ```bash
-   cd api-docs-tooling
+   cd doc-kit
    ```
 
 4. **Set up upstream remote**
 
    ```bash
-   git remote add upstream git@github.com:nodejs/api-docs-tooling # SSH
-   git remote add upstream https://github.com/nodejs/api-docs-tooling # HTTPS
-   gh repo sync nodejs/api-docs-tooling # GitHub CLI
+   git remote add upstream git@github.com:nodejs/doc-kit # SSH
+   git remote add upstream https://github.com/nodejs/doc-kit # HTTPS
+   gh repo sync nodejs/doc-kit # GitHub CLI
    ```
 
 5. **Install dependencies**
