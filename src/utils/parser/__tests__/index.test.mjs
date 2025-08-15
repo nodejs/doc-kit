@@ -12,7 +12,7 @@ describe('transformTypeToReferenceLink', () => {
   it('should transform a JavaScript primitive type into a Markdown link', () => {
     strictEqual(
       transformTypeToReferenceLink('string'),
-      '[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#String_type)'
+      '[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type)'
     );
   });
 

@@ -1,4 +1,4 @@
-'use strict';
+import globals from 'globals';
 
 // These are string replacements specific to Node.js API docs for anchor IDs
 export const DOC_API_SLUGS_REPLACEMENTS = [
@@ -71,15 +71,20 @@ export const DOC_API_HEADING_TYPES = [
 
 // This is a mapping for types within the Markdown content and their respective
 // JavaScript primitive types within the MDN JavaScript docs
-// @see DOC_MDN_BASE_URL_JS_PRIMITIVES
+// @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Data_structures#primitive_values
 export const DOC_TYPES_MAPPING_PRIMITIVES = {
-  boolean: 'Boolean',
-  integer: 'Number', // Not a primitive, used for clarification.
-  null: 'Null',
-  number: 'Number',
-  string: 'String',
-  symbol: 'Symbol',
-  undefined: 'Undefined',
+  ...Object.fromEntries(
+    [
+      'null',
+      'undefined',
+      'boolean',
+      'number',
+      'bigint',
+      'string',
+      'symbol',
+    ].map(e => [e, e])
+  ),
+  integer: 'number',
 };
 
 // This is a mapping for types within the Markdown content and their respective
@@ -88,45 +93,15 @@ export const DOC_TYPES_MAPPING_PRIMITIVES = {
 export const DOC_TYPES_MAPPING_GLOBALS = {
   ...Object.fromEntries(
     [
-      'AggregateError',
-      'Array',
-      'ArrayBuffer',
-      'DataView',
-      'Date',
-      'Error',
-      'EvalError',
-      'Function',
-      'Map',
-      'NaN',
-      'Object',
-      'Promise',
-      'Proxy',
-      'RangeError',
-      'ReferenceError',
-      'RegExp',
-      'Set',
-      'SharedArrayBuffer',
-      'SyntaxError',
-      'Symbol',
-      'TypeError',
-      'URIError',
-      'WeakMap',
-      'WeakSet',
-
-      'TypedArray',
-      'Float16Array',
-      'Float32Array',
-      'Float64Array',
-      'Int8Array',
-      'Int16Array',
-      'Int32Array',
-      'Uint8Array',
-      'Uint8ClampedArray',
-      'Uint16Array',
-      'Uint32Array',
+      // This is updated with every ES-spec, so, as long as the
+      // `globals` package is up-to-date, so will our globals
+      // list.
+      ...Object.keys(globals.builtin),
+      'AsyncGeneratorFunction',
+      'AsyncIterator',
+      'AsyncFunction',
     ].map(e => [e, e])
   ),
-  bigint: 'BigInt',
   'WebAssembly.Instance': 'WebAssembly/Instance',
 };
 
@@ -331,18 +306,12 @@ export const DOC_TYPES_MAPPING_OTHER = {
 
   ArrayBufferView: `${DOC_MDN_BASE_URL}/API/ArrayBufferView`,
 
-  AsyncIterator: 'https://tc39.github.io/ecma262/#sec-asynciterator-interface',
   AsyncIterable: 'https://tc39.github.io/ecma262/#sec-asynciterable-interface',
-  AsyncFunction: 'https://tc39.es/ecma262/#sec-async-function-constructor',
 
   'Module Namespace Object':
     'https://tc39.github.io/ecma262/#sec-module-namespace-exotic-objects',
 
-  AsyncGeneratorFunction:
-    'https://tc39.es/proposal-async-iteration/#sec-asyncgeneratorfunction-constructor',
-
   Iterable: `${DOC_MDN_BASE_URL_JS}Reference/Iteration_protocols#The_iterable_protocol`,
-  Iterator: `${DOC_MDN_BASE_URL_JS}Reference/Iteration_protocols#The_iterator_protocol`,
 
   CloseEvent: `${DOC_MDN_BASE_URL}/API/CloseEvent`,
   EventSource: `${DOC_MDN_BASE_URL}/API/EventSource`,
