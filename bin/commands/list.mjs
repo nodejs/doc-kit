@@ -1,18 +1,20 @@
 import { publicGenerators } from '../../src/generators/index.mjs';
-import reporters from '../../src/linter/reporters/index.mjs';
 import rules from '../../src/linter/rules/index.mjs';
+import { Logger } from '../../src/logger/index.mjs';
+import { availableTransports } from '../../src/logger/transports/index.mjs';
 
 const availableRules = Object.keys(rules);
-const availableReporters = Object.keys(reporters);
 
-export const types = ['generators', 'rules', 'reporters'];
+export const types = ['generators', 'rules', 'transports'];
 
 /**
- * Lists available generators, rules, or reporters based on the given type.
+ * Lists available generators, rules, or transports based on the given type.
  *
- * @param {'generators' | 'rules' | 'reporters'} type - The type of items to list.
+ * @param {'generators' | 'rules' | 'transports'} type - The type of items to list.
  */
 export default function list(type) {
+  const logger = Logger.init();
+
   const list =
     type === 'generators'
       ? Object.entries(publicGenerators).map(
@@ -21,7 +23,7 @@ export default function list(type) {
         )
       : type === 'rules'
         ? availableRules
-        : availableReporters;
+        : availableTransports;
 
-  console.log(list.join('\n'));
+  logger.info(list);
 }

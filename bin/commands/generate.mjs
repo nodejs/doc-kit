@@ -11,6 +11,7 @@ import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
 import createLinter from '../../src/linter/index.mjs';
 import { getEnabledRules } from '../../src/linter/utils/rules.mjs';
+import { Logger } from '../../src/logger/index.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
 import { loadAndParse } from '../utils.mjs';
 
@@ -131,6 +132,8 @@ export default {
    * @returns {Promise<void>}
    */
   async action(opts) {
+    const logger = Logger.init();
+
     const rules = getEnabledRules(opts.disableRule);
     const linter = opts.skipLint ? undefined : createLinter(rules);
 
@@ -139,7 +142,7 @@ export default {
     linter?.report();
 
     if (linter?.hasError()) {
-      console.error('Lint failed; aborting generation.');
+      logger.error('Lint failed; aborting generation.');
       process.exit(1);
     }
 
