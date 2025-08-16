@@ -34,6 +34,8 @@ jobs:
             input: './node/doc/api/*.md'
           - target: legacy-html
             input: './node/doc/api/*.md'
+          - target: web
+            input: './node/doc/api/*.md'
           - target: llms-txt
             input: './node/doc/api/*.md'
       fail-fast: false
