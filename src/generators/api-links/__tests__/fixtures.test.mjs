@@ -14,7 +14,7 @@ const sourceFiles = fixtures
 
 describe('api links', () => {
   describe('should work correctly for all fixtures', () => {
-    sourceFiles.forEach(sourceFile => {
+    for (const sourceFile of sourceFiles) {
       it(`${basename(sourceFile)}`, async t => {
         const astJsResult = await astJs.generate(undefined, {
           input: [sourceFile],
@@ -30,6 +30,6 @@ describe('api links', () => {
 
         t.assert.snapshot(actualOutput);
       });
-    });
+    }
   });
 });

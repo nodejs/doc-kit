@@ -55,7 +55,11 @@ export default {
       // `http.js` -> `http`
       const baseName = basename(program.path, '.js');
 
+      console.log(`Processing ${baseName}.js`);
+
       const exports = extractExports(program, baseName, nameToLineNumberMap);
+
+      console.log('Exports:', exports);
 
       findDefinitions(program, baseName, nameToLineNumberMap, exports);
 

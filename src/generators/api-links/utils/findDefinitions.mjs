@@ -5,7 +5,7 @@ import { visit } from 'estree-util-visit';
 /**
  * @see https://github.com/estree/estree/blob/master/es5.md#expressionstatement
  *
- * @param {import('acorn').ExpressionStatement} node
+ * @param {import('oxc-parser').ExpressionStatement} node
  * @param {Record<string, number>} nameToLineNumberMap
  * @param {import('../types').ProgramExports} exports
  */
@@ -86,7 +86,7 @@ function handleAssignmentExpression(node, nameToLineNumberMap, exports) {
 }
 
 /**
- * @param {import('acorn').FunctionDeclaration} node
+ * @param {import('oxc-parser').FunctionDeclaration} node
  * @param {string} basename
  * @param {Record<string, number>} nameToLineNumberMap
  * @param {import('../types').ProgramExports} exports
@@ -111,7 +111,7 @@ function handleFunctionDeclaration(
 }
 
 /**
- * @param {import('acorn').ClassDeclaration} node
+ * @param {import('oxc-parser').ClassDeclaration} node
  * @param {Record<string, number>} nameToLineNumberMap
  * @param {import('../types').ProgramExports} exports
  */
@@ -139,7 +139,7 @@ function handleClassDeclaration(node, nameToLineNumberMap, exports) {
 }
 
 /**
- * @param {import('acorn').Program} program
+ * @param {import('oxc-parser').Program} program
  * @param {string} basename
  * @param {Record<string, number>} nameToLineNumberMap
  * @param {import('../types').ProgramExports} exports
@@ -152,19 +152,19 @@ export function findDefinitions(
 ) {
   const TYPE_TO_HANDLER_MAP = {
     /**
-     * @param {import('acorn').Node} node
+     * @param {import('oxc-parser').Node} node
      */
     ExpressionStatement: node =>
       handleAssignmentExpression(node, nameToLineNumberMap, exports),
 
     /**
-     * @param {import('acorn').Node} node
+     * @param {import('oxc-parser').Node} node
      */
     FunctionDeclaration: node =>
       handleFunctionDeclaration(node, basename, nameToLineNumberMap, exports),
 
     /**
-     * @param {import('acorn').Node} node
+     * @param {import('oxc-parser').Node} node
      */
     ClassDeclaration: node =>
       handleClassDeclaration(node, nameToLineNumberMap, exports),
