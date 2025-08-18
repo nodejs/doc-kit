@@ -53,3 +53,5 @@ export const Logger = (() => {
     getInstance,
   };
 })();
+
+export default Logger.init();
