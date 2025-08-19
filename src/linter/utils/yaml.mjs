@@ -1,5 +1,3 @@
-// @ts-check
-
 'use strict';
 
 import { isScalar, isSeq, isNode } from 'yaml';
