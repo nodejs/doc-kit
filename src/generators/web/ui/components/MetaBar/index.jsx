@@ -19,7 +19,7 @@ const iconMap = {
  * @property {string} editThisPage - URL for editing the current page
  */
 
-const STABILITY_KINDS = ['error', 'warning', null, 'default'];
+const STABILITY_KINDS = ['error', 'warning', null, 'info'];
 const STABILITY_LABELS = ['D', 'E', null, 'L'];
 
 /**
