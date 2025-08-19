@@ -3,7 +3,10 @@
 import { u as createTree } from 'unist-builder';
 import { SKIP } from 'unist-util-visit';
 
-import { DOC_API_STABILITY_SECTION_REF_URL } from './constants.mjs';
+import {
+  DOC_API_STABILITY_SECTION_REF_URL,
+  VALID_JAVASCRIPT_PROPERTY,
+} from './constants.mjs';
 import {
   extractYamlContent,
   parseHeadingIntoMetadata,
@@ -278,15 +281,15 @@ createQueries.UNIST = {
     const [node, ...contentNodes] =
       list?.children?.[0]?.children?.[0]?.children ?? [];
 
-    // Exit if no content nodes
-    if (!node) {
+    const possibleProperty = node?.value?.trimStart();
+
+    // Exit if no content in node (or if no node exists)
+    if (!possibleProperty) {
       return false;
     }
 
     // Check for other starters
-    if (
-      node.value?.trimStart().match(createQueries.QUERIES.typedListStarters)
-    ) {
+    if (possibleProperty.match(createQueries.QUERIES.typedListStarters)) {
       return true;
     }
 
@@ -298,7 +301,8 @@ createQueries.UNIST = {
     // Check for inline code + space + type link pattern
     if (
       node.type === 'inlineCode' &&
-      contentNodes[0]?.value.trim() === '' &&
+      possibleProperty.match(VALID_JAVASCRIPT_PROPERTY) &&
+      contentNodes[0]?.value?.trim() === '' &&
       contentNodes[1]?.type === 'link' &&
       contentNodes[1]?.children?.[0]?.value?.[0] === '<'
     ) {
