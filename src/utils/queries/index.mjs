@@ -281,15 +281,15 @@ createQueries.UNIST = {
     const [node, ...contentNodes] =
       list?.children?.[0]?.children?.[0]?.children ?? [];
 
-    const possibleProperty = node?.value?.trimStart();
-
-    // Exit if no content in node (or if no node exists)
-    if (!possibleProperty) {
+    // Exit if no node
+    if (!node) {
       return false;
     }
 
+    const possibleProperty = node?.value?.trimStart();
+
     // Check for other starters
-    if (possibleProperty.match(createQueries.QUERIES.typedListStarters)) {
+    if (possibleProperty?.match(createQueries.QUERIES.typedListStarters)) {
       return true;
     }
 
@@ -301,7 +301,7 @@ createQueries.UNIST = {
     // Check for inline code + space + type link pattern
     if (
       node.type === 'inlineCode' &&
-      possibleProperty.match(VALID_JAVASCRIPT_PROPERTY) &&
+      possibleProperty?.match(VALID_JAVASCRIPT_PROPERTY) &&
       contentNodes[0]?.value?.trim() === '' &&
       contentNodes[1]?.type === 'link' &&
       contentNodes[1]?.children?.[0]?.value?.[0] === '<'
