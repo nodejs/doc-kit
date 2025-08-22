@@ -5,7 +5,6 @@ node bin/cli.mjs generate \
   -t web \
   -i "./node/doc/api/*.md" \
   -o "./out" \
-  --index "./node/doc/api/index.md" \
-  --skip-lint
+  --index "./node/doc/api/index.md"
 
 rm -rf node/

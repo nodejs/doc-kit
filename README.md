@@ -38,16 +38,14 @@ $ npx doc-kit --help
 ```
 Usage: @nodejs/doc-kit [options] [command]
 
-CLI tool to generate and lint Node.js API documentation
+CLI tool to generate the Node.js API documentation
 
 Options:
   -h, --help          display help for command
 
 Commands:
   generate [options]  Generate API docs
-  lint [options]      Run linter independently
   interactive         Launch guided CLI wizard
-  list <types>        List the given type
   help [command]      display help for command
 ```
 
@@ -67,23 +65,6 @@ Options:
   -c, --changelog <url>      Changelog URL or path (default: "https://raw.githubusercontent.com/nodejs/node/HEAD/CHANGELOG.md")
   --git-ref <url>            Git ref/commit URL (default: "https://github.com/nodejs/node/tree/HEAD")
   -t, --target [modes...]    Target generator modes (choices: "json-simple", "legacy-html", "legacy-html-all", "man-page", "legacy-json", "legacy-json-all", "addon-verify", "api-links", "orama-db", "llms-txt")
-  --no-lint                  Skip lint before generate
-  -h, --help                 display help for command
-```
-
-### `lint`
-
-```
-Usage: @nodejs/doc-kit lint [options]
-
-Run linter independently
-
-Options:
-  -i, --input <patterns...>  Input file patterns (glob)
-  --ignore [patterns...]     Ignore patterns (comma-separated)
-  --disable-rule [rules...]  Disable linter rules (choices: "duplicate-stability-nodes", "invalid-change-version", "missing-introduced-in")
-  --dry-run                  Dry run mode (default: false)
-  -r, --reporter <reporter>  Linter reporter to use
   -h, --help                 display help for command
 ```
 
@@ -93,20 +74,6 @@ Options:
 Usage: @nodejs/doc-kit interactive [options]
 
 Launch guided CLI wizard
-
-Options:
-  -h, --help  display help for command
-```
-
-### `list`
-
-```
-Usage: @nodejs/doc-kit list [options] <types>
-
-List the given type
-
-Arguments:
-  types       The type to list (choices: "generators", "rules", "reporters")
 
 Options:
   -h, --help  display help for command
