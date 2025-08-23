@@ -110,4 +110,114 @@ describe('createQueries', () => {
     };
     queries.addStabilityMetadata(node, apiEntryMetadata);
   });
+
+  describe('UNIST', () => {
+    describe('isTypedList', () => {
+      it('returns false for non-list nodes', () => {
+        strictEqual(
+          createQueries.UNIST.isTypedList({ type: 'paragraph', children: [] }),
+          false
+        );
+      });
+
+      it('returns false for empty lists', () => {
+        strictEqual(
+          createQueries.UNIST.isTypedList({ type: 'list', children: [] }),
+          false
+        );
+      });
+
+      const cases = [
+        {
+          name: 'typedListStarters pattern match',
+          node: {
+            type: 'list',
+            children: [
+              {
+                children: [
+                  {
+                    children: [{ type: 'text', value: 'Returns: foo' }],
+                  },
+                ],
+              },
+            ],
+          },
+          expected: true,
+        },
+        {
+          name: 'direct type link pattern',
+          node: {
+            type: 'list',
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        type: 'link',
+                        children: [{ type: 'inlineCode', value: '<Type>' }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          expected: true,
+        },
+        {
+          name: 'inlineCode + space + type link pattern',
+          node: {
+            type: 'list',
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      { type: 'inlineCode', value: 'foo' },
+                      { type: 'text', value: ' ' },
+                      {
+                        type: 'link',
+                        children: [{ type: 'text', value: '<Bar>' }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          expected: true,
+        },
+        {
+          name: 'non-matching content',
+          node: {
+            type: 'list',
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      { type: 'inlineCode', value: 'not a valid prop' },
+                      { type: 'text', value: ' ' },
+                      {
+                        type: 'link',
+                        children: [{ type: 'text', value: '<Bar>' }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          expected: false,
+        },
+      ];
+
+      cases.forEach(({ name, node, expected }) => {
+        it(`returns ${expected} for ${name}`, () => {
+          strictEqual(createQueries.UNIST.isTypedList(node), expected);
+        });
+      });
+    });
+  });
 });
