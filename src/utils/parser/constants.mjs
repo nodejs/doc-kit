@@ -100,6 +100,8 @@ export const DOC_TYPES_MAPPING_GLOBALS = {
       'AsyncGeneratorFunction',
       'AsyncIterator',
       'AsyncFunction',
+      'TypedArray',
+      'ErrorEvent',
     ].map(e => [e, e])
   ),
   'WebAssembly.Instance': 'WebAssembly/Instance',
