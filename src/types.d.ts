@@ -1,5 +1,5 @@
 import type { Heading, Root } from 'mdast';
-import type { Program } from 'acorn';
+import type { Program } from 'oxc-parser';
 import type { SemVer } from 'semver';
 import type { Data, Node, Parent, Position } from 'unist';
 

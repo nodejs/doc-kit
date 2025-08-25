@@ -1,7 +1,7 @@
 import { visit } from 'estree-util-visit';
 
 /**
- * @param {import('acorn').Program} program
+ * @param {import('oxc-parser').Program} program
  * @param {import('../types.d.ts').ProgramExports} exports
  * @param {Record<string, number>} nameToLineNumberMap
  */
