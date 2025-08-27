@@ -8,50 +8,20 @@ import { transports } from './transports/index.mjs';
  */
 
 /**
- * Singleton logger instance for consistent logging across the app.
+ * Creates a new logger instance with the specified transport.
+ *
+ * @param {string} [transportName='console'] - Name of the transport to use.
+ * @returns {LoggerInstance}
  */
-export const Logger = (() => {
-  /**
-   * @type {LoggerInstance}
-   */
-  let instance;
+export const Logger = (transportName = 'console') => {
+  const transport = transports[transportName];
 
-  /**
-   * Inits the logger with the specified transport.
-   *
-   * @param {string} [transportName]
-   * @returns {LoggerInstance}
-   */
-  function init(transportName = 'console') {
-    const transport = transports[transportName];
-
-    if (!transport) {
-      throw new Error(`Transport '${transportName}' not found.`);
-    }
-
-    instance = createLogger(transport);
-    return instance;
+  if (!transport) {
+    throw new Error(`Transport '${transportName}' not found.`);
   }
 
-  /**
-   * Returns the singleton logger instance.
-   *
-   * @returns {LoggerInstance}
-   */
-  function getInstance() {
-    if (!instance) {
-      throw new Error(
-        'Logger not initialized. Call Logger.init(transportName) first.'
-      );
-    }
+  return createLogger(transport);
+};
 
-    return instance;
-  }
-
-  return {
-    init,
-    getInstance,
-  };
-})();
-
-export default Logger.init();
+// Default logger instance using console transport
+export default Logger();
