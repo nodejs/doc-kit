@@ -14,7 +14,7 @@ updates:
       default-days: 3
     open-pull-requests-limit: 10
 
-  - package-ecosystem: 'npm'
+  - package-ecosystem: npm
     directory: '/'
     versioning-strategy: increase
     schedule:
