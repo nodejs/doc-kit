@@ -18,21 +18,9 @@ updates:
     directory: '/'
     versioning-strategy: increase
     schedule:
-      interval: daily
-    commit-message:
-      prefix: meta
-    allow:
-      - dependency-name: '@node-core/*'
-
-  - package-ecosystem: npm
-    directory: '/'
-    versioning-strategy: increase
-    schedule:
       interval: monthly
     commit-message:
       prefix: meta
-    ignore:
-      - dependency-name: '@node-core/*'
     cooldown:
       default-days: 3
     groups:
