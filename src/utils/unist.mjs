@@ -16,8 +16,14 @@ export const transformNodeToString = node => {
       return `**${transformNodesToString(node.children)}**`;
     case 'emphasis':
       return `_${transformNodesToString(node.children)}_`;
-    default:
-      return node.children ? transformNodesToString(node.children) : node.value;
+    default: {
+      if (node.children) {
+        return transformNodesToString(node.children);
+      }
+
+      // Replace line breaks (\n) with spaces to keep text in a single line
+      return node.value?.replace(/\n/g, ' ') || '';
+    }
   }
 };
 
