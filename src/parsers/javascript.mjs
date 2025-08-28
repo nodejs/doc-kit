@@ -1,6 +1,5 @@
 'use strict';
-
-import * as acorn from 'acorn';
+import { parseAsync } from 'oxc-parser';
 
 /**
  * Creates a Javascript source parser for a given source file
@@ -23,14 +22,27 @@ const createParser = () => {
       );
     }
 
-    const res = acorn.parse(resolvedSourceFile.value, {
-      allowReturnOutsideFunction: true,
-      ecmaVersion: 'latest',
-      locations: true,
-    });
+    const res = await parseAsync(
+      resolvedSourceFile.path,
+      resolvedSourceFile.value,
+      {
+        range: false,
+        lang: 'js',
+        astType: 'js',
+        sourceType: 'script',
+      }
+    );
+
+    if (res.errors.length > 0) {
+      for (const error of res.errors) {
+        console.error(
+          `Error parsing ${resolvedSourceFile.path}: ${error.message}`
+        );
+      }
+    }
 
     return {
-      ...res,
+      ...res.program,
       path: resolvedSourceFile.path,
     };
   };

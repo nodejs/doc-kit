@@ -56,7 +56,7 @@ updates:
           - 'hast-*'
           - 'mdast-*'
           - 'hastscript'
-          - 'acorn'
+          - 'oxc-parser'
       recma:
         patterns:
           - 'recma-*'

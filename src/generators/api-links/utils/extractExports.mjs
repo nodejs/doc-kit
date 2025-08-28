@@ -7,7 +7,7 @@ import { CONSTRUCTOR_EXPRESSION } from '../constants.mjs';
 /**
  * @see https://github.com/estree/estree/blob/master/es5.md#assignmentexpression
  *
- * @param {import('acorn').ExpressionStatement} node
+ * @param {import('oxc-parser').ExpressionStatement} node
  * @param {string} basename
  * @param {Record<string, number>} nameToLineNumberMap
  * @returns {import('../types').ProgramExports | undefined}
@@ -229,13 +229,13 @@ export function extractExports(program, basename, nameToLineNumberMap) {
 
   const TYPE_TO_HANDLER_MAP = {
     /**
-     * @param {import('acorn').Node} node
+     * @param {import('oxc-parser').Node} node
      */
     ExpressionStatement: node =>
       handleExpression(node, basename, nameToLineNumberMap),
 
     /**
-     * @param {import('acorn').Node} node
+     * @param {import('oxc-parser').Node} node
      */
     VariableDeclaration: node =>
       handleVariableDeclaration(node, basename, nameToLineNumberMap),
