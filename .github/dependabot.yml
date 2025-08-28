@@ -13,6 +13,7 @@ updates:
     cooldown:
       default-days: 3
     open-pull-requests-limit: 10
+
   - package-ecosystem: npm
     directory: '/'
     versioning-strategy: increase
@@ -20,8 +21,6 @@ updates:
       interval: monthly
     commit-message:
       prefix: meta
-    ignore:
-      - dependency-name: '@node-core/*'
     cooldown:
       default-days: 3
     groups:
