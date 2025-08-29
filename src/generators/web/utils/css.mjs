@@ -90,7 +90,9 @@ export default () => {
      */
     buildEnd() {
       // If no CSS chunks were processed, skip emitting
-      if (cssChunks.size === 0) return;
+      if (cssChunks.size === 0) {
+        return;
+      }
 
       // Concatenate all collected CSS strings and emit as a build asset
       this.emitFile({

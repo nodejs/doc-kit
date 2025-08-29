@@ -86,7 +86,9 @@ export default class WorkerPool {
   processQueue(threads) {
     if (this.queue.length > 0 && this.getActiveThreadCount() < threads) {
       const next = this.queue.shift();
-      if (next) next();
+      if (next) {
+        next();
+      }
     }
   }
 }
