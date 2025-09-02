@@ -49,7 +49,7 @@
     "acorn": "^8.15.0",
     "commander": "^14.0.0",
     "dedent": "^1.6.0",
-    "eslint-plugin-react-x": "^1.52.6",
+    "eslint-plugin-react-x": "^1.52.8",
     "estree-util-to-js": "^2.0.0",
     "estree-util-visit": "^2.0.0",
     "github-slugger": "^2.0.0",
