@@ -50,6 +50,7 @@ export default defineConfig([
       ],
       // We use [] as default props.
       'react-x/no-unstable-default-props': 'off',
+      curly: ['error', 'all'],
     },
   },
   {
