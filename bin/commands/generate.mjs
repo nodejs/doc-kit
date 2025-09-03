@@ -9,16 +9,20 @@ import {
 } from '../../src/constants.mjs';
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
+import logger from '../../src/logger/index.mjs';
+import transports from '../../src/logger/transports.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
 import { loadAndParse } from '../utils.mjs';
 
 const availableGenerators = Object.keys(publicGenerators);
+const availableTransports = Object.keys(transports);
 
 /**
  * @typedef {Object} Options
  * @property {Array<string>|string} input - Specifies the glob/path for input files.
  * @property {Array<string>|string} [ignore] - Specifies the glob/path for ignoring files.
  * @property {Array<keyof publicGenerators>} target - Specifies the generator target mode.
+ * @property {keyof availableTransports} transport - Specified the logging transport.
  * @property {string} version - Specifies the target Node.js version.
  * @property {string} changelog - Specifies the path to the Node.js CHANGELOG.md file.
  * @property {string} [gitRef] - Git ref/commit URL.
@@ -104,6 +108,15 @@ export default {
         })),
       },
     },
+    transport: {
+      flags: ['--transport [transport]'],
+      desc: 'Transport for logging',
+      prompt: {
+        type: 'multiselect',
+        options: availableTransports.map(t => ({ value: t, label: t })),
+        initialValue: 'pretty',
+      },
+    },
     index: {
       flags: ['--index <path>'],
       desc: 'The index document, for getting the titles of various API docs',
@@ -119,6 +132,8 @@ export default {
    * @returns {Promise<void>}
    */
   async action(opts) {
+    logger.add(transports[opts.transport]());
+
     const docs = await loadAndParse(opts.input, opts.ignore);
     const releases = await parseChangelog(opts.changelog);
     const index = opts.index && (await parseIndex(opts.index));
