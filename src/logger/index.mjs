@@ -1,27 +1,7 @@
-'use strict';
+import { isMainThread } from 'node:worker_threads';
 
-import { createLogger } from './logger.mjs';
-import { transports } from './transports/index.mjs';
+import ChildLogger from './child.mjs';
+import ParentLogger from './parent.mjs';
 
-/**
- * @typedef {ReturnType<typeof createLogger>} LoggerInstance
- */
-
-/**
- * Creates a new logger instance with the specified transport.
- *
- * @param {string} [transportName='console'] - Name of the transport to use.
- * @returns {LoggerInstance}
- */
-export const Logger = (transportName = 'console') => {
-  const transport = transports[transportName];
-
-  if (!transport) {
-    throw new Error(`Transport '${transportName}' not found.`);
-  }
-
-  return createLogger(transport);
-};
-
-// Default logger instance using console transport
-export default Logger();
+/** @type {import('winston').Logger} */
+export default isMainThread ? ParentLogger : ChildLogger;

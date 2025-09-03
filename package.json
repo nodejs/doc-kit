@@ -81,6 +81,8 @@
     "unist-util-select": "^5.1.0",
     "unist-util-visit": "^5.0.0",
     "vfile": "^6.0.3",
+    "winston": "^3.17.0",
+    "winston-console-format": "^1.0.8",
     "yaml": "^2.8.1"
   }
 }

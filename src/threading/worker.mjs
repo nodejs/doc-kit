@@ -8,5 +8,5 @@ const generator = allGenerators[name];
 // Execute the generator and send the result or error back to the parent thread
 generator
   .generate(dependencyOutput, extra)
-  .then(result => parentPort.postMessage(result))
-  .catch(error => parentPort.postMessage({ error }));
+  .then(value => parentPort.postMessage({ type: 'response', value }))
+  .catch(error => parentPort.postMessage({ type: 'response', error }));

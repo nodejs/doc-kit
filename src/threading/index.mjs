@@ -1,5 +1,7 @@
 import { Worker } from 'node:worker_threads';
 
+import logger from '../logger/index.mjs';
+
 /**
  * WorkerPool class to manage a pool of worker threads
  */
@@ -49,14 +51,22 @@ export default class WorkerPool {
         });
 
         // Handle worker thread messages (result or error)
-        worker.on('message', result => {
-          this.changeActiveThreadCount(-1);
-          this.processQueue(threads);
+        worker.on('message', message => {
+          switch (message.type) {
+            case 'response':
+              this.changeActiveThreadCount(-1);
+              this.processQueue(threads);
 
-          if (result?.error) {
-            reject(result.error);
-          } else {
-            resolve(result);
+              if (message?.error) {
+                reject(message.error);
+              } else {
+                resolve(message.value);
+              }
+              break;
+
+            case 'log':
+              logger[message.method](...message.args, { label: name });
+              break;
           }
         });
 
