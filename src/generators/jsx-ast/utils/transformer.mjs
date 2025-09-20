@@ -1,3 +1,4 @@
+import { toString } from 'hast-util-to-string';
 import { visit } from 'unist-util-visit';
 
 import { TAG_TRANSFORMS } from '../constants.mjs';
@@ -11,14 +12,32 @@ const transformer = tree => {
   visit(tree, 'element', (node, index, parent) => {
     node.tagName = TAG_TRANSFORMS[node.tagName] || node.tagName;
 
-    // Wrap <table> in a <div class="table-container">
-    if (node.tagName === 'table' && parent && typeof index === 'number') {
-      parent.children[index] = {
-        type: 'element',
-        tagName: 'div',
-        properties: { className: ['overflow-container'] },
-        children: [node],
-      };
+    // Wrap <table> in a <div class="table-container">, and apply responsive
+    // data attributes
+    if (node.tagName === 'table') {
+      if (parent) {
+        parent.children[index] = {
+          type: 'element',
+          tagName: 'div',
+          properties: { className: ['overflow-container'] },
+          children: [node],
+        };
+      }
+
+      // Not every table will have a header, so only do this on tables
+      // with them.
+      const thead = node.children.find(el => el.tagName === 'thead');
+
+      if (thead) {
+        const headers = thead.children[0].children.map(toString);
+        const tbody = node.children.find(el => el.tagName === 'tbody');
+
+        visit(
+          tbody,
+          node => node.tagName === 'td',
+          (node, index) => (node.properties['data-label'] = headers[index])
+        );
+      }
     }
   });
 
