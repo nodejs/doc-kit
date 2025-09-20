@@ -13,7 +13,7 @@ import {
 } from '@clack/prompts';
 
 import commands from './index.mjs';
-import { Logger } from '../../src/logger/index.mjs';
+import logger from '../../src/logger/index.mjs';
 
 /**
  * Validates that a string is not empty.
@@ -166,7 +166,7 @@ export default async function interactive() {
 
   const finalCommand = cmdParts.join(' ');
 
-  Logger.getInstance().info(`\nGenerated command:\n${finalCommand}\n`);
+  logger.info(`\nGenerated command:\n${finalCommand}\n`);
 
   // Step 5: Confirm and execute the generated command
   if (await confirm({ message: 'Run now?', initialValue: true })) {
