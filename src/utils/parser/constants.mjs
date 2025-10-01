@@ -39,33 +39,27 @@ const PROPERTY = `${CAMEL_CASE}(?:(\\[${CAMEL_CASE}\\])|\\.(\\w+))`;
 export const DOC_API_HEADING_TYPES = [
   {
     type: 'method',
-    regex: new RegExp(`^\`?${PROPERTY}${FUNCTION_CALL}\`?$`, 'i'),
+    regex: new RegExp(`^\`${PROPERTY}${FUNCTION_CALL}\`$`, 'i'),
   },
-  { type: 'event', regex: /^Event: +`?['"]?([^'"]+)['"]?`?$/i },
+  { type: 'event', regex: /^Event: +`'?([^']+)'`?$/i },
   {
     type: 'class',
     regex: new RegExp(
-      `Class: +\`?(${CAMEL_CASE}(?: extends +${CAMEL_CASE})?)\`?$`,
+      `^Class: +\`(${CAMEL_CASE}(?: extends +${CAMEL_CASE})?)\`$`,
       'i'
     ),
   },
   {
     type: 'ctor',
-    regex: new RegExp(
-      `^(?:Constructor: +)?\`?new +(${CAMEL_CASE})${FUNCTION_CALL}\`?$`,
-      'i'
-    ),
+    regex: new RegExp(`^\`new +(${CAMEL_CASE})${FUNCTION_CALL}\`$`, 'i'),
   },
   {
     type: 'classMethod',
-    regex: new RegExp(
-      `^Static method: +\`?${PROPERTY}${FUNCTION_CALL}\`?$`,
-      'i'
-    ),
+    regex: new RegExp(`^Static method: +\`${PROPERTY}${FUNCTION_CALL}\`$`, 'i'),
   },
   {
     type: 'property',
-    regex: new RegExp(`^(?:Class property: +)?\`?${PROPERTY}\`?$`, 'i'),
+    regex: new RegExp(`^\`${PROPERTY}\`$`, 'i'),
   },
 ];
 
