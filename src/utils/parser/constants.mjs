@@ -41,7 +41,7 @@ export const DOC_API_HEADING_TYPES = [
     type: 'method',
     regex: new RegExp(`^\`${PROPERTY}${FUNCTION_CALL}\`$`, 'i'),
   },
-  { type: 'event', regex: /^Event: +`'?([^']+)'`?$/i },
+  { type: 'event', regex: /^Event: +`'?([^']+)'`$/i },
   {
     type: 'class',
     regex: new RegExp(
