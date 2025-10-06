@@ -1,0 +1,119 @@
+{
+  "$schema": "./parsed-schema.json",
+  "source": "doc/api/buffer.md",
+  "type": "module",
+  "@name": "Buffer",
+  "description": "`Buffer` objects are used to represent a fixed-length sequence of bytes. Many Node.js APIs support `Buffer`s.\nThe `Buffer` class is a subclass of JavaScript's {Uint8Array} class and extends it with methods that cover additional use cases. Node.js APIs accept plain {Uint8Array}s wherever `Buffer`s are supported as well.\n\nWhile the `Buffer` class is available within the global scope, it is still\nrecommended to explicitly reference it via an import or require statement.",
+  "@see": "https://nodejs.org/api/buffer.html",
+  "@module": "node:buffer",
+  "@since": ["v24.0.0"],
+  "classes": [
+    {
+      "type": "class",
+      "@name": "SlowBuffer",
+      "description": "bla bla bla"
+    }
+  ],
+  "methods": [
+    {
+      "type": "method",
+      "@name": "isAscii",
+      "signatures": [
+        {
+          "parameters": [
+            {
+              "@name": "",
+              "@default": "foo",
+              "@type": "string",
+              "description": ""
+            }
+          ],
+          "@returns": "boolean"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "type": "property",
+      "@type": "number",
+      "@name": "INSPECT_MAX_BYTES",
+      "mutable": true
+    }
+  ],
+  "globals": [
+    {
+      "type": "class",
+      "@name": "Buffer",
+      "description": "The `Buffer` class is a global type for dealing with binary data directly. It can be constructed in a variety of ways.",
+      "staticMethods": [
+        {
+          "type": "method",
+          "@name": "alloc",
+          "description": "Allocates a new Buffer of size bytes. If fill is undefined, the Buffer will be zero-filled.\nIf `size` is larger than `buffer.constats.MAX_LENGTH` OR SMALLER THAN 0, `ERR_OUT_OF_RANGE` is thrown.\nIf `fill` is specified, the allocated `Buffer` will be initialized by calling `buf.fill(fill)`.\nIf both fill and encoding are specified, the allocated Buffer will be initialized by calling buf.fill(fill, encoding).\nCalling Buffer.alloc() can be measurably slower than the alternative Buffer.allocUnsafe() but ensures that the newly created Buffer instance contents will never contain sensitive data from previous allocations, including data that might not have been allocated for Buffers.\nA TypeError will be thrown if size is not a number.",
+          "@example": [
+            "import { Buffer } from 'node:buffer'\n\nconst buf = Buffer.alloc(5);\n\nconsole.log(buf);\n// Prints: <Buffer 00 00 00 00 00>",
+            "import { Buffer } from 'node:buffer;\n\nconst buf = Buffer.alloc(5, 'a');\n\nconsole.log(buf);\n// Prints: <Buffer 61 61 61 61 61>"
+          ],
+          "changes": [
+            {
+              "version": ["v20.0.0"],
+              "description": "blablabla",
+              "prUrl": "asdf1234"
+            },
+            {
+              "version": ["v15.0.0"],
+              "description": "blablabla",
+              "prUrl": "asdf1234"
+            }
+          ],
+          "signatures": [
+            {
+              "parameters": [
+                {
+                  "@name": "size",
+                  "@type": "number"
+                },
+                {
+                  "@name": "fill",
+                  "@type": ["string", "Buffer", "Uint8Array", "number"],
+                  "@default": "0"
+                },
+                {
+                  "@name": "encoding",
+                  "@type": "string",
+                  "@default": "utf8"
+                }
+              ],
+              "@returns": "Buffer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "method",
+      "@name": "atob",
+      "@example": "import { atob } from 'node:buffer';\n\natob('asdf');",
+      "@since": ["v15.13.0", "v14.17.0"],
+      "@deprecated": ["v24.0.0"],
+      "description": "Global alias for {@link Buffer.atob}.",
+      "stability": {
+        "value": 3,
+        "text": "Legacy. Use `Buffer.from(data, 'base64')` instead."
+      },
+      "signatures": [
+        {
+          "parameters": [
+            {
+              "@name": "data",
+              "@type": "any",
+              "description": "An ASCII (Latin1) string."
+            }
+          ],
+          "@returns": "string"
+        }
+      ]
+    }
+  ]
+}
