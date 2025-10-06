@@ -36,7 +36,9 @@
     "eslint-plugin-react-x": "^2.4.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "prettier": "3.7.4"
+    "prettier": "3.7.4",
+    "json-schema-to-typescript": "^15.0.4",
+    "jsonschema": "^1.5.0"
   },
   "dependencies": {
     "@actions/core": "^2.0.1",
@@ -57,6 +59,7 @@
     "globals": "^16.5.0",
     "hast-util-to-string": "^3.0.1",
     "hastscript": "^9.0.1",
+    "jsonc-parser": "^3.3.1",
     "lightningcss": "^1.30.2",
     "mdast-util-slice-markdown": "^2.0.1",
     "piscina": "^5.1.4",
