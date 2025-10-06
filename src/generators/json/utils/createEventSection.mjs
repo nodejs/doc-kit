@@ -49,8 +49,7 @@ export const createEventSectionBuilder = () => {
           // First format
           if (parameterAst.children.length < 2) {
             throw new GeneratorError(
-              `expected min 2 children, got ${parameterAst.children.length}`,
-              { entry }
+              `expected min 2 children, got ${parameterAst.children.length}`
             );
           }
 
@@ -59,8 +58,7 @@ export const createEventSectionBuilder = () => {
 
           if (delimiter.type !== 'text') {
             throw new GeneratorError(
-              `expected delimiter child type in list node to be 'text', got ${delimiter.type} (@name=${parameter['@name']})`,
-              { entry }
+              `expected delimiter child type in list node to be 'text', got ${delimiter.type} (@name=${parameter['@name']})`
             );
           }
 
@@ -87,8 +85,7 @@ export const createEventSectionBuilder = () => {
             );
             if (value === null) {
               throw new GeneratorError(
-                `failed extracting type & description from '${delimiter.value}'`,
-                { entry }
+                `failed extracting type & description from '${delimiter.value}'`
               );
             }
 
@@ -125,15 +122,13 @@ export const createEventSectionBuilder = () => {
             const node = parameterAst.children[i];
             if (node.type !== 'link') {
               throw new GeneratorError(
-                `expected type 'link', got ${node.type}`,
-                { entry }
+                `expected type 'link', got ${node.type}`
               );
             }
 
             if (node.children[0].type !== 'inlineCode') {
               throw new GeneratorError(
-                `expected type 'inlineCode', got ${node.children[0].type}`,
-                { entry }
+                `expected type 'inlineCode', got ${node.children[0].type}`
               );
             }
 

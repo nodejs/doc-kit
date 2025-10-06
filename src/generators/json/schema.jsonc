@@ -232,22 +232,9 @@
         //   "$ref": "https://json-schema.org/draft-07/schema#",
         // },
         "@returns": {
-          "description": "The method signature's return type.",
-          "oneOf": [
-            {
-              "type": "string",
-              "examples": ["string"],
-            },
-            {
-              "type": "array",
-              "items": { "type": "string" },
-              "examples": [["string", "Promise<string>"]],
-              "minItems": 1,
-            },
-          ],
+          "$ref": "#/definitions/MethodReturnType",
         },
       },
-      "required": [],
     },
 
     "MethodParameter": {
@@ -283,6 +270,32 @@
         },
       },
       "required": ["@name", "@type"],
+    },
+
+    "MethodReturnType": {
+      "type": "object",
+      "description": "A method signature's return type.",
+      "properties": {
+        "description": {
+          "type": "string",
+        },
+        "@type": {
+          "description": "The method signature's return type.",
+          "oneOf": [
+            {
+              "type": "string",
+              "examples": ["string"],
+            },
+            {
+              "type": "array",
+              "items": { "type": "string" },
+              "examples": [["string", "Promise<string>"]],
+              "minItems": 1,
+            },
+          ],
+        },
+      },
+      "required": ["@type"],
     },
 
     "Global": {

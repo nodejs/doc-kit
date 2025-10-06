@@ -1,5 +1,7 @@
 'use strict';
 
+import { GeneratorError } from '../../../utils/generator-error.mjs';
+
 /**
  * Turn contents of a node into a string
  * @param {import('mdast').PhrasingContent} node
@@ -30,7 +32,7 @@ export function stringifyNode(node) {
     case 'footnoteReference':
       break;
     default:
-      throw new TypeError(`Unsupported node type: ${node.type}`);
+      throw new GeneratorError(`Unsupported node type: ${node.type}`);
   }
 
   return value;
