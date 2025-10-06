@@ -51,7 +51,7 @@ export const createSectionBaseBuilder = () => {
   /**
    * Adds a description to the section base.
    * @param {import('../generated.d.ts').SectionBase} section
-   * @param {Array} nodes
+   * @param {Array<import('mdast').RootContent>} nodes
    */
   const addDescriptionAndExamples = (section, nodes) => {
     nodes.forEach(node => {

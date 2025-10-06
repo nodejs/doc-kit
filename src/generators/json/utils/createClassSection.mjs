@@ -1,4 +1,3 @@
-// @ts-check
 'use strict';
 
 import { GeneratorError } from '../../../utils/generator-error.mjs';

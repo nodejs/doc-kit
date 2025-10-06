@@ -163,10 +163,7 @@ export interface Change {
 }
 export interface MethodSignature {
   parameters?: MethodParameter[];
-  /**
-   * The method signature's return type.
-   */
-  '@returns'?: string | [string, ...string[]];
+  '@returns'?: MethodReturnType;
   [k: string]: unknown;
 }
 export interface MethodParameter {
@@ -183,5 +180,16 @@ export interface MethodParameter {
    * The parameter's default value
    */
   '@default'?: string;
+  [k: string]: unknown;
+}
+/**
+ * A method signature's return type.
+ */
+export interface MethodReturnType {
+  description?: string;
+  /**
+   * The method signature's return type.
+   */
+  '@type': string | [string, ...string[]];
   [k: string]: unknown;
 }

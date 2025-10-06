@@ -50,39 +50,46 @@ export const createSectionBuilder = () => {
     /**
      * @type {import('../types.d.ts').Section}
      */
-    const section = createSectionBase(entry, parent?.type);
+    let section;
+    try {
+      section = createSectionBase(entry, parent?.type);
 
-    // Temporarily add the parent section to the section so we have access to
-    //  it and can easily traverse through them when we need to
-    section.parent = parent;
+      // Temporarily add the parent section to the section so we have access to
+      //  it and can easily traverse through them when we need to
+      section.parent = parent;
 
-    switch (section.type) {
-      case 'module':
-        createModuleSection(entry, section);
-        break;
-      case 'class':
-        createClassSection(entry, section);
-        break;
-      case 'method':
-        // createMethodSection(entry, section);
-        break;
-      case 'property':
-        createPropertySection(entry, section);
-        break;
-      case 'event':
-        createEventSection(entry, section);
-        break;
-      case 'text':
-        if (parent) {
-          parent.text ??= [];
-          parent.text.push(section);
-        }
+      switch (section.type) {
+        case 'module':
+          createModuleSection(entry, section);
+          break;
+        case 'class':
+          createClassSection(entry, section);
+          break;
+        case 'method':
+          createMethodSection(entry, section);
+          break;
+        case 'property':
+          createPropertySection(entry, section);
+          break;
+        case 'event':
+          createEventSection(entry, section);
+          break;
+        case 'text':
+          if (parent) {
+            parent.text ??= [];
+            parent.text.push(section);
+          }
 
-        break;
-      default:
-        throw new GeneratorError(`unhandled section type ${section.type}`, {
-          entry,
-        });
+          break;
+        default:
+          throw new GeneratorError(`unhandled section type ${section.type}`);
+      }
+    } catch (err) {
+      if (err instanceof GeneratorError) {
+        err.entry ??= entry;
+      }
+
+      throw err;
     }
 
     handleChildren(entry, section);
