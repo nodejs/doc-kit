@@ -8,7 +8,7 @@ export interface HierarchizedEntry extends ApiDocMetadataEntry {
   /**
    * List of child entries that are part of this entry's hierarchy.
    */
-  hierarchyChildren: ApiDocMetadataEntry[];
+  hierarchyChildren: HierarchizedEntry[];
 }
 
 /**
