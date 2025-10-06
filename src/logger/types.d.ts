@@ -14,6 +14,8 @@ export interface File {
 
 interface Metadata {
   file?: File;
+  // Stack trace if the message is an error
+  stack?: string;
 }
 
 interface TransportContext {

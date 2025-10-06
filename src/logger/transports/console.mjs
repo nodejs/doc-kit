@@ -10,7 +10,7 @@ import { prettifyTimestamp } from '../utils/time.mjs';
  * @returns {void}
  */
 const console = ({ level, message, timestamp, metadata = {}, module }) => {
-  const { file } = metadata;
+  const { file, stack } = metadata;
 
   const time = prettifyTimestamp(timestamp);
 
@@ -37,6 +37,10 @@ const console = ({ level, message, timestamp, metadata = {}, module }) => {
   }
 
   process.stdout.write('\n');
+
+  if (stack) {
+    process.stdout.write(stack);
+  }
 };
 
 export default console;
