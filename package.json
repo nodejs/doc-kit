@@ -15,7 +15,7 @@
     "test:ci": "c8 --reporter=lcov node --test --experimental-test-module-mocks --test-reporter=@reporters/github --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml --test-reporter=spec --test-reporter-destination=stdout",
     "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots",
     "test:watch": "node --test --experimental-test-module-mocks --watch",
-    "prepare": "husky",
+    "prepare": "husky || exit 0",
     "run": "node bin/cli.mjs",
     "watch": "node --watch bin/cli.mjs"
   },
