@@ -203,7 +203,8 @@ describe('createLogger', () => {
 
     const logger = createLogger(transport, LogLevel.error);
 
-    logger.error(new Error('Hello, World!'));
+    const error = new Error('Hello, World!');
+    logger.error(error);
 
     strictEqual(transport.mock.callCount(), 1);
 
@@ -212,7 +213,9 @@ describe('createLogger', () => {
       {
         level: LogLevel.error,
         message: 'Hello, World!',
-        metadata: {},
+        metadata: {
+          stack: error.stack,
+        },
         module: undefined,
         timestamp: 0,
       },
