@@ -40,7 +40,13 @@ export const createLogger = (
     const timestamp = Date.now();
 
     // Extract message string from Error object or use message as-is
-    const msg = message instanceof Error ? message.message : message;
+    let msg;
+    if (message instanceof Error) {
+      msg = message.message;
+      metadata.stack = message.stack;
+    } else {
+      msg = message;
+    }
 
     transport({
       level,
