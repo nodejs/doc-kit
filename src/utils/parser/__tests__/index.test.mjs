@@ -29,6 +29,15 @@ describe('transformTypeToReferenceLink', () => {
       '[`<prefix.Type>`](prefix.html#class-prefixtype)'
     );
   });
+
+  it('should accept a type map', () => {
+    strictEqual(
+      transformTypeToReferenceLink('SomeOtherType', {
+        SomeOtherType: 'fromTypeMap',
+      }),
+      '[`<SomeOtherType>`](fromTypeMap)'
+    );
+  });
 });
 
 describe('normalizeYamlSyntax', () => {

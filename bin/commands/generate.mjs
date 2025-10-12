@@ -10,6 +10,7 @@ import {
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
+import { loadFromURL } from '../../src/utils/parser.mjs';
 import { loadAndParse } from '../utils.mjs';
 
 const availableGenerators = Object.keys(publicGenerators);
@@ -21,6 +22,7 @@ const availableGenerators = Object.keys(publicGenerators);
  * @property {Array<keyof publicGenerators>} target - Specifies the generator target mode.
  * @property {string} version - Specifies the target Node.js version.
  * @property {string} changelog - Specifies the path to the Node.js CHANGELOG.md file.
+ * @property {string} typeMap - Specifies the path to the Node.js Type Map.
  * @property {string} [gitRef] - Git ref/commit URL.
  * @property {number} [threads] - Number of threads to allow.
  */
@@ -112,6 +114,14 @@ export default {
         type: 'text',
       },
     },
+    typeMap: {
+      flags: ['--type-map <path>'],
+      desc: 'The mapping of types to links',
+      prompt: {
+        message: 'Path to doc/api/type_map.json',
+        type: 'text',
+      },
+    },
   },
   /**
    * Handles the action for generating API docs
@@ -121,6 +131,11 @@ export default {
   async action(opts) {
     const docs = await loadAndParse(opts.input, opts.ignore);
     const releases = await parseChangelog(opts.changelog);
+
+    const typeMap = opts.typeMap
+      ? JSON.parse(await loadFromURL(opts.typeMap))
+      : undefined;
+
     const index = opts.index && (await parseIndex(opts.index));
 
     const { runGenerators } = createGenerator(docs);
@@ -134,6 +149,7 @@ export default {
       gitRef: opts.gitRef,
       threads: parseInt(opts.threads, 10),
       index,
+      typeMap,
     });
   },
 };
