@@ -100,7 +100,7 @@ npx doc-kit generate \
 
 ### Redesigned
 
-To generate [our redesigned documentation pages](https://nodejs-api-doc-tooling.vercel.app), use the `web` and `orama-db` (for search) generators.
+To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling.vercel.app), use the `web` and `orama-db` (for search) generators.
 
 ```sh
 npx doc-kit generate \
