@@ -3,7 +3,7 @@
 import { pointEnd, pointStart } from 'unist-util-position';
 
 /**
- * Escapes HTML entiries ("<" and ">") in a string
+ * Escapes HTML entities ("<" and ">") in a string
  * @param {string} string The string
  */
 const escapeHTMLEntities = string =>
