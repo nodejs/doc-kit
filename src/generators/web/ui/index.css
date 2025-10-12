@@ -22,7 +22,6 @@ main {
   }
 
   table {
-
     /* In tables, don't pad `a` elements */
     a {
       padding-right: unset;
