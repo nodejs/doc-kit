@@ -120,7 +120,7 @@ const createQueries = () => {
    * Parses a Stability Index Entry and updates the current Metadata
    *
    * @param {import('@types/mdast').Blockquote} node Thead Link Reference Node
-   * @param {ReturnType<import('../../metadata.mjs').default>} apiEntryMetadata The API entry Metadata
+   * @param {ReturnType<import('../../metadata.mjs').default>} [apiEntryMetadata] The API entry Metadata
    */
   const addStabilityMetadata = (node, apiEntryMetadata) => {
     // `node` is a `blockquote` node, and the first child will always be
@@ -151,7 +151,7 @@ const createQueries = () => {
       );
 
       // Adds the Stability Index metadata to the current Metadata entry
-      apiEntryMetadata.addStability(stabilityIndexNode);
+      apiEntryMetadata?.addStability(stabilityIndexNode);
     }
 
     return [SKIP];
