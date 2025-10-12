@@ -22,6 +22,7 @@ main {
   }
 
   table {
+
     /* In tables, don't pad `a` elements */
     a {
       padding-right: unset;
@@ -33,6 +34,18 @@ main {
     display: flex;
     align-items: center;
     gap: 8px;
+
+    >h1,
+    >h2,
+    >h3,
+    >h4,
+    >h5,
+    >h6 {
+      flex: 1;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
 
     .change-history {
       margin-left: auto;
@@ -47,6 +60,7 @@ main {
   }
 
   .signature {
+
     /* Signature styling - remove line numbers and padding */
     .line {
       padding-left: unset !important;

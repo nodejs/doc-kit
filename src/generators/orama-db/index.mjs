@@ -77,7 +77,9 @@ export default {
 
         return {
           title: hierarchicalTitle,
-          description: paragraph ? transformNodeToString(paragraph) : undefined,
+          description: paragraph
+            ? transformNodeToString(paragraph, true)
+            : undefined,
           path: `${entry.api}.html#${entry.slug}`,
         };
       })

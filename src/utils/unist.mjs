@@ -3,26 +3,36 @@
 import { pointEnd, pointStart } from 'unist-util-position';
 
 /**
+ * Escapes HTML entiries ("<" and ">") in a string
+ * @param {string} string The string
+ */
+const escapeHTMLEntities = string =>
+  string.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
  * Extracts text content from a node recursively
  *
  * @param {import('unist').Node} node The Node to be transformed into a string
+ * @param {boolean} [escape] Escape HTML entities ("<", ">")?
  * @returns {string} The transformed Node as a string
  */
-export const transformNodeToString = node => {
+export const transformNodeToString = (node, escape) => {
   switch (node.type) {
     case 'inlineCode':
-      return `\`${node.value}\``;
+      return `\`${escape ? escapeHTMLEntities(node.value) : node.value}\``;
     case 'strong':
-      return `**${transformNodesToString(node.children)}**`;
+      return `**${transformNodesToString(node.children, escape)}**`;
     case 'emphasis':
-      return `_${transformNodesToString(node.children)}_`;
+      return `_${transformNodesToString(node.children, escape)}_`;
     default: {
       if (node.children) {
-        return transformNodesToString(node.children);
+        return transformNodesToString(node.children, escape);
       }
 
+      const string = node.value?.replace(/\n/g, ' ') || '';
+
       // Replace line breaks (\n) with spaces to keep text in a single line
-      return node.value?.replace(/\n/g, ' ') || '';
+      return escape ? escapeHTMLEntities(string) : string;
     }
   }
 };
@@ -32,10 +42,11 @@ export const transformNodeToString = node => {
  * and transfor them back to what their source would look like
  *
  * @param {Array<import('unist').Parent & import('unist').Literal>} nodes Nodes to parsed and joined
+ * @param {boolean} [escape] Escape HTML entities ("<", ">")?
  * @returns {string} The parsed and joined nodes as a string
  */
-export const transformNodesToString = nodes => {
-  const mappedChildren = nodes.map(node => transformNodeToString(node));
+export const transformNodesToString = (nodes, escape) => {
+  const mappedChildren = nodes.map(node => transformNodeToString(node, escape));
 
   return mappedChildren.join('');
 };
