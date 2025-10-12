@@ -16,11 +16,11 @@
   <a title="MIT License" href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
   </a>
-  <a href="https://codecov.io/gh/nodejs/api-docs-tooling" >
-    <img src="https://codecov.io/gh/nodejs/api-docs-tooling/graph/badge.svg?token=TZRUKKDICU" alt="Codecov coverage badge"/>
+  <a href="https://codecov.io/gh/nodejs/doc-kit" >
+    <img src="https://codecov.io/gh/nodejs/doc-kit/graph/badge.svg?token=TZRUKKDICU" alt="Codecov coverage badge"/>
   </a>
-  <a title="scorecard" href="https://securityscorecards.dev/viewer/?uri=github.com/nodejs/api-docs-tooling">
-    <img src="https://api.securityscorecards.dev/projects/github.com/nodejs/api-docs-tooling/badge" alt="api-docs-tooling scorecard badge" />
+  <a title="scorecard" href="https://securityscorecards.dev/viewer/?uri=github.com/nodejs/doc-kit">
+    <img src="https://api.securityscorecards.dev/projects/github.com/nodejs/doc-kit/badge" alt="doc-kit scorecard badge" />
   </a>
   <a href="https://www.bestpractices.dev/projects/29">
     <img src="https://www.bestpractices.dev/projects/29/badge" alt="CII Best Practices badge">
@@ -33,6 +33,10 @@ Local invocation:
 
 ```sh
 $ npx doc-kit --help
+```
+
+```sh
+$ node bin/cli.mjs --help
 ```
 
 ```
@@ -78,3 +82,38 @@ Launch guided CLI wizard
 Options:
   -h, --help  display help for command
 ```
+
+## Examples
+
+### Legacy
+
+To generate a 1:1 match with the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the `legacy-html`, `legacy-json`, `legacy-html-all`, and `legacy-json-all` generators.
+
+```sh
+npx doc-kit generate \
+  -t legacy-html \
+  -t legacy-json \
+  -i "path/to/node/doc/api/*.md" \
+  -o out \
+  --index path/to/node/doc/api/index.md
+```
+
+### Redesigned
+
+To generate [our redesigned documentation pages](https://nodejs-api-doc-tooling.vercel.app), use the `web` and `orama-db` (for search) generators.
+
+```sh
+npx doc-kit generate \
+  -t web \
+  -t orama-db \
+  -i "path/to/node/doc/api/*.md" \
+  -o out \
+  --index path/to/node/doc/api/index.md
+```
+
+> [!TIP]
+> In order to use the search functionality, you _must_ serve the output directory.
+>
+> ```sh
+> npx serve out
+> ```
