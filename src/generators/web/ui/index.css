@@ -34,12 +34,12 @@ main {
     align-items: center;
     gap: 8px;
 
-    >h1,
-    >h2,
-    >h3,
-    >h4,
-    >h5,
-    >h6 {
+    > h1,
+    > h2,
+    > h3,
+    > h4,
+    > h5,
+    > h6 {
       flex: 1;
       text-overflow: ellipsis;
       overflow: hidden;
