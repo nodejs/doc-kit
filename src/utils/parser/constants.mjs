@@ -36,6 +36,9 @@ const FUNCTION_CALL = '\\([^)]*\\)';
 // Group 2: foo.bar
 const PROPERTY = `${CAMEL_CASE}(?:(\\[${CAMEL_CASE}\\])|\\.(\\w+))`;
 
+// An array of objects defining the different types of API doc headings we want to
+// capture and their respective regex to match against the heading text.
+// The regex are case-insensitive.
 export const DOC_API_HEADING_TYPES = [
   {
     type: 'method',
@@ -67,17 +70,13 @@ export const DOC_API_HEADING_TYPES = [
 // JavaScript primitive types within the MDN JavaScript docs
 // @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Data_structures#primitive_values
 export const DOC_TYPES_MAPPING_PRIMITIVES = {
-  ...Object.fromEntries(
-    [
-      'null',
-      'undefined',
-      'boolean',
-      'number',
-      'bigint',
-      'string',
-      'symbol',
-    ].map(e => [e, e])
-  ),
+  null: 'null',
+  undefined: 'undefined',
+  boolean: 'boolean',
+  number: 'number',
+  bigint: 'bigint',
+  string: 'string',
+  symbol: 'symbol',
   integer: 'number',
 };
 
@@ -85,19 +84,14 @@ export const DOC_TYPES_MAPPING_PRIMITIVES = {
 // JavaScript globals types within the MDN JavaScript docs
 // @see DOC_MDN_BASE_URL_JS_GLOBALS
 export const DOC_TYPES_MAPPING_GLOBALS = {
-  ...Object.fromEntries(
-    [
-      // This is updated with every ES-spec, so, as long as the
-      // `globals` package is up-to-date, so will our globals
-      // list.
-      ...Object.keys(globals.builtin),
-      'AsyncGeneratorFunction',
-      'AsyncIterator',
-      'AsyncFunction',
-      'TypedArray',
-      'ErrorEvent',
-    ].map(e => [e, e])
-  ),
+  // This is updated with every ES-spec, so, as long as the
+  // `globals` package is up-to-date, so will our globals list.
+  ...Object.fromEntries(Object.keys(globals.builtin).map(e => [e, e])),
+  AsyncGeneratorFunction: 'AsyncGeneratorFunction',
+  AsyncIterator: 'AsyncIterator',
+  AsyncFunction: 'AsyncFunction',
+  TypedArray: 'TypedArray',
+  ErrorEvent: 'ErrorEvent',
   'WebAssembly.Instance': 'WebAssembly/Instance',
 };
 
