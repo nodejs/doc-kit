@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'assert';
+import { strictEqual } from 'assert';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../../constants.mjs';
@@ -24,7 +24,7 @@ describe('github', () => {
     );
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
-    deepStrictEqual(
+    strictEqual(
       callsArgs[0].trim(),
       '::debug::[00:00:00.000] \x1B[34mDEBUG\x1B[39m: Test message'
     );
@@ -48,7 +48,7 @@ describe('github', () => {
     );
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
-    deepStrictEqual(
+    strictEqual(
       callsArgs[0].trim(),
       '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message'
     );
@@ -73,7 +73,7 @@ describe('github', () => {
     );
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
-    deepStrictEqual(
+    strictEqual(
       callsArgs[0].trim(),
       '::error ::[00:00:00.000] \x1B[35mERROR\x1B[39m: Test message'
     );
@@ -98,7 +98,7 @@ describe('github', () => {
     );
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
-    deepStrictEqual(
+    strictEqual(
       callsArgs[0].trim(),
       '::error ::[00:00:00.000] \x1B[31mFATAL\x1B[39m: Test message'
     );
@@ -132,7 +132,7 @@ describe('github', () => {
     );
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
-    deepStrictEqual(
+    strictEqual(
       callsArgs[0].trim(),
       '::notice file=test.md,line=1,endLine=1::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message'
     );
@@ -157,7 +157,7 @@ describe('github', () => {
     );
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
-    deepStrictEqual(
+    strictEqual(
       callsArgs[0].trim(),
       '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m (child1): Test message'
     );
@@ -184,7 +184,7 @@ describe('github', () => {
     );
 
     strictEqual(process.stdout.write.mock.callCount(), 1);
-    deepStrictEqual(
+    strictEqual(
       callsArgs[0].trim(),
       '::notice ::[00:00:00.000] INFO: Test message'
     );
