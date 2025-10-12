@@ -59,7 +59,6 @@ main {
   }
 
   .signature {
-
     /* Signature styling - remove line numbers and padding */
     .line {
       padding-left: unset !important;
