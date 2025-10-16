@@ -10,6 +10,7 @@ import createMetadata from '../../../metadata.mjs';
 import createNodeSlugger from '../../../utils/parser/slugger.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { getRemark } from '../../../utils/remark.mjs';
+import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
 
 /**
  * This generator generates a flattened list of metadata entries from a API doc
@@ -74,6 +75,10 @@ export const parseApiDoc = ({ file, tree }) => {
     tree.children.unshift(createTree('heading', { depth: 1 }, []));
   }
 
+  // On "About this Documentation", we define the stability indices, and thus
+  // we don't need to check it for stability references
+  const ignoreStability = IGNORE_STABILITY_STEMS.includes(file.stem);
+
   // Handles iterating the tree and creating subtrees for each API doc entry
   // where an API doc entry is defined by a Heading Node
   // (so all elements after a Heading until the next Heading)
@@ -110,7 +115,7 @@ export const parseApiDoc = ({ file, tree }) => {
     // Visits all Stability Index nodes from the current subtree if there's any
     // and then apply the Stability Index metadata to the current metadata entry
     visit(subTree, createQueries.UNIST.isStabilityNode, node =>
-      addStabilityMetadata(node, apiEntryMetadata)
+      addStabilityMetadata(node, ignoreStability ? undefined : apiEntryMetadata)
     );
 
     // Visits all HTML nodes from the current subtree and if there's any that matches
