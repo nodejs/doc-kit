@@ -7,7 +7,6 @@ import {
   DOC_MDN_BASE_URL_JS_GLOBALS,
   DOC_MDN_BASE_URL_JS_PRIMITIVES,
   DOC_TYPES_MAPPING_GLOBALS,
-  DOC_TYPES_MAPPING_NODE_MODULES,
   DOC_TYPES_MAPPING_OTHER,
   DOC_TYPES_MAPPING_PRIMITIVES,
   DOC_MAN_BASE_URL,
@@ -69,10 +68,7 @@ export const transformUnixManualToLink = (
  * @param {Record<string, string>} record The mapping of types to links
  * @returns {string} The Markdown link as a string (formatted in Markdown)
  */
-export const transformTypeToReferenceLink = (
-  type,
-  record = DOC_TYPES_MAPPING_NODE_MODULES
-) => {
+export const transformTypeToReferenceLink = (type, record) => {
   // Removes the wrapping tags that wrap the type references such as `<>` and `{}`
   const typeInput = type.replace(/[{}<>]/g, '');
 

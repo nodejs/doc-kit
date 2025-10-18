@@ -120,6 +120,9 @@ export default {
       prompt: {
         message: 'Path to doc/api/type_map.json',
         type: 'text',
+        initialValue: import.meta.resolve(
+          '../../src/utils/parser/typeMap.json'
+        ),
       },
     },
   },
@@ -131,10 +134,7 @@ export default {
   async action(opts) {
     const docs = await loadAndParse(opts.input, opts.ignore);
     const releases = await parseChangelog(opts.changelog);
-
-    const typeMap = opts.typeMap
-      ? JSON.parse(await loadFromURL(opts.typeMap))
-      : undefined;
+    const typeMap = JSON.parse(await loadFromURL(opts.typeMap));
 
     const index = opts.index && (await parseIndex(opts.index));
 
