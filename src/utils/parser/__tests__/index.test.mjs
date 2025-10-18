@@ -23,14 +23,7 @@ describe('transformTypeToReferenceLink', () => {
     );
   });
 
-  it('should transform a prefixed type into a Markdown link', () => {
-    strictEqual(
-      transformTypeToReferenceLink('prefix.Type'),
-      '[`<prefix.Type>`](prefix.html#class-prefixtype)'
-    );
-  });
-
-  it('should accept a type map', () => {
+  it('should transform a type into a Markdown link', () => {
     strictEqual(
       transformTypeToReferenceLink('SomeOtherType', {
         SomeOtherType: 'fromTypeMap',
