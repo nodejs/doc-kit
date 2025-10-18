@@ -12,7 +12,7 @@ export const loadFromURL = async url => {
 
   if (!parsedUrl || parsedUrl.protocol === 'file:') {
     // Load from file system
-    return readFile(parsedUrl || url, 'utf-8');
+    return readFile(parsedUrl ?? url, 'utf-8');
   } else {
     // Load from network
     const response = await fetch(parsedUrl);

@@ -10,6 +10,7 @@ import {
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
+import { DEFAULT_TYPE_MAP } from '../../src/utils/parser/constants.mjs';
 import { loadFromURL } from '../../src/utils/parser.mjs';
 import { loadAndParse } from '../utils.mjs';
 
@@ -120,9 +121,7 @@ export default {
       prompt: {
         message: 'Path to doc/api/type_map.json',
         type: 'text',
-        initialValue: import.meta.resolve(
-          '../../src/utils/parser/typeMap.json'
-        ),
+        initialValue: DEFAULT_TYPE_MAP,
       },
     },
   },
