@@ -16,9 +16,10 @@ import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
  * This generator generates a flattened list of metadata entries from a API doc
  *
  * @param {ParserOutput<import('mdast').Root>} input
+ * @param {Record<string, string>} typeMap
  * @returns {Promise<Array<ApiDocMetadataEntry>>}
  */
-export const parseApiDoc = ({ file, tree }) => {
+export const parseApiDoc = ({ file, tree }, typeMap) => {
   /**
    * This holds references to all the Metadata entries for a given file
    * this is used so we can traverse the AST tree and keep mutating things
@@ -39,7 +40,7 @@ export const parseApiDoc = ({ file, tree }) => {
     updateUnixManualReference,
     updateLinkReference,
     addStabilityMetadata,
-  } = createQueries();
+  } = createQueries(typeMap);
 
   // Creates an instance of the Remark processor with GFM support
   // which is used for stringifying the AST tree back to Markdown

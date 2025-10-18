@@ -20,9 +20,10 @@ export default {
 
   /**
    * @param {Input} inputs
+   * @param {GeneratorOptions} options
    * @returns {Promise<Array<ApiDocMetadataEntry>>}
    */
-  async generate(inputs) {
-    return inputs.flatMap(input => parseApiDoc(input));
+  async generate(inputs, { typeMap }) {
+    return inputs.flatMap(input => parseApiDoc(input, typeMap));
   },
 };

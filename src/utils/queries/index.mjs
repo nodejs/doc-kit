@@ -20,8 +20,9 @@ import { transformNodesToString } from '../unist.mjs';
 /**
  * Creates an instance of the Query Manager, which allows to do multiple sort
  * of metadata and content metadata manipulation within an API Doc
+ * @param {Record<string, string>} typeMap The mapping to types to links
  */
-const createQueries = () => {
+const createQueries = typeMap => {
   const remark = getRemark();
   /**
    * Sanitizes the YAML source by returning the inner YAML content
@@ -179,7 +180,7 @@ const createQueries = () => {
     updateTypeReference: (...args) =>
       updateReferences(
         createQueries.QUERIES.normalizeTypes,
-        transformTypeToReferenceLink,
+        type => transformTypeToReferenceLink(type, typeMap),
         ...args
       ),
     /** @param {Array<import('@types/mdast').Node>} args */

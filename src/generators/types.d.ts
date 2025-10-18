@@ -42,6 +42,9 @@ declare global {
 
     // The number of threads the process is allowed to use
     threads: number;
+
+    // The type map
+    typeMap: Record<string, string>;
   }
 
   export interface GeneratorMetadata<I extends any, O extends any> {

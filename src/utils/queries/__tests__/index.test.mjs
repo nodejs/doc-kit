@@ -1,11 +1,13 @@
 import { strictEqual, deepStrictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
+import typeMap from '../../parser/typeMap.json' with { type: 'json' };
 import createQueries from '../index.mjs';
 
 describe('createQueries', () => {
+  const queries = createQueries(typeMap);
+
   it('should add YAML metadata correctly', () => {
-    const queries = createQueries();
     const node = { value: 'type: test\nname: test\n' };
     const apiEntryMetadata = {
       updateProperties: properties => {
@@ -17,7 +19,6 @@ describe('createQueries', () => {
 
   // valid type
   it('should update type to reference correctly', () => {
-    const queries = createQueries();
     const node = {
       value: 'This is a {string} type.',
       position: { start: 0, end: 0 },
@@ -35,7 +36,6 @@ describe('createQueries', () => {
   });
 
   it('should update type to reference not correctly if no match', () => {
-    const queries = createQueries();
     const node = {
       value: 'This is a {test} type.',
       position: { start: 0, end: 0 },
@@ -47,7 +47,6 @@ describe('createQueries', () => {
   });
 
   it('should add heading metadata correctly', () => {
-    const queries = createQueries();
     const node = {
       depth: 2,
       children: [{ type: 'text', value: 'Test Heading' }],
@@ -74,14 +73,12 @@ describe('createQueries', () => {
   });
 
   it('should update markdown link correctly', () => {
-    const queries = createQueries();
     const node = { type: 'link', url: 'test.md#heading' };
     queries.updateMarkdownLink(node);
     strictEqual(node.url, 'test.html#heading');
   });
 
   it('should update link reference correctly', () => {
-    const queries = createQueries();
     const node = { type: 'linkReference', identifier: 'test' };
     const definitions = [{ identifier: 'test', url: 'test.html#test' }];
     queries.updateLinkReference(node, definitions);
@@ -90,7 +87,6 @@ describe('createQueries', () => {
   });
 
   it('should add stability index metadata correctly', () => {
-    const queries = createQueries();
     const node = {
       type: 'blockquote',
       children: [
