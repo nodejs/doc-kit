@@ -7,7 +7,6 @@ import {
   DOC_MDN_BASE_URL_JS_GLOBALS,
   DOC_MDN_BASE_URL_JS_PRIMITIVES,
   DOC_TYPES_MAPPING_GLOBALS,
-  DOC_TYPES_MAPPING_NODE_MODULES,
   DOC_TYPES_MAPPING_OTHER,
   DOC_TYPES_MAPPING_PRIMITIVES,
   DOC_MAN_BASE_URL,
@@ -66,9 +65,10 @@ export const transformUnixManualToLink = (
  * that link to the actual relevant reference for such type (either internal or external link)
  *
  * @param {string} type The plain type to be transformed into a Markdown link
+ * @param {Record<string, string>} record The mapping of types to links
  * @returns {string} The Markdown link as a string (formatted in Markdown)
  */
-export const transformTypeToReferenceLink = type => {
+export const transformTypeToReferenceLink = (type, record) => {
   // Removes the wrapping tags that wrap the type references such as `<>` and `{}`
   const typeInput = type.replace(/[{}<>]/g, '');
 
@@ -100,8 +100,8 @@ export const transformTypeToReferenceLink = type => {
 
     // Transform Node.js type/module references into Markdown links
     // that refer to other API docs pages within the Node.js API docs
-    if (lookupPiece in DOC_TYPES_MAPPING_NODE_MODULES) {
-      return DOC_TYPES_MAPPING_NODE_MODULES[lookupPiece];
+    if (lookupPiece in record) {
+      return record[lookupPiece];
     }
 
     // Transform Node.js types like 'vm.Something'.

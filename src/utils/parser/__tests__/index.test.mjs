@@ -23,10 +23,12 @@ describe('transformTypeToReferenceLink', () => {
     );
   });
 
-  it('should transform a prefixed type into a Markdown link', () => {
+  it('should transform a type into a Markdown link', () => {
     strictEqual(
-      transformTypeToReferenceLink('prefix.Type'),
-      '[`<prefix.Type>`](prefix.html#class-prefixtype)'
+      transformTypeToReferenceLink('SomeOtherType', {
+        SomeOtherType: 'fromTypeMap',
+      }),
+      '[`<SomeOtherType>`](fromTypeMap)'
     );
   });
 });
