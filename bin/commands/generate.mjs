@@ -133,7 +133,7 @@ export default {
   async action(opts) {
     const docs = await loadAndParse(opts.input, opts.ignore);
     const releases = await parseChangelog(opts.changelog);
-    
+
     const rawTypeMap = await loadFromURL(opts.typeMap);
     const typeMap = JSON.parse(rawTypeMap);
 
