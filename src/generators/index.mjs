@@ -14,6 +14,8 @@ import manPage from './man-page/index.mjs';
 import metadata from './metadata/index.mjs';
 import oramaDb from './orama-db/index.mjs';
 import web from './web/index.mjs';
+import json from './json/index.mjs';
+import jsonAll from './json-all/index.mjs';
 
 export const publicGenerators = {
   'json-simple': jsonSimple,
@@ -27,6 +29,10 @@ export const publicGenerators = {
   'orama-db': oramaDb,
   'llms-txt': llmsTxt,
   web,
+  'jsx-ast': jsxAst,
+  metadata,
+  json,
+  'json-all': jsonAll,
 };
 
 // These ones are special since they don't produce standard output,
