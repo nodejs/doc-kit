@@ -1,7 +1,10 @@
 // @ts-check
 'use strict';
 
-import { assertAstType } from '../../../utils/assertAstType.mjs';
+import {
+  assertAstType,
+  assertAstTypeOptional,
+} from '../../../utils/assertAstType.mjs';
 import { GeneratorError } from '../../../utils/generator-error.mjs';
 import { METHOD_RETURN_TYPE_EXTRACTOR } from '../constants.mjs';
 import { findParentSection } from './findParentSection.mjs';
@@ -25,7 +28,7 @@ export const createMethodSectionBuilder = () => {
      * documented properties.
      */
     const paragraph = assertAstType(children[0], 'paragraph');
-    const list = children[1] ? assertAstType(children[1], 'list') : undefined;
+    const list = assertAstTypeOptional(children[1], 'list');
 
     /**
      * @type {import('../generated.d.ts').MethodParameter | import('../generated.d.ts').MethodReturnType}

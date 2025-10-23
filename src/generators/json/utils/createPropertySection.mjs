@@ -39,7 +39,7 @@ export const createPropertySectionBuilder = () => {
       return undefined;
     }
 
-    const firstListElement = listNode.children[0].children[0];
+    const firstListElement = structuredClone(listNode.children[0].children[0]);
 
     if (firstListElement.type !== 'paragraph') {
       throw new TypeError(
@@ -184,7 +184,7 @@ export const createPropertySectionBuilder = () => {
    * @param {import('../generated.d.ts').Property} section The method section
    */
   return (entry, section) => {
-    const listElement = parseType(structuredClone(entry), section);
+    const listElement = parseType(entry, section);
 
     if (listElement) {
       parseReferenceLink(listElement, section);

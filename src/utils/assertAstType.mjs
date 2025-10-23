@@ -35,3 +35,18 @@ export function assertAstType(node, type) {
 
   return node;
 }
+
+/**
+ * @template {keyof NodeTypes} T
+ *
+ * @param {import('mdast').Node | undefined} node
+ * @param {T} type
+ * @returns {NodeTypes[T] | undefined}
+ */
+export function assertAstTypeOptional(node, type) {
+  if (!node) {
+    return undefined;
+  }
+
+  return assertAstType(node, type);
+}

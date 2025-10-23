@@ -34,7 +34,7 @@ export const createSectionBaseBuilder = () => {
    * @param {number} depth
    * @returns {typeof ENTRY_TO_SECTION_TYPE[string]}
    */
-  const determineType = (header, entry) => {
+  const determineType = header => {
     const fallback = header.depth === 1 ? 'module' : 'text';
 
     // doc/api/process.md's parent section shouldn't have a defined type, but
@@ -46,10 +46,6 @@ export const createSectionBaseBuilder = () => {
     ) {
       return 'module';
     }
-
-    // if (header?.data.type === 'global') {
-    //   console.log(entry);
-    // }
 
     return ENTRY_TO_SECTION_TYPE[header?.data.type ?? fallback];
   };
@@ -202,7 +198,7 @@ export const createSectionBaseBuilder = () => {
   return entry => {
     const [, ...nodes] = entry.content.children;
 
-    const type = determineType(entry.heading, entry);
+    const type = determineType(entry.heading);
 
     /**
      * @type {import('../generated.d.ts').SectionBase}

@@ -7,7 +7,7 @@ const JSON_SCHEMA_URL = `https://nodejs.org/docs/${DOC_NODE_VERSION}/api/node-do
 
 export const generateJsonSchema = () => ({
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $id: `nodejs-api-doc-all@${jsonAll.version}`,
+  $id: `nodejs-api-doc-all@v${jsonAll.version}`,
   title: 'Node.js API Documentation Schema (All)',
   readOnly: true,
 
