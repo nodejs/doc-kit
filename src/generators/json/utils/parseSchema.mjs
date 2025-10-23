@@ -1,18 +1,22 @@
+// @ts-check
 'use strict';
 
-import test from 'node:test';
-import assert from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse as jsoncParse } from 'jsonc-parser';
-import json from '../index.mjs';
 
-test('schema version matches generator version', async () => {
+/**
+ * @returns {Promise<object>}
+ */
+export async function parseSchema() {
+  // Read the contents of the JSON schema
   const schemaString = await readFile(
     join(import.meta.dirname, '..', 'schema.jsonc'),
     'utf8'
   );
+
+  // Parse the JSON schema into an object
   const schema = await jsoncParse(schemaString);
 
-  assert.strictEqual(schema.$id, `nodejs-api-doc@v${json.version}`);
-});
+  return schema;
+}

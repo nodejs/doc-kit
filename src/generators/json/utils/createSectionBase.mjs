@@ -10,8 +10,10 @@ import { enforceArray } from '../../../utils/array.mjs';
 /**
  * Mapping of {@link HeadingMetadataEntry['type']} to types defined in the
  * JSON schema.
+ *
+ * Exported for tests.
  */
-const ENTRY_TO_SECTION_TYPE = /** @type {const} */ ({
+export const ENTRY_TO_SECTION_TYPE = /** @type {const} */ ({
   var: 'property',
   global: 'property',
   module: 'module',
@@ -28,24 +30,28 @@ const ENTRY_TO_SECTION_TYPE = /** @type {const} */ ({
 
 export const createSectionBaseBuilder = () => {
   /**
-   * @param {import('mdast').RootContent} headingNode
+   * @param {import('mdast').Heading} header
    * @param {number} depth
    * @returns {typeof ENTRY_TO_SECTION_TYPE[string]}
    */
-  const determineType = (headingNode, depth) => {
-    const fallback = depth === 1 ? 'module' : 'text';
+  const determineType = (header, entry) => {
+    const fallback = header.depth === 1 ? 'module' : 'text';
 
     // doc/api/process.md's parent section shouldn't have a defined type, but
     // it is defined as `global` for whatever reason
     if (
-      headingNode?.data.slug === 'process' &&
-      headingNode?.data.type === 'global' &&
-      headingNode?.data.depth === 1
+      header?.data.slug === 'process' &&
+      header?.data.type === 'global' &&
+      header?.data.depth === 1
     ) {
       return 'module';
     }
 
-    return ENTRY_TO_SECTION_TYPE[headingNode?.data.type ?? fallback];
+    // if (header?.data.type === 'global') {
+    //   console.log(entry);
+    // }
+
+    return ENTRY_TO_SECTION_TYPE[header?.data.type ?? fallback];
   };
 
   /**
@@ -63,6 +69,7 @@ export const createSectionBaseBuilder = () => {
       switch (node.type) {
         case 'paragraph': {
           addDescriptionAndExamples(section, node.children);
+          section.description += ' ';
           break;
         }
         case 'emphasis': {
@@ -70,10 +77,11 @@ export const createSectionBaseBuilder = () => {
           break;
         }
         case 'inlineCode': {
-          content = `\`${node.value}\``;
+          content = `\`${node.value}\` `;
           break;
         }
         case 'text': {
+          // This is untrimmed so should have a trailing space if one is needed
           content = node.value;
           break;
         }
@@ -85,6 +93,8 @@ export const createSectionBaseBuilder = () => {
             // Missing the label, let's see if it's a reference to a global
             const childNode = node.children[0];
 
+            // todo stringify this properly
+
             if (
               childNode &&
               (childNode.type === 'inlineCode' || childNode.type === 'text')
@@ -92,6 +102,8 @@ export const createSectionBaseBuilder = () => {
               content = `[${childNode.value}](${node.url})`;
             }
           }
+
+          content += ' ';
 
           break;
         }
@@ -188,22 +200,26 @@ export const createSectionBaseBuilder = () => {
    * @returns {import('../generated.d.ts').SectionBase}
    */
   return entry => {
-    const [headingNode, ...nodes] = entry.content.children;
+    const [, ...nodes] = entry.content.children;
 
-    const type = determineType(headingNode, entry.heading.depth);
+    const type = determineType(entry.heading, entry);
 
     /**
      * @type {import('../generated.d.ts').SectionBase}
      */
     const base = {
       type,
-      '@name': headingNode.data.name,
+      '@name': entry.heading.data.name,
     };
 
     addDescriptionAndExamples(base, nodes);
     addDeprecatedStatus(base, entry);
     addStabilityStatus(base, entry);
     addVersionProperties(base, entry);
+
+    if (base.description) {
+      base.description = base.description.trim();
+    }
 
     return base;
   };

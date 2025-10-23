@@ -58,7 +58,34 @@ export const createMethodSectionBuilder = () => {
           break;
         }
 
-        console.log(firstChild.value);
+        if (paragraph.children.length < 2) {
+          throw new GeneratorError(
+            `expected at least 2 children in a method's return type`
+          );
+        }
+
+        switch (paragraph.children[1].type) {
+          case 'inlineCode': {
+            // Returns: undefined
+            parameter['@type'] = paragraph.children[1].value;
+            // TODO grab description if existed
+            break;
+          }
+          case 'link': {
+            break;
+          }
+          default: {
+            throw new GeneratorError(
+              `unexpected child type ${paragraph.children[1].type}`
+            );
+          }
+        }
+
+        if (paragraph.children[1].type !== 'link') {
+          // console.log(paragraph.children[1]);
+        }
+
+        // console.log(paragraph.children);
 
         // if (firstChild.value !== 'Returns: ') {
         //   console.log('asd', firstChild.value, METHOD_RETURN_TYPE_EXTRACTOR.exec(firstChild.value))

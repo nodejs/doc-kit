@@ -1,13 +1,10 @@
 // @ts-check
 'use strict';
 
-import { writeFile, readFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { parse as jsoncParse } from 'jsonc-parser';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { createSectionBuilder } from './utils/createSection.mjs';
-
-// TODO add test w/ https://www.npmjs.com/package/jsonschema
 
 /**
  * This generator is responsible for generating the JSON representation of the
@@ -89,18 +86,8 @@ export default {
     await Promise.all(writeFilePromises);
 
     if (output) {
-      // Current directory path relative to the `index.mjs` file
-      const baseDir = import.meta.dirname;
-
-      // Read the contents of the JSON schema
-      // const schemaString = await readFile(
-      //   join(baseDir, 'schema.jsonc'),
-      //   'utf8'
-      // );
-
       // // Parse the JSON schema into an object
       // const schema = await jsoncParse(schemaString);
-
       // Write the parsed JSON schema to the output directory
       // await writeFile(
       //   join(output, 'node-doc-schema.json'),

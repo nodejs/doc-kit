@@ -13,6 +13,15 @@ export function stringifyNode(node) {
   // Similar to what we're doing when creating the description in the
   // section base but less in depth
   switch (node.type) {
+    case 'break':
+      value += '\n';
+      break;
+    case 'delete':
+      value += `~~${node.children.map(stringifyNode).join(' ')}~~`;
+      break;
+    case 'emphasis':
+      value += `*${node.children.map(stringifyNode).join(' ')}*`;
+      break;
     case 'text':
       value += node.value;
       break;
@@ -26,7 +35,8 @@ export function stringifyNode(node) {
       value = `[${node.label ?? node.value}](${node.url})`;
       break;
     case 'html':
-      // Not actually html, or probably at least
+      // Not actually html, or probably at least. Types mentioned like
+      // `<string>` are put in the string as html nodes
       value += node.value;
       break;
     case 'footnoteReference':

@@ -14,6 +14,7 @@ export const createClassSectionBuilder = () => {
    * @param {import('../generated.d.ts').Class} section The class section
    */
   return (entry, section) => {
+    // TODO we could go with lazy creating these
     section['@constructor'] = [];
 
     section.methods = [];
