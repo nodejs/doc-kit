@@ -10,24 +10,26 @@ import { METHOD_RETURN_TYPE_EXTRACTOR } from '../constants.mjs';
 import { findParentSection } from './findParentSection.mjs';
 
 /**
- * @typedef {import('../../legacy-json/types.d.ts').HierarchizedEntry} HierarchizedEntry
+ * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
 export const createMethodSectionBuilder = () => {
   /**
    * Handles each node in a parameter list
    * @param {import('mdast').ListItem} param0
-   * @returns {import('../generated.d.ts').MethodParameter | string[]}
+   * @returns {import('../generated.d.ts').MethodParameter | (import('../generated.d.ts').MethodReturnType & { returnType: true })}
    */
   const parseParameterListNode = ({ children }) => {
     /**
-     * `paragraph` will be a parameter's type declaration (ex/ "`asd` {string} Description of asd")
+     * A parameter's type declaration (ex/ "`asd` {string} Description of asd")
      * or the method's return value (ex/ "Returns: {integer}").
-     *
-     * `list` is only defined when the parameter is an object that has
-     * documented properties.
      */
     const paragraph = assertAstType(children[0], 'paragraph');
+
+    /**
+     * Only should be defined when the parameter is an object that has
+     * documented properties.
+     */
     const list = assertAstTypeOptional(children[1], 'list');
 
     /**
@@ -52,7 +54,7 @@ export const createMethodSectionBuilder = () => {
         if (returnRegex) {
           const [_, _2, type, description] = returnRegex;
           parameter['@type'] = type.split('|').map(type => type.trim());
-          parameter.description = description.trim();
+          parameter.description = description?.trim();
           break;
         }
 
@@ -97,18 +99,12 @@ export const createMethodSectionBuilder = () => {
         // console.log(paragraph.children)
         break;
       }
-      case 'link': {
-        // console.log(firstChild);
-        break;
-      }
       default: {
         throw new GeneratorError(`unexpected type ${firstChild.type}`);
       }
     }
 
-    return {
-      '@name': 'asd',
-    };
+    return parameter;
   };
 
   /**
@@ -117,18 +113,17 @@ export const createMethodSectionBuilder = () => {
    *
    * @returns {{
    *   parameters?: Record<string, import('../generated.d.ts').MethodParameter>,
-   *   returns: Array<string>
+   *   returns: import('../generated.d.ts').MethodReturnType
    * } | undefined}
    */
   const parseParameters = entry => {
     // Ignore header
     const [, ...nodes] = entry.content.children;
 
-    // The first list that exists in a doc entry should be the method's
-    // parameter list.
-    const listNode = nodes.find(node => node.type === 'list');
-
-    if (!listNode) {
+    // The first child node should be the method's parameter list. If there
+    // isn't one, there is no parameter list.
+    const listNode = nodes[0];
+    if (!listNode || listNode.type !== 'list') {
       // Method doesn't take in any parameters
       return undefined;
     }
@@ -138,22 +133,20 @@ export const createMethodSectionBuilder = () => {
      */
     const parameters = {};
     /**
-     * @type {Array<string>}
+     * @type {import('../generated.d.ts').MethodReturnType}
      */
-    let returns;
+    let returns = { '@type': 'any' };
 
     listNode.children.forEach(listItem => {
       const parameter = parseParameterListNode(listItem);
-
-      if (Array.isArray(parameter)) {
+      // console.log(parameter);
+      if (parameter.returnType) {
         // Return type
-        returns = parameter;
+        returns = { ...parameter, returnType: undefined };
       } else {
         parameter[parameter['@name']] = parameter;
       }
     });
-
-    returns ??= ['any'];
 
     return {
       parameters,
@@ -171,7 +164,12 @@ export const createMethodSectionBuilder = () => {
     section.signatures = [];
 
     // Parse all the parameters and store them in a <name>:<parameter section> map
-    const parameters = parseParameters(entry);
+    const parsedParameters = parseParameters(entry);
+    if (!parsedParameters) {
+      return;
+    }
+
+    const { parameters, returns } = parsedParameters;
 
     // Parse the value of entry.heading.data.text to get the order of parameters and which are optional
   };

@@ -1,7 +1,7 @@
 // @ts-check
 'use strict';
 
-import { buildHierarchy } from '../../legacy-json/utils/buildHierarchy.mjs';
+import { buildHierarchy } from '../../../utils/buildHierarchy.mjs';
 import { createSectionBaseBuilder } from './createSectionBase.mjs';
 import { createModuleSectionBuilder } from './createModuleSection.mjs';
 import { createClassSectionBuilder } from './createClassSection.mjs';
@@ -9,9 +9,10 @@ import { createMethodSectionBuilder } from './createMethodSection.mjs';
 import { createPropertySectionBuilder } from './createPropertySection.mjs';
 import { createEventSectionBuilder } from './createEventSection.mjs';
 import { GeneratorError } from '../../../utils/generator-error.mjs';
+import { DOC_NODE_VERSION } from '../../../constants.mjs';
 
 /**
- * @typedef {import('../../legacy-json/types.d.ts').HierarchizedEntry} HierarchizedEntry
+ * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
 export const createSectionBuilder = () => {
@@ -133,8 +134,7 @@ export const createSectionBuilder = () => {
     }
 
     return {
-      // $schema: `https://nodejs.org/doc/${DOC_NODE_VERSION}/api/node-doc-schema.json`
-      $schema: './node-doc-schema.json',
+      $schema: `https://nodejs.org/doc/${DOC_NODE_VERSION}/api/node-doc-schema.json`,
       ...documentRoot,
       ...section,
     };

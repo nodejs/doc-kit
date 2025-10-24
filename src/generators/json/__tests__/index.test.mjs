@@ -49,9 +49,4 @@ describe('generator output complies with json schema', () => {
       assert.ok(validator.validate(result[0], schema).valid);
     });
   }
-
-  // TODO:
-  //  - create fixtures that cover various different types of docs we see
-  //  - run them through the generator
-  //  - validate the response with https://www.npmjs.com/package/jsonschema
 });

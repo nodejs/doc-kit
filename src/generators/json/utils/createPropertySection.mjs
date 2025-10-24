@@ -6,7 +6,7 @@ import { findParentSection } from './findParentSection.mjs';
 import { stringifyNode } from './stringifyNode.mjs';
 
 /**
- * @typedef {import('../../legacy-json/types.d.ts').HierarchizedEntry} HierarchizedEntry
+ * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
 /**

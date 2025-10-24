@@ -4,7 +4,7 @@
 import { DOC_NODE_VERSION } from '../../../constants.mjs';
 
 /**
- * @typedef {import('../../legacy-json/types.d.ts').HierarchizedEntry} HierarchizedEntry
+ * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
 export const createModuleSectionBuilder = () => {

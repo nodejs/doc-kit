@@ -10,8 +10,6 @@ import { GeneratorError } from '../../../utils/generator-error.mjs';
 export function stringifyNode(node) {
   let value = '';
 
-  // Similar to what we're doing when creating the description in the
-  // section base but less in depth
   switch (node.type) {
     case 'break':
       value += '\n';

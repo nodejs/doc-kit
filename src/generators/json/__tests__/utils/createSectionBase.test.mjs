@@ -91,6 +91,46 @@ describe('determines the correct type for a section', () => {
         '@name': 'Some title',
       });
     });
+
+    test('doc/api/process.md determined as module and not a global', () => {
+      /**
+       * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+       */
+      const entry = {
+        hierarchyChildren: [],
+        api: 'process',
+        slug: 'asd',
+        api_doc_source: 'doc/api/something.md',
+        changes: [],
+        heading: {
+          type: 'heading',
+          depth: 1,
+          children: [],
+          data: {
+            text: 'Process',
+            name: 'Process',
+            depth: 1,
+            slug: 'process',
+            type: 'global',
+          },
+        },
+        stability: {
+          type: 'root',
+          children: [],
+        },
+        content: {
+          type: 'root',
+          children: [],
+        },
+        tags: [],
+        yaml_position: {},
+      };
+
+      assert.deepStrictEqual(createSectionBase(entry), {
+        type: 'module',
+        '@name': 'Process',
+      });
+    });
   });
 
   for (const entryType in ENTRY_TO_SECTION_TYPE) {
@@ -302,8 +342,13 @@ describe('extracts description and examples correctly', () => {
           },
           {
             type: 'link',
-            label: 'world',
             url: 'https://nodejs.org',
+            children: [
+              {
+                type: 'text',
+                value: 'world',
+              },
+            ],
           },
           {
             type: 'paragraph',
@@ -326,6 +371,68 @@ describe('extracts description and examples correctly', () => {
       section.description,
       'hello [world](https://nodejs.org) asd'
     );
+  });
+
+  test('description with `emphasis` ', () => {
+    /**
+     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     */
+    const entry = {
+      hierarchyChildren: [],
+      api: 'bla',
+      slug: 'asd',
+      api_doc_source: 'doc/api/something.md',
+      changes: [],
+      heading: {
+        type: 'heading',
+        depth: 2,
+        children: [],
+        data: {
+          text: 'Some title',
+          name: 'Some title',
+          depth: 2,
+          slug: 'some-title',
+          type: 'module',
+        },
+      },
+      stability: {
+        type: 'root',
+        children: [],
+      },
+      content: {
+        type: 'root',
+        children: [
+          {
+            type: 'text',
+            value: 'this should be ignored',
+          },
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                value: 'hello',
+              },
+            ],
+          },
+          {
+            type: 'emphasis',
+            children: [
+              {
+                type: 'text',
+                value: 'world',
+              },
+            ],
+          },
+        ],
+      },
+      tags: [],
+      yaml_position: {},
+    };
+
+    const section = createSectionBase(entry);
+
+    assert.strictEqual(section.description, 'hello _world_');
   });
 
   test('extracts code examples', () => {

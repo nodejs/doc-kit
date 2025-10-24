@@ -5,6 +5,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { createSectionBuilder } from './utils/createSection.mjs';
+import { parseSchema } from './utils/parseSchema.mjs';
 
 /**
  * This generator is responsible for generating the JSON representation of the
@@ -83,16 +84,17 @@ export default {
       }
     }
 
-    await Promise.all(writeFilePromises);
-
     if (output) {
-      // // Parse the JSON schema into an object
-      // const schema = await jsoncParse(schemaString);
+      await Promise.all(writeFilePromises);
+
+      // Parse the JSON schema into an object
+      const schema = await parseSchema();
+
       // Write the parsed JSON schema to the output directory
-      // await writeFile(
-      //   join(output, 'node-doc-schema.json'),
-      //   JSON.stringify(schema)
-      // );
+      await writeFile(
+        join(output, 'node-doc-schema.json'),
+        JSON.stringify(schema)
+      );
     }
 
     return generatedValues;

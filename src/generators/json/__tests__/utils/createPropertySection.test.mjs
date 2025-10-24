@@ -58,12 +58,12 @@ describe('extracts type correctly', () => {
                   children: [
                     {
                       type: 'paragraph',
-                      // children: 
-                    }
-                  ]
-                }
-              ]
-            }
+                      // children:
+                    },
+                  ],
+                },
+              ],
+            },
           ],
         },
         tags: [],

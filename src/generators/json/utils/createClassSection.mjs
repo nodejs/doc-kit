@@ -4,7 +4,7 @@ import { GeneratorError } from '../../../utils/generator-error.mjs';
 import { findParentSection } from './findParentSection.mjs';
 
 /**
- * @typedef {import('../../legacy-json/types.d.ts').HierarchizedEntry} HierarchizedEntry
+ * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
 export const createClassSectionBuilder = () => {

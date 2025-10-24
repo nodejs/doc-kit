@@ -1,4 +1,4 @@
-import { buildHierarchy } from './buildHierarchy.mjs';
+import { buildHierarchy } from '../../../utils/buildHierarchy.mjs';
 import { parseList } from './parseList.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
 import { getRemarkRehype } from '../../../utils/remark.mjs';
@@ -13,7 +13,7 @@ export const createSectionBuilder = () => {
 
   /**
    * Creates metadata from a hierarchized entry.
-   * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry to create metadata from.
+   * @param {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry - The entry to create metadata from.
    * @returns {import('../types.d.ts').Meta} The created metadata.
    */
   const createMeta = ({

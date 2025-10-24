@@ -5,7 +5,7 @@ import { findParentSection } from './findParentSection.mjs';
 import { stringifyNode } from './stringifyNode.mjs';
 
 /**
- * @typedef {import('../../legacy-json/types.d.ts').HierarchizedEntry} HierarchizedEntry
+ * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
 export const createEventSectionBuilder = () => {
@@ -62,7 +62,6 @@ export const createEventSectionBuilder = () => {
             );
           }
 
-          // todo why does delimiter.value === ' ' = false even when that's the case ????????
           if (rest[0]?.type === 'link') {
             // Type _should_ be a link with maybe a description following
             const [type, ...descriptionNodes] = rest;

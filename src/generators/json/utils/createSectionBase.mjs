@@ -2,9 +2,11 @@
 'use strict';
 
 import { enforceArray } from '../../../utils/array.mjs';
+import { GeneratorError } from '../../../utils/generator-error.mjs';
+import { transformNodeToString } from '../../../utils/unist.mjs';
 
 /**
- * @typedef {import('../../legacy-json/types.d.ts').HierarchizedEntry} HierarchizedEntry
+ * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
 /**
@@ -57,77 +59,26 @@ export const createSectionBaseBuilder = () => {
    */
   const addDescriptionAndExamples = (section, nodes) => {
     nodes.forEach(node => {
-      /**
-       * @type {string | undefined}
-       */
-      let content;
+      if (node.type === 'code') {
+        if (Array.isArray(section['@example'])) {
+          section['@example'] = [...section['@example'], node.value];
+        } else if (section['@example']) {
+          section['@example'] = [section['@example'], node.value];
+        } else {
+          section['@example'] = node.value;
+        }
 
-      switch (node.type) {
-        case 'paragraph': {
-          addDescriptionAndExamples(section, node.children);
-          section.description += ' ';
-          break;
-        }
-        case 'emphasis': {
-          addDescriptionAndExamples(section, node.children);
-          break;
-        }
-        case 'inlineCode': {
-          content = `\`${node.value}\` `;
-          break;
-        }
-        case 'text': {
-          // This is untrimmed so should have a trailing space if one is needed
-          content = node.value;
-          break;
-        }
-        case 'link': {
-          if (node.label) {
-            // Standard link to some resource
-            content = `[${node.label}](${node.url})`;
-          } else {
-            // Missing the label, let's see if it's a reference to a global
-            const childNode = node.children[0];
-
-            // todo stringify this properly
-
-            if (
-              childNode &&
-              (childNode.type === 'inlineCode' || childNode.type === 'text')
-            ) {
-              content = `[${childNode.value}](${node.url})`;
-            }
-          }
-
-          content += ' ';
-
-          break;
-        }
-        case 'code': {
-          if (Array.isArray(section['@example'])) {
-            section['@example'] = [...section['@example'], node.value];
-          } else if (section['@example']) {
-            section['@example'] = [section['@example'], node.value];
-          } else {
-            section['@example'] = node.value;
-          }
-
-          break;
-        }
-        default: {
-          // No content to add to description
-          break;
-        }
+        return;
       }
 
-      if (content) {
-        // Create the description property if it doesn't already exist
-        section.description ??= '';
-
-        // Add this nodes' content to the description
-        section.description += content;
-      }
+      // Not code, let's stringify it and add it to the description.
+      section.description ??= '';
+      section.description += `${transformNodeToString(node)} `;
     });
+
+    if (section.description) {
+      section.description = section.description.trim();
+    }
   };
 
   /**
@@ -155,8 +106,17 @@ export const createSectionBaseBuilder = () => {
       return;
     }
 
+    let value = stability.index;
+    if (typeof value === 'number') {
+      value = Number(value);
+
+      if (isNaN(value)) {
+        throw new GeneratorError(`Stability index ${stability.index} NaN`);
+      }
+    }
+
     section.stability = {
-      value: stability.index,
+      value,
       text: stability.description,
     };
   };
@@ -212,10 +172,6 @@ export const createSectionBaseBuilder = () => {
     addDeprecatedStatus(base, entry);
     addStabilityStatus(base, entry);
     addVersionProperties(base, entry);
-
-    if (base.description) {
-      base.description = base.description.trim();
-    }
 
     return base;
   };
