@@ -1,4 +1,3 @@
-// @ts-check
 'use strict';
 
 import { buildHierarchy } from '../../../utils/buildHierarchy.mjs';
@@ -97,14 +96,6 @@ export const createSectionBuilder = () => {
 
     // Remove the parent property we added to the section earlier
     delete section.parent;
-
-    // if (parent) {
-    //   if (!parent.tmp) {
-    //     parent.tmp = [];
-    //   }
-    //   parent.tmp.push(section);
-    // }
-    // console.debug(section);
 
     return section;
   };

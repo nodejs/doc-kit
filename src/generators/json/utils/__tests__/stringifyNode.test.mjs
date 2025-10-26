@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { stringifyNode } from '../../utils/stringifyNode.mjs';
+import { stringifyNode } from '../stringifyNode.mjs';
 
 test('break', () => {
   /**

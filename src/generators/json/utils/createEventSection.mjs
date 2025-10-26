@@ -2,6 +2,7 @@
 import { GeneratorError } from '../../../utils/generator-error.mjs';
 import { EVENT_TYPE_DESCRIPTION_EXTRACTOR } from '../constants.mjs';
 import { findParentSection } from './findParentSection.mjs';
+import { parseTypeList } from './parseTypeList.mjs';
 import { stringifyNode } from './stringifyNode.mjs';
 
 /**
@@ -66,16 +67,24 @@ export const createEventSectionBuilder = () => {
             // Type _should_ be a link with maybe a description following
             const [type, ...descriptionNodes] = rest;
 
-            // TODO type can be | thing here as well :)
-            parameter['@type'] = type.children[0].value;
+            const { types, endingIndex } = parseTypeList(parameterAst.children);
+            if (types.length === 0) {
+              parameter['@type'] = 'any';
+            } else {
+              parameter['@type'] = types.length === 1 ? types[0] : types;
+            }
 
             let description = '';
-            descriptionNodes.forEach(
-              node => (description += stringifyNode(node))
-            );
+            for (
+              let i = endingIndex + 1;
+              i < parameterAst.children.length;
+              i++
+            ) {
+              description += stringifyNode(parameterAst.children[i]);
+            }
 
             if (description !== '') {
-              parameter.description = description;
+              parameter.description = description.trim();
             }
           } else {
             // Type isn't a link and we get the joy of extracting it
@@ -113,54 +122,29 @@ export const createEventSectionBuilder = () => {
         }
         case 'link': {
           // Third format
-          let type = '';
-
-          let i = 0;
-          let moreTypes = false;
-          do {
-            const node = parameterAst.children[i];
-            if (node.type !== 'link') {
-              throw new GeneratorError(
-                `expected type 'link', got ${node.type}`
-              );
-            }
-
-            if (node.children[0].type !== 'inlineCode') {
-              throw new GeneratorError(
-                `expected type 'inlineCode', got ${node.children[0].type}`
-              );
-            }
-
-            type += node.children[0].value;
-
-            // Check if this link is followed up by a `|`
-            const nextNode = parameterAst.children[i + 1];
-            moreTypes =
-              nextNode &&
-              nextNode.type === 'text' &&
-              nextNode.value.trim() === '|';
-            if (moreTypes) {
-              type += ' | ';
-            }
-            i += 2;
-          } while (moreTypes);
 
           parameter['@name'] = 'value';
-          parameter['@type'] = type;
+
+          const { types, endingIndex } = parseTypeList(parameterAst.children);
+          if (types.length === 0) {
+            parameter['@type'] = 'any';
+          } else {
+            parameter['@type'] = types.length === 1 ? types[0] : types;
+          }
 
           let description = '';
-          for (; i < parameterAst.children.length; i++) {
+          for (let i = endingIndex + 1; i < parameterAst.children.length; i++) {
             description += stringifyNode(parameterAst.children[i]);
           }
 
           if (description !== '') {
-            parameter.description = description;
+            parameter.description = description.trim();
           }
 
           break;
         }
         default: {
-          throw new TypeError(
+          throw new GeneratorError(
             `unexpected list node type: ${parameterAst.children[0].type}`
           );
         }

@@ -6,7 +6,7 @@ import assert from 'node:assert';
 import {
   createSectionBaseBuilder,
   ENTRY_TO_SECTION_TYPE,
-} from '../../utils/createSectionBase.mjs';
+} from '../createSectionBase.mjs';
 
 const createSectionBase = createSectionBaseBuilder();
 
@@ -14,7 +14,7 @@ describe('determines the correct type for a section', () => {
   describe('type fallbacks', () => {
     test('fallbacks to `module` if heading depth is 1 and heading type is undefined', () => {
       /**
-       * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],
@@ -54,7 +54,7 @@ describe('determines the correct type for a section', () => {
 
     test('fallbacks to `text` if heading depth is > 1 and heading type is undefined', () => {
       /**
-       * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],
@@ -94,7 +94,7 @@ describe('determines the correct type for a section', () => {
 
     test('doc/api/process.md determined as module and not a global', () => {
       /**
-       * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],
@@ -138,7 +138,7 @@ describe('determines the correct type for a section', () => {
 
     test(`\`${entryType}\` -> \`${sectionType}\``, () => {
       /**
-       * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],
@@ -181,7 +181,7 @@ describe('determines the correct type for a section', () => {
 describe('extracts description and examples correctly', () => {
   test('description with `text`', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -243,7 +243,7 @@ describe('extracts description and examples correctly', () => {
 
   test('description with `inlineCode` ', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -300,7 +300,7 @@ describe('extracts description and examples correctly', () => {
 
   test('description with `link`', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -375,7 +375,7 @@ describe('extracts description and examples correctly', () => {
 
   test('description with `emphasis` ', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -437,7 +437,7 @@ describe('extracts description and examples correctly', () => {
 
   test('extracts code examples', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -497,7 +497,7 @@ describe('extracts description and examples correctly', () => {
 describe('`@deprecated`', () => {
   test('undefined if not deprecated', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -536,7 +536,7 @@ describe('`@deprecated`', () => {
 
   test('defined if deprecated', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -578,7 +578,7 @@ describe('`@deprecated`', () => {
 describe('`stability`', () => {
   test('undefined if not provided', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -617,7 +617,7 @@ describe('`stability`', () => {
 
   test('defined if provided', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -668,7 +668,7 @@ describe('`stability`', () => {
 describe('`changes`, `@since`, `napiVersion`, `removedIn`', () => {
   test('undefined if not provided', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],
@@ -710,7 +710,7 @@ describe('`changes`, `@since`, `napiVersion`, `removedIn`', () => {
 
   test('defined if provided', () => {
     /**
-     * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+     * @type {import('../createSectionBase.mjs').HierarchizedEntry}
      */
     const entry = {
       hierarchyChildren: [],

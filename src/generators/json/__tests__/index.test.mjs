@@ -26,7 +26,7 @@ describe('generator output complies with json schema', () => {
     schema = await parseSchema();
   });
 
-  for (const fixture of ['all-text-doc']) {
+  for (const fixture of ['text-doc', 'module']) {
     const input = join(FIXTURES_DIR, `${fixture}.md`);
 
     test(`${fixture}.md`, async () => {

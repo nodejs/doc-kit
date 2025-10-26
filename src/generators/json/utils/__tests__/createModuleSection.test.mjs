@@ -2,14 +2,14 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { createModuleSectionBuilder } from '../../utils/createModuleSection.mjs';
+import { createModuleSectionBuilder } from '../createModuleSection.mjs';
 import { DOC_NODE_VERSION } from '../../../../constants.mjs';
 
 const createModuleSection = createModuleSectionBuilder();
 
 test('adds expected properties', () => {
   /**
-   * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+   * @type {import('../createSectionBase.mjs').HierarchizedEntry}
    */
   const entry = { api: 'something' };
 

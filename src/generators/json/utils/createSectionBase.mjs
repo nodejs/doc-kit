@@ -1,4 +1,3 @@
-// @ts-check
 'use strict';
 
 import { enforceArray } from '../../../utils/array.mjs';

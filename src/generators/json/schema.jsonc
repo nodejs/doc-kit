@@ -227,10 +227,6 @@
           "type": "array",
           "items": { "$ref": "#/definitions/MethodParameter" },
         },
-        // "@returns": {
-        //   "description": "The method signature's return type.",
-        //   "$ref": "https://json-schema.org/draft-07/schema#",
-        // },
         "@returns": {
           "$ref": "#/definitions/MethodReturnType",
         },
@@ -315,10 +311,6 @@
               "type": "string",
               "enum": ["property"],
             },
-            // "@type": {
-            //   "description": "JavaScript type of the property.",
-            //   "$ref": "https://json-schema.org/draft-07/schema#",
-            // },
             "@type": {
               "description": "JavaScript type of the property.",
               "oneOf": [

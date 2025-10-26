@@ -3,14 +3,14 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { createSectionBuilder } from '../../utils/createSection.mjs';
+import { createSectionBuilder } from '../createSection.mjs';
 import { DOC_NODE_VERSION } from '../../../../constants.mjs';
 
 const createSection = createSectionBuilder();
 
 test('empty `module` section', () => {
   /**
-   * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+   * @type {import('../createSectionBase.mjs').HierarchizedEntry}
    */
   const entry = {
     hierarchyChildren: [],
@@ -59,7 +59,7 @@ test('empty `module` section', () => {
 
 test('empty `text` section', () => {
   /**
-   * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+   * @type {import('../createSectionBase.mjs').HierarchizedEntry}
    */
   const entry = {
     hierarchyChildren: [],

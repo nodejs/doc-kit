@@ -23,7 +23,7 @@ describe('extracts type correctly', () => {
   for (const format of supportedFormats) {
     test(format, () => {
       /**
-       * @type {import('../../utils/createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],

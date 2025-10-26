@@ -1,6 +1,7 @@
 // @ts-check
 'use strict';
 
+import { assertAstType } from '../../../utils/assertAstType.mjs';
 import { DEFAULT_EXPRESSION } from '../constants.mjs';
 import { findParentSection } from './findParentSection.mjs';
 import { stringifyNode } from './stringifyNode.mjs';
@@ -58,15 +59,9 @@ export const createPropertySectionBuilder = () => {
      * @param {import('mdast').Link} node
      */
     const parseTypeFromLink = node => {
-      const { type, value } = node.children[0];
+      const type = assertAstType(node.children[0], 'inlineCode');
 
-      if (type !== 'inlineCode') {
-        throw new TypeError(
-          `unexpected link node child type ${type} for property ${section['@name']}`
-        );
-      }
-
-      let formattedValue = value;
+      let formattedValue = type.value;
       if (formattedValue.startsWith('<')) {
         formattedValue = formattedValue.substring(1, formattedValue.length - 1);
       }
