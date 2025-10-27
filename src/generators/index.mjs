@@ -3,6 +3,8 @@
 import addonVerify from './addon-verify/index.mjs';
 import apiLinks from './api-links/index.mjs';
 import astJs from './ast-js/index.mjs';
+import json from './json/index.mjs';
+import jsonAll from './json-all/index.mjs';
 import jsonSimple from './json-simple/index.mjs';
 import jsxAst from './jsx-ast/index.mjs';
 import legacyHtml from './legacy-html/index.mjs';
@@ -27,6 +29,10 @@ export const publicGenerators = {
   'orama-db': oramaDb,
   'llms-txt': llmsTxt,
   web,
+  'jsx-ast': jsxAst,
+  metadata,
+  json,
+  'json-all': jsonAll,
 };
 
 // These ones are special since they don't produce standard output,
