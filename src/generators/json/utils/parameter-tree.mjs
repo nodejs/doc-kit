@@ -3,15 +3,18 @@
 
 /**
  * @typedef {{
- *   name: string,
- *   createdAt: number
+ * name: string,
+ * createdAt: number
  * }} Parameter
  *
  * @typedef {{
- *   count: number
+ * count: number
  * }} Counter
  */
 
+/**
+ *
+ */
 export class ParameterTree {
   /**
    * @type {Array<Parameter>}
@@ -45,10 +48,16 @@ export class ParameterTree {
     });
   }
 
+  /**
+   *
+   */
   get parameters() {
     return this.#parameters;
   }
 
+  /**
+   *
+   */
   get children() {
     return this.#children;
   }

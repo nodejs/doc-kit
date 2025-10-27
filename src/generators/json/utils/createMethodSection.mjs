@@ -167,8 +167,8 @@ export const parseParameterListNode = ({ children }) => {
  * @param {HierarchizedEntry} entry The AST entry
  *
  * @returns {{
- *   parameters?: Record<string, import('../generated.d.ts').MethodParameter>,
- *   returns?: import('../generated.d.ts').MethodReturnType
+ * parameters?: Record<string, import('../generated.d.ts').MethodParameter>,
+ * returns?: import('../generated.d.ts').MethodReturnType
  * } | undefined}
  */
 export const parseParameterList = entry => {
@@ -442,6 +442,9 @@ export const parseSignatures = (entry, section) => {
   );
 };
 
+/**
+ *
+ */
 export const createMethodSectionBuilder = () => {
   /**
    * Adds the properties expected in a method section to an object.

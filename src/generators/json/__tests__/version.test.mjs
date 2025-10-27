@@ -1,10 +1,12 @@
 'use strict';
 
-import test from 'node:test';
 import assert from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import test from 'node:test';
+
 import { parse as jsoncParse } from 'jsonc-parser';
+
 import json from '../index.mjs';
 
 test('schema version matches generator version', async () => {

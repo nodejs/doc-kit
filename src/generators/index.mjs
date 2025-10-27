@@ -3,6 +3,8 @@
 import addonVerify from './addon-verify/index.mjs';
 import apiLinks from './api-links/index.mjs';
 import astJs from './ast-js/index.mjs';
+import json from './json/index.mjs';
+import jsonAll from './json-all/index.mjs';
 import jsonSimple from './json-simple/index.mjs';
 import jsxAst from './jsx-ast/index.mjs';
 import legacyHtml from './legacy-html/index.mjs';
@@ -14,8 +16,6 @@ import manPage from './man-page/index.mjs';
 import metadata from './metadata/index.mjs';
 import oramaDb from './orama-db/index.mjs';
 import web from './web/index.mjs';
-import json from './json/index.mjs';
-import jsonAll from './json-all/index.mjs';
 
 export const publicGenerators = {
   'json-simple': jsonSimple,

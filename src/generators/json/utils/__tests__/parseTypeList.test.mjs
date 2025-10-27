@@ -1,7 +1,8 @@
 'use strict';
 
-import { test } from 'node:test';
 import assert from 'node:assert';
+import { test } from 'node:test';
+
 import { parseTypeList } from '../parseTypeList.mjs';
 
 test('`bla {[integer](https://mdn-link)} Description start bla bla bla [asd](https://random-link)', () => {

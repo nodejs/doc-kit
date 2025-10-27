@@ -1,8 +1,9 @@
 // @ts-check
 'use strict';
 
-import { describe, test } from 'node:test';
 import assert from 'node:assert';
+import { describe, test } from 'node:test';
+
 import { createParameterGroupings } from '../createMethodSection.mjs';
 
 describe('createParameterGroupings', () => {

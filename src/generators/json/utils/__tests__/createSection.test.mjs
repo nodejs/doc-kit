@@ -1,10 +1,11 @@
 // @ts-check
 'use strict';
 
-import { test } from 'node:test';
 import assert from 'node:assert';
-import { createSectionBuilder } from '../createSection.mjs';
+import { test } from 'node:test';
+
 import { DOC_NODE_VERSION } from '../../../../constants.mjs';
+import { createSectionBuilder } from '../createSection.mjs';
 
 const createSection = createSectionBuilder();
 

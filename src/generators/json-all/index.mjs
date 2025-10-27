@@ -3,6 +3,7 @@
 
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+
 import { DOC_NODE_VERSION } from '../../constants.mjs';
 import { generateJsonSchema } from './util/generateJsonSchema.mjs';
 

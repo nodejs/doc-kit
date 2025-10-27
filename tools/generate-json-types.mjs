@@ -6,10 +6,11 @@
  * To use, just run this.
  */
 
-import { join } from 'node:path';
 import { readFile, writeFile } from 'node:fs/promises';
-import { parse } from 'jsonc-parser';
+import { join } from 'node:path';
+
 import { compile } from 'json-schema-to-typescript';
+import { parse } from 'jsonc-parser';
 
 const JSON_GENERATOR_PATH = join(
   import.meta.dirname,

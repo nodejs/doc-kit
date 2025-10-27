@@ -1,19 +1,22 @@
 'use strict';
 
-import { buildHierarchy } from '../../../utils/buildHierarchy.mjs';
-import { createSectionBaseBuilder } from './createSectionBase.mjs';
-import { createModuleSectionBuilder } from './createModuleSection.mjs';
 import { createClassSectionBuilder } from './createClassSection.mjs';
-import { createMethodSectionBuilder } from './createMethodSection.mjs';
-import { createPropertySectionBuilder } from './createPropertySection.mjs';
 import { createEventSectionBuilder } from './createEventSection.mjs';
-import { GeneratorError } from '../../../utils/generator-error.mjs';
+import { createMethodSectionBuilder } from './createMethodSection.mjs';
+import { createModuleSectionBuilder } from './createModuleSection.mjs';
+import { createPropertySectionBuilder } from './createPropertySection.mjs';
+import { createSectionBaseBuilder } from './createSectionBase.mjs';
 import { DOC_NODE_VERSION } from '../../../constants.mjs';
+import { buildHierarchy } from '../../../utils/buildHierarchy.mjs';
+import { GeneratorError } from '../../../utils/generator-error.mjs';
 
 /**
  * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
+/**
+ *
+ */
 export const createSectionBuilder = () => {
   const createSectionBase = createSectionBaseBuilder();
   const createModuleSection = createModuleSectionBuilder();

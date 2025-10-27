@@ -3,9 +3,10 @@
 
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { groupNodesByModule } from '../../utils/generators.mjs';
+
 import { createSectionBuilder } from './utils/createSection.mjs';
 import { parseSchema } from './utils/parseSchema.mjs';
+import { groupNodesByModule } from '../../utils/generators.mjs';
 
 /**
  * This generator is responsible for generating the JSON representation of the

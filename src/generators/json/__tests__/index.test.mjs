@@ -1,12 +1,14 @@
 // @ts-check
-import { describe, test, before } from 'node:test';
 import assert from 'node:assert';
 import { join } from 'node:path';
-import { SemVer } from 'semver';
+import { describe, test, before } from 'node:test';
+
 import { Validator } from 'jsonschema';
+import { SemVer } from 'semver';
+
+import createGenerator from '../../../generators.mjs';
 import createMarkdownLoader from '../../../loaders/markdown.mjs';
 import createMarkdownParser from '../../../parsers/markdown.mjs';
-import createGenerator from '../../../generators.mjs';
 import { parseSchema } from '../utils/parseSchema.mjs';
 
 const FIXTURES_DIR = join(import.meta.dirname, 'fixtures');

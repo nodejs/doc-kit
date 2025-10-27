@@ -1,9 +1,10 @@
 'use strict';
 
-import test from 'node:test';
 import assert from 'node:assert';
-import jsonAll from '../../json-all/index.mjs';
-import json from '../index.mjs';
+import test from 'node:test';
+
+import json from '../../json/index.mjs';
+import jsonAll from '../index.mjs';
 import { generateJsonSchema } from '../util/generateJsonSchema.mjs';
 
 test('json-all generator matches json generator version match', () => {

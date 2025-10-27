@@ -5,6 +5,9 @@ import jsonAll from '../index.mjs';
 
 const JSON_SCHEMA_URL = `https://nodejs.org/docs/${DOC_NODE_VERSION}/api/node-doc-schema.json`;
 
+/**
+ *
+ */
 export const generateJsonSchema = () => ({
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: `nodejs-api-doc-all@v${jsonAll.version}`,

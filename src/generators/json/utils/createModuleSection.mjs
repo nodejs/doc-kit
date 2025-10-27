@@ -7,6 +7,9 @@ import { DOC_NODE_VERSION } from '../../../constants.mjs';
  * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
+/**
+ *
+ */
 export const createModuleSectionBuilder = () => {
   /**
    * Adds the properties expected in a module section to an object.

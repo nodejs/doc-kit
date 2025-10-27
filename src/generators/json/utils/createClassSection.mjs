@@ -1,12 +1,15 @@
 'use strict';
 
-import { GeneratorError } from '../../../utils/generator-error.mjs';
 import { findParentSection } from './findParentSection.mjs';
+import { GeneratorError } from '../../../utils/generator-error.mjs';
 
 /**
  * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
+/**
+ *
+ */
 export const createClassSectionBuilder = () => {
   /**
    * Adds the properties expected in a class section to an object.

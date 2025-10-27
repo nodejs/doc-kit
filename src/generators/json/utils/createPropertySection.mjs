@@ -20,6 +20,9 @@ const docTypeToCorrectJsType = {
   symbol: 'Symbol',
 };
 
+/**
+ *
+ */
 export const createPropertySectionBuilder = () => {
   /**
    * Parse the type of the property from the AST

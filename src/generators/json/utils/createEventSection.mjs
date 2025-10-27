@@ -9,6 +9,9 @@ import { stringifyNode } from './stringifyNode.mjs';
  * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
+/**
+ *
+ */
 export const createEventSectionBuilder = () => {
   /**
    * Parse the parameters for the event's callback method

@@ -29,6 +29,9 @@ export const ENTRY_TO_SECTION_TYPE = /** @type {const} */ ({
   example: 'text',
 });
 
+/**
+ *
+ */
 export const createSectionBaseBuilder = () => {
   /**
    * @param {import('mdast').Heading} header

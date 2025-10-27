@@ -2,7 +2,7 @@
  * An error thrown by a generator when it encounters something unexpected.
  *
  * @typedef {{
- *   entry?: ApiDocMetadataEntry
+ * entry?: ApiDocMetadataEntry
  * } & ErrorOptions} GeneratorErrorOptions
  */
 export class GeneratorError extends Error {
@@ -21,13 +21,16 @@ export class GeneratorError extends Error {
     this.entry = options?.entry;
   }
 
+  /**
+   * Get the error message with some debug info attached
+   */
   get message() {
     let message = super.message;
 
     // Add general info of what was being processed when this error was thrown
     // for debugging
     if (this.entry) {
-      message += ` (${options.entry.api_doc_source}#${options.entry.slug})`;
+      message += ` (${this.entry.api_doc_source}#${this.entry.slug})`;
     }
 
     return message;

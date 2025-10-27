@@ -1,9 +1,10 @@
 'use strict';
 
-import { test } from 'node:test';
 import assert from 'node:assert';
-import { createModuleSectionBuilder } from '../createModuleSection.mjs';
+import { test } from 'node:test';
+
 import { DOC_NODE_VERSION } from '../../../../constants.mjs';
+import { createModuleSectionBuilder } from '../createModuleSection.mjs';
 
 const createModuleSection = createModuleSectionBuilder();
 
