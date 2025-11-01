@@ -41,25 +41,27 @@ export default async function bundleCode(code, { server = false } = {}) {
       ? ['preact', 'preact-render-to-string', '@node-core/ui-components']
       : [],
 
-    // Inject global compile-time constants that will be replaced in code.
-    // These are useful for tree-shaking and conditional branching.
-    // Be sure to update type declarations (`types.d.ts`) if these change.
-    define: {
-      // Static data injected directly into the bundle (as a literal or serialized JSON).
-      __STATIC_DATA__: staticData,
+    transform: {
+      // Inject global compile-time constants that will be replaced in code.
+      // These are useful for tree-shaking and conditional branching.
+      // Be sure to update type declarations (`types.d.ts`) if these change.
+      define: {
+        // Static data injected directly into the bundle (as a literal or serialized JSON).
+        __STATIC_DATA__: staticData,
 
-      // Boolean flags used for conditional logic in source code:
-      // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
-      // These flags help split logic for server/client environments.
-      // Unused branches will be removed via tree-shaking.
-      SERVER: String(server),
-      CLIENT: String(!server),
+        // Boolean flags used for conditional logic in source code:
+        // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
+        // These flags help split logic for server/client environments.
+        // Unused branches will be removed via tree-shaking.
+        SERVER: String(server),
+        CLIENT: String(!server),
+      },
+
+      // JSX transformation configuration.
+      // `'react-jsx'` enables the automatic JSX runtime, which doesn't require `import React`.
+      // Since we're using Preact via aliasing, this setting works well with `preact/compat`.
+      jsx: 'react-jsx',
     },
-
-    // JSX transformation configuration.
-    // `'react-jsx'` enables the automatic JSX runtime, which doesn't require `import React`.
-    // Since we're using Preact via aliasing, this setting works well with `preact/compat`.
-    jsx: 'react-jsx',
 
     // Module resolution aliases.
     // This tells the bundler to use `preact/compat` wherever `react` or `react-dom` is imported.
