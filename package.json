@@ -41,7 +41,7 @@
     "@actions/core": "^1.11.1",
     "@clack/prompts": "^0.11.0",
     "@heroicons/react": "^2.2.0",
-    "@minify-html/node": "^0.17.1",
+    "@minify-html/node": "^0.16.4",
     "@node-core/rehype-shiki": "1.1.0",
     "@node-core/ui-components": "1.2.0",
     "@orama/orama": "^3.1.14",
