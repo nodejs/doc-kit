@@ -61,7 +61,7 @@
     "lightningcss": "^1.30.1",
     "mdast-util-slice-markdown": "^2.0.1",
     "preact": "^10.27.2",
-    "preact-render-to-string": "^6.6.1",
+    "preact-render-to-string": "^6.6.3",
     "reading-time": "^1.5.0",
     "recma-jsx": "^1.0.1",
     "rehype-raw": "^7.0.0",
