@@ -41,19 +41,21 @@ export default async function bundleCode(code, { server = false } = {}) {
       ? ['preact', 'preact-render-to-string', '@node-core/ui-components']
       : [],
 
-    // Inject global compile-time constants that will be replaced in code.
-    // These are useful for tree-shaking and conditional branching.
-    // Be sure to update type declarations (`types.d.ts`) if these change.
-    define: {
-      // Static data injected directly into the bundle (as a literal or serialized JSON).
-      __STATIC_DATA__: staticData,
+    transform: {
+      // Inject global compile-time constants that will be replaced in code.
+      // These are useful for tree-shaking and conditional branching.
+      // Be sure to update type declarations (`types.d.ts`) if these change.
+      define: {
+        // Static data injected directly into the bundle (as a literal or serialized JSON).
+        __STATIC_DATA__: staticData,
 
-      // Boolean flags used for conditional logic in source code:
-      // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
-      // These flags help split logic for server/client environments.
-      // Unused branches will be removed via tree-shaking.
-      SERVER: String(server),
-      CLIENT: String(!server),
+        // Boolean flags used for conditional logic in source code:
+        // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
+        // These flags help split logic for server/client environments.
+        // Unused branches will be removed via tree-shaking.
+        SERVER: String(server),
+        CLIENT: String(!server),
+      },
     },
 
     // JSX transformation configuration.
