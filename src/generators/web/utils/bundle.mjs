@@ -56,12 +56,12 @@ export default async function bundleCode(code, { server = false } = {}) {
         SERVER: String(server),
         CLIENT: String(!server),
       },
-    },
 
-    // JSX transformation configuration.
-    // `'react-jsx'` enables the automatic JSX runtime, which doesn't require `import React`.
-    // Since we're using Preact via aliasing, this setting works well with `preact/compat`.
-    jsx: 'react-jsx',
+      // JSX transformation configuration.
+      // `'react-jsx'` enables the automatic JSX runtime, which doesn't require `import React`.
+      // Since we're using Preact via aliasing, this setting works well with `preact/compat`.
+      jsx: 'react-jsx',
+    },
 
     // Module resolution aliases.
     // This tells the bundler to use `preact/compat` wherever `react` or `react-dom` is imported.
