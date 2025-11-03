@@ -1,9 +1,7 @@
 'use strict';
 
-import { readFile, writeFile, stat } from 'node:fs/promises';
+import { readFile, writeFile, stat, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-
-import { glob } from 'glob';
 
 /**
  * Safely copies files from source to target directory, skipping files that haven't changed
@@ -13,11 +11,7 @@ import { glob } from 'glob';
  * @param {string} targetDir - Target directory path
  */
 export async function safeCopy(srcDir, targetDir) {
-  const files = await glob('*', {
-    cwd: srcDir,
-    dot: true,
-    nodir: true,
-  });
+  const files = await readdir(srcDir);
 
   for (const file of files) {
     const sourcePath = join(srcDir, file);
