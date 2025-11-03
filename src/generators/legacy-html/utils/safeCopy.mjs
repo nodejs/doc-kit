@@ -1,6 +1,6 @@
 'use strict';
 
-import { copyFile, readdir, stat } from 'node:fs/promises';
+import { copyFile, readdir, stat, constants } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /**
@@ -34,6 +34,6 @@ export async function safeCopy(srcDir, targetDir) {
 
     // Use copyFile with COPYFILE_FICLONE flag for efficient copying
     // This is atomic and handles concurrent operations better than manual read/write
-    await copyFile(sourcePath, targetPath);
+    await copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
   }
 }
