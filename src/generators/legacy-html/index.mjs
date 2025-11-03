@@ -189,7 +189,7 @@ export default {
           recursive: true,
           force: true,
         });
-      } finally {
+      } catch (_) {
         // There's a chance that this step will fail when being run in parallel, since
         // the generators will all attempt to modify the same files at the same time.
         // In that scenario, we just want to ignore the potential failure.
