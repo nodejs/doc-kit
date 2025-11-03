@@ -13,17 +13,14 @@ import { glob } from 'glob';
  * @param {string} targetDir - Target directory path
  */
 export async function safeCopy(srcDir, targetDir) {
-  // Get all files in the source folder (no subdirectories expected)
   const files = await glob('*', {
     cwd: srcDir,
     dot: true,
     nodir: true,
   });
 
-  // Copy each file individually
   for (const file of files) {
     const sourcePath = join(srcDir, file);
-
     const targetPath = join(targetDir, file);
 
     const [sStat, tStat] = await Promise.allSettled([
@@ -32,17 +29,16 @@ export async function safeCopy(srcDir, targetDir) {
     ]);
 
     const shouldWrite =
-      // the target file doesn't exist
-      sStat.status === 'rejected' ||
-      // file sizes are different
-      sStat.size !== tStat.size ||
-      // source got modified / is newer
-      sStat.mtimeMs > tStat.mtimeMs;
+      tStat.status === 'rejected' ||
+      sStat.value.size !== tStat.value.size ||
+      sStat.value.mtimeMs > tStat.value.mtimeMs;
 
-    if (shouldWrite) {
-      const fileContent = await readFile(sourcePath);
-
-      await writeFile(targetPath, fileContent);
+    if (!shouldWrite) {
+      continue;
     }
+
+    const fileContent = await readFile(sourcePath);
+
+    await writeFile(targetPath, fileContent);
   }
 }
