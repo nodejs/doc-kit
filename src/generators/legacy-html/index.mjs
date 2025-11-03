@@ -175,7 +175,7 @@ export default {
       // Removes the current assets directory to copy the new assets
       // and prevent stale assets from existing in the output directory
       // If the path does not exists, it will simply ignore and continue
-      await rm(assetsFolder, { recursive: true, force: true });
+      await rm(assetsFolder, { recursive: true, force: true, maxRetries: 10 });
 
       // We copy all the other assets to the output folder at the end of the process
       // to ensure that all latest changes on the styles are applied to the output
