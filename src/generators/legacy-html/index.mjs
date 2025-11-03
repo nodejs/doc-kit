@@ -1,13 +1,12 @@
 'use strict';
 
-import { readFile, rm, writeFile, mkdir } from 'node:fs/promises';
+import { cp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import HTMLMinifier from '@minify-html/node';
 
 import buildContent from './utils/buildContent.mjs';
 import dropdowns from './utils/buildDropdowns.mjs';
-import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRehype } from '../../utils/remark.mjs';
@@ -170,22 +169,31 @@ export default {
     }
 
     if (output) {
-      // Define the source folder for API docs assets
-      const srcAssets = join(baseDir, 'assets');
+      try {
+        // Define the output folder for API docs assets
+        const assetsFolder = join(output, 'assets');
 
-      // Define the output folder for API docs assets
-      const assetsFolder = join(output, 'assets');
+        // Removes the current assets directory to copy the new assets
+        // and prevent stale assets from existing in the output directory
+        // If the path does not exists, it will simply ignore and continue
+        await rm(assetsFolder, {
+          recursive: true,
+          force: true,
+          maxRetries: 10,
+        });
 
-      // Removes the current assets directory to copy the new assets
-      // and prevent stale assets from existing in the output directory
-      // If the path does not exists, it will simply ignore and continue
-      await rm(assetsFolder, { recursive: true, force: true, maxRetries: 10 });
-
-      // Creates the assets folder if it does not exist
-      await mkdir(assetsFolder, { recursive: true });
-
-      // Copy all files from assets folder to output, skipping unchanged files
-      await safeCopy(srcAssets, assetsFolder);
+        // We copy all the other assets to the output folder at the end of the process
+        // to ensure that all latest changes on the styles are applied to the output
+        // Note.: This is not meant to be used for DX/developer purposes.
+        await cp(join(baseDir, 'assets'), assetsFolder, {
+          recursive: true,
+          force: true,
+        });
+      } finally {
+        // There's a chance that this step will fail when being run in parallel, since
+        // the generators will all attempt to modify the same files at the same time.
+        // In that scenario, we just want to ignore the potential failure.
+      }
     }
 
     return generatedValues;
