@@ -1,11 +1,12 @@
 'use strict';
 
-import { readFile, writeFile, stat, readdir } from 'node:fs/promises';
+import { copyFile, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /**
  * Safely copies files from source to target directory, skipping files that haven't changed
- * based on file stats (size and modification time)
+ * based on file stats (size and modification time). Uses native fs.copyFile which handles
+ * concurrent operations gracefully.
  *
  * @param {string} srcDir - Source directory path
  * @param {string} targetDir - Target directory path
@@ -31,8 +32,8 @@ export async function safeCopy(srcDir, targetDir) {
       continue;
     }
 
-    const fileContent = await readFile(sourcePath);
-
-    await writeFile(targetPath, fileContent);
+    // Use copyFile with COPYFILE_FICLONE flag for efficient copying
+    // This is atomic and handles concurrent operations better than manual read/write
+    await copyFile(sourcePath, targetPath);
   }
 }

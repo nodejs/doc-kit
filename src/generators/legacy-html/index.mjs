@@ -1,6 +1,6 @@
 'use strict';
 
-import { readFile, rm, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import HTMLMinifier from '@minify-html/node';
@@ -175,11 +175,6 @@ export default {
 
       // Define the output folder for API docs assets
       const assetsFolder = join(output, 'assets');
-
-      // Removes the current assets directory to copy the new assets
-      // and prevent stale assets from existing in the output directory
-      // If the path does not exists, it will simply ignore and continue
-      await rm(assetsFolder, { recursive: true, force: true, maxRetries: 10 });
 
       // Creates the assets folder if it does not exist
       await mkdir(assetsFolder, { recursive: true });
