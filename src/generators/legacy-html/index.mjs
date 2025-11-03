@@ -1,12 +1,13 @@
 'use strict';
 
-import { cp, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFile, rm, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import HTMLMinifier from '@minify-html/node';
 
 import buildContent from './utils/buildContent.mjs';
 import dropdowns from './utils/buildDropdowns.mjs';
+import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRehype } from '../../utils/remark.mjs';
@@ -169,6 +170,9 @@ export default {
     }
 
     if (output) {
+      // Define the source folder for API docs assets
+      const srcAssets = join(baseDir, 'assets');
+
       // Define the output folder for API docs assets
       const assetsFolder = join(output, 'assets');
 
@@ -177,13 +181,11 @@ export default {
       // If the path does not exists, it will simply ignore and continue
       await rm(assetsFolder, { recursive: true, force: true, maxRetries: 10 });
 
-      // We copy all the other assets to the output folder at the end of the process
-      // to ensure that all latest changes on the styles are applied to the output
-      // Note.: This is not meant to be used for DX/developer purposes.
-      await cp(join(baseDir, 'assets'), assetsFolder, {
-        recursive: true,
-        force: true,
-      });
+      // Creates the assets folder if it does not exist
+      await mkdir(assetsFolder, { recursive: true });
+
+      // Copy all files from assets folder to output, skipping unchanged files
+      await safeCopy(srcAssets, assetsFolder);
     }
 
     return generatedValues;
