@@ -18,7 +18,7 @@ const availableGenerators = Object.keys(publicGenerators);
 
 /**
  * @typedef {Object} Options
- * @property {Array<string>|string} input - Specifies the glob/path for input files.
+ * @property {Array<string>|string} [input] - Specifies the glob/path for input files.
  * @property {Array<string>|string} [ignore] - Specifies the glob/path for ignoring files.
  * @property {Array<keyof publicGenerators>} target - Specifies the generator target mode.
  * @property {string} version - Specifies the target Node.js version.
@@ -42,7 +42,6 @@ export default {
         type: 'text',
         message: 'Enter input glob patterns',
         variadic: true,
-        required: true,
       },
     },
     ignore: {
@@ -131,7 +130,7 @@ export default {
    * @returns {Promise<void>}
    */
   async action(opts) {
-    const docs = await loadAndParse(opts.input, opts.ignore);
+    const docs = await loadAndParse(opts.inpu ?? [], opts.ignore);
     const releases = await parseChangelog(opts.changelog);
 
     const rawTypeMap = await loadFromURL(opts.typeMap);

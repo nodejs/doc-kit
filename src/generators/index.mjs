@@ -7,6 +7,7 @@ import jsonSimple from './json-simple/index.mjs';
 import jsxAst from './jsx-ast/index.mjs';
 import legacyHtml from './legacy-html/index.mjs';
 import legacyHtmlAll from './legacy-html-all/index.mjs';
+import legacyHtmlAssets from './legacy-html-assets/index.mjs';
 import legacyJson from './legacy-json/index.mjs';
 import legacyJsonAll from './legacy-json-all/index.mjs';
 import llmsTxt from './llms-txt/index.mjs';
@@ -18,6 +19,7 @@ import web from './web/index.mjs';
 export const publicGenerators = {
   'json-simple': jsonSimple,
   'legacy-html': legacyHtml,
+  'legacy-html-assets': legacyHtmlAssets,
   'legacy-html-all': legacyHtmlAll,
   'man-page': manPage,
   'legacy-json': legacyJson,

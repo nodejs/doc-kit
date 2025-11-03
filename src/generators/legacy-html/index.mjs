@@ -1,6 +1,6 @@
 'use strict';
 
-import { cp, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import HTMLMinifier from '@minify-html/node';
@@ -166,24 +166,6 @@ export default {
 
         await writeFile(join(output, `${node.api}.html`), minified);
       }
-    }
-
-    if (output) {
-      // Define the output folder for API docs assets
-      const assetsFolder = join(output, 'assets');
-
-      // Removes the current assets directory to copy the new assets
-      // and prevent stale assets from existing in the output directory
-      // If the path does not exists, it will simply ignore and continue
-      await rm(assetsFolder, { recursive: true, force: true, maxRetries: 10 });
-
-      // We copy all the other assets to the output folder at the end of the process
-      // to ensure that all latest changes on the styles are applied to the output
-      // Note.: This is not meant to be used for DX/developer purposes.
-      await cp(join(baseDir, 'assets'), assetsFolder, {
-        recursive: true,
-        force: true,
-      });
     }
 
     return generatedValues;

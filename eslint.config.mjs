@@ -92,7 +92,7 @@ export default defineConfig([
   },
   {
     files: [
-      'src/generators/legacy-html/assets/*.js',
+      'src/generators/legacy-html-assets/assets/*.js',
       'src/generators/web/ui/**/*',
     ],
     languageOptions: {
