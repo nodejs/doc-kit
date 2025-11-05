@@ -29,9 +29,7 @@ export async function safeCopy(srcDir, targetDir) {
       ]).catch(() => []);
 
       const shouldWrite =
-        !tStat ||
-        sStat.size !== tStat.size ||
-        sStat.mtimeMs > tStat.mtimeMs;
+        !tStat || sStat.size !== tStat.size || sStat.mtimeMs > tStat.mtimeMs;
 
       if (!shouldWrite) {
         continue;
