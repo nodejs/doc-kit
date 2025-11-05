@@ -1,6 +1,6 @@
-import { highlightToHast } from '@node-core/rehype-shiki';
 import { h as createElement } from 'hastscript';
 
+import { highlighter } from '../../../utils/highlighter.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { parseListItem } from '../../legacy-json/utils/parseList.mjs';
 import parseSignature from '../../legacy-json/utils/parseSignature.mjs';
@@ -50,7 +50,7 @@ export const generateSignature = (
  */
 export const createSignatureCodeBlock = (functionName, signature, prefix) => {
   const sig = generateSignature(functionName, signature, prefix);
-  const highlighted = highlightToHast(sig, 'typescript');
+  const highlighted = highlighter.highlightToHast(sig, 'typescript');
 
   return createElement('div', { class: 'signature' }, [highlighted]);
 };

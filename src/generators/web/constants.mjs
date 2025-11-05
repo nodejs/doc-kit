@@ -35,6 +35,21 @@ export const JSX_IMPORTS = {
     name: 'CodeTabs',
     source: '@node-core/ui-components/MDX/CodeTabs',
   },
+  MDXTooltip: {
+    name: 'MDXTooltip',
+    isDefaultExport: false,
+    source: '@node-core/ui-components/MDX/Tooltip',
+  },
+  MDXTooltipContent: {
+    name: 'MDXTooltipContent',
+    isDefaultExport: false,
+    source: '@node-core/ui-components/MDX/Tooltip',
+  },
+  MDXTooltipTrigger: {
+    name: 'MDXTooltipTrigger',
+    isDefaultExport: false,
+    source: '@node-core/ui-components/MDX/Tooltip',
+  },
   ChangeHistory: {
     name: 'ChangeHistory',
     source: '@node-core/ui-components/Common/ChangeHistory',

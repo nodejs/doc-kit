@@ -12,7 +12,7 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
-import syntaxHighlighter from './highlighter.mjs';
+import syntaxHighlighter, { highlighter } from './highlighter.mjs';
 import { AST_NODE_TYPES } from '../generators/jsx-ast/constants.mjs';
 import transformElements from '../generators/jsx-ast/utils/transformer.mjs';
 
@@ -45,6 +45,8 @@ export const getRemarkRehype = () =>
     // and we trust the sources of the Markdown files
     .use(rehypeStringify, { allowDangerousHtml: true });
 
+const singletonShiki = await rehypeShikiji({ highlighter });
+
 /**
  * Retrieves an instance of Remark configured to output JSX code.
  * including parsing Code Boxes with syntax highlighting
@@ -62,7 +64,7 @@ export const getRemarkRecma = () =>
     })
     // Any `raw` HTML in the markdown must be converted to AST in order for Recma to understand it
     .use(rehypeRaw, { passThrough })
-    .use(rehypeShikiji)
+    .use(() => singletonShiki)
     .use(transformElements)
     .use(rehypeRecma)
     .use(recmaJsx)
