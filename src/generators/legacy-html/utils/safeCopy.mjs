@@ -23,14 +23,13 @@ export async function safeCopy(srcDir, targetDir) {
       const sourcePath = join(srcDir, file);
       const targetPath = join(targetDir, file);
 
-      const [sStat, tStat] = await Promise.allSettled([
+      const [sStat, tStat] = await Promise.all([
         stat(sourcePath),
         stat(targetPath),
-      ]);
+      ]).catch(() => []);
 
-      const shouldWrite =
-        tStat.status === 'rejected' ||
-        sStat.value.size !== tStat.value.size ||
+      const shouldWrite = !tStat;
+      sStat.value.size !== tStat.value.size ||
         sStat.value.mtimeMs > tStat.value.mtimeMs;
 
       if (!shouldWrite) {
