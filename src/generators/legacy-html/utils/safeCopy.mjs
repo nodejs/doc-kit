@@ -1,6 +1,7 @@
 'use strict';
 
-import { copyFile, readdir, stat } from 'node:fs/promises';
+import { statSync, constants } from 'node:fs';
+import { copyFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /**
@@ -17,17 +18,17 @@ export async function safeCopy(srcDir, targetDir) {
     const sourcePath = join(srcDir, file);
     const targetPath = join(targetDir, file);
 
-    const tStat = await stat(targetPath).catch(() => undefined);
+    const tStat = statSync(targetPath, { throwIfNoEntry: false });
 
     if (tStat === undefined) {
-      await copyFile(sourcePath, targetPath);
+      await copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
       continue;
     }
 
-    const sStat = await stat(sourcePath);
+    const sStat = statSync(sourcePath);
 
     if (sStat.size !== tStat.size || sStat.mtimeMs > tStat.mtimeMs) {
-      await copyFile(sourcePath, targetPath);
+      await copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
     }
   }
 }
