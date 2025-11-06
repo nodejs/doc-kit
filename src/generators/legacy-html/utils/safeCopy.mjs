@@ -19,16 +19,13 @@ export async function safeCopy(srcDir, targetDir) {
 
     const tStat = await stat(targetPath).catch(() => undefined);
 
-    // If target doesn't exist, copy immediately
-    if (!tStat) {
+    if (tStat === undefined) {
       await copyFile(sourcePath, targetPath);
       continue;
     }
 
-    // Target exists, check if we need to update
     const sStat = await stat(sourcePath);
 
-    // Skip if target has same size and source is not newer
     if (sStat.size !== tStat.size || sStat.mtimeMs > tStat.mtimeMs) {
       await copyFile(sourcePath, targetPath);
     }
