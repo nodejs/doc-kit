@@ -1,6 +1,6 @@
 'use strict';
 
-import { shiki } from '@node-core/rehype-shiki';
+import createHighlighter from '@node-core/rehype-shiki';
 import { toString } from 'hast-util-to-string';
 import { h as createElement } from 'hastscript';
 import { SKIP, visit } from 'unist-util-visit';
@@ -31,6 +31,8 @@ function isCodeBlock(node) {
     node?.tagName === 'pre' && node?.children[0].tagName === 'code'
   );
 }
+
+export const highlighter = await createHighlighter();
 
 /**
  * Creates a HAST transformer for Shiki which is used for transforming our codeboxes
@@ -87,7 +89,7 @@ export default function rehypeShikiji() {
       const languageId = codeLanguage.slice(languagePrefix.length);
 
       // Parses the <pre> contents and returns a HAST tree with the highlighted code
-      const { children } = shiki.codeToHast(preElementContents, {
+      const { children } = highlighter.shiki.codeToHast(preElementContents, {
         lang: languageId,
         // Allows support for dual themes (light, dark) for Shiki
         themes: { light: shikiConfig.themes[0], dark: shikiConfig.themes[1] },
