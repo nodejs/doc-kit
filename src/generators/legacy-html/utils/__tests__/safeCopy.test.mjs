@@ -103,9 +103,8 @@ describe('safeCopy', () => {
     // Don't create any files in source
     await safeCopy(srcDir, targetDir);
 
-    // Verify no error occurred and target is still empty
-    const files = await readFile(targetDir).catch(() => []);
-    assert.ok(Array.isArray(files) || files === undefined);
+    // Verify no error occurred - if we get here, the function succeeded
+    assert.ok(true);
   });
 
   it('should copy files with same size but different content when mtime is newer', async () => {
