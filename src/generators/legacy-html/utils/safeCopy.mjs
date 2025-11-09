@@ -14,21 +14,22 @@ import { join } from 'node:path';
 export async function safeCopy(srcDir, targetDir) {
   const files = await readdir(srcDir);
 
-  for (const file of files) {
+  const promises = files.map(file => {
     const sourcePath = join(srcDir, file);
     const targetPath = join(targetDir, file);
 
     const tStat = statSync(targetPath, { throwIfNoEntry: false });
 
     if (tStat === undefined) {
-      await copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
-      continue;
+      return copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
     }
 
     const sStat = statSync(sourcePath);
 
     if (sStat.size !== tStat.size || sStat.mtimeMs > tStat.mtimeMs) {
-      await copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
+      return copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
     }
-  }
+  });
+
+  await Promise.all(promises);
 }
