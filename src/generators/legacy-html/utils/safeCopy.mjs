@@ -1,11 +1,12 @@
 'use strict';
 
-import { readFile, writeFile, stat, readdir } from 'node:fs/promises';
+import { statSync, constants } from 'node:fs';
+import { copyFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /**
- * Safely copies files from source to target directory, skipping files that haven't changed
- * based on file stats (size and modification time)
+ * Copies files from source to target directory, skipping files that haven't changed.
+ * Uses synchronous stat checks for simplicity and copyFile for atomic operations.
  *
  * @param {string} srcDir - Source directory path
  * @param {string} targetDir - Target directory path
@@ -13,26 +14,22 @@ import { join } from 'node:path';
 export async function safeCopy(srcDir, targetDir) {
   const files = await readdir(srcDir);
 
-  for (const file of files) {
+  const promises = files.map(file => {
     const sourcePath = join(srcDir, file);
     const targetPath = join(targetDir, file);
 
-    const [sStat, tStat] = await Promise.allSettled([
-      stat(sourcePath),
-      stat(targetPath),
-    ]);
+    const tStat = statSync(targetPath, { throwIfNoEntry: false });
 
-    const shouldWrite =
-      tStat.status === 'rejected' ||
-      sStat.value.size !== tStat.value.size ||
-      sStat.value.mtimeMs > tStat.value.mtimeMs;
-
-    if (!shouldWrite) {
-      continue;
+    if (tStat === undefined) {
+      return copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
     }
 
-    const fileContent = await readFile(sourcePath);
+    const sStat = statSync(sourcePath);
 
-    await writeFile(targetPath, fileContent);
-  }
+    if (sStat.size !== tStat.size || sStat.mtimeMs > tStat.mtimeMs) {
+      return copyFile(sourcePath, targetPath, constants.COPYFILE_FICLONE);
+    }
+  });
+
+  await Promise.all(promises);
 }
