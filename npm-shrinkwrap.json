@@ -16,7 +16,7 @@
         "@orama/react-components": "^0.8.1",
         "@rollup/plugin-virtual": "^3.0.2",
         "acorn": "^8.15.0",
-        "commander": "^14.0.1",
+        "commander": "^14.0.2",
         "dedent": "^1.7.0",
         "eslint-plugin-react-x": "^2.3.1",
         "estree-util-to-js": "^2.0.0",
@@ -4060,9 +4060,9 @@
       }
     },
     "node_modules/commander": {
-      "version": "14.0.1",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-14.0.1.tgz",
-      "integrity": "sha512-2JkV3gUZUVrbNA+1sjBOYLsMZ5cEEl8GTFP2a4AVz5hvasAMCQ1D2l2le/cX+pV4N6ZU17zjUahLpIXRrnWL8A==",
+      "version": "14.0.2",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-14.0.2.tgz",
+      "integrity": "sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==",
       "license": "MIT",
       "engines": {
         "node": ">=20"
