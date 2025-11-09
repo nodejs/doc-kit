@@ -41,7 +41,7 @@
         "remark-stringify": "^11.0.0",
         "rolldown": "^1.0.0-beta.40",
         "semver": "^7.7.2",
-        "shiki": "^3.13.0",
+        "shiki": "^3.15.0",
         "unified": "^11.0.5",
         "unist-builder": "^4.0.0",
         "unist-util-find-after": "^5.0.0",
@@ -787,6 +787,40 @@
         "hast-util-to-string": "^3.0.1",
         "shiki": "~3.13.0",
         "unist-util-visit": "^5.0.0"
+      }
+    },
+    "node_modules/@node-core/rehype-shiki/node_modules/@shikijs/langs": {
+      "version": "3.13.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/langs/-/langs-3.13.0.tgz",
+      "integrity": "sha512-672c3WAETDYHwrRP0yLy3W1QYB89Hbpj+pO4KhxK6FzIrDI2FoEXNiNCut6BQmEApYLfuYfpgOZaqbY+E9b8wQ==",
+      "license": "MIT",
+      "dependencies": {
+        "@shikijs/types": "3.13.0"
+      }
+    },
+    "node_modules/@node-core/rehype-shiki/node_modules/@shikijs/themes": {
+      "version": "3.13.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/themes/-/themes-3.13.0.tgz",
+      "integrity": "sha512-Vxw1Nm1/Od8jyA7QuAenaV78BG2nSr3/gCGdBkLpfLscddCkzkL36Q5b67SrLLfvAJTOUzW39x4FHVCFriPVgg==",
+      "license": "MIT",
+      "dependencies": {
+        "@shikijs/types": "3.13.0"
+      }
+    },
+    "node_modules/@node-core/rehype-shiki/node_modules/shiki": {
+      "version": "3.13.0",
+      "resolved": "https://registry.npmjs.org/shiki/-/shiki-3.13.0.tgz",
+      "integrity": "sha512-aZW4l8Og16CokuCLf8CF8kq+KK2yOygapU5m3+hoGw0Mdosc6fPitjM+ujYarppj5ZIKGyPDPP1vqmQhr+5/0g==",
+      "license": "MIT",
+      "dependencies": {
+        "@shikijs/core": "3.13.0",
+        "@shikijs/engine-javascript": "3.13.0",
+        "@shikijs/engine-oniguruma": "3.13.0",
+        "@shikijs/langs": "3.13.0",
+        "@shikijs/themes": "3.13.0",
+        "@shikijs/types": "3.13.0",
+        "@shikijs/vscode-textmate": "^10.0.2",
+        "@types/hast": "^3.0.4"
       }
     },
     "node_modules/@node-core/ui-components": {
@@ -2398,21 +2432,41 @@
       }
     },
     "node_modules/@shikijs/langs": {
-      "version": "3.13.0",
-      "resolved": "https://registry.npmjs.org/@shikijs/langs/-/langs-3.13.0.tgz",
-      "integrity": "sha512-672c3WAETDYHwrRP0yLy3W1QYB89Hbpj+pO4KhxK6FzIrDI2FoEXNiNCut6BQmEApYLfuYfpgOZaqbY+E9b8wQ==",
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/langs/-/langs-3.15.0.tgz",
+      "integrity": "sha512-WpRvEFvkVvO65uKYW4Rzxs+IG0gToyM8SARQMtGGsH4GDMNZrr60qdggXrFOsdfOVssG/QQGEl3FnJ3EZ+8w8A==",
       "license": "MIT",
       "dependencies": {
-        "@shikijs/types": "3.13.0"
+        "@shikijs/types": "3.15.0"
+      }
+    },
+    "node_modules/@shikijs/langs/node_modules/@shikijs/types": {
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/types/-/types-3.15.0.tgz",
+      "integrity": "sha512-BnP+y/EQnhihgHy4oIAN+6FFtmfTekwOLsQbRw9hOKwqgNy8Bdsjq8B05oAt/ZgvIWWFrshV71ytOrlPfYjIJw==",
+      "license": "MIT",
+      "dependencies": {
+        "@shikijs/vscode-textmate": "^10.0.2",
+        "@types/hast": "^3.0.4"
       }
     },
     "node_modules/@shikijs/themes": {
-      "version": "3.13.0",
-      "resolved": "https://registry.npmjs.org/@shikijs/themes/-/themes-3.13.0.tgz",
-      "integrity": "sha512-Vxw1Nm1/Od8jyA7QuAenaV78BG2nSr3/gCGdBkLpfLscddCkzkL36Q5b67SrLLfvAJTOUzW39x4FHVCFriPVgg==",
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/themes/-/themes-3.15.0.tgz",
+      "integrity": "sha512-8ow2zWb1IDvCKjYb0KiLNrK4offFdkfNVPXb1OZykpLCzRU6j+efkY+Y7VQjNlNFXonSw+4AOdGYtmqykDbRiQ==",
       "license": "MIT",
       "dependencies": {
-        "@shikijs/types": "3.13.0"
+        "@shikijs/types": "3.15.0"
+      }
+    },
+    "node_modules/@shikijs/themes/node_modules/@shikijs/types": {
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/types/-/types-3.15.0.tgz",
+      "integrity": "sha512-BnP+y/EQnhihgHy4oIAN+6FFtmfTekwOLsQbRw9hOKwqgNy8Bdsjq8B05oAt/ZgvIWWFrshV71ytOrlPfYjIJw==",
+      "license": "MIT",
+      "dependencies": {
+        "@shikijs/vscode-textmate": "^10.0.2",
+        "@types/hast": "^3.0.4"
       }
     },
     "node_modules/@shikijs/twoslash": {
@@ -8080,17 +8134,60 @@
       }
     },
     "node_modules/shiki": {
-      "version": "3.13.0",
-      "resolved": "https://registry.npmjs.org/shiki/-/shiki-3.13.0.tgz",
-      "integrity": "sha512-aZW4l8Og16CokuCLf8CF8kq+KK2yOygapU5m3+hoGw0Mdosc6fPitjM+ujYarppj5ZIKGyPDPP1vqmQhr+5/0g==",
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/shiki/-/shiki-3.15.0.tgz",
+      "integrity": "sha512-kLdkY6iV3dYbtPwS9KXU7mjfmDm25f5m0IPNFnaXO7TBPcvbUOY72PYXSuSqDzwp+vlH/d7MXpHlKO/x+QoLXw==",
       "license": "MIT",
       "dependencies": {
-        "@shikijs/core": "3.13.0",
-        "@shikijs/engine-javascript": "3.13.0",
-        "@shikijs/engine-oniguruma": "3.13.0",
-        "@shikijs/langs": "3.13.0",
-        "@shikijs/themes": "3.13.0",
-        "@shikijs/types": "3.13.0",
+        "@shikijs/core": "3.15.0",
+        "@shikijs/engine-javascript": "3.15.0",
+        "@shikijs/engine-oniguruma": "3.15.0",
+        "@shikijs/langs": "3.15.0",
+        "@shikijs/themes": "3.15.0",
+        "@shikijs/types": "3.15.0",
+        "@shikijs/vscode-textmate": "^10.0.2",
+        "@types/hast": "^3.0.4"
+      }
+    },
+    "node_modules/shiki/node_modules/@shikijs/core": {
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/core/-/core-3.15.0.tgz",
+      "integrity": "sha512-8TOG6yG557q+fMsSVa8nkEDOZNTSxjbbR8l6lF2gyr6Np+jrPlslqDxQkN6rMXCECQ3isNPZAGszAfYoJOPGlg==",
+      "license": "MIT",
+      "dependencies": {
+        "@shikijs/types": "3.15.0",
+        "@shikijs/vscode-textmate": "^10.0.2",
+        "@types/hast": "^3.0.4",
+        "hast-util-to-html": "^9.0.5"
+      }
+    },
+    "node_modules/shiki/node_modules/@shikijs/engine-javascript": {
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/engine-javascript/-/engine-javascript-3.15.0.tgz",
+      "integrity": "sha512-ZedbOFpopibdLmvTz2sJPJgns8Xvyabe2QbmqMTz07kt1pTzfEvKZc5IqPVO/XFiEbbNyaOpjPBkkr1vlwS+qg==",
+      "license": "MIT",
+      "dependencies": {
+        "@shikijs/types": "3.15.0",
+        "@shikijs/vscode-textmate": "^10.0.2",
+        "oniguruma-to-es": "^4.3.3"
+      }
+    },
+    "node_modules/shiki/node_modules/@shikijs/engine-oniguruma": {
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/engine-oniguruma/-/engine-oniguruma-3.15.0.tgz",
+      "integrity": "sha512-HnqFsV11skAHvOArMZdLBZZApRSYS4LSztk2K3016Y9VCyZISnlYUYsL2hzlS7tPqKHvNqmI5JSUJZprXloMvA==",
+      "license": "MIT",
+      "dependencies": {
+        "@shikijs/types": "3.15.0",
+        "@shikijs/vscode-textmate": "^10.0.2"
+      }
+    },
+    "node_modules/shiki/node_modules/@shikijs/types": {
+      "version": "3.15.0",
+      "resolved": "https://registry.npmjs.org/@shikijs/types/-/types-3.15.0.tgz",
+      "integrity": "sha512-BnP+y/EQnhihgHy4oIAN+6FFtmfTekwOLsQbRw9hOKwqgNy8Bdsjq8B05oAt/ZgvIWWFrshV71ytOrlPfYjIJw==",
+      "license": "MIT",
+      "dependencies": {
         "@shikijs/vscode-textmate": "^10.0.2",
         "@types/hast": "^3.0.4"
       }
