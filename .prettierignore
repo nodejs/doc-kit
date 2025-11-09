@@ -1,3 +1,5 @@
+npm-shrinkwrap.json
+
 # Tests files
 src/generators/api-links/__tests__/fixtures/
 *.snapshot
