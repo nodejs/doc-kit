@@ -102,9 +102,6 @@ describe('safeCopy', () => {
   it('should handle empty source directory', async () => {
     // Don't create any files in source
     await safeCopy(srcDir, targetDir);
-
-    // Verify no error occurred - if we get here, the function succeeded
-    assert.ok(true);
   });
 
   it('should copy files with same size but different content when mtime is newer', async () => {
