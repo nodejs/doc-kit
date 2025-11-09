@@ -45,6 +45,7 @@ export default ({ className, ...props }) => {
       onCopy={onCopy}
       language={getLanguageDisplayName(language)}
       {...props}
+      className={className}
       buttonText="Copy to clipboard"
     />
   );

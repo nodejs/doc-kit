@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
+import webTwoslashGenerator from '../web-twoslash/index.mjs';
 import createASTBuilder from './utils/generate.mjs';
 import { processJSXEntry } from './utils/processing.mjs';
 
@@ -26,21 +27,19 @@ export default {
    * @param {Partial<GeneratorOptions>} options
    */
   async generate(entries, { output, version }) {
-    // Load the HTML template.
+    // Load the HTML template
     const template = await readFile(
       new URL('template.html', import.meta.url),
       'utf-8'
     );
 
-    // These builders are responsible for converting the JSX AST into executable
-    // JavaScript code for both server-side rendering and client-side hydration.
     const astBuilders = createASTBuilder();
-
-    // This is necessary for the `executeServerCode` function to resolve modules
-    // within the dynamically executed server-side code.
     const requireFn = createRequire(import.meta.url);
 
+    await webTwoslashGenerator.generate(null, { output });
+
     const results = [];
+
     let mainCss = '';
 
     for (const entry of entries) {
@@ -49,11 +48,12 @@ export default {
         template,
         astBuilders,
         requireFn,
-        version
+        { version }
       );
+
       results.push({ html, css });
 
-      // Capture the main CSS bundle from the first processed entry.
+      // Capture the main CSS bundle from the first processed entry
       if (!mainCss && css) {
         mainCss = css;
       }
@@ -64,9 +64,9 @@ export default {
       }
     }
 
+    // Write CSS file
     if (output && mainCss) {
-      const filePath = join(output, 'styles.css');
-      await writeFile(filePath, mainCss, 'utf-8');
+      await writeFile(join(output, 'styles.css'), mainCss, 'utf-8');
     }
 
     return results;

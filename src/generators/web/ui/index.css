@@ -1,4 +1,5 @@
 @import '@node-core/ui-components/styles/index.css';
+@import '@shikijs/twoslash/style-rich.css';
 
 /* Fonts */
 :root {

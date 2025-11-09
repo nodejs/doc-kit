@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import HTMLMinifier from '@minify-html/node';
 import { toJs, jsx } from 'estree-util-to-js';
 
@@ -36,7 +38,8 @@ export async function executeServerCode(serverCode, requireFn) {
  * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent} entry - The JSX AST entry to process.
  * @param {string} template - The HTML template string that serves as the base for the output page.
  * @param {ReturnType<import('./generate.mjs')>} astBuilders - The AST generators
- * @param {version} version - The version to generator the documentation for
+ * @param {Object} options - Processing options
+ * @param {string} options.version - The version to generate the documentation for
  * @param {ReturnType<import('node:module').createRequire>} requireFn - A Node.js `require` function.
  */
 export async function processJSXEntry(
@@ -68,7 +71,8 @@ export async function processJSXEntry(
   const renderedHtml = template
     .replace('{{title}}', title)
     .replace('{{dehydrated}}', dehydrated ?? '')
-    .replace('{{clientBundleJs}}', () => clientBundle.js);
+    .replace('{{clientBundleJs}}', () => clientBundle.js)
+    .replace('{{cacheHash}}', randomUUID());
 
   // The input to `minify` must be a Buffer.
   const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
