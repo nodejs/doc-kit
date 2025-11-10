@@ -1,10 +1,10 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
-import webTwoslashGenerator from '../web-twoslash/index.mjs';
 import createASTBuilder from './utils/generate.mjs';
 import { processJSXEntry } from './utils/processing.mjs';
+import { safeWrite } from '../../utils/safeWrite.mjs';
 
 /**
  * This generator transforms JSX AST (Abstract Syntax Tree) entries into a complete
@@ -34,16 +34,17 @@ export default {
     );
 
     const astBuilders = createASTBuilder();
-    const requireFn = createRequire(import.meta.url);
 
-    await webTwoslashGenerator.generate(null, { output });
+    const requireFn = createRequire(import.meta.url);
 
     const results = [];
 
     let mainCss = '';
 
+    const writtenChunks = new Set();
+
     for (const entry of entries) {
-      const { html, css } = await processJSXEntry(
+      const { html, css, jsChunks } = await processJSXEntry(
         entry,
         template,
         astBuilders,
@@ -60,13 +61,22 @@ export default {
 
       // Write HTML file if output directory is specified
       if (output) {
-        await writeFile(join(output, `${entry.data.api}.html`), html, 'utf-8');
+        safeWrite(join(output, `${entry.data.api}.html`), html, 'utf-8');
+
+        // Write JS chunks (only once per unique chunk)
+        for (const chunk of jsChunks) {
+          if (!writtenChunks.has(chunk.fileName)) {
+            safeWrite(join(output, chunk.fileName), chunk.code, 'utf-8');
+
+            writtenChunks.add(chunk.fileName);
+          }
+        }
       }
     }
 
-    // Write CSS file
+    // Write the main CSS file once after processing all entries
     if (output && mainCss) {
-      await writeFile(join(output, 'styles.css'), mainCss, 'utf-8');
+      safeWrite(join(output, 'styles.css'), mainCss, 'utf-8');
     }
 
     return results;

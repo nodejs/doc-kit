@@ -7,10 +7,10 @@ import HTMLMinifier from '@minify-html/node';
 
 import buildContent from './utils/buildContent.mjs';
 import dropdowns from './utils/buildDropdowns.mjs';
-import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRehype } from '../../utils/remark.mjs';
+import { safeCopy } from '../../utils/safeCopy.mjs';
 
 /**
  * @typedef {{

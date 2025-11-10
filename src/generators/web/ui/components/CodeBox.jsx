@@ -20,8 +20,9 @@ export const getLanguageDisplayName = language => {
 };
 
 /** @param {import('react').PropsWithChildren<{ className: string }>} props */
-export default ({ className, ...props }) => {
+export default ({ className, children, ...props }) => {
   const matches = className?.match(/language-(?<language>[a-zA-Z]+)/);
+
   const language = matches?.groups?.language ?? '';
 
   const notify = useNotification();
@@ -30,7 +31,7 @@ export default ({ className, ...props }) => {
     await navigator.clipboard.writeText(text);
 
     notify({
-      duration: 300,
+      duration: 3000,
       message: (
         <div className="flex items-center gap-3">
           <CodeBracketIcon className={styles.icon} />
@@ -41,12 +42,16 @@ export default ({ className, ...props }) => {
   };
 
   return (
-    <BaseCodeBox
-      onCopy={onCopy}
-      language={getLanguageDisplayName(language)}
-      {...props}
-      className={className}
-      buttonText="Copy to clipboard"
-    />
+    <>
+      <BaseCodeBox
+        onCopy={onCopy}
+        language={getLanguageDisplayName(language)}
+        {...props}
+        className={className}
+        buttonText="Copy to clipboard"
+      >
+        {children}
+      </BaseCodeBox>
+    </>
   );
 };

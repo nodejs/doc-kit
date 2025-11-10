@@ -15,11 +15,12 @@
 
   <!-- Apply theme before paint to avoid Flash of Unstyled Content -->
   <script>document.documentElement.setAttribute("data-theme",localStorage.getItem("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));</script>
+
+  {{importMap}}
 </head>
 
 <body>
   <div id="root">{{dehydrated}}</div>
-  <script>{{clientBundleJs}}</script>
-  <script type="module" src="twoslash.js?hash={{cacheHash}}"></script>
+  <script type="module">{{mainJsCode}}</script>
 </body>
 </html>

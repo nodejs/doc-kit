@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 import HTMLMinifier from '@minify-html/node';
 import { toJs, jsx } from 'estree-util-to-js';
 
@@ -57,13 +55,27 @@ export async function processJSXEntry(
   // `executeServerCode` then runs this code in a Node.js environment to produce
   // the initial HTML content (dehydrated state) that will be sent to the client.
   const serverCode = buildServerProgram(code);
+
   const dehydrated = await executeServerCode(serverCode, requireFn);
 
   // `buildClientProgram` prepares the JSX-derived code for client-side execution.
   // `bundleCode` then bundles this client-side code, resolving imports and
   // potentially generating associated CSS. This bundle will hydrate the SSR content.
   const clientCode = buildClientProgram(code);
+
   const clientBundle = await bundleCode(clientCode);
+
+  // Rolldown's experimental.chunkImportMap generates the import map automatically
+  // The import map is extracted by our plugin and returned as HTML
+  // https://rolldown.rs/options/experimental#chunkimportmap
+  const importMapScript = clientBundle.importMapHtml;
+
+  // Prepare jsChunks for file writing
+  const chunksWithHashes = clientBundle.jsChunks.map(chunk => ({
+    fileName: chunk.fileName,
+    code: chunk.code,
+    hash: '', // No need for manual hashing, Rolldown handles cache busting via importMap
+  }));
 
   const title = `${entry.data.heading.data.name} | Node.js v${version} Documentation`;
 
@@ -71,15 +83,17 @@ export async function processJSXEntry(
   const renderedHtml = template
     .replace('{{title}}', title)
     .replace('{{dehydrated}}', dehydrated ?? '')
-    .replace('{{clientBundleJs}}', () => clientBundle.js)
-    .replace('{{cacheHash}}', randomUUID());
+    .replace('{{importMap}}', importMapScript)
+    .replace('{{mainJsCode}}', () => clientBundle.js);
 
   // The input to `minify` must be a Buffer.
   const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
 
-  // Return the generated HTML and any CSS produced by the client bundle.
+  // Return the generated HTML, CSS, and any JS chunks from code splitting
+  // Note: main JS is inlined in HTML, so we don't return it separately
   return {
     html: finalHTMLBuffer,
     css: clientBundle.css,
+    jsChunks: chunksWithHashes,
   };
 }
