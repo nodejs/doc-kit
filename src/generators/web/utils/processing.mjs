@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import HTMLMinifier from '@minify-html/node';
 import { jsx, toJs } from 'estree-util-to-js';
 
@@ -19,18 +21,21 @@ export async function executeServerCode(serverCodeMap, requireFn) {
   const dehydratedMap = new Map();
 
   // Bundle all server-side code, which may produce code-split chunks
-  const { jsMap, jsChunks } = await bundleCode(serverCodeMap, { server: true });
+  const { jsChunks } = await bundleCode(serverCodeMap, { server: true });
+
+  const entryChunks = jsChunks.filter(c => c.isEntry);
+  const otherChunks = jsChunks.filter(c => !c.isEntry);
 
   // Create enhanced require function that can resolve code-split chunks
-  const enhancedRequire = createEnhancedRequire(jsChunks, requireFn);
+  const enhancedRequire = createEnhancedRequire(otherChunks, requireFn);
 
   // Execute each bundled entry and collect dehydrated HTML results
-  for (const [fileName, serverCode] of Object.entries(jsMap)) {
+  for (const chunk of entryChunks) {
     // Create and execute function with enhanced require for chunk resolution
-    const executedFunction = new Function('require', serverCode);
+    const executedFunction = new Function('require', chunk.code);
 
     // Execute the function - result is the dehydrated HTML from server-side rendering
-    dehydratedMap.set(fileName, executedFunction(enhancedRequire));
+    dehydratedMap.set(chunk.fileName, executedFunction(enhancedRequire));
   }
 
   return dehydratedMap;
@@ -78,25 +83,23 @@ export async function processJSXEntries(
   }
 
   // Execute all server code at once to get dehydrated HTML
-  const dehydratedMap = await executeServerCode(serverCodeMap, requireFn);
+  const serverBundle = await executeServerCode(serverCodeMap, requireFn);
 
   // Bundle all client code at once (with code splitting for shared chunks)
   const clientBundle = await bundleCode(clientCodeMap);
 
   // Process each entry to create final HTML
   const results = entries.map(entry => {
-    const fileName = `${entry.data.api}.jsx`;
-    const dehydrated = dehydratedMap.get(fileName);
-    const mainJsCode = clientBundle.jsMap[fileName];
+    const fileName = `${entry.data.api}.js`;
 
     const title = `${entry.data.heading.data.name} | Node.js v${version} Documentation`;
 
     // Replace template placeholders with actual content
     const renderedHtml = template
       .replace('{{title}}', title)
-      .replace('{{dehydrated}}', dehydrated ?? '')
+      .replace('{{dehydrated}}', serverBundle.get(fileName) ?? '')
       .replace('{{importMap}}', clientBundle.importMapHtml)
-      .replace('{{mainJsCode}}', () => mainJsCode);
+      .replace('{{mainJsSrc}}', `./${fileName}?${randomUUID()}`);
 
     // Minify HTML (input must be a Buffer)
     const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
