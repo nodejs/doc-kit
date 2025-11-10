@@ -5,7 +5,7 @@ import { writeFile } from 'node:fs/promises';
 
 /**
  * Writes a file only if the content has changed, avoiding unnecessary writes.
- * Uses stat comparison (size and mtime) to determine if file needs updating.
+ * Uses stat comparison (size) to determine if file needs updating.
  *
  * @param {string} filePath - The path to the file
  * @param {string | Buffer} content - The content to write
