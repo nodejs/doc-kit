@@ -24,6 +24,8 @@ export const transformNodeToString = (node, escape) => {
       return `**${transformNodesToString(node.children, escape)}**`;
     case 'emphasis':
       return `_${transformNodesToString(node.children, escape)}_`;
+    case 'link':
+      return `[${transformNodesToString(node.children, escape)}](${node.url})`;
     default: {
       if (node.children) {
         return transformNodesToString(node.children, escape);
