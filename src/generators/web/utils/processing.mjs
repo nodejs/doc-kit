@@ -42,21 +42,14 @@ export async function executeServerCode(serverCodeMap, requireFn) {
 }
 
 /**
- * Processes multiple JSX AST entries to generate complete HTML pages with SSR content,
- * client-side JavaScript bundles (with code splitting), and CSS.
+ * Processes a single JSX AST (Abstract Syntax Tree) entry to generate a complete
+ * HTML page, including server-side rendered content, client-side JavaScript, and CSS.
  *
- * This function:
- * 1. Converts JSX AST to JavaScript code for both server and client
- * 2. Executes server code to get dehydrated (server-rendered) HTML
- * 3. Bundles client code with code splitting and import maps
- * 4. Injects everything into HTML template and minifies
- *
- * @param {import('../../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries - JSX AST entries to process.
- * @param {string} template - HTML template string with placeholders: {{title}}, {{dehydrated}}, {{importMap}}, {{mainJsCode}}.
- * @param {ReturnType<import('./generate.mjs').default>} astBuilders - AST generator functions (buildServerProgram, buildClientProgram).
- * @param {ReturnType<import('node:module').createRequire>} requireFn - Node.js require function.
- * @param {Object} options - Processing options.
- * @param {string} options.version - Documentation version string.
+ * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} entries - The JSX AST entry to process.
+ * @param {string} template - The HTML template string that serves as the base for the output page.
+ * @param {ReturnType<import('./generate.mjs')>} astBuilders - The AST generators
+ * @param {version} version - The version to generator the documentation for
+ * @param {ReturnType<import('node:module').createRequire>} requireFn - A Node.js `require` function.
  */
 export async function processJSXEntries(
   entries,
@@ -89,22 +82,22 @@ export async function processJSXEntries(
   const clientBundle = await bundleCode(clientCodeMap);
 
   // Process each entry to create final HTML
-  const results = entries.map(entry => {
-    const fileName = `${entry.data.api}.js`;
+  const results = entries.map(({ data }) => {
+    const fileName = `${data.api}.js`;
 
-    const title = `${entry.data.heading.data.name} | Node.js v${version} Documentation`;
+    const title = `${data.heading.data.name} | Node.js v${version} Documentation`;
 
     // Replace template placeholders with actual content
     const renderedHtml = template
       .replace('{{title}}', title)
       .replace('{{dehydrated}}', serverBundle.get(fileName) ?? '')
       .replace('{{importMap}}', clientBundle.importMapHtml)
-      .replace('{{mainJsSrc}}', `./${fileName}?${randomUUID()}`);
+      .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`);
 
     // Minify HTML (input must be a Buffer)
     const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
 
-    return { html: finalHTMLBuffer, api: entry.data.api };
+    return { html: finalHTMLBuffer, api: data.api };
   });
 
   return {

@@ -17,11 +17,10 @@ export function createEnhancedRequire(jsChunks, requireFn) {
    * @param {string} modulePath - Module path to require.
    * @returns {*} Module exports.
    */
-  const enhancedRequire = modulePath => {
+  const chunkedRequire = modulePath => {
     // Check virtual file system first for code-split chunks
     if (chunkModules[modulePath]) {
-      const moduleExports = {};
-      const module = { exports: moduleExports };
+      const mod = { exports: {} };
 
       // Execute chunk code in isolated context with its own module.exports
       const chunkFn = new Function(
@@ -31,14 +30,14 @@ export function createEnhancedRequire(jsChunks, requireFn) {
         chunkModules[modulePath]
       );
 
-      chunkFn(module, moduleExports, enhancedRequire);
+      chunkFn(mod, mod.exports, chunkedRequire);
 
-      return module.exports;
+      return mod.exports;
     }
 
     // Fall back to Node.js require for external packages
     return requireFn(modulePath);
   };
 
-  return enhancedRequire;
+  return chunkedRequire;
 }
