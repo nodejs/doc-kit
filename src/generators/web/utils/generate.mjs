@@ -5,44 +5,43 @@ import { JSX_IMPORTS, ROOT } from '../constants.mjs';
 /**
  * Creates an ES Module `import` statement as a string, based on parameters.
  *
- * @param {string|null} importName - The identifier to import
- * @param {string} source - The module path
- * @param {boolean} [useDefault=true] - Determines if the import is a default or named import.
+ * @param {string|null} importName - The identifier to import.
+ * @param {string} source - The module path.
+ * @param {boolean} [useDefault=true] - Whether to use default import (true) or named import (false).
+ * @returns {string} The generated import statement.
  */
 export const createImportDeclaration = (
   importName,
   source,
   useDefault = true
 ) => {
-  // '\' characters shouldn't escape the next character,
-  // but rather be treated as slashes.
+  // Escape backslashes to prevent treating them as escape characters
   source = source.replaceAll('\\', '\\\\');
 
-  // Side-effect-only import (CSS)
+  // Side-effect-only import (e.g., CSS files)
   if (!importName) {
     return `import "${source}";`;
   }
 
-  // Import default export
+  // Default import: import Name from "source"
   if (useDefault) {
     return `import ${importName} from "${source}";`;
   }
 
-  // Import named export
+  // Named import: import { Name } from "source"
   return `import { ${importName} } from "${source}";`;
 };
 
 /**
- * Factory function that returns two program generators:
- * - One for hydrating client-side React/Preact apps
- * - One for server-side rendering (SSR) to HTML
+ * Factory function that creates server and client program generators.
+ *
+ * Returns two functions that wrap JSX component code:
+ * - `buildClientProgram`: Wraps component for client-side hydration
+ * - `buildServerProgram`: Wraps component for server-side rendering
  */
 export default () => {
-  // Construct a list of `import` statements from JSX_IMPORTS
-  //
-  // TODO(@avivkeller): A known optimization opportunity exists:
-  // Some of these imports are only needed on the server (or only client).
-  // It would be more efficient to generate them conditionally.
+  // Generate import statements for all JSX components
+  // TODO: Optimize by conditionally including server-only or client-only imports
   const baseImports = Object.values(JSX_IMPORTS).map(
     ({ name, source, isDefaultExport = true }) =>
       createImportDeclaration(name, source, isDefaultExport)
@@ -50,24 +49,22 @@ export default () => {
 
   /**
    * Builds a client-side hydration program.
-   * @param {string} componentCode - Code expression representing a JSX component
+   *
+   * @param {string} componentCode - JSX component code expression.
+   * @returns {string} Complete client-side JavaScript program.
    */
   const buildClientProgram = componentCode => {
     return [
-      // JSX component imports
+      // Import all JSX components
       ...baseImports,
 
-      // Import client-side CSS styles.
-      // This ensures that styles used in the rendered app are loaded on the client.
-      // The use of `new URL(...).pathname` resolves the absolute path for `entrypoint.jsx`.
+      // Import CSS styles for client-side rendering
       createImportDeclaration(null, resolve(ROOT, './ui/index.css')),
 
-      // Import `hydrate()` from Preact — needed to attach to server-rendered HTML.
-      // This is a named import (not default), hence `false` as the third argument.
+      // Import Preact's hydrate function (named import)
       createImportDeclaration('hydrate', 'preact', false),
 
-      // Hydration call: binds the component to an element with ID "root"
-      // This assumes SSR has placed matching HTML there, which, it has.
+      // Hydrate the component into the root element
       `hydrate(${componentCode}, document.getElementById("root"));`,
     ].join('');
   };
@@ -75,18 +72,18 @@ export default () => {
   /**
    * Builds a server-side rendering (SSR) program.
    *
-   * @param {string} componentCode - Code expression representing a JSX component
+   * @param {string} componentCode - JSX component code expression.
+   * @returns {string} Complete server-side JavaScript program.
    */
   const buildServerProgram = componentCode => {
     return [
-      // JSX component imports
+      // Import all JSX components
       ...baseImports,
 
-      // Import Preact's SSR module
+      // Import Preact's SSR render function (named import)
       createImportDeclaration('render', 'preact-render-to-string', false),
 
-      // Render the component to an HTML string
-      // The output can be embedded directly into the server's HTML template
+      // Render component to HTML string and return it
       `return render(${componentCode});`,
     ].join('\n');
   };

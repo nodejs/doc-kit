@@ -7,8 +7,12 @@ import { processJSXEntries } from './utils/processing.mjs';
 import { safeWrite } from '../../utils/safeWrite.mjs';
 
 /**
- * This generator transforms JSX AST (Abstract Syntax Tree) entries into a complete
- * web bundle, including server-side rendered HTML, client-side JavaScript, and CSS.
+ * Web generator - transforms JSX AST entries into complete web bundles.
+ *
+ * This generator processes JSX AST entries and produces:
+ * - Server-side rendered HTML pages
+ * - Client-side JavaScript with code splitting
+ * - Bundled CSS styles
  *
  * @type {GeneratorMetadata<Input, string>}
  */
@@ -19,25 +23,28 @@ export default {
   dependsOn: 'jsx-ast',
 
   /**
-   * The main generation function for the 'web' generator.
-   * It processes an array of JSX AST entries, converting each into a standalone HTML page
-   * with embedded client-side JavaScript and linked CSS.
+   * Main generation function that processes JSX AST entries into web bundles.
    *
-   * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries
-   * @param {Partial<GeneratorOptions>} options
+   * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries - JSX AST entries to process.
+   * @param {Partial<GeneratorOptions>} options - Generator options.
+   * @param {string} [options.output] - Output directory for generated files.
+   * @param {string} options.version - Documentation version string.
+   * @returns {Promise<Array<{html: Buffer, css: string}>>} Generated HTML and CSS.
    */
   async generate(entries, { output, version }) {
-    // Load the HTML template
+    // Load the HTML template with placeholders
     const template = await readFile(
       new URL('template.html', import.meta.url),
       'utf-8'
     );
 
+    // Create AST builders for server and client programs
     const astBuilders = createASTBuilder();
 
+    // Create require function for resolving external packages in server code
     const requireFn = createRequire(import.meta.url);
 
-    // Process all entries at once
+    // Process all entries: convert JSX to HTML/CSS/JS
     const { results, css, jsChunks } = await processJSXEntries(
       entries,
       template,
@@ -46,22 +53,23 @@ export default {
       { version }
     );
 
-    // Write all files if output directory is specified
+    // Write files to disk if output directory is specified
     if (output) {
-      // Write all HTML files
+      // Write HTML files
       for (const { html, api } of results) {
         safeWrite(join(output, `${api}.html`), html, 'utf-8');
       }
 
-      // Write all JS chunks
+      // Write code-split JavaScript chunks
       for (const chunk of jsChunks) {
         safeWrite(join(output, chunk.fileName), chunk.code, 'utf-8');
       }
 
-      // Write the CSS file
+      // Write CSS bundle
       safeWrite(join(output, 'styles.css'), css, 'utf-8');
     }
 
+    // Return HTML and CSS for each entry
     return results.map(({ html }) => ({ html, css }));
   },
 };

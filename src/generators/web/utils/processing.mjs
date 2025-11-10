@@ -1,52 +1,57 @@
 import HTMLMinifier from '@minify-html/node';
-import { toJs, jsx } from 'estree-util-to-js';
+import { jsx, toJs } from 'estree-util-to-js';
 
 import bundleCode from './bundle.mjs';
+import { createEnhancedRequire } from './chunkHelper.mjs';
 
 /**
- * Executes server-side JavaScript code in a safe, isolated context.
- * This function takes a Map of JavaScript code strings, bundles them together, and then runs each
- * within a new Function constructor to prevent scope pollution and allow for
- * dynamic module loading via a provided `require` function.
- * The result of the server-side execution is expected to be assigned to a
- * dynamically generated variable name, which is then returned.
+ * Executes server-side JavaScript code in an isolated context with virtual module support.
+ *
+ * Takes a map of server-side JavaScript code, bundles it (which may produce code-split chunks),
+ * and executes each entry within a new Function constructor. Code-split chunks are made
+ * available via an enhanced require function that loads them from an in-memory virtual file system.
  *
  * @param {Map<string, string>} serverCodeMap - Map of fileName to server-side JavaScript code.
- * @param {ReturnType<import('node:module').createRequire>} requireFn - A Node.js `require` function
- * @returns {Promise<Map<string, string>>} Map of fileName to dehydrated HTML content
+ * @param {ReturnType<import('node:module').createRequire>} requireFn - Node.js require function for external packages.
+ * @returns {Promise<Map<string, string>>} Map of fileName to dehydrated (server-rendered) HTML content.
  */
 export async function executeServerCode(serverCodeMap, requireFn) {
-  // Execute each bundled server code and collect results
   const dehydratedMap = new Map();
 
-  for (const [fileName, serverCode] of serverCodeMap.entries()) {
-    // Bundle all server-side code together. This step resolves imports and prepares the code
-    // for execution, ensuring all necessary dependencies are self-contained.
-    const { jsMap } = await bundleCode(serverCode, { server: true });
+  // Bundle all server-side code, which may produce code-split chunks
+  const { jsMap, jsChunks } = await bundleCode(serverCodeMap, { server: true });
 
-    // Create a new Function from the bundled server code.
-    // The `require` argument is passed into the function's scope, allowing the
-    // `bundledServer` code to use it for dynamic imports.
-    const executedFunction = new Function('require', jsMap['entrypoint.jsx']);
+  // Create enhanced require function that can resolve code-split chunks
+  const enhancedRequire = createEnhancedRequire(jsChunks, requireFn);
 
-    // Execute the dynamically created function with the provided `requireFn`.
-    // The result of this execution is the dehydrated content from the server-side rendering.
-    dehydratedMap.set(fileName, executedFunction(requireFn));
+  // Execute each bundled entry and collect dehydrated HTML results
+  for (const [fileName, serverCode] of Object.entries(jsMap)) {
+    // Create and execute function with enhanced require for chunk resolution
+    const executedFunction = new Function('require', serverCode);
+
+    // Execute the function - result is the dehydrated HTML from server-side rendering
+    dehydratedMap.set(fileName, executedFunction(enhancedRequire));
   }
 
   return dehydratedMap;
 }
 
 /**
- * Processes multiple JSX AST (Abstract Syntax Tree) entries to generate complete
- * HTML pages, including server-side rendered content, client-side JavaScript, and CSS.
+ * Processes multiple JSX AST entries to generate complete HTML pages with SSR content,
+ * client-side JavaScript bundles (with code splitting), and CSS.
  *
- * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries - The JSX AST entries to process.
- * @param {string} template - The HTML template string that serves as the base for the output page.
- * @param {ReturnType<import('./generate.mjs')>} astBuilders - The AST generators
- * @param {Object} options - Processing options
- * @param {string} options.version - The version to generate the documentation for
- * @param {ReturnType<import('node:module').createRequire>} requireFn - A Node.js `require` function.
+ * This function:
+ * 1. Converts JSX AST to JavaScript code for both server and client
+ * 2. Executes server code to get dehydrated (server-rendered) HTML
+ * 3. Bundles client code with code splitting and import maps
+ * 4. Injects everything into HTML template and minifies
+ *
+ * @param {import('../../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries - JSX AST entries to process.
+ * @param {string} template - HTML template string with placeholders: {{title}}, {{dehydrated}}, {{importMap}}, {{mainJsCode}}.
+ * @param {ReturnType<import('./generate.mjs').default>} astBuilders - AST generator functions (buildServerProgram, buildClientProgram).
+ * @param {ReturnType<import('node:module').createRequire>} requireFn - Node.js require function.
+ * @param {Object} options - Processing options.
+ * @param {string} options.version - Documentation version string.
  */
 export async function processJSXEntries(
   entries,
@@ -55,43 +60,30 @@ export async function processJSXEntries(
   requireFn,
   { version }
 ) {
-  // Convert all entries to JavaScript code
   const serverCodeMap = new Map();
   const clientCodeMap = new Map();
 
+  // Convert JSX AST to JavaScript for both server and client
   for (const entry of entries) {
     const fileName = `${entry.data.api}.jsx`;
 
-    // `estree-util-to-js` with the `jsx` handler converts the AST nodes into a string
-    // that represents the equivalent JavaScript code, including JSX syntax.
+    // Convert AST to JavaScript string with JSX syntax
     const { value: code } = toJs(entry, { handlers: jsx });
 
-    // `buildServerProgram` takes the JSX-derived code and prepares it for server execution.
+    // Prepare code for server-side execution (wrapped for SSR)
     serverCodeMap.set(fileName, buildServerProgram(code));
 
-    // `buildClientProgram` prepares the JSX-derived code for client-side execution.
+    // Prepare code for client-side execution (wrapped for hydration)
     clientCodeMap.set(fileName, buildClientProgram(code));
   }
 
-  // Execute all server code at once
+  // Execute all server code at once to get dehydrated HTML
   const dehydratedMap = await executeServerCode(serverCodeMap, requireFn);
 
-  // Bundle all client code at once
+  // Bundle all client code at once (with code splitting for shared chunks)
   const clientBundle = await bundleCode(clientCodeMap);
 
-  // Rolldown's experimental.chunkImportMap generates the import map automatically
-  // The import map is extracted by our plugin and returned as HTML
-  // https://rolldown.rs/options/experimental#chunkimportmap
-  const importMapScript = clientBundle.importMapHtml;
-
-  // Prepare jsChunks for file writing
-  const chunksWithHashes = clientBundle.jsChunks.map(chunk => ({
-    fileName: chunk.fileName,
-    code: chunk.code,
-    hash: '', // No need for manual hashing, Rolldown handles cache busting via importMap
-  }));
-
-  // Process each entry to create HTML
+  // Process each entry to create final HTML
   const results = entries.map(entry => {
     const fileName = `${entry.data.api}.jsx`;
     const dehydrated = dehydratedMap.get(fileName);
@@ -103,20 +95,18 @@ export async function processJSXEntries(
     const renderedHtml = template
       .replace('{{title}}', title)
       .replace('{{dehydrated}}', dehydrated ?? '')
-      .replace('{{importMap}}', importMapScript)
+      .replace('{{importMap}}', clientBundle.importMapHtml)
       .replace('{{mainJsCode}}', () => mainJsCode);
 
-    // The input to `minify` must be a Buffer.
+    // Minify HTML (input must be a Buffer)
     const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
 
     return { html: finalHTMLBuffer, api: entry.data.api };
   });
 
-  // Return the generated HTML, CSS, and any JS chunks from code splitting
-  // Note: main JS is inlined in HTML, so we don't return it separately
   return {
     results,
     css: clientBundle.css ?? '',
-    jsChunks: chunksWithHashes,
+    jsChunks: clientBundle.jsChunks,
   };
 }

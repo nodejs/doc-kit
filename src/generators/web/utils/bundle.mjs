@@ -8,26 +8,24 @@ import staticData from './data.mjs';
  * Asynchronously bundles JavaScript source code (and its CSS imports),
  * targeting either browser (client) or server (Node.js) environments.
  *
- * @param {Map<string, string> | string} codeOrMap - Map of {fileName: code} or single code string for server builds.
- * @param {{ server: boolean }} options - Build configuration object.
+ * @param {Map<string, string>} codeMap - Map of {fileName: code} for all builds.
+ * @param {Object} [options] - Build configuration object.
+ * @param {boolean} [options.server=false] - Whether this is a server-side build.
  */
-export default async function bundleCode(codeOrMap, { server = false } = {}) {
+export default async function bundleCode(codeMap, { server = false } = {}) {
   // Store the import map HTML for later extraction
   let importMapHtml = '';
 
-  // Convert input to Map format
-  const codeMap =
-    codeOrMap instanceof Map
-      ? codeOrMap
-      : new Map([['entrypoint.jsx', codeOrMap]]);
-
   /** @type {import('rolldown').OutputOptions} */
   const serverOutputConfig = {
+    // Inline all dynamic imports to create a single self-contained bundle
     inlineDynamicImports: true,
   };
 
   /** @type {import('rolldown').InputOptions['experimental']} */
   const clientExperimentalConfig = {
+    // Generate an import map for cache-busted module resolution in browsers
+    // https://rolldown.rs/options/experimental#chunkimportmap
     chunkImportMap: !server && {
       baseUrl: './',
       fileName: 'importmap.json',
@@ -35,70 +33,51 @@ export default async function bundleCode(codeOrMap, { server = false } = {}) {
   };
 
   const result = await build({
-    // Define the entry point module names — these are virtual (not real files).
-    // The virtual plugin will provide the actual code string under these names.
+    // Entry points: array of virtual module names that the virtual plugin provides
     input: Array.from(codeMap.keys()),
 
-    // Enable experimental chunk import map for cache-busted module resolution
-    // https://rolldown.rs/options/experimental#chunkimportmap
-    // Also enable incremental builds for faster rebuilds (similar to Rollup's cache)
-    // https://rolldown.rs/options/experimental#incrementalbuild
+    // Experimental features: import maps for client, none for server
     experimental: server ? {} : clientExperimentalConfig,
 
-    // Configuration for the output bundle
+    // Output configuration
     output: {
-      // Output module format:
-      // - "cjs" for CommonJS (used in Node.js environments)
-      // - "esm" for browser with dynamic imports (allows code splitting)
+      // CommonJS for Node.js server, ESM for browser with code splitting support
       format: server ? 'cjs' : 'esm',
 
-      // Minify output only for browser builds to optimize file size.
-      // Server builds are usually not minified to preserve stack traces and debuggability.
+      // Minify only browser builds to reduce file size
       minify: !server,
 
-      // Enable code splitting for client builds to allow dynamic imports
-      // For server builds, inline everything into a single bundle
+      // Environment-specific output configuration
       ...(server ? serverOutputConfig : {}),
     },
 
-    // Platform informs Rolldown of the environment-specific code behavior:
-    // - 'node' enables things like `require`, and skips polyfills.
-    // - 'browser' enables inlining of polyfills and uses native browser features.
+    // Target platform affects polyfills, globals, and bundling behavior
     platform: server ? 'node' : 'browser',
 
-    // External dependencies to exclude from bundling.
-    // These are expected to be available at runtime in the server environment.
-    // This reduces bundle size and avoids bundling shared server libs.
+    // External dependencies (not bundled) for server builds
+    // These must be available in the Node.js runtime environment
     external: server
       ? ['preact', 'preact-render-to-string', '@node-core/ui-components']
       : [],
 
-    // Transform configuration
+    // Transform and define configuration
     transform: {
-      // Inject global compile-time constants that will be replaced in code.
-      // These are useful for tree-shaking and conditional branching.
-      // Be sure to update type declarations (`types.d.ts`) if these change.
+      // Compile-time constants replaced during bundling
+      // Update types.d.ts if these change
       define: {
-        // Static data injected directly into the bundle (as a literal or serialized JSON).
+        // Static data as a JSON literal
         __STATIC_DATA__: staticData,
 
-        // Boolean flags used for conditional logic in source code:
-        // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
-        // These flags help split logic for server/client environments.
-        // Unused branches will be removed via tree-shaking.
+        // Environment flags for conditional logic and tree-shaking
         SERVER: String(server),
         CLIENT: String(!server),
       },
 
-      // JSX transformation configuration.
-      // `'react-jsx'` enables the automatic JSX runtime, which doesn't require `import React`.
-      // Since we're using Preact via aliasing, this setting works well with `preact/compat`.
+      // Use automatic JSX runtime (no need to import React/Preact)
       jsx: 'react-jsx',
     },
 
-    // Module resolution aliases.
-    // This tells the bundler to use `preact/compat` wherever `react` or `react-dom` is imported.
-    // Allows you to write React-style code but ship much smaller Preact bundles.
+    // Module resolution: alias React imports to Preact
     resolve: {
       alias: {
         react: 'preact/compat',
@@ -106,87 +85,68 @@ export default async function bundleCode(codeOrMap, { server = false } = {}) {
       },
     },
 
-    // Array of plugins to apply during the build.
+    // Build plugins
     plugins: [
-      // The virtual plugin lets us define virtual files
-      // with the contents provided by the `codeMap` argument.
-      // These become the root modules for the bundler.
+      // Virtual plugin: provides in-memory modules from codeMap
       virtual(Object.fromEntries(codeMap)),
 
-      // Load CSS imports via the custom plugin.
-      // This plugin will collect imported CSS files and return them as `source` chunks.
+      // CSS loader: collects and bundles imported CSS files
       cssLoader(),
 
-      // Extract import map from Rolldown's chunkImportMap output
-      // https://rolldown.rs/options/experimental#chunkimportmap
+      // Extract and transform the import map generated by Rolldown
       {
         name: 'extract-import-map',
         /**
-         * Extract import map from bundle
-         * @param {*} _ - Options (unused)
-         * @param {*} bundle - Bundle object
+         * Extracts import map from bundle and converts to HTML script tag.
+         *
+         * @param {import('rolldown').NormalizedOutputOptions} _ - Output options (unused).
+         * @param {import('rolldown').OutputBundle} bundle - Bundle object containing all output chunks.
          */
         generateBundle(_, bundle) {
           const chunkImportMap = bundle['importmap.json'];
 
           if (chunkImportMap?.type === 'asset') {
-            // Parse the import map and filter out virtual entries
-            const importMapData = JSON.parse(chunkImportMap.source);
+            // Convert to HTML script tag for inline inclusion
+            importMapHtml = `<script type="importmap">${chunkImportMap.source}</script>`;
 
-            // Remove any references to _virtual_ or virtual entrypoint files
-            if (importMapData.imports) {
-              for (const key in importMapData.imports) {
-                if (key.includes('_virtual_') || key.includes('entrypoint')) {
-                  delete importMapData.imports[key];
-                }
-              }
-            }
-
-            // Extract the import map and convert to HTML script tag
-            importMapHtml = `<script type="importmap">${JSON.stringify(importMapData)}</script>`;
-
-            // Remove from bundle so it's not written as a separate file
+            // Remove from bundle to prevent writing as separate file
             delete bundle['importmap.json'];
           }
         },
       },
     ],
 
-    // Enable tree-shaking to eliminate unused imports, functions, and branches.
-    // This works best when all dependencies are marked as having no side effects.
-    // `sideEffects: false` in the package.json confirms this is safe to do.
+    // Enable tree-shaking to remove unused code
     treeshake: true,
 
-    // Disable writing output to disk.
-    // Instead, the compiled chunks are returned in memory (ideal for dev tools or sandboxing).
+    // Return chunks in memory instead of writing to disk
     write: false,
   });
 
-  // Destructure the result to get the output chunks.
-  // Separate entry chunks from other chunks (CSS and code-split JS)
+  // Separate entry chunks (main modules) from other chunks (CSS, code-split JS)
   const entryChunks = [];
   const otherChunks = [];
 
-  // Separate the entrypoints from remaining JavaScript files
   for (const chunk of result.output) {
     const chunkTarget =
       chunk.type === 'chunk' && chunk.isEntry ? entryChunks : otherChunks;
 
-    chunkTarget['push'](chunk);
+    chunkTarget.push(chunk);
   }
 
-  // Separate CSS files from JS chunks
+  // Separate CSS assets from JavaScript chunks
   const cssFiles = otherChunks.filter(chunk => chunk.type === 'asset');
   const jsChunks = otherChunks.filter(chunk => chunk.type === 'chunk');
 
-  // For client builds, create a map of entry code by original fileName
+  // Create a map of entry code by original fileName
   const jsMap = {};
 
   for (const chunk of entryChunks) {
-    // Map back to original fileName from facadeModuleId
+    // Extract original fileName from virtual module ID
     const originalFileName =
       chunk.facadeModuleId?.split('/').pop() || chunk.fileName;
 
+    // Remove virtual: prefix from module IDs
     jsMap[originalFileName.replace('\x00virtual:', '')] = chunk.code;
   }
 
