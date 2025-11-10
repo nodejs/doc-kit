@@ -8,20 +8,23 @@ import staticData from './data.mjs';
  * Asynchronously bundles JavaScript source code (and its CSS imports),
  * targeting either browser (client) or server (Node.js) environments.
  *
- * @param {string} code - JavaScript/JSX source code to bundle.
+ * @param {Map<string, string> | string} codeOrMap - Map of {fileName: code} or single code string for server builds.
  * @param {{ server: boolean }} options - Build configuration object.
  */
-export default async function bundleCode(code, { server = false } = {}) {
+export default async function bundleCode(codeOrMap, { server = false } = {}) {
   // Store the import map HTML for later extraction
   let importMapHtml = '';
+
+  // Convert input to Map format
+  const codeMap =
+    codeOrMap instanceof Map
+      ? codeOrMap
+      : new Map([['entrypoint.jsx', codeOrMap]]);
 
   /** @type {import('rolldown').OutputOptions} */
   const serverOutputConfig = {
     inlineDynamicImports: true,
   };
-
-  /** @type {import('rolldown').OutputOptions} */
-  const clientOutputConfig = {};
 
   /** @type {import('rolldown').InputOptions['experimental']} */
   const clientExperimentalConfig = {
@@ -32,15 +35,15 @@ export default async function bundleCode(code, { server = false } = {}) {
   };
 
   const result = await build({
-    // Define the entry point module name — this is virtual (not a real file).
-    // The virtual plugin will provide the actual code string under this name.
-    input: 'entrypoint.jsx',
+    // Define the entry point module names — these are virtual (not real files).
+    // The virtual plugin will provide the actual code string under these names.
+    input: Array.from(codeMap.keys()),
 
     // Enable experimental chunk import map for cache-busted module resolution
     // https://rolldown.rs/options/experimental#chunkimportmap
     // Also enable incremental builds for faster rebuilds (similar to Rollup's cache)
     // https://rolldown.rs/options/experimental#incrementalbuild
-    experimental: !server ? clientExperimentalConfig : {},
+    experimental: server ? {} : clientExperimentalConfig,
 
     // Configuration for the output bundle
     output: {
@@ -55,7 +58,7 @@ export default async function bundleCode(code, { server = false } = {}) {
 
       // Enable code splitting for client builds to allow dynamic imports
       // For server builds, inline everything into a single bundle
-      ...(server ? serverOutputConfig : clientOutputConfig),
+      ...(server ? serverOutputConfig : {}),
     },
 
     // Platform informs Rolldown of the environment-specific code behavior:
@@ -105,10 +108,10 @@ export default async function bundleCode(code, { server = false } = {}) {
 
     // Array of plugins to apply during the build.
     plugins: [
-      // The virtual plugin lets us define a virtual file called 'entrypoint.jsx'
-      // with the contents provided by the `code` argument.
-      // This becomes the root module for the bundler.
-      virtual({ 'entrypoint.jsx': code }),
+      // The virtual plugin lets us define virtual files
+      // with the contents provided by the `codeMap` argument.
+      // These become the root modules for the bundler.
+      virtual(Object.fromEntries(codeMap)),
 
       // Load CSS imports via the custom plugin.
       // This plugin will collect imported CSS files and return them as `source` chunks.
@@ -160,20 +163,37 @@ export default async function bundleCode(code, { server = false } = {}) {
   });
 
   // Destructure the result to get the output chunks.
-  // The first output is always the JavaScript entrypoint.
-  // Any additional chunks are styles (CSS) or code-split JS chunks.
-  const [mainJs, ...otherChunks] = result.output;
+  // Separate entry chunks from other chunks (CSS and code-split JS)
+  const entryChunks = [];
+  const otherChunks = [];
+
+  // Separate the entrypoints from remaining JavaScript files
+  for (const chunk of result.output) {
+    const chunkTarget =
+      chunk.type === 'chunk' && chunk.isEntry ? entryChunks : otherChunks;
+
+    chunkTarget['push'](chunk);
+  }
 
   // Separate CSS files from JS chunks
   const cssFiles = otherChunks.filter(chunk => chunk.type === 'asset');
   const jsChunks = otherChunks.filter(chunk => chunk.type === 'chunk');
 
-  const bundleResult = {
-    js: mainJs.code,
+  // For client builds, create a map of entry code by original fileName
+  const jsMap = {};
+
+  for (const chunk of entryChunks) {
+    // Map back to original fileName from facadeModuleId
+    const originalFileName =
+      chunk.facadeModuleId?.split('/').pop() || chunk.fileName;
+
+    jsMap[originalFileName.replace('\x00virtual:', '')] = chunk.code;
+  }
+
+  return {
+    jsMap,
     jsChunks: jsChunks.map(({ fileName, code }) => ({ fileName, code })),
     css: cssFiles.map(f => f.source).join(''),
     importMapHtml,
   };
-
-  return bundleResult;
 }

@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 import createASTBuilder from './utils/generate.mjs';
-import { processJSXEntry } from './utils/processing.mjs';
+import { processJSXEntries } from './utils/processing.mjs';
 import { safeWrite } from '../../utils/safeWrite.mjs';
 
 /**
@@ -37,48 +37,33 @@ export default {
 
     const requireFn = createRequire(import.meta.url);
 
-    const results = [];
+    // Process all entries at once
+    const { results, css, jsChunks } = await processJSXEntries(
+      entries,
+      template,
+      astBuilders,
+      requireFn,
+      { version }
+    );
 
-    let mainCss = '';
-
-    const writtenChunks = new Set();
-
-    for (const entry of entries) {
-      const { html, css, jsChunks } = await processJSXEntry(
-        entry,
-        template,
-        astBuilders,
-        requireFn,
-        { version }
-      );
-
-      results.push({ html, css });
-
-      // Capture the main CSS bundle from the first processed entry
-      if (!mainCss && css) {
-        mainCss = css;
+    // Write all files if output directory is specified
+    if (output) {
+      // Write all HTML files
+      for (const { html, api } of results) {
+        safeWrite(join(output, `${api}.html`), html, 'utf-8');
       }
 
-      // Write HTML file if output directory is specified
-      if (output) {
-        safeWrite(join(output, `${entry.data.api}.html`), html, 'utf-8');
+      // Write all JS chunks
+      for (const chunk of jsChunks) {
+        safeWrite(join(output, chunk.fileName), chunk.code, 'utf-8');
+      }
 
-        // Write JS chunks (only once per unique chunk)
-        for (const chunk of jsChunks) {
-          if (!writtenChunks.has(chunk.fileName)) {
-            safeWrite(join(output, chunk.fileName), chunk.code, 'utf-8');
-
-            writtenChunks.add(chunk.fileName);
-          }
-        }
+      // Write the CSS file
+      if (css) {
+        safeWrite(join(output, 'styles.css'), css, 'utf-8');
       }
     }
 
-    // Write the main CSS file once after processing all entries
-    if (output && mainCss) {
-      safeWrite(join(output, 'styles.css'), mainCss, 'utf-8');
-    }
-
-    return results;
+    return results.map(({ html }) => ({ html, css }));
   },
 };
