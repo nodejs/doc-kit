@@ -1,10 +1,9 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 import createASTBuilder from './utils/generate.mjs';
 import { processJSXEntries } from './utils/processing.mjs';
-import { safeWrite } from '../../utils/safeWrite.mjs';
 
 /**
  * Web generator - transforms JSX AST entries into complete web bundles.
@@ -57,16 +56,16 @@ export default {
     if (output) {
       // Write HTML files
       for (const { html, api } of results) {
-        await safeWrite(join(output, `${api}.html`), html, 'utf-8');
+        await writeFile(join(output, `${api}.html`), html, 'utf-8');
       }
 
       // Write code-split JavaScript chunks
       for (const chunk of jsChunks) {
-        await safeWrite(join(output, chunk.fileName), chunk.code, 'utf-8');
+        await writeFile(join(output, chunk.fileName), chunk.code, 'utf-8');
       }
 
       // Write CSS bundle
-      await safeWrite(join(output, 'styles.css'), css, 'utf-8');
+      await writeFile(join(output, 'styles.css'), css, 'utf-8');
     }
 
     // Return HTML and CSS for each entry
