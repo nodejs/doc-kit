@@ -116,7 +116,7 @@ export async function processJSXEntries(
   // Note: main JS is inlined in HTML, so we don't return it separately
   return {
     results,
-    css: clientBundle.css,
+    css: clientBundle.css ?? '',
     jsChunks: chunksWithHashes,
   };
 }

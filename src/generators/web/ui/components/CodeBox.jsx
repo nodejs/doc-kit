@@ -46,9 +46,9 @@ export default ({ className, children, ...props }) => {
       <BaseCodeBox
         onCopy={onCopy}
         language={getLanguageDisplayName(language)}
-        {...props}
         className={className}
         buttonText="Copy to clipboard"
+        {...props}
       >
         {children}
       </BaseCodeBox>

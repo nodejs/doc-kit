@@ -15,7 +15,6 @@
         "@orama/orama": "^3.1.16",
         "@orama/react-components": "^0.8.1",
         "@rollup/plugin-virtual": "^3.0.2",
-        "@shikijs/twoslash": "^3.14.0",
         "acorn": "^8.15.0",
         "commander": "^14.0.2",
         "dedent": "^1.7.0",
@@ -4921,20 +4920,6 @@
       },
       "funding": {
         "url": "https://github.com/sponsors/isaacs"
-      }
-    },
-    "node_modules/fsevents": {
-      "version": "2.3.3",
-      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
-      "integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==",
-      "hasInstallScript": true,
-      "license": "MIT",
-      "optional": true,
-      "os": [
-        "darwin"
-      ],
-      "engines": {
-        "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
       }
     },
     "node_modules/function-bind": {

@@ -59,9 +59,7 @@ export default {
       }
 
       // Write the CSS file
-      if (css) {
-        safeWrite(join(output, 'styles.css'), css, 'utf-8');
-      }
+      safeWrite(join(output, 'styles.css'), css, 'utf-8');
     }
 
     return results.map(({ html }) => ({ html, css }));
