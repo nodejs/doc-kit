@@ -42,16 +42,14 @@ export default ({ className, children, ...props }) => {
   };
 
   return (
-    <>
-      <BaseCodeBox
-        onCopy={onCopy}
-        language={getLanguageDisplayName(language)}
-        className={className}
-        buttonText="Copy to clipboard"
-        {...props}
-      >
-        {children}
-      </BaseCodeBox>
-    </>
+    <BaseCodeBox
+      onCopy={onCopy}
+      language={getLanguageDisplayName(language)}
+      className={className}
+      buttonText="Copy to clipboard"
+      {...props}
+    >
+      {children}
+    </BaseCodeBox>
   );
 };

@@ -57,16 +57,16 @@ export default {
     if (output) {
       // Write HTML files
       for (const { html, api } of results) {
-        safeWrite(join(output, `${api}.html`), html, 'utf-8');
+        await safeWrite(join(output, `${api}.html`), html, 'utf-8');
       }
 
       // Write code-split JavaScript chunks
       for (const chunk of jsChunks) {
-        safeWrite(join(output, chunk.fileName), chunk.code, 'utf-8');
+        await safeWrite(join(output, chunk.fileName), chunk.code, 'utf-8');
       }
 
       // Write CSS bundle
-      safeWrite(join(output, 'styles.css'), css, 'utf-8');
+      await safeWrite(join(output, 'styles.css'), css, 'utf-8');
     }
 
     // Return HTML and CSS for each entry
