@@ -109,11 +109,11 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       .filter(c => c.fileName.endsWith('.css'))
       .map(f => f.source)
       .join(''),
-    jsChunks: chunks.map(({ fileName, code, isEntry }) => ({
+    chunks: chunks.map(({ fileName, code, isEntry }) => ({
       fileName: fileName.replace('_virtual_', ''),
       isEntry,
       code,
     })),
-    importMapHtml: `<script type="importmap">${importMap?.source}</script>`,
+    importMap: importMap?.source.toString(),
   };
 }

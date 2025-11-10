@@ -2,13 +2,13 @@
  * Creates an enhanced require function that can resolve code-split chunks
  * from a virtual file system before falling back to Node.js require.
  *
- * @param {Array<{fileName: string, code: string}>} jsChunks - Array of code-split chunks from bundler.
+ * @param {Array<{fileName: string, code: string}>} chunks - Array of code-split chunks from bundler.
  * @param {ReturnType<import('node:module').createRequire>} requireFn - Node.js require function for external packages.
  */
-export function createEnhancedRequire(jsChunks, requireFn) {
+export function createChunkedRequire(chunks, requireFn) {
   // Create a virtual file system from code-split chunks
   const chunkModules = Object.fromEntries(
-    jsChunks.map(c => [`./${c.fileName}`, c.code])
+    chunks.map(c => [`./${c.fileName}`, c.code])
   );
 
   /**

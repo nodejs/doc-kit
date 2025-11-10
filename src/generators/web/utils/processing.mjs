@@ -4,7 +4,7 @@ import HTMLMinifier from '@minify-html/node';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import bundleCode from './bundle.mjs';
-import { createEnhancedRequire } from './chunkHelper.mjs';
+import { createChunkedRequire } from './chunks.mjs';
 
 /**
  * Executes server-side JavaScript code in an isolated context with virtual module support.
@@ -21,13 +21,13 @@ export async function executeServerCode(serverCodeMap, requireFn) {
   const dehydratedMap = new Map();
 
   // Bundle all server-side code, which may produce code-split chunks
-  const { jsChunks } = await bundleCode(serverCodeMap, { server: true });
+  const { chunks } = await bundleCode(serverCodeMap, { server: true });
 
-  const entryChunks = jsChunks.filter(c => c.isEntry);
-  const otherChunks = jsChunks.filter(c => !c.isEntry);
+  const entryChunks = chunks.filter(c => c.isEntry);
+  const otherChunks = chunks.filter(c => !c.isEntry);
 
   // Create enhanced require function that can resolve code-split chunks
-  const enhancedRequire = createEnhancedRequire(otherChunks, requireFn);
+  const enhancedRequire = createChunkedRequire(otherChunks, requireFn);
 
   // Execute each bundled entry and collect dehydrated HTML results
   for (const chunk of entryChunks) {
@@ -81,28 +81,24 @@ export async function processJSXEntries(
   // Bundle all client code at once (with code splitting for shared chunks)
   const clientBundle = await bundleCode(clientCodeMap);
 
-  // Process each entry to create final HTML
-  const results = entries.map(({ data }) => {
-    const fileName = `${data.api}.js`;
+  const titleSuffix = `Node.js v${version} Documentation`;
 
-    const title = `${data.heading.data.name} | Node.js v${version} Documentation`;
+  // Process each entry to create final HTML
+  const results = entries.map(({ data: { api, heading } }) => {
+    const fileName = `${api}.js`;
 
     // Replace template placeholders with actual content
     const renderedHtml = template
-      .replace('{{title}}', title)
+      .replace('{{title}}', `${heading.data.name} | ${titleSuffix}`)
       .replace('{{dehydrated}}', serverBundle.get(fileName) ?? '')
-      .replace('{{importMap}}', clientBundle.importMapHtml)
+      .replace('{{importMap}}', clientBundle.importMap ?? '')
       .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`);
 
     // Minify HTML (input must be a Buffer)
     const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
 
-    return { html: finalHTMLBuffer, api: data.api };
+    return { html: finalHTMLBuffer, api };
   });
 
-  return {
-    results,
-    css: clientBundle.css ?? '',
-    jsChunks: clientBundle.jsChunks,
-  };
+  return { results, ...clientBundle };
 }

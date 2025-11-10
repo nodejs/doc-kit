@@ -20,7 +20,7 @@ export const getLanguageDisplayName = language => {
 };
 
 /** @param {import('react').PropsWithChildren<{ className: string }>} props */
-export default ({ className, children, ...props }) => {
+export default ({ className, ...props }) => {
   const matches = className?.match(/language-(?<language>[a-zA-Z]+)/);
 
   const language = matches?.groups?.language ?? '';
@@ -48,8 +48,6 @@ export default ({ className, children, ...props }) => {
       className={className}
       buttonText="Copy to clipboard"
       {...props}
-    >
-      {children}
-    </BaseCodeBox>
+    />
   );
 };

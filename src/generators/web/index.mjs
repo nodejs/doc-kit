@@ -44,7 +44,7 @@ export default {
     const requireFn = createRequire(import.meta.url);
 
     // Process all entries: convert JSX to HTML/CSS/JS
-    const { results, css, jsChunks } = await processJSXEntries(
+    const { results, css, chunks } = await processJSXEntries(
       entries,
       template,
       astBuilders,
@@ -60,7 +60,7 @@ export default {
       }
 
       // Write code-split JavaScript chunks
-      for (const chunk of jsChunks) {
+      for (const chunk of chunks) {
         await writeFile(join(output, chunk.fileName), chunk.code, 'utf-8');
       }
 
