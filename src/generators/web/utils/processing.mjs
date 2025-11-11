@@ -82,7 +82,7 @@ export async function processJSXEntries(
   // Bundle all client code at once (with code splitting for shared chunks)
   const clientBundle = await bundleCode(clientCodeMap);
 
-  const titleSuffix = `Node.js v${version} Documentation`;
+  const titleSuffix = `Node.js v${version.version} Documentation`;
 
   const speculationRulesString = JSON.stringify(SPECULATION_RULES, null, 2);
 
