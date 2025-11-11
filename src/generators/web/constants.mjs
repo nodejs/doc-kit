@@ -80,3 +80,14 @@ export const JSX_IMPORTS = {
     source: '@node-core/ui-components/Providers/NotificationProvider',
   },
 };
+
+/**
+ * Specification rules for resource hints like prerendering and prefetching.
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Speculation_Rules_API
+ */
+export const SPECULATION_RULES = {
+  prefetch: [
+    { where: { selector_matches: '[rel~=prefetch]' }, eagerness: 'eager' },
+  ],
+  prerender: [{ where: { href_matches: '/*.html' }, eagerness: 'moderate' }],
+};

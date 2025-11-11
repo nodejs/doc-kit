@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import HTMLMinifier from '@minify-html/node';
 import { jsx, toJs } from 'estree-util-to-js';
 
+import { SPECULATION_RULES } from '../constants.mjs';
 import bundleCode from './bundle.mjs';
 import { createChunkedRequire } from './chunks.mjs';
 
@@ -83,6 +84,8 @@ export async function processJSXEntries(
 
   const titleSuffix = `Node.js v${version} Documentation`;
 
+  const speculationRulesString = JSON.stringify(SPECULATION_RULES, null, 2);
+
   // Process each entry to create final HTML
   const results = entries.map(({ data: { api, heading } }) => {
     const fileName = `${api}.js`;
@@ -92,7 +95,8 @@ export async function processJSXEntries(
       .replace('{{title}}', `${heading.data.name} | ${titleSuffix}`)
       .replace('{{dehydrated}}', serverBundle.get(fileName) ?? '')
       .replace('{{importMap}}', clientBundle.importMap ?? '')
-      .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`);
+      .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
+      .replace('{{speculationRules}}', speculationRulesString);
 
     // Minify HTML (input must be a Buffer)
     const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
