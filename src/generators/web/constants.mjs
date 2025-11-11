@@ -86,8 +86,12 @@ export const JSX_IMPORTS = {
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Speculation_Rules_API
  */
 export const SPECULATION_RULES = {
-  prefetch: [
-    { where: { selector_matches: '[rel~=prefetch]' }, eagerness: 'eager' },
+  // Eagerly prefetch all links that point to the API docs themselves
+  // in a moderate eagerness to improve resource loading
+  prefetch: [{ where: { href_matches: '/*' }, eagerness: 'eager' }],
+  prerender: [
+    // Eagerly prerender Sidebar links for faster navigation
+    // These will be done in a moderate eagerness (hover, likely next navigation)
+    { where: { selector_matches: '[rel~=prefetch]' }, eagerness: 'moderate' },
   ],
-  prerender: [{ where: { href_matches: '/*.html' }, eagerness: 'moderate' }],
 };
