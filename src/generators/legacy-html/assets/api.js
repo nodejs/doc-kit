@@ -15,10 +15,6 @@ const initFeatures = () => {
   setupCopyButton();
 };
 
-// Initialize either on DOMContentLoaded or immediately if already loaded
-document.addEventListener('DOMContentLoaded', initFeatures);
-if (document.readyState !== 'loading') initFeatures();
-
 /**
  * Sets up theme toggling functionality
  */
@@ -202,3 +198,7 @@ const setupCopyButton = () => {
     });
   });
 };
+
+// Initialize either on DOMContentLoaded or immediately if already loaded
+document.addEventListener('DOMContentLoaded', initFeatures);
+if (document.readyState !== 'loading') initFeatures();
