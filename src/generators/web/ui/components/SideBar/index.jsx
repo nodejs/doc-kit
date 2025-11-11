@@ -1,4 +1,4 @@
-import Select from '@node-core/ui-components/Common/Select/index.js';
+import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
@@ -31,6 +31,7 @@ export default ({ versions, pathname, currentVersion, docPages }) => (
       },
     ]}
     onSelect={redirect}
+    as={props => <a {...props} rel="prefetch" />}
   >
     <div>
       <Select

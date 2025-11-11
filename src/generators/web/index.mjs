@@ -3,11 +3,15 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 import createASTBuilder from './utils/generate.mjs';
-import { processJSXEntry } from './utils/processing.mjs';
+import { processJSXEntries } from './utils/processing.mjs';
 
 /**
- * This generator transforms JSX AST (Abstract Syntax Tree) entries into a complete
- * web bundle, including server-side rendered HTML, client-side JavaScript, and CSS.
+ * Web generator - transforms JSX AST entries into complete web bundles.
+ *
+ * This generator processes JSX AST entries and produces:
+ * - Server-side rendered HTML pages
+ * - Client-side JavaScript with code splitting
+ * - Bundled CSS styles
  *
  * @type {GeneratorMetadata<Input, string>}
  */
@@ -18,57 +22,53 @@ export default {
   dependsOn: 'jsx-ast',
 
   /**
-   * The main generation function for the 'web' generator.
-   * It processes an array of JSX AST entries, converting each into a standalone HTML page
-   * with embedded client-side JavaScript and linked CSS.
+   * Main generation function that processes JSX AST entries into web bundles.
    *
-   * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries
-   * @param {Partial<GeneratorOptions>} options
+   * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries - JSX AST entries to process.
+   * @param {Partial<GeneratorOptions>} options - Generator options.
+   * @param {string} [options.output] - Output directory for generated files.
+   * @param {string} options.version - Documentation version string.
+   * @returns {Promise<Array<{html: Buffer, css: string}>>} Generated HTML and CSS.
    */
   async generate(entries, { output, version }) {
-    // Load the HTML template.
+    // Load the HTML template with placeholders
     const template = await readFile(
       new URL('template.html', import.meta.url),
       'utf-8'
     );
 
-    // These builders are responsible for converting the JSX AST into executable
-    // JavaScript code for both server-side rendering and client-side hydration.
+    // Create AST builders for server and client programs
     const astBuilders = createASTBuilder();
 
-    // This is necessary for the `executeServerCode` function to resolve modules
-    // within the dynamically executed server-side code.
+    // Create require function for resolving external packages in server code
     const requireFn = createRequire(import.meta.url);
 
-    const results = [];
-    let mainCss = '';
+    // Process all entries: convert JSX to HTML/CSS/JS
+    const { results, css, chunks } = await processJSXEntries(
+      entries,
+      template,
+      astBuilders,
+      requireFn,
+      { version }
+    );
 
-    for (const entry of entries) {
-      const { html, css } = await processJSXEntry(
-        entry,
-        template,
-        astBuilders,
-        requireFn,
-        version
-      );
-      results.push({ html, css });
-
-      // Capture the main CSS bundle from the first processed entry.
-      if (!mainCss && css) {
-        mainCss = css;
+    // Write files to disk if output directory is specified
+    if (output) {
+      // Write HTML files
+      for (const { html, api } of results) {
+        await writeFile(join(output, `${api}.html`), html, 'utf-8');
       }
 
-      // Write HTML file if output directory is specified
-      if (output) {
-        await writeFile(join(output, `${entry.data.api}.html`), html, 'utf-8');
+      // Write code-split JavaScript chunks
+      for (const chunk of chunks) {
+        await writeFile(join(output, chunk.fileName), chunk.code, 'utf-8');
       }
+
+      // Write CSS bundle
+      await writeFile(join(output, 'styles.css'), css, 'utf-8');
     }
 
-    if (output && mainCss) {
-      const filePath = join(output, 'styles.css');
-      await writeFile(filePath, mainCss, 'utf-8');
-    }
-
-    return results;
+    // Return HTML and CSS for each entry
+    return results.map(({ html }) => ({ html, css }));
   },
 };
