@@ -58,6 +58,9 @@ export class ParameterTree {
     return this.#children;
   }
 
+  /**
+   *
+   */
   get counter() {
     return this.#counter;
   }
@@ -108,6 +111,7 @@ function makeArrayUnique(array) {
   const seen = {};
 
   return array.filter(value => {
+    // eslint-disable-next-line no-prototype-builtins
     if (seen.hasOwnProperty(value)) {
       return false;
     }

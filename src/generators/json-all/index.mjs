@@ -4,7 +4,7 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { DOC_NODE_VERSION } from '../../constants.mjs';
+import { BASE_URL, DOC_NODE_VERSION } from '../../constants.mjs';
 import { generateJsonSchema } from './util/generateJsonSchema.mjs';
 
 /**
@@ -36,7 +36,7 @@ export default {
    */
   async generate(input, { version, output }) {
     const generatedValue = {
-      $schema: `https://nodejs.org/docs/${DOC_NODE_VERSION}/api/node-doc-all-schema.jsonc`,
+      $schema: `${BASE_URL}/docs/${DOC_NODE_VERSION}/api/node-doc-all-schema.jsonc`,
       modules: [],
       text: [],
     };

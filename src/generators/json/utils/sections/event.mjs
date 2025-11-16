@@ -1,19 +1,15 @@
 'use strict';
 
-import { GeneratorError } from '../../../utils/generator-error.mjs';
-import { EVENT_TYPE_DESCRIPTION_EXTRACTOR } from '../constants.mjs';
-import { findParentSection } from './findParentSection.mjs';
-import { parseTypeList } from './parseTypeList.mjs';
-import { stringifyNode } from './stringifyNode.mjs';
-
-/**
- * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
- */
+import { GeneratorError } from '../../../../utils/generator-error.mjs';
+import { EVENT_TYPE_DESCRIPTION_EXTRACTOR } from '../../constants.mjs';
+import { findParentSection } from '../findParentSection.mjs';
+import { parseTypeList } from '../parseTypeList.mjs';
+import { stringifyNode } from '../stringifyNode.mjs';
 
 /**
  * Parse the parameters for the event's callback method
- * @param {HierarchizedEntry} entry The AST entry
- * @param {import('../generated.d.ts').Event} section The event section
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
+ * @param {import('../../generated.d.ts').Event} section The event section
  */
 export function parseParameters(entry, section) {
   const [, ...nodes] = entry.content.children;
@@ -37,7 +33,7 @@ export function parseParameters(entry, section) {
     }
 
     /**
-     * @type {import('../generated.d.ts').MethodParameter}
+     * @type {import('../../generated.d.ts').MethodParameter}
      */
     const parameter = {};
 
@@ -163,23 +159,18 @@ export function parseParameters(entry, section) {
 }
 
 /**
- *
+ * Adds the properties expected in an event section to an object.
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
+ * @param {import('../../generated.d.ts').Event} section The event section
  */
-export const createEventSectionBuilder = () => {
-  /**
-   * Adds the properties expected in an event section to an object.
-   * @param {HierarchizedEntry} entry The AST entry
-   * @param {import('../generated.d.ts').Event} section The event section
-   */
-  return (entry, section) => {
-    parseParameters(entry, section);
+export function createEventSection(entry, section) {
+  parseParameters(entry, section);
 
-    const parent = findParentSection(section, ['class', 'module']);
+  const parent = findParentSection(section, ['class', 'module']);
 
-    // Add this section to the parent if it exists
-    if (parent) {
-      parent.events ??= [];
-      parent.events.push(section);
-    }
-  };
-};
+  // Add this section to the parent if it exists
+  if (parent) {
+    parent.events ??= [];
+    parent.events.push(section);
+  }
+}

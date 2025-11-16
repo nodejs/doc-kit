@@ -1,11 +1,10 @@
-// @ts-check
 'use strict';
 
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { createSectionBuilder } from './utils/createSection.mjs';
 import { parseSchema } from './utils/parseSchema.mjs';
+import { createSection } from './utils/sections/index.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 
 /**
@@ -42,8 +41,6 @@ export default {
   async generate(input, { output }) {
     const groupedModules = groupNodesByModule(input);
 
-    const buildSection = createSectionBuilder();
-    console.log('json in', input);
     /**
      * @param {ApiDocMetadataEntry} head
      * @returns {import('./generated.d.ts').NodeJsAPIDocumentationSchema}
@@ -54,7 +51,7 @@ export default {
         throw new TypeError(`no grouped nodes found for ${head.api}`);
       }
 
-      const section = buildSection(head, nodes);
+      const section = createSection(head, nodes);
 
       return section;
     };

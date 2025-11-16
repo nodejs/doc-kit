@@ -2,7 +2,7 @@
 
 /**
  * @typedef {{
- *  hierarchyChildren: Array<HierarchizedEntry>
+ * hierarchyChildren: Array<HierarchizedEntry>
  * } & ApiDocMetadataEntry} HierarchizedEntry
  */
 

@@ -1,25 +1,21 @@
-// @ts-check
 'use strict';
 
 import assert from 'node:assert';
 import test, { describe } from 'node:test';
 
+import { ENTRY_TO_SECTION_TYPE } from '../../../constants.mjs';
 import {
-  addDeprecatedStatus,
   addDescriptionAndExamples,
   addStabilityStatus,
   addVersionProperties,
-  createSectionBaseBuilder,
-  ENTRY_TO_SECTION_TYPE,
-} from '../createSectionBase.mjs';
-
-const createSectionBase = createSectionBaseBuilder();
+  createSectionBase,
+} from '../base.mjs';
 
 describe('determines the correct type for a section', () => {
   describe('type fallbacks', () => {
     test('fallbacks to `module` if heading depth is 1 and heading type is undefined', () => {
       /**
-       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],
@@ -59,7 +55,7 @@ describe('determines the correct type for a section', () => {
 
     test('fallbacks to `text` if heading depth is > 1 and heading type is undefined', () => {
       /**
-       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],
@@ -99,7 +95,7 @@ describe('determines the correct type for a section', () => {
 
     test('doc/api/process.md determined as module and not a global', () => {
       /**
-       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],
@@ -143,7 +139,7 @@ describe('determines the correct type for a section', () => {
 
     test(`\`${entryType}\` -> \`${sectionType}\``, () => {
       /**
-       * @type {import('../createSectionBase.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         hierarchyChildren: [],
@@ -186,7 +182,7 @@ describe('determines the correct type for a section', () => {
 describe('addDescriptionAndExamples', () => {
   test('description with `text`', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -216,7 +212,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('description with `inlineCode`', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -250,7 +246,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('description with `link`', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -293,7 +289,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('description with `emphasis`', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -323,7 +319,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('extracts single code example', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -349,7 +345,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('extracts multiple code examples', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -386,34 +382,10 @@ describe('addDescriptionAndExamples', () => {
   });
 });
 
-describe('addDeprecatedStatus', () => {
-  test('deprecated', () => {
-    /**
-     * @type {import('../../generated.d.ts').SectionBase}
-     */
-    const base = {};
-
-    addDeprecatedStatus(base, { deprecated_in: ['v20.0.0'] });
-
-    assert.deepStrictEqual(base['@deprecated'], ['v20.0.0']);
-  });
-
-  test('not deprecated', () => {
-    /**
-     * @type {import('../../generated.d.ts').SectionBase}
-     */
-    const base = {};
-
-    addDeprecatedStatus(base, {});
-
-    assert.equal(base['@deprecated'], undefined);
-  });
-});
-
 describe('addStabilityStatus', () => {
   test('defined if provided', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -439,7 +411,7 @@ describe('addStabilityStatus', () => {
 
   test('undefined if not provided', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -467,7 +439,7 @@ describe('addStabilityStatus', () => {
 describe('addVersionProperties', () => {
   test('defined in provided', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -487,6 +459,7 @@ describe('addVersionProperties', () => {
       added_in: ['v5.0.0'],
       n_api_version: ['v5.0.0'],
       removed_in: ['v20.0.0'],
+      deprecated_in: ['v20.0.0'],
     });
 
     assert.deepStrictEqual(base.changes, [
@@ -504,11 +477,12 @@ describe('addVersionProperties', () => {
     assert.deepStrictEqual(base['@since'], ['v5.0.0']);
     assert.deepStrictEqual(base.napiVersion, ['v5.0.0']);
     assert.deepStrictEqual(base.removedIn, ['v20.0.0']);
+    assert.deepStrictEqual(base['@deprecated'], ['v20.0.0']);
   });
 
   test('undefined if not provided', () => {
     /**
-     * @type {import('../../generated.d.ts').SectionBase}
+     * @type {import('../../../generated.d.ts')}
      */
     const base = {};
 
@@ -518,5 +492,6 @@ describe('addVersionProperties', () => {
     assert.equal(base['@since'], undefined);
     assert.equal(base.napiVersion, undefined);
     assert.equal(base.removedIn, undefined);
+    assert.equal(base['@deprecated'], undefined);
   });
 });

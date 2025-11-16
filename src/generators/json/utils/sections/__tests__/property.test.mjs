@@ -1,18 +1,15 @@
-// @ts-check
 'use strict';
 
 import assert from 'node:assert';
 import test, { describe } from 'node:test';
-import {
-  DOC_TYPE_TO_CORRECT_JS_TYPE_MAP,
-  parseDescription,
-  parseType,
-} from '../createPropertySection.mjs';
+
+import { DOC_TYPE_TO_CORRECT_JS_TYPE_MAP } from '../../../constants.mjs';
+import { parseDescription, parseType } from '../property.mjs';
 
 describe('parseType', () => {
   test('defaults to `any` if first child is not a list', () => {
     /**
-     * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+     * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
      */
     const entry = {
       content: {
@@ -27,7 +24,7 @@ describe('parseType', () => {
     };
 
     /**
-     * @type {import('../../generated.d.ts').Property}
+     * @type {import('../../../generated.d.ts').Property}
      */
     const section = {};
 
@@ -44,7 +41,7 @@ describe('parseType', () => {
 
       test(`'${originalType}' -> '${expectedType}'`, () => {
         /**
-         * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+         * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
          */
         const entry = {
           content: {
@@ -80,7 +77,7 @@ describe('parseType', () => {
         };
 
         /**
-         * @type {import('../../generated.d.ts').Property}
+         * @type {import('../../../generated.d.ts').Property}
          */
         const section = {};
 
@@ -94,7 +91,7 @@ describe('parseType', () => {
 
     test('{number}', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -130,7 +127,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Property}
+       * @type {import('../../../generated.d.ts').Property}
        */
       const section = {};
 
@@ -143,7 +140,7 @@ describe('parseType', () => {
 
     test('{number|boolean}', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -193,7 +190,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Property}
+       * @type {import('../../../generated.d.ts').Property}
        */
       const section = {};
 
@@ -206,7 +203,7 @@ describe('parseType', () => {
 
     test('{number} **Default:** 8192', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -263,7 +260,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Property}
+       * @type {import('../../../generated.d.ts').Property}
        */
       const section = {};
 
@@ -281,7 +278,7 @@ describe('parseType', () => {
 
       test(`'${originalType}' -> '${expectedType}'`, () => {
         /**
-         * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+         * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
          */
         const entry = {
           content: {
@@ -321,7 +318,7 @@ describe('parseType', () => {
         };
 
         /**
-         * @type {import('../../generated.d.ts').Property}
+         * @type {import('../../../generated.d.ts').Property}
          */
         const section = {};
 
@@ -335,7 +332,7 @@ describe('parseType', () => {
 
     test('Type: {number}', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -375,7 +372,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Property}
+       * @type {import('../../../generated.d.ts').Property}
        */
       const section = {};
 
@@ -388,7 +385,7 @@ describe('parseType', () => {
 
     test('Type: {number|boolean}', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -442,7 +439,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Property}
+       * @type {import('../../../generated.d.ts').Property}
        */
       const section = {};
 
@@ -455,7 +452,7 @@ describe('parseType', () => {
 
     test('Type: {number} **Default:** 8192', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -516,7 +513,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Property}
+       * @type {import('../../../generated.d.ts').Property}
        */
       const section = {};
 
@@ -537,7 +534,7 @@ describe('parseDescription', () => {
     const element = { children: [] };
 
     /**
-     * @type {import('../../generated.d.ts').Property}
+     * @type {import('../../../generated.d.ts').Property}
      */
     const section = new Proxy(
       {},
@@ -571,7 +568,7 @@ describe('parseDescription', () => {
     };
 
     /**
-     * @type {import('../../generated.d.ts').Property}
+     * @type {import('../../../generated.d.ts').Property}
      */
     const section = {};
 
@@ -619,7 +616,7 @@ describe('parseDescription', () => {
     };
 
     /**
-     * @type {import('../../generated.d.ts').Property}
+     * @type {import('../../../generated.d.ts').Property}
      */
     const section = {};
 

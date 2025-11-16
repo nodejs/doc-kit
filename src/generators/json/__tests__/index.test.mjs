@@ -1,17 +1,17 @@
 import assert from 'node:assert';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, test, before } from 'node:test';
 
-import { Validator } from 'jsonschema';
 import { parse as jsoncParse } from 'jsonc-parser';
+import { Validator } from 'jsonschema';
 import { SemVer } from 'semver';
 
 import createGenerator from '../../../generators.mjs';
 import createMarkdownLoader from '../../../loaders/markdown.mjs';
 import createMarkdownParser from '../../../parsers/markdown.mjs';
-import { parseSchema } from '../utils/parseSchema.mjs';
-import { readFile } from 'node:fs/promises';
 import json from '../index.mjs';
+import { parseSchema } from '../utils/parseSchema.mjs';
 
 const FIXTURES_DIR = join(import.meta.dirname, 'fixtures');
 

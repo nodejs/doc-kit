@@ -1,12 +1,13 @@
 'use strict';
 
+import { BASE_URL } from '../../../constants.mjs';
 import jsonAll from '../index.mjs';
 
 /**
  * @param {string} version
  */
 export function generateJsonSchema(version) {
-  const jsonSchemaUrl = `https://nodejs.org/docs/${version}/api/node-doc-schema.json`;
+  const jsonSchemaUrl = `${BASE_URL}/docs/${version}/api/node-doc-schema.json`;
 
   return {
     $schema: 'http://json-schema.org/draft-07/schema#',

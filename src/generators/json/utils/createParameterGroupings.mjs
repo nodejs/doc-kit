@@ -19,10 +19,10 @@ import { ParameterTree } from './parameter-tree.mjs';
  *
  * For instance, using the above signature, we want to create four method
  * signatures for it:
- *  1. For `something()`
- *  2. For `something(sources)
- *  3. For `something(sources, options, flag)
- *  4. For `something(sources, options, flag, abc)
+ * 1. For `something()`
+ * 2. For `something(sources)
+ * 3. For `something(sources, options, flag)
+ * 4. For `something(sources, options, flag, abc)
  *
  * This method does just that given an array of the parameter names split by
  * commas.

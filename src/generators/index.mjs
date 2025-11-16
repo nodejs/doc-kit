@@ -29,8 +29,6 @@ export const publicGenerators = {
   'orama-db': oramaDb,
   'llms-txt': llmsTxt,
   web,
-  'jsx-ast': jsxAst,
-  metadata,
   json,
   'json-all': jsonAll,
 };

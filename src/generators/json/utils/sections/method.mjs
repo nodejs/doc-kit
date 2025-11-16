@@ -4,26 +4,26 @@
 import {
   assertAstType,
   assertAstTypeOptional,
-} from '../../../utils/assertAstType.mjs';
-import { GeneratorError } from '../../../utils/generator-error.mjs';
+} from '../../../../utils/assertAstType.mjs';
+import { GeneratorError } from '../../../../utils/generator-error.mjs';
 import {
   METHOD_PARAM_EXPRESSION,
   METHOD_RETURN_TYPE_EXTRACTOR,
   METHOD_TYPE_EXTRACTOR,
-} from '../constants.mjs';
-import { findParentSection } from './findParentSection.mjs';
-import { parseTypeList } from './parseTypeList.mjs';
-import { stringifyNode } from './stringifyNode.mjs';
-import { createParameterGroupings } from './createParameterGroupings.mjs';
+} from '../../constants.mjs';
+import { createParameterGroupings } from '../createParameterGroupings.mjs';
+import { findParentSection } from '../findParentSection.mjs';
+import { parseTypeList } from '../parseTypeList.mjs';
+import { stringifyNode } from '../stringifyNode.mjs';
 
 /**
- * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
+ * @typedef {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
  */
 
 /**
  * Handles each node in a parameter list
  * @param {import('mdast').ListItem} param0
- * @returns {import('../generated.d.ts').MethodParameter | (import('../generated.d.ts').MethodReturnType & { returnType: true })}
+ * @returns {import('../../generated.d.ts').MethodParameter | (import('../../generated.d.ts').MethodReturnType & { returnType: true })}
  */
 export function parseParameterListNode({ children }) {
   /**
@@ -39,7 +39,7 @@ export function parseParameterListNode({ children }) {
   // the description of the method though).
 
   /**
-   * @type {import('../generated.d.ts').MethodParameter | import('../generated.d.ts').MethodReturnType}
+   * @type {import('../../generated.d.ts').MethodParameter | import('../../generated.d.ts').MethodReturnType}
    */
   const parameter = {};
 
@@ -91,7 +91,7 @@ export function parseParameterListNode({ children }) {
       if (returnRegex) {
         // Nothing special about this, it's just
 
-        const [_, _2, type, description] = returnRegex;
+        const [, , type, description] = returnRegex;
         parameter['@type'] = type.split('|').map(type => type.trim());
         parameter.description = description?.trim();
 
@@ -164,11 +164,11 @@ export function parseParameterListNode({ children }) {
 
 /**
  * Parses the parameters that the method accepts
- * @param {HierarchizedEntry} entry The AST entry
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
  *
  * @returns {{
- * parameters?: Record<string, import('../generated.d.ts').MethodParameter>,
- * returns?: import('../generated.d.ts').MethodReturnType
+ * parameters?: Record<string, import('../../generated.d.ts').MethodParameter>,
+ * returns?: import('../../generated.d.ts').MethodReturnType
  * } | undefined}
  */
 export function parseParameterList(entry) {
@@ -184,11 +184,11 @@ export function parseParameterList(entry) {
   }
 
   /**
-   * @type {Record<string, import('../generated.d.ts').MethodParameter>}
+   * @type {Record<string, import('../../generated.d.ts').MethodParameter>}
    */
   const parameters = {};
   /**
-   * @type {import('../generated.d.ts').MethodReturnType}
+   * @type {import('../../generated.d.ts').MethodReturnType}
    */
   let returns = { '@type': 'any' };
 
@@ -213,10 +213,10 @@ export function parseParameterList(entry) {
  * Given a list of parameter names in the order that they should appear and
  * a map of paramter names to their type info, let's create the signature
  * objects necessary and add it to the section.
- * @param {import('../generated.d.ts').Method} section
- * @param {import('../generated.d.ts').MethodSignature} baseSignature Signature to base the others on
+ * @param {import('../../generated.d.ts').Method} section
+ * @param {import('../../generated.d.ts').MethodSignature} baseSignature Signature to base the others on
  * @param {Array<string>} parameterNames
- * @param {Record<string, import('../generated.d.ts').MethodParameter>} parameters
+ * @param {Record<string, import('../../generated.d.ts').MethodParameter>} parameters
  */
 export function createSignatures(
   section,
@@ -234,7 +234,7 @@ export function createSignatures(
 
   for (const grouping of parameterGroupings) {
     /**
-     * @type {Array<import('../generated.d.ts').MethodParameter>}
+     * @type {Array<import('../../generated.d.ts').MethodParameter>}
      */
     const signatureParameters = new Array(grouping.length);
 
@@ -273,14 +273,14 @@ export function createSignatures(
 /**
  * Parses the signatures that the method may have and adds them to the
  * section.
- * @param {HierarchizedEntry} entry The AST entry
- * @param {import('../generated.d.ts').Method} section The method section
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
+ * @param {import('../../generated.d.ts').Method} section The method section
  */
 export function parseSignatures(entry, section) {
   section.signatures = [];
 
   /**
-   * @type {import('../generated.d.ts').MethodSignature}
+   * @type {import('../../generated.d.ts').MethodSignature}
    */
   const baseSignature = {
     '@returns': { '@type': 'any' },
@@ -326,31 +326,26 @@ export function parseSignatures(entry, section) {
 }
 
 /**
- *
+ * Adds the properties expected in a method section to an object.
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
+ * @param {import('../../generated.d.ts').Method} section The method section
  */
-export const createMethodSectionBuilder = () => {
-  /**
-   * Adds the properties expected in a method section to an object.
-   * @param {HierarchizedEntry} entry The AST entry
-   * @param {import('../generated.d.ts').Method} section The method section
-   */
-  return (entry, section) => {
-    parseSignatures(entry, section);
+export function createMethodSection(entry, section) {
+  parseSignatures(entry, section);
 
-    // TODO constructors
+  // TODO constructors
 
-    const parent = findParentSection(section, ['class', 'module']);
+  const parent = findParentSection(section, ['class', 'module']);
 
-    // Add this section to the parent if it exists
-    if (parent) {
-      // Put static methods in `staticMethods` property and non-static methods
-      // in the `methods` property
-      const property = entry.heading.data.text.startsWith('Static method:')
-        ? 'staticMethods'
-        : 'methods';
+  // Add this section to the parent if it exists
+  if (parent) {
+    // Put static methods in `staticMethods` property and non-static methods
+    // in the `methods` property
+    const property = entry.heading.data.text.startsWith('Static method:')
+      ? 'staticMethods'
+      : 'methods';
 
-      parent[property] ??= [];
-      parent[property].push(section);
-    }
-  };
-};
+    parent[property] ??= [];
+    parent[property].push(section);
+  }
+}

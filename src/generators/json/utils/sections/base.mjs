@@ -1,33 +1,9 @@
 'use strict';
 
-import { enforceArray } from '../../../utils/array.mjs';
-import { GeneratorError } from '../../../utils/generator-error.mjs';
-import { transformNodeToString } from '../../../utils/unist.mjs';
-
-/**
- * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
- */
-
-/**
- * Mapping of {@link HeadingMetadataEntry['type']} to types defined in the
- * JSON schema.
- *
- * Exported for tests.
- */
-export const ENTRY_TO_SECTION_TYPE = /** @type {const} */ ({
-  var: 'property',
-  global: 'property',
-  module: 'module',
-  class: 'class',
-  ctor: 'method',
-  method: 'method',
-  classMethod: 'method',
-  property: 'property',
-  event: 'event',
-  misc: 'text',
-  text: 'text',
-  example: 'text',
-});
+import { enforceArray } from '../../../../utils/array.mjs';
+import { GeneratorError } from '../../../../utils/generator-error.mjs';
+import { transformNodeToString } from '../../../../utils/unist.mjs';
+import { ENTRY_TO_SECTION_TYPE } from '../../constants.mjs';
 
 /**
  * @param {import('mdast').Heading} header
@@ -52,7 +28,7 @@ function determineType(header) {
 
 /**
  * Adds a description to the section base.
- * @param {import('../generated.d.ts').SectionBase} section
+ * @param {import('../../generated.d.ts').SectionBase} section
  * @param {Array<import('mdast').RootContent>} nodes
  */
 export function addDescriptionAndExamples(section, nodes) {
@@ -80,22 +56,9 @@ export function addDescriptionAndExamples(section, nodes) {
 }
 
 /**
- * Adds the deprecated property to the section if needed.
- * @param {import('../generated.d.ts').SectionBase} section
- * @param {HierarchizedEntry} entry
- */
-export function addDeprecatedStatus(section, entry) {
-  if (!entry.deprecated_in) {
-    return;
-  }
-
-  section['@deprecated'] = enforceArray(entry.deprecated_in);
-}
-
-/**
  * Adds the stability property to the section.
- * @param {import('../generated.d.ts').SectionBase} section
- * @param {HierarchizedEntry} entry
+ * @param {import('../../generated.d.ts').SectionBase} section
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry
  */
 export function addStabilityStatus(section, entry) {
   const stability = entry.stability.children.map(node => node.data)?.[0];
@@ -121,8 +84,8 @@ export function addStabilityStatus(section, entry) {
 
 /**
  * Adds the properties relating to versioning to the section.
- * @param {import('../generated.d.ts').SectionBase} section
- * @param {HierarchizedEntry} entry
+ * @param {import('../../generated.d.ts').SectionBase} section
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry
  */
 export function addVersionProperties(section, entry) {
   if (entry.changes.length > 0) {
@@ -144,37 +107,35 @@ export function addVersionProperties(section, entry) {
   if (entry.removed_in) {
     section.removedIn = enforceArray(entry.removed_in);
   }
+
+  if (entry.deprecated_in) {
+    section['@deprecated'] = enforceArray(entry.deprecated_in);
+  }
 }
 
 /**
+ * Returns an object containing the properties that can be found in every
+ * section type that we have.
  *
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
+ * @returns {import('../../generated.d.ts').SectionBase}
  */
-export const createSectionBaseBuilder = () => {
+export function createSectionBase(entry) {
+  const [, ...nodes] = entry.content.children;
+
+  const type = determineType(entry.heading);
+
   /**
-   * Returns an object containing the properties that can be found in every
-   * section type that we have.
-   *
-   * @param {HierarchizedEntry} entry The AST entry
-   * @returns {import('../generated.d.ts').SectionBase}
+   * @type {import('../../generated.d.ts').SectionBase}
    */
-  return entry => {
-    const [, ...nodes] = entry.content.children;
-
-    const type = determineType(entry.heading);
-
-    /**
-     * @type {import('../generated.d.ts').SectionBase}
-     */
-    const base = {
-      type,
-      '@name': entry.heading.data.name,
-    };
-
-    addDescriptionAndExamples(base, nodes);
-    addDeprecatedStatus(base, entry);
-    addStabilityStatus(base, entry);
-    addVersionProperties(base, entry);
-
-    return base;
+  const base = {
+    type,
+    '@name': entry.heading.data.name,
   };
-};
+
+  addDescriptionAndExamples(base, nodes);
+  addStabilityStatus(base, entry);
+  addVersionProperties(base, entry);
+
+  return base;
+}

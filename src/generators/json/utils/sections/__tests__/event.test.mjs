@@ -2,12 +2,13 @@
 
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
-import { parseParameters } from '../createEventSection.mjs';
+
+import { parseParameters } from '../event.mjs';
 
 describe('parseParameters', () => {
   test('does nothing if the first child is not a list', () => {
     /**
-     * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+     * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
      */
     const entry = {
       content: {
@@ -22,7 +23,7 @@ describe('parseParameters', () => {
     };
 
     /**
-     * @type {import('../../generated.d.ts').Event}
+     * @type {import('../../../generated.d.ts').Event}
      */
     const section = new Proxy(
       {},
@@ -39,7 +40,7 @@ describe('parseParameters', () => {
   describe('`paramName` <type> [description]', () => {
     test('`paramName` [<boolean>](https://mdn-link)', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -83,7 +84,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -99,7 +100,7 @@ describe('parseParameters', () => {
 
     test('`paramName` [<boolean>](https://mdn-link) | [<string>](https://mdn-link)', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -157,7 +158,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -173,7 +174,7 @@ describe('parseParameters', () => {
 
     test('`paramName` [<boolean>](https://mdn-link) description bla bla bla', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -221,7 +222,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -238,7 +239,7 @@ describe('parseParameters', () => {
 
     test('`paramName` {boolean}', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -272,7 +273,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -288,7 +289,7 @@ describe('parseParameters', () => {
 
     test('`paramName` {boolean} description bla bla bla', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -322,7 +323,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -341,7 +342,7 @@ describe('parseParameters', () => {
   describe('Type: <type> [description]', () => {
     test('Type: [<boolean>](https://mdn-link)', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -381,7 +382,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -397,7 +398,7 @@ describe('parseParameters', () => {
 
     test('Type: [<boolean>](https://mdn-link) | [<string>](https://mdn-link)', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -451,7 +452,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -467,7 +468,7 @@ describe('parseParameters', () => {
 
     test('Type: [<boolean>](https://mdn-link) description bla bla bla', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -511,7 +512,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -530,7 +531,7 @@ describe('parseParameters', () => {
   describe('<type> [description]', () => {
     test('[<boolean>](https://mdn-link)', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -566,7 +567,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -582,7 +583,7 @@ describe('parseParameters', () => {
 
     test('[<boolean>](https://mdn-link) | [<string>](https://mdn-link)', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -632,7 +633,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 
@@ -648,7 +649,7 @@ describe('parseParameters', () => {
 
     test('[<boolean>](https://mdn-link) description bla bla bla', () => {
       /**
-       * @type {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
        */
       const entry = {
         content: {
@@ -688,7 +689,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../generated.d.ts').Event}
+       * @type {import('../../../generated.d.ts').Event}
        */
       const section = {};
 

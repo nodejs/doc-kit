@@ -1,29 +1,17 @@
-// @ts-checkx
 'use strict';
 
-import { DEFAULT_EXPRESSION } from '../constants.mjs';
-import { findParentSection } from './findParentSection.mjs';
-import { stringifyNode } from './stringifyNode.mjs';
-import { parseTypeList } from './parseTypeList.mjs';
-
-/**
- * @typedef {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
- */
-
-/**
- * Some types in the docs have different capitalization than what exists in JS
- * @type {Record<string, string>}
- */
-export const DOC_TYPE_TO_CORRECT_JS_TYPE_MAP = {
-  integer: 'number',
-  bigint: 'BigInt',
-  symbol: 'Symbol',
-};
+import {
+  DEFAULT_EXPRESSION,
+  DOC_TYPE_TO_CORRECT_JS_TYPE_MAP,
+} from '../../constants.mjs';
+import { findParentSection } from '../findParentSection.mjs';
+import { parseTypeList } from '../parseTypeList.mjs';
+import { stringifyNode } from '../stringifyNode.mjs';
 
 /**
  * Parse the type of the property from the AST
- * @param {HierarchizedEntry} entry The AST entry
- * @param {import('../generated.d.ts').Property} section The method section
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
+ * @param {import('../../generated.d.ts').Property} section The method section
  * @returns {import('mdast').Paragraph | undefined} The list element that contains the property's type information
  */
 export function parseType(entry, section) {
@@ -63,6 +51,7 @@ export function parseType(entry, section) {
       // format
       firstListElement.children.shift();
     }
+    // eslint-disable-next-line no-fallthrough
     case 'link': {
       // Something like `{integer} bla bla bla`
 
@@ -109,7 +98,7 @@ export function parseType(entry, section) {
  * where it is normally defined. If that's the case, let's append it to the
  * section's description.
  * @param {import('mdast').Paragraph} listElement The AST entry
- * @param {import('../generated.d.ts').Property} section The method section
+ * @param {import('../../generated.d.ts').Property} section The method section
  */
 export function parseDescription(listElement, section) {
   if (listElement.children.length === 0) {
@@ -143,27 +132,22 @@ export function parseDescription(listElement, section) {
 }
 
 /**
- *
+ * Adds the properties expected in a method section to an object.
+ * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
+ * @param {import('../../generated.d.ts').Property} section The method section
  */
-export const createPropertySectionBuilder = () => {
-  /**
-   * Adds the properties expected in a method section to an object.
-   * @param {HierarchizedEntry} entry The AST entry
-   * @param {import('../generated.d.ts').Property} section The method section
-   */
-  return (entry, section) => {
-    const listElement = parseType(entry, section);
+export function createPropertySection(entry, section) {
+  const listElement = parseType(entry, section);
 
-    if (listElement) {
-      parseDescription(listElement, section);
-    }
+  if (listElement) {
+    parseDescription(listElement, section);
+  }
 
-    const parent = findParentSection(section, ['class', 'module']);
+  const parent = findParentSection(section, ['class', 'module']);
 
-    // Add this section to the parent if it exists
-    if (parent) {
-      parent.properties ??= [];
-      parent.properties.push(section);
-    }
-  };
-};
+  // Add this section to the parent if it exists
+  if (parent) {
+    parent.properties ??= [];
+    parent.properties.push(section);
+  }
+}

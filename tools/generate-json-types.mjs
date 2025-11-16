@@ -7,20 +7,12 @@
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import { compile } from 'json-schema-to-typescript';
 import { parse } from 'jsonc-parser';
 
-const JSON_GENERATOR_PATH = join(
-  import.meta.dirname,
-  '..',
-  'src',
-  'generators',
-  'json'
-);
-const SCHEMA_PATH = join(JSON_GENERATOR_PATH, 'schema.jsonc');
-const TYPES_PATH = join(JSON_GENERATOR_PATH, 'generated.d.ts');
+const SCHEMA_PATH = import.meta.resolve('../src/generators/json/schema.jsonc');
+const TYPES_PATH = import.meta.resolve('../src/generators/json/generated.d.ts');
 
 // Read the contents of the JSON schema
 const schemaString = await readFile(SCHEMA_PATH, 'utf8');

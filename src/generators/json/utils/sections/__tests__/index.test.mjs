@@ -1,17 +1,14 @@
-// @ts-check
 'use strict';
 
 import assert from 'node:assert';
 import { test } from 'node:test';
 
-import { DOC_NODE_VERSION } from '../../../../constants.mjs';
-import { createSectionBuilder } from '../createSection.mjs';
-
-const createSection = createSectionBuilder();
+import { BASE_URL, DOC_NODE_VERSION } from '../../../../../constants.mjs';
+import { createSection } from '../index.mjs';
 
 test('empty `module` section', () => {
   /**
-   * @type {import('../createSectionBase.mjs').HierarchizedEntry}
+   * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
    */
   const entry = {
     hierarchyChildren: [],
@@ -44,10 +41,10 @@ test('empty `module` section', () => {
   };
 
   assert.deepStrictEqual(createSection(entry, [entry]), {
-    $schema: `https://nodejs.org/docs/${DOC_NODE_VERSION}/api/node-doc-schema.json`,
+    $schema: `${BASE_URL}/docs/${DOC_NODE_VERSION}/api/node-doc-schema.json`,
     source: 'doc/api/something.md',
     '@module': 'node:bla',
-    '@see': `https://nodejs.org/docs/${DOC_NODE_VERSION}/api/bla.html`,
+    '@see': `${BASE_URL}/docs/${DOC_NODE_VERSION}/api/bla.html`,
     type: 'module',
     '@name': 'Some title',
   });
@@ -55,7 +52,7 @@ test('empty `module` section', () => {
 
 test('empty `text` section', () => {
   /**
-   * @type {import('../createSectionBase.mjs').HierarchizedEntry}
+   * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
    */
   const entry = {
     hierarchyChildren: [],
@@ -88,7 +85,7 @@ test('empty `text` section', () => {
   };
 
   assert.deepStrictEqual(createSection(entry, [entry]), {
-    $schema: `https://nodejs.org/docs/${DOC_NODE_VERSION}/api/node-doc-schema.json`,
+    $schema: `${BASE_URL}/docs/${DOC_NODE_VERSION}/api/node-doc-schema.json`,
     source: 'doc/api/something.md',
     type: 'text',
     '@name': 'Some title',
