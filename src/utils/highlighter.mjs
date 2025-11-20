@@ -53,7 +53,7 @@ export default function rehypeShikiji() {
       // We want the contents of the <pre> element, hence we attempt to get the first child
       const preElement = node.children[0];
 
-      // If thereÄs nothing inside the <pre> element... What are we doing here?
+      // If there's nothing inside the <pre> element... What are we doing here?
       if (!preElement || !preElement.properties) {
         return;
       }

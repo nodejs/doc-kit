@@ -50,7 +50,7 @@ export default {
     });
 
     // This simply grabs all the different files and stringifies them
-    const stringifiedContent = JSON.stringify(mappedInput);
+    const stringifiedContent = JSON.stringify(mappedInput, null, 2);
 
     if (options.output) {
       // Writes all the API docs stringified content into one file

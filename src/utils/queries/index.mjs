@@ -1,7 +1,6 @@
 'use strict';
 
 import { u as createTree } from 'unist-builder';
-import { SKIP } from 'unist-util-visit';
 
 import {
   DOC_API_STABILITY_SECTION_REF_URL,
@@ -14,7 +13,6 @@ import {
   transformTypeToReferenceLink,
   transformUnixManualToLink,
 } from '../parser/index.mjs';
-import { getRemark } from '../remark.mjs';
 import { transformNodesToString } from '../unist.mjs';
 
 /**
@@ -23,7 +21,6 @@ import { transformNodesToString } from '../unist.mjs';
  * @param {Record<string, string>} typeMap The mapping to types to links
  */
 const createQueries = typeMap => {
-  const remark = getRemark();
   /**
    * Sanitizes the YAML source by returning the inner YAML content
    * and then parsing it into an API Metadata object and updating the current Metadata
@@ -35,8 +32,6 @@ const createQueries = typeMap => {
     const yamlContent = extractYamlContent(node);
 
     apiEntryMetadata.updateProperties(parseYAMLIntoMetadata(yamlContent));
-
-    return [SKIP];
   };
 
   /**
@@ -64,8 +59,6 @@ const createQueries = typeMap => {
       createQueries.QUERIES.markdownUrl,
       (_, filename, hash = '') => `${filename}.html${hash}`
     );
-
-    return [SKIP];
   };
 
   /**
@@ -77,7 +70,7 @@ const createQueries = typeMap => {
    * @param {Function} transformer The function to transform the reference
    *
    */
-  const updateReferences = (query, transformer, node, parent) => {
+  const updateReferences = (query, transformer, node) => {
     const replacedTypes = node.value
       .replace(query, transformer)
       // Remark doesn't handle leading / trailing spaces, so replace them with
@@ -85,19 +78,7 @@ const createQueries = typeMap => {
       .replace(/^\s/, '&nbsp;')
       .replace(/\s$/, '&nbsp;');
 
-    // This changes the type into a link by splitting it up into several nodes,
-    // and adding those nodes to the parent.
-    const {
-      children: [newNode],
-    } = remark.parse(replacedTypes);
-
-    // Find the index of the original node in the parent
-    const index = parent.children.indexOf(node);
-
-    // Replace the original node with the new node(s)
-    parent.children.splice(index, 1, ...newNode.children);
-
-    return [SKIP];
+    return replacedTypes;
   };
 
   /**
@@ -113,8 +94,6 @@ const createQueries = typeMap => {
 
     node.type = 'link';
     node.url = definition.url;
-
-    return [SKIP];
   };
 
   /**
@@ -154,8 +133,6 @@ const createQueries = typeMap => {
       // Adds the Stability Index metadata to the current Metadata entry
       apiEntryMetadata?.addStability(stabilityIndexNode);
     }
-
-    return [SKIP];
   };
 
   /**

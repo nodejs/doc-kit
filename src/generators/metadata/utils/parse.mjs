@@ -55,20 +55,39 @@ export const parseApiDoc = ({ file, tree }, typeMap) => {
   // Get all Markdown Heading entries from the tree
   const headingNodes = selectAll('heading', tree);
 
+  // visit(tree, node => {
+  //   let skip = false;
+
+  //   // Update Markdown link references to be plain links
+  //   if (is(node, createQueries.UNIST.isLinkReference)) {
+  //     skip = true;
+  //     updateLinkReference(node, markdownDefinitions);
+  //   }
+
+  //   // Normalizes URLs that reference API doc files with .md extensions to
+  //   // be .html instead, since the files will eventually get compiled as HTML
+  //   if (is(node, createQueries.UNIST.isMarkdownUrl)) {
+  //     skip = true;
+  //     updateMarkdownLink(node);
+  //   }
+
+  //   return skip ? SKIP : undefined;
+  // });
+
   // Handles Markdown link references and updates them to be plain links
-  visit(tree, createQueries.UNIST.isLinkReference, node =>
-    updateLinkReference(node, markdownDefinitions)
-  );
+  visit(tree, createQueries.UNIST.isLinkReference, node => {
+    updateLinkReference(node, markdownDefinitions);
+    return [SKIP];
+  });
 
   // Removes all the original definitions from the tree as they are not needed
   // anymore, since all link references got updated to be plain links
   remove(tree, markdownDefinitions);
 
-  // Handles the normalisation URLs that reference to API doc files with .md extension
-  // to replace the .md into .html, since the API doc files get eventually compiled as HTML
-  visit(tree, createQueries.UNIST.isMarkdownUrl, node =>
-    updateMarkdownLink(node)
-  );
+  visit(tree, createQueries.UNIST.isMarkdownUrl, node => {
+    updateMarkdownLink(node);
+    return [SKIP];
+  });
 
   // If the document has no headings but it has content, we add a fake heading to the top
   // so that our parsing logic can work correctly, and generate content for the whole file
@@ -113,33 +132,73 @@ export const parseApiDoc = ({ file, tree }, typeMap) => {
     // `index + 1` is used to skip the current Heading Node
     const subTree = createTree('root', tree.children.slice(index, stop));
 
-    // Visits all Stability Index nodes from the current subtree if there's any
-    // and then apply the Stability Index metadata to the current metadata entry
-    visit(subTree, createQueries.UNIST.isStabilityNode, node =>
-      addStabilityMetadata(node, ignoreStability ? undefined : apiEntryMetadata)
-    );
+    visit(subTree, (node, index, parent) => {
+      let skip = false;
 
-    // Visits all HTML nodes from the current subtree and if there's any that matches
-    // our YAML metadata structure, it transforms into YAML metadata
-    // and then apply the YAML Metadata to the current Metadata entry
-    visit(subTree, createQueries.UNIST.isYamlNode, node => {
-      // TODO: Is there always only one YAML node?
-      apiEntryMetadata.setYamlPosition(node.position);
-      addYAMLMetadata(node, apiEntryMetadata);
+      // Applies stability index metadata if present
+      if (createQueries.UNIST.isStabilityNode(node)) {
+        skip = true;
+
+        addStabilityMetadata(
+          node,
+          ignoreStability ? undefined : apiEntryMetadata
+        );
+      }
+
+      // Transform any YAML metadata and then apply it to the current
+      // metadata entry
+      if (createQueries.UNIST.isYamlNode(node)) {
+        // TODO: Is there always only one YAML node?
+        apiEntryMetadata.setYamlPosition(node.position);
+        addYAMLMetadata(node, apiEntryMetadata);
+      }
+
+      let valueUpdated = false;
+
+      if (createQueries.UNIST.isTextWithType(node)) {
+        skip = true;
+
+        valueUpdated = true;
+        node.value = updateTypeReference(node);
+      }
+
+      if (createQueries.UNIST.isTextWithUnixManual(node)) {
+        skip = true;
+
+        valueUpdated = true;
+        node.value = updateUnixManualReference(node);
+      }
+
+      if (valueUpdated) {
+        // This changes the type into a link by splitting it up into several nodes,
+        // and adding those nodes to the parent.
+        const {
+          children: [newNode],
+        } = remarkProcessor.parse(node.value);
+
+        // Replace the original node with the new node(s)
+        parent.children.splice(index, 1, ...newNode.children);
+      }
+
+      return skip ? SKIP : undefined;
     });
 
     // Visits all Text nodes from the current subtree and if there's any that matches
     // any API doc type reference and then updates the type reference to be a Markdown link
-    visit(subTree, createQueries.UNIST.isTextWithType, (node, _, parent) =>
-      updateTypeReference(node, parent)
-    );
+    // visit(subTree, createQueries.UNIST.isTextWithType, (node, _, parent) => {
+    //   updateTypeReference(node, parent);
+    //   return SKIP;
+    // });
 
     // Visits all Unix manual references, and replaces them with links
-    visit(
-      subTree,
-      createQueries.UNIST.isTextWithUnixManual,
-      (node, _, parent) => updateUnixManualReference(node, parent)
-    );
+    // visit(
+    //   subTree,
+    //   createQueries.UNIST.isTextWithUnixManual,
+    //   (node, _, parent) => {
+    //     updateUnixManualReference(node, parent);
+    //     return SKIP;
+    //   }
+    // );
 
     // Removes already parsed items from the subtree so that they aren't included in the final content
     remove(subTree, [createQueries.UNIST.isYamlNode]);
