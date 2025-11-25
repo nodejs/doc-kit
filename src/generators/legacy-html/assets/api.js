@@ -13,6 +13,7 @@ const initFeatures = () => {
   setupAltDocsLink();
   setupFlavorToggles();
   setupCopyButton();
+  setupSidebarScroll();
 };
 
 /**
@@ -198,6 +199,23 @@ const setupCopyButton = () => {
     });
   });
 };
+
+function setupSidebarScroll() {
+  const sidebarLinks = document.querySelectorAll('#column2 a');
+
+  let link;
+  for (link of sidebarLinks) {
+    if (link.pathname === window.location.pathname) {
+      break;
+    }
+  }
+
+  if (!link) {
+    return;
+  }
+
+  link.scrollIntoView({ block: 'center' });
+}
 
 // Initialize either on DOMContentLoaded or immediately if already loaded
 document.addEventListener('DOMContentLoaded', initFeatures);
