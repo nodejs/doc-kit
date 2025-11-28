@@ -6,6 +6,28 @@ import { transformNodesToString } from '../../../utils/unist.mjs';
 import { SECTION_TYPE_PLURALS, UNPROMOTED_KEYS } from '../constants.mjs';
 
 /**
+ * Promotes children properties to the parent level if the section type is 'misc'.
+ * @param {import('../types.d.ts').Section} section - The section to promote.
+ * @param {import('../types.d.ts').Section} parent - The parent section.
+ */
+export const promoteMiscChildren = (section, parent) => {
+  // Only promote if the current section is of type 'misc' and the parent is not 'misc'
+  if (section.type === 'misc' && parent.type !== 'misc') {
+    Object.entries(section).forEach(([key, value]) => {
+      // Only promote certain keys
+      if (!UNPROMOTED_KEYS.includes(key)) {
+        // Merge the section's properties into the parent section
+        if (parent[key] && Array.isArray(parent[key])) {
+          parent[key] = parent[key].concat(value);
+        } else {
+          parent[key] ||= value;
+        }
+      }
+    });
+  }
+};
+
+/**
  *
  */
 export const createSectionBuilder = () => {
@@ -102,28 +124,6 @@ export const createSectionBuilder = () => {
 
     parent[key] ??= [];
     parent[key].push(section);
-  };
-
-  /**
-   * Promotes children properties to the parent level if the section type is 'misc'.
-   * @param {import('../types.d.ts').Section} section - The section to promote.
-   * @param {import('../types.d.ts').Section} parent - The parent section.
-   */
-  const promoteMiscChildren = (section, parent) => {
-    // Only promote if the current section is of type 'misc' and the parent is not 'misc'
-    if (section.type === 'misc' && parent.type !== 'misc') {
-      Object.entries(section).forEach(([key, value]) => {
-        // Only promote certain keys
-        if (!UNPROMOTED_KEYS.includes(key)) {
-          // Merge the section's properties into the parent section
-          if (parent[key] && Array.isArray(parent[key])) {
-            parent[key] = parent[key].concat(value);
-          } else {
-            parent[key] ||= value;
-          }
-        }
-      });
-    }
   };
 
   /**
