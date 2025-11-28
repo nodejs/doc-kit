@@ -116,11 +116,11 @@ export const createSectionBuilder = () => {
         // Only promote certain keys
         if (!UNPROMOTED_KEYS.includes(key)) {
           // Merge the section's properties into the parent section
-          parent[key] = parent[key]
-            ? // If the parent already has this key, concatenate the values
-              [].concat(parent[key], value)
-            : // Otherwise, directly assign the section's value to the parent
-              [];
+          if (parent[key] && Array.isArray(parent[key])) {
+            parent[key] = parent[key].concat(value);
+          } else {
+            parent[key] ||= value;
+          }
         }
       });
     }
