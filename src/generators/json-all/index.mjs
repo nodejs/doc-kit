@@ -1,4 +1,3 @@
-// @ts-check
 'use strict';
 
 import { writeFile } from 'node:fs/promises';

@@ -51,9 +51,7 @@ export default {
         throw new TypeError(`no grouped nodes found for ${head.api}`);
       }
 
-      const section = createSection(head, nodes, version);
-
-      return section;
+      return createSection(head, nodes, version);
     };
 
     /**
