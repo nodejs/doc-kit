@@ -1,3 +1,11 @@
+'use strict';
+
+/**
+ * @typedef {{
+ * hierarchyChildren: Array<HierarchizedEntry>
+ * } & ApiDocMetadataEntry} HierarchizedEntry
+ */
+
 /**
  * Recursively finds the most suitable parent entry for a given `entry` based on heading depth.
  *

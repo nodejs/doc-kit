@@ -36,6 +36,8 @@ jobs:
             input: './node/doc/api/*.md'
           - target: web
             input: './node/doc/api/*.md'
+          - target: json
+            input: './node/doc/api/*.md'
           - target: llms-txt
             input: './node/doc/api/*.md'
       fail-fast: false
