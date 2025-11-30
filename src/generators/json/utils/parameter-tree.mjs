@@ -128,16 +128,6 @@ export class ParameterTree {
       )
     );
   }
-
-  /**
-   *
-   * @param indent
-   */
-  walk(indent = 0) {
-    console.log(' '.repeat(indent), 'parameters:', this.#parameters);
-    console.log(' '.repeat(indent), 'children:');
-    this.#children.map(child => child.walk(indent + 1));
-  }
 }
 
 /**
