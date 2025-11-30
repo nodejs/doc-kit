@@ -3,7 +3,8 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BASE_URL, DOC_NODE_VERSION } from '../../constants.mjs';
+import { SCHEMA_FILENAME } from './constants.mjs';
+import { BASE_URL } from '../../constants.mjs';
 import { generateJsonSchema } from './util/generateJsonSchema.mjs';
 
 /**
@@ -34,8 +35,10 @@ export default {
    * @returns {Promise<object>}
    */
   async generate(input, { version, output }) {
+    const versionString = `v${version.toString()}`;
+
     const generatedValue = {
-      $schema: `${BASE_URL}/docs/${DOC_NODE_VERSION}/api/node-doc-all-schema.jsonc`,
+      $schema: `${BASE_URL}docs/${versionString}/api/${SCHEMA_FILENAME}`,
       modules: [],
       text: [],
     };
@@ -64,13 +67,10 @@ export default {
     });
 
     if (output) {
-      const schema = generateJsonSchema(version);
+      const schema = generateJsonSchema(versionString);
 
       // Write the parsed JSON schema to the output directory
-      await writeFile(
-        join(output, 'node-doc-schema.json'),
-        JSON.stringify(schema)
-      );
+      await writeFile(join(output, SCHEMA_FILENAME), JSON.stringify(schema));
     }
 
     return generatedValue;

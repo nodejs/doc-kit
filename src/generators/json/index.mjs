@@ -3,6 +3,7 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { SCHEMA_FILENAME } from './constants.mjs';
 import { parseSchema } from './utils/parseSchema.mjs';
 import { createSection } from './utils/sections/index.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
@@ -51,7 +52,7 @@ export default {
         throw new TypeError(`no grouped nodes found for ${head.api}`);
       }
 
-      return createSection(head, nodes, version);
+      return createSection(head, nodes, `v${version.toString()}`);
     };
 
     /**
@@ -87,10 +88,7 @@ export default {
       const schema = await parseSchema();
 
       // Write the parsed JSON schema to the output directory
-      await writeFile(
-        join(output, 'node-doc-schema.json'),
-        JSON.stringify(schema)
-      );
+      await writeFile(join(output, SCHEMA_FILENAME), JSON.stringify(schema));
     }
 
     return generatedValues;

@@ -1,4 +1,3 @@
-// @ts-check
 'use strict';
 
 import { ParameterTree } from './parameter-tree.mjs';

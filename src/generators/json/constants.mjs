@@ -1,5 +1,7 @@
 'use strict';
 
+export const SCHEMA_FILENAME = 'node-doc-schema.json';
+
 // Grabs the default value if present
 export const DEFAULT_EXPRESSION = /^(?:D|d)efault(?:s|):$/;
 

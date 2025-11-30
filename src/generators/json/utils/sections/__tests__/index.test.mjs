@@ -4,6 +4,7 @@ import assert from 'node:assert';
 import { test } from 'node:test';
 
 import { BASE_URL, DOC_NODE_VERSION } from '../../../../../constants.mjs';
+import { SCHEMA_FILENAME } from '../../../constants.mjs';
 import { createSection } from '../index.mjs';
 
 test('empty `module` section', () => {
@@ -41,7 +42,7 @@ test('empty `module` section', () => {
   };
 
   assert.deepStrictEqual(createSection(entry, [entry], DOC_NODE_VERSION), {
-    $schema: `${BASE_URL}docs/${DOC_NODE_VERSION}/api/node-doc-schema.json`,
+    $schema: `${BASE_URL}docs/${DOC_NODE_VERSION}/api/${SCHEMA_FILENAME}`,
     source: 'doc/api/something.md',
     '@module': 'node:bla',
     '@see': `${BASE_URL}docs/${DOC_NODE_VERSION}/api/bla.html`,
@@ -86,7 +87,7 @@ test('empty `text` section', () => {
   };
 
   assert.deepStrictEqual(createSection(entry, [entry], DOC_NODE_VERSION), {
-    $schema: `${BASE_URL}docs/${DOC_NODE_VERSION}/api/node-doc-schema.json`,
+    $schema: `${BASE_URL}docs/${DOC_NODE_VERSION}/api/${SCHEMA_FILENAME}`,
     source: 'doc/api/something.md',
     type: 'text',
     '@name': 'Some title',

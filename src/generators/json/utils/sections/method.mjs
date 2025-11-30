@@ -1,5 +1,5 @@
-// @ts-check
 'use strict';
+
 import {
   assertAstType,
   assertAstTypeOptional,
@@ -88,8 +88,6 @@ export function parseParameterListNode({ children }) {
 
       const returnRegex = METHOD_RETURN_TYPE_EXTRACTOR.exec(firstChild.value);
       if (returnRegex) {
-        // Nothing special about this, it's just
-
         const [, , type, description] = returnRegex;
         parameter['@type'] = type.split('|').map(type => type.trim());
         parameter.description = description?.trim();

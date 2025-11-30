@@ -190,10 +190,6 @@
           },
           "required": [
             "type",
-            "@constructor",
-            "methods",
-            "staticMethods",
-            "properties",
           ],
         },
       ],
@@ -231,6 +227,7 @@
           "$ref": "#/definitions/MethodReturnType",
         },
       },
+      "required": ["parameters", "@returns"]
     },
 
     "MethodParameter": {

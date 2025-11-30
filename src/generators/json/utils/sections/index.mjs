@@ -9,6 +9,7 @@ import { createPropertySection } from './property.mjs';
 import { BASE_URL } from '../../../../constants.mjs';
 import { buildHierarchy } from '../../../../utils/buildHierarchy.mjs';
 import { GeneratorError } from '../../../../utils/generator-error.mjs';
+import { SCHEMA_FILENAME } from '../../constants.mjs';
 
 /**
  * Processes children of a given entry and updates the section.
@@ -106,7 +107,7 @@ export function createSection(head, entries, version) {
   }
 
   return {
-    $schema: `${BASE_URL}docs/${version}/api/node-doc-schema.json`,
+    $schema: `${BASE_URL}docs/${version}/api/${SCHEMA_FILENAME}`,
     source: head.api_doc_source,
     ...section,
   };
