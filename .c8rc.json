@@ -6,6 +6,6 @@
     "src/generators/legacy-html/assets",
     "src/generators/web/ui",
     "**/*.d.ts",
-    "tools/"
+    "scripts/"
   ]
 }

@@ -38,6 +38,52 @@ describe('parseParameters', () => {
   });
 
   describe('`paramName` <type> [description]', () => {
+    test('`paramName`', () => {
+      /**
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       */
+      const entry = {
+        content: {
+          children: [
+            undefined, // Should be ignored
+            {
+              type: 'list',
+              children: [
+                {
+                  type: 'listItem',
+                  children: [
+                    {
+                      type: 'paragraph',
+                      children: [
+                        {
+                          type: 'inlineCode',
+                          value: 'paramName',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      /**
+       * @type {import('../../../generated.d.ts').Event}
+       */
+      const section = {};
+
+      parseParameters(entry, section);
+
+      assert.deepStrictEqual(section.parameters, [
+        {
+          '@name': 'paramName',
+          '@type': 'any',
+        },
+      ]);
+    });
+
     test('`paramName` [<boolean>](https://mdn-link)', () => {
       /**
        * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}

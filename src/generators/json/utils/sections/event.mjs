@@ -44,22 +44,22 @@ export function parseParameters(entry, section) {
     switch (parameterAst.children[0]?.type) {
       case 'inlineCode': {
         // First format
-        if (parameterAst.children.length < 2) {
+        if (parameterAst.children.length === 0) {
           throw new GeneratorError(
-            `expected min 2 children, got ${parameterAst.children.length}`
+            `expected min 1 child, got ${parameterAst.children.length}`
           );
         }
 
-        const [name, delimiter, ...rest] = parameterAst.children;
-        parameter['@name'] = name.value;
+        parameter['@name'] = parameterAst.children[0].value;
 
-        if (delimiter.type !== 'text') {
+        const delimiter = parameterAst.children[1];
+        if (delimiter && delimiter.type !== 'text') {
           throw new GeneratorError(
             `expected delimiter child type in list node to be 'text', got ${delimiter.type} (@name=${parameter['@name']})`
           );
         }
 
-        if (rest[0]?.type === 'link') {
+        if (parameterAst.children[2]?.type === 'link') {
           // Type _should_ be a link with maybe a description following
           const { types, endingIndex } = parseTypeList(
             parameterAst.children,
@@ -79,19 +79,27 @@ export function parseParameters(entry, section) {
             parameter.description = description.trim();
           }
         } else {
-          // Type isn't a link and we get the joy of extracting it
-          const value = EVENT_TYPE_DESCRIPTION_EXTRACTOR.exec(delimiter.value);
-          if (value === null) {
-            throw new GeneratorError(
-              `failed extracting type & description from '${delimiter.value}'`
+          if (delimiter) {
+            // Delimiter is something like `{string} maybe a description`,
+            // we need to extract it
+            const value = EVENT_TYPE_DESCRIPTION_EXTRACTOR.exec(
+              delimiter.value
             );
-          }
+            if (value === null) {
+              throw new GeneratorError(
+                `failed extracting type & description from '${delimiter.value}'`
+              );
+            }
 
-          parameter['@type'] = value[1].trim();
+            parameter['@type'] = value[1].trim();
 
-          const description = value[2].trim();
-          if (description.length > 0) {
-            parameter.description = description;
+            const description = value[2].trim();
+            if (description.length > 0) {
+              parameter.description = description;
+            }
+          } else {
+            // No type information to extract
+            parameter['@type'] = 'any';
           }
         }
 
@@ -143,10 +151,8 @@ export function parseParameters(entry, section) {
       }
     }
 
-    parameter['@name'] = parameter['@name']
-      .replaceAll("'", '')
-      .replaceAll('<', '')
-      .replaceAll('>', '');
+    // Strip any leftover `'`, `<`, `>` from the name
+    parameter['@name'] = parameter['@name'].replaceAll(/('|<|>)/g, '');
 
     if (parameter.description) {
       parameter.description = parameter.description.trim();

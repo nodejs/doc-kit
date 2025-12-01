@@ -76,7 +76,7 @@ export default {
       if (output) {
         writeFilePromises[i] = writeFile(
           join(output, `${node.api}.json`),
-          JSON.stringify(section, null, 2)
+          JSON.stringify(section)
         );
       }
     }

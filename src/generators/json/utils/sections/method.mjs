@@ -16,10 +16,6 @@ import { findParentSection } from '../findParentSection.mjs';
 import { parseTypeList } from '../parseTypeList.mjs';
 
 /**
- * @typedef {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} HierarchizedEntry
- */
-
-/**
  * Handles each node in a parameter list
  * @param {import('mdast').ListItem} param0
  * @returns {import('../../generated.d.ts').MethodParameter | (import('../../generated.d.ts').MethodReturnType & { returnType: true })}
@@ -248,7 +244,6 @@ export function createSignatures(
         parameterName in parameters ? parameters[parameterName] : undefined;
 
       if (!parameter) {
-        // TODO: warn?
         parameter = {
           '@name': parameterName,
           '@type': 'any',

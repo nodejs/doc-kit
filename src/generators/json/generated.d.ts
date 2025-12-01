@@ -10,11 +10,11 @@ export type NodeJsAPIDocumentationSchema = DocumentRoot & (Module | Text);
  * A JavaScript module.
  */
 export type Module = SectionBase & {
-  type: 'module';
+  type: "module";
   /**
    * https://jsdoc.app/tags-module
    */
-  '@module': string;
+  "@module": string;
   /**
    * Classes exported from this module.
    */
@@ -29,7 +29,6 @@ export type Module = SectionBase & {
   globals?: (Class | Method)[];
   properties?: Property[];
   events?: Event[];
-  [k: string]: unknown;
 };
 export type Text = SectionBase;
 /**
@@ -37,44 +36,40 @@ export type Text = SectionBase;
  */
 export type NodeCoreVersion = string;
 export type Class = SectionBase & {
-  type: 'class';
-  '@constructor': MethodSignature[];
-  methods: Method[];
-  staticMethods: Method[];
-  properties: Property[];
+  type: "class";
+  "@constructor"?: MethodSignature[];
+  methods?: Method[];
+  staticMethods?: Method[];
+  properties?: Property[];
   events?: Event[];
-  [k: string]: unknown;
 };
 /**
  * A JavaScript function.
  */
 export type Method = SectionBase & {
-  type: 'method';
+  type: "method";
   signatures: MethodSignature[];
-  [k: string]: unknown;
 };
 /**
  * A property on a JavaScript object or class.
  */
 export type Property = SectionBase & {
-  type: 'property';
+  type: "property";
   /**
    * JavaScript type of the property.
    */
-  '@type'?: string | [string, ...string[]];
+  "@type"?: string | [string, ...string[]];
   /**
    * Is this property modifiable by user code?
    */
   mutable?: boolean;
-  [k: string]: unknown;
 };
 /**
  * An event that can be emitted by the parent object or class.
  */
 export type Event = SectionBase & {
-  type: 'event';
+  type: "event";
   parameters: MethodParameter[];
-  [k: string]: unknown;
 };
 
 /**
@@ -85,7 +80,6 @@ export interface DocumentRoot {
    * The path to the Markdown source used to generate this document. It is relative to the Node.js repository root.
    */
   source: string;
-  [k: string]: unknown;
 }
 /**
  * Common properties found in each section of a document.
@@ -94,11 +88,11 @@ export interface SectionBase {
   /**
    * Type of the section
    */
-  type: 'module' | 'class' | 'method' | 'property' | 'event' | 'text';
+  type: "module" | "class" | "method" | "property" | "event" | "text";
   /**
    * https://jsdoc.app/tags-name
    */
-  '@name': string;
+  "@name": string;
   /**
    * Description of the section.
    */
@@ -106,7 +100,7 @@ export interface SectionBase {
   /**
    * https://jsdoc.app/tags-see
    */
-  '@see'?: string;
+  "@see"?: string;
   /**
    * Sections that just hold further text on this section.
    */
@@ -114,11 +108,11 @@ export interface SectionBase {
   /**
    * https://jsdoc.app/tags-example
    */
-  '@example'?: string | string[];
+  "@example"?: string | string[];
   /**
    * https://jsdoc.app/tags-deprecated
    */
-  '@deprecated'?: NodeCoreVersion[];
+  "@deprecated"?: NodeCoreVersion[];
   stability?: Stability;
   /**
    * The changes this API has underwent.
@@ -127,13 +121,12 @@ export interface SectionBase {
   /**
    * https://jsdoc.app/tags-since
    */
-  '@since'?: NodeCoreVersion[];
+  "@since"?: NodeCoreVersion[];
   napiVersion?: number[];
   /**
    * Versions that this was removed in.
    */
   removedIn?: NodeCoreVersion[];
-  [k: string]: unknown;
 }
 /**
  * Describes the stability of an object.
@@ -147,7 +140,6 @@ export interface Stability {
    * Textual representation of the stability.
    */
   text: string;
-  [k: string]: unknown;
 }
 export interface Change {
   version: NodeCoreVersion[];
@@ -159,28 +151,25 @@ export interface Change {
    * Description of the change.
    */
   description: string;
-  [k: string]: unknown;
 }
 export interface MethodSignature {
-  parameters?: MethodParameter[];
-  '@returns'?: MethodReturnType;
-  [k: string]: unknown;
+  parameters: MethodParameter[];
+  "@returns": MethodReturnType;
 }
 export interface MethodParameter {
   /**
    * Name of the parameter.
    */
-  '@name': string;
+  "@name": string;
   /**
    * Type of the parameter
    */
-  '@type': string | [string, ...string[]];
+  "@type": string | [string, ...string[]];
   description?: string;
   /**
    * The parameter's default value
    */
-  '@default'?: string;
-  [k: string]: unknown;
+  "@default"?: string;
 }
 /**
  * A method signature's return type.
@@ -190,6 +179,5 @@ export interface MethodReturnType {
   /**
    * The method signature's return type.
    */
-  '@type': string | [string, ...string[]];
-  [k: string]: unknown;
+  "@type": string | [string, ...string[]];
 }

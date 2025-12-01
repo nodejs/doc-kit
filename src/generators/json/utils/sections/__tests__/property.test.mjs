@@ -1,7 +1,7 @@
 'use strict';
 
 import assert from 'node:assert';
-import test, { describe } from 'node:test';
+import { describe, test } from 'node:test';
 
 import { DOC_TYPE_TO_CORRECT_JS_TYPE_MAP } from '../../../constants.mjs';
 import { parseDescription, parseType } from '../property.mjs';
@@ -138,6 +138,55 @@ describe('parseType', () => {
       });
     });
 
+    test('{number[]}', () => {
+      /**
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       */
+      const entry = {
+        content: {
+          children: [
+            undefined, // Should be ignored
+            {
+              type: 'list',
+              children: [
+                {
+                  type: 'listItem',
+                  children: [
+                    {
+                      type: 'paragraph',
+                      children: [
+                        {
+                          type: 'link',
+                          url: 'https://mdn-link',
+                          children: [
+                            {
+                              type: 'inlineCode',
+                              value: '<number[]>',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      /**
+       * @type {import('../../../generated.d.ts').Property}
+       */
+      const section = {};
+
+      parseType(entry, section);
+
+      assert.deepStrictEqual(section, {
+        '@type': 'number[]',
+      });
+    });
+
     test('{number|boolean}', () => {
       /**
        * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
@@ -198,6 +247,69 @@ describe('parseType', () => {
 
       assert.deepStrictEqual(section, {
         '@type': ['number', 'boolean'],
+      });
+    });
+
+    test('{number|boolean[]}', () => {
+      /**
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       */
+      const entry = {
+        content: {
+          children: [
+            undefined, // Should be ignored
+            {
+              type: 'list',
+              children: [
+                {
+                  type: 'listItem',
+                  children: [
+                    {
+                      type: 'paragraph',
+                      children: [
+                        {
+                          type: 'link',
+                          url: 'https://mdn-link',
+                          children: [
+                            {
+                              type: 'inlineCode',
+                              value: '<number>',
+                            },
+                          ],
+                        },
+                        {
+                          type: 'text',
+                          value: ' | ',
+                        },
+                        {
+                          type: 'link',
+                          url: 'https://mdn-link',
+                          children: [
+                            {
+                              type: 'inlineCode',
+                              value: '<boolean[]>',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      /**
+       * @type {import('../../../generated.d.ts').Property}
+       */
+      const section = {};
+
+      parseType(entry, section);
+
+      assert.deepStrictEqual(section, {
+        '@type': ['number', 'boolean[]'],
       });
     });
 
@@ -383,6 +495,59 @@ describe('parseType', () => {
       });
     });
 
+    test('Type: {number[]}', () => {
+      /**
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       */
+      const entry = {
+        content: {
+          children: [
+            undefined, // Should be ignored
+            {
+              type: 'list',
+              children: [
+                {
+                  type: 'listItem',
+                  children: [
+                    {
+                      type: 'paragraph',
+                      children: [
+                        {
+                          type: 'text',
+                          value: 'Type: ',
+                        },
+                        {
+                          type: 'link',
+                          url: 'https://mdn-link',
+                          children: [
+                            {
+                              type: 'inlineCode',
+                              value: '<number[]>',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      /**
+       * @type {import('../../../generated.d.ts').Property}
+       */
+      const section = {};
+
+      parseType(entry, section);
+
+      assert.deepStrictEqual(section, {
+        '@type': 'number[]',
+      });
+    });
+
     test('Type: {number|boolean}', () => {
       /**
        * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
@@ -447,6 +612,73 @@ describe('parseType', () => {
 
       assert.deepStrictEqual(section, {
         '@type': ['number', 'boolean'],
+      });
+    });
+
+    test('Type: {number|boolean[]}', () => {
+      /**
+       * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+       */
+      const entry = {
+        content: {
+          children: [
+            undefined, // Should be ignored
+            {
+              type: 'list',
+              children: [
+                {
+                  type: 'listItem',
+                  children: [
+                    {
+                      type: 'paragraph',
+                      children: [
+                        {
+                          type: 'text',
+                          value: 'Type: ',
+                        },
+                        {
+                          type: 'link',
+                          url: 'https://mdn-link',
+                          children: [
+                            {
+                              type: 'inlineCode',
+                              value: '<number>',
+                            },
+                          ],
+                        },
+                        {
+                          type: 'text',
+                          value: ' | ',
+                        },
+                        {
+                          type: 'link',
+                          url: 'https://mdn-link',
+                          children: [
+                            {
+                              type: 'inlineCode',
+                              value: '<boolean[]>',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      /**
+       * @type {import('../../../generated.d.ts').Property}
+       */
+      const section = {};
+
+      parseType(entry, section);
+
+      assert.deepStrictEqual(section, {
+        '@type': ['number', 'boolean[]'],
       });
     });
 

@@ -35,30 +35,9 @@ export class ParameterTree {
    * @param {Counter} counter
    * @param {ParameterTree} [parent=undefined]
    */
-  constructor(counter, parent = undefined) {
+  constructor(counter = { count: 0 }, parent = undefined) {
     this.#counter = counter;
     this.#parent = parent;
-  }
-
-  /**
-   *
-   */
-  get parameters() {
-    return this.#parameters;
-  }
-
-  /**
-   *
-   */
-  get children() {
-    return this.#children;
-  }
-
-  /**
-   *
-   */
-  get counter() {
-    return this.#counter;
   }
 
   /**

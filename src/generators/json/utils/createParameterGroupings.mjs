@@ -1,6 +1,6 @@
 'use strict';
 
-import { ParameterTree } from './parameter-tree.mjs';
+import { ParameterTree } from './parameterTree.mjs';
 
 /**
  * Parameters are declared in a section's header. This looks something like
@@ -34,25 +34,21 @@ export function createParameterGroupings(parameterNames) {
  * @returns {[ParameterTree, boolean]}
  */
 export function createParameterTree(parameterNames) {
-  /**
-   * @type {import('./parameter-tree.mjs').Counter}
-   */
-  const counter = { count: 0 };
-
-  let tree = new ParameterTree(counter);
+  let tree = new ParameterTree();
   let includeFirstChildren = false;
+
   for (let i = 0; i < parameterNames.length; i++) {
     /**
-     * @example 'length]]' -> add `length` to tree's parameters, close out optional depth
+     * @example 'length]]' -> add `length` to tree's parameters, close out child tree(s)
      * @example 'arrayBuffer[' -> add `arrayBuffer` to tree's parameters, start child tree
-     * @example '[sources[' -> start child tree for sources and another child tree for that child
-     * @example '[hello]' -> start child tree, add and end child tree
-     * @example '[hello' -> start child tree
-     * @example '[hello]['
-     * @example ']max['
-     * @example 'end' -> just add
+     * @example '[sources[' -> start child tree with parameter `sources`, then start another child tree
+     * @example '[hello]' -> start child tree, add `hello` to it, then end it
+     * @example '[hello' -> start child tree, add `hello` to it
+     * @example '[hello][' -> start child tree, end child tree, start another child tree
+     * @example ']max[' -> add `max` to parent tree, start another child tree, set includeFirstChildren to true
+     * @example 'end' -> add to tree's parameters
      */
-    let parameter = parameterNames[i].trim();
+    const parameter = parameterNames[i].trim();
 
     let nameStartIndex = 0;
     if (parameter.startsWith('[')) {

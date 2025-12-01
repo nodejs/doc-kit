@@ -3,7 +3,7 @@
    * NOTE: if you modify this, please:
    *  - Bump the version in the $id property
    *  - Bump the version of the `json` and `json-all` generator.
-   *  - Run `tools/generate-json-types.mjs` and ensure there aren't type errors
+   *  - Run `scripts/generate-json-types.mjs` and ensure there aren't type errors
    */
 
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -153,6 +153,7 @@
             },
           },
           "required": ["type", "@module", "@see"],
+          "additionalProperties": false
         },
       ],
     },
@@ -191,6 +192,7 @@
           "required": [
             "type",
           ],
+      "additionalProperties": false
         },
       ],
     },
@@ -212,6 +214,7 @@
             },
           },
           "required": ["type", "signatures"],
+      "additionalProperties": false
         },
       ],
     },
@@ -227,7 +230,8 @@
           "$ref": "#/definitions/MethodReturnType",
         },
       },
-      "required": ["parameters", "@returns"]
+      "required": ["parameters", "@returns"],
+      "additionalProperties": false
     },
 
     "MethodParameter": {
@@ -263,6 +267,7 @@
         },
       },
       "required": ["@name", "@type"],
+      "additionalProperties": false
     },
 
     "MethodReturnType": {
@@ -289,6 +294,7 @@
         },
       },
       "required": ["@type"],
+      "additionalProperties": false
     },
 
     "Global": {
@@ -331,6 +337,7 @@
             },
           },
           "required": ["type"],
+      "additionalProperties": false
         },
       ],
     },
@@ -352,6 +359,7 @@
             },
           },
           "required": ["type", "parameters"],
+      "additionalProperties": false
         },
       ],
     },
@@ -388,6 +396,7 @@
         },
       },
       "required": ["version", "description"],
+      "additionalProperties": false
     },
 
     "Stability": {
@@ -406,6 +415,7 @@
         },
       },
       "required": ["value", "text"],
+      "additionalProperties": false
     },
   },
 }
