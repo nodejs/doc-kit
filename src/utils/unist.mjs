@@ -18,12 +18,18 @@ const escapeHTMLEntities = string =>
  */
 export const transformNodeToString = (node, escape) => {
   switch (node.type) {
+    case 'break':
+      return '\n';
     case 'inlineCode':
       return `\`${escape ? escapeHTMLEntities(node.value) : node.value}\``;
     case 'strong':
       return `**${transformNodesToString(node.children, escape)}**`;
     case 'emphasis':
       return `_${transformNodesToString(node.children, escape)}_`;
+    case 'delete':
+      return `~~${transformNodesToString(node.children, escape)}~~`;
+    case 'link':
+      return `[${transformNodesToString(node.children, escape)}](${node.url})`;
     default: {
       if (node.children) {
         return transformNodesToString(node.children, escape);
