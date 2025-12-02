@@ -54,7 +54,6 @@
     "estree-util-to-js": "^2.0.0",
     "estree-util-visit": "^2.0.0",
     "github-slugger": "^2.0.0",
-    "glob": "^11.0.3",
     "globals": "^16.4.0",
     "hast-util-to-string": "^3.0.1",
     "hastscript": "^9.0.1",

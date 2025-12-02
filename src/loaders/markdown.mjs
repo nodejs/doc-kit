@@ -1,9 +1,11 @@
+// @ts-check
+
 'use strict';
 
+import { globSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
-import { globSync } from 'glob';
 import { VFile } from 'vfile';
 
 /**
@@ -19,6 +21,7 @@ const createLoader = () => {
    * @param {Array<string> | undefined} [ignorePath] A glob/path of files to ignore
    * The input string can be a simple path (relative or absolute)
    * The input string can also be any allowed glob string
+   * @returns {Promise<VFile[]>}
    *
    * @see https://code.visualstudio.com/docs/editor/glob-patterns
    */

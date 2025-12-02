@@ -1,9 +1,11 @@
+// @ts-check
+
 'use strict';
 
+import { globSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
-import { globSync } from 'glob';
 import { VFile } from 'vfile';
 
 /**
@@ -14,17 +16,21 @@ const createLoader = () => {
    * Loads the JavaScript source files and transforms them into VFiles
    *
    * @param {string | Array<string>} searchPath
+   * @returns {Promise<VFile[]>}
    */
-  const loadFiles = searchPath => {
-    const resolvedFiles = globSync(searchPath).filter(
+  const loadFiles = async searchPath => {
+    const resolvedFiles = globSync(searchPath);
+    const jsFiles = resolvedFiles.filter(
       filePath => extname(filePath) === '.js'
     );
 
-    return resolvedFiles.map(async filePath => {
-      const fileContents = await readFile(filePath, 'utf-8');
+    return Promise.all(
+      jsFiles.map(async filePath => {
+        const fileContents = await readFile(filePath, 'utf-8');
 
-      return new VFile({ path: filePath, value: fileContents });
-    });
+        return new VFile({ path: filePath, value: fileContents });
+      })
+    );
   };
 
   return { loadFiles };
