@@ -30,7 +30,7 @@ export default {
     const { loadFiles } = createJsLoader();
 
     // Load all of the Javascript sources into memory
-    const sourceFiles = loadFiles(options.input ?? []);
+    const sourceFiles = await loadFiles(options.input ?? []);
 
     const { parseJsSources } = createJsParser();
 
