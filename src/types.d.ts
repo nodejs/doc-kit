@@ -42,8 +42,10 @@ declare global {
     slug: string;
   }
 
-  export interface HeadingMetadataParent
-    extends NodeWithData<Heading, HeadingMetadataEntry> {}
+  export interface HeadingMetadataParent extends NodeWithData<
+    Heading,
+    HeadingMetadataEntry
+  > {}
 
   export interface ApiDocMetadataChange {
     // The Node.js version or versions where said change was introduced simultaneously
