@@ -9,7 +9,7 @@
         "@actions/core": "^1.11.1",
         "@clack/prompts": "^0.11.0",
         "@heroicons/react": "^2.2.0",
-        "@minify-html/node": "^0.16.4",
+        "@minify-html/node": "^0.18.1",
         "@node-core/rehype-shiki": "1.3.0",
         "@node-core/ui-components": "1.4.0",
         "@orama/orama": "^3.1.16",
@@ -39,7 +39,7 @@
         "remark-parse": "^11.0.0",
         "remark-rehype": "^11.1.2",
         "remark-stringify": "^11.0.0",
-        "rolldown": "^1.0.0-beta.47",
+        "rolldown": "^1.0.0-beta.52",
         "semver": "^7.7.2",
         "shiki": "^3.17.0",
         "unified": "^11.0.5",
@@ -149,9 +149,9 @@
       }
     },
     "node_modules/@emnapi/core": {
-      "version": "1.5.0",
-      "resolved": "https://registry.npmjs.org/@emnapi/core/-/core-1.5.0.tgz",
-      "integrity": "sha512-sbP8GzB1WDzacS8fgNPpHlp6C9VZe+SJP3F90W9rLemaQj2PzIuTEl1qDOYQf58YIpyjViI24y9aPWCjEzY2cg==",
+      "version": "1.7.1",
+      "resolved": "https://registry.npmjs.org/@emnapi/core/-/core-1.7.1.tgz",
+      "integrity": "sha512-o1uhUASyo921r2XtHYOHy7gdkGLge8ghBEQHMWmyJFoXlpU58kIrhhN3w26lpQb6dspetweapMn2CSNwQ8I4wg==",
       "license": "MIT",
       "optional": true,
       "dependencies": {
@@ -160,9 +160,9 @@
       }
     },
     "node_modules/@emnapi/runtime": {
-      "version": "1.5.0",
-      "resolved": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.5.0.tgz",
-      "integrity": "sha512-97/BJ3iXHww3djw6hYIfErCZFee7qCtrneuLa20UXFCOTCfBM2cvQHjWJ2EG0s0MtdNwInarqCTz35i4wWXHsQ==",
+      "version": "1.7.1",
+      "resolved": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.7.1.tgz",
+      "integrity": "sha512-PVtJr5CmLwYAU9PZDMITZoR5iAOShYREoR45EyyLrbntV50mdePTgUn4AmOw90Ifcj+x2kRjdzr1HP3RrNiHGA==",
       "license": "MIT",
       "optional": true,
       "dependencies": {
@@ -671,9 +671,9 @@
       }
     },
     "node_modules/@minify-html/node": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node/-/node-0.16.4.tgz",
-      "integrity": "sha512-ykQgl6xcQQDE1shUExeObPSNwAf00DVUt/GrxdjiqFNCVGu7DXK9nuH29sNTyKKYnJJLZAi6OEib2bDfxW3udg==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node/-/node-0.18.1.tgz",
+      "integrity": "sha512-pNOv6z9zUDrjTU1+VcPOnDzGeaaqd6m9kbyHU+sg9O35450uzfke8ahx8gKlFdp/kQFrRn2rFIGAoANUZ62nSw==",
       "license": "MIT",
       "bin": {
         "minify-html": "cli.js"
@@ -682,17 +682,17 @@
         "node": ">= 8.6.0"
       },
       "optionalDependencies": {
-        "@minify-html/node-darwin-arm64": "0.16.4",
-        "@minify-html/node-darwin-x64": "0.16.4",
-        "@minify-html/node-linux-arm64": "0.16.4",
-        "@minify-html/node-linux-x64": "0.16.4",
-        "@minify-html/node-win32-x64": "0.16.4"
+        "@minify-html/node-darwin-arm64": "0.18.1",
+        "@minify-html/node-darwin-x64": "0.18.1",
+        "@minify-html/node-linux-arm64": "0.18.1",
+        "@minify-html/node-linux-x64": "0.18.1",
+        "@minify-html/node-win32-x64": "0.18.1"
       }
     },
     "node_modules/@minify-html/node-darwin-arm64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-darwin-arm64/-/node-darwin-arm64-0.16.4.tgz",
-      "integrity": "sha512-9H8hcywDb8zo2jEJfaIAibgsKjMqE+XF7SyqTtJ5H8lVXHxffOkawH4TQtphf9V/x7zXeb/nByAvHe1orJ/RHA==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-darwin-arm64/-/node-darwin-arm64-0.18.1.tgz",
+      "integrity": "sha512-sc/VJHRcHtEk0IQP2hRA/TWkAQntaYH3RCw8n750NbfzliQqkyrDqNAGiKBOli7UlhFtG/H2aWqGjtOjIM/dZA==",
       "cpu": [
         "arm64"
       ],
@@ -702,9 +702,9 @@
       ]
     },
     "node_modules/@minify-html/node-darwin-x64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-darwin-x64/-/node-darwin-x64-0.16.4.tgz",
-      "integrity": "sha512-P0Krf5nwXbccMrC7ragKAIVOENHFoVRQi+v/8k5pmfjrNlxgXGVILacG0FbUZXsH2Z2XaIo39HxuMf70L6wQlA==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-darwin-x64/-/node-darwin-x64-0.18.1.tgz",
+      "integrity": "sha512-0bff2ng4Vgp3+kdC8zgjd5dMN04zkM4nGuYEVP4dLR7J5NCD/Ka4XD4CKNSDZ9goLYQ8BjtKD6AeDTfJ8KBjrA==",
       "cpu": [
         "x64"
       ],
@@ -714,9 +714,9 @@
       ]
     },
     "node_modules/@minify-html/node-linux-arm64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-linux-arm64/-/node-linux-arm64-0.16.4.tgz",
-      "integrity": "sha512-GDRExKf7AmyAdBTdhMkMyzFhJu5VeyJTu0OnNH2ekp69JrhQTrrrt9UYqnjen+7qLIaZB/R8urDRAYNk0HZi5w==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-linux-arm64/-/node-linux-arm64-0.18.1.tgz",
+      "integrity": "sha512-CVGu5XVmmDrGFuA9/b/695rJBFvfTZFwKJJYA1ZXAsBZrqlKVO4bfXPq9DVNmhQ76ky3LFtVZ/+UsU7xpyK5Qw==",
       "cpu": [
         "arm64"
       ],
@@ -726,9 +726,9 @@
       ]
     },
     "node_modules/@minify-html/node-linux-x64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-linux-x64/-/node-linux-x64-0.16.4.tgz",
-      "integrity": "sha512-MS/gF1gxJoeHqEGcb1xoUIRv6gVin4cGJszgHPYSikzkK8Yg0p6rVOZdDAE4AAnp/NW0DYNq7fwYgw3igmppFw==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-linux-x64/-/node-linux-x64-0.18.1.tgz",
+      "integrity": "sha512-qmIv4kRyhZTKO3nXDXHlFrhnmwIKTM57ZRomlYRYdZTWiFW3CbJ4Ggg57qIgx7D/t4dgyS7/O8OTetrWvmEg9w==",
       "cpu": [
         "x64"
       ],
@@ -738,9 +738,9 @@
       ]
     },
     "node_modules/@minify-html/node-win32-x64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-win32-x64/-/node-win32-x64-0.16.4.tgz",
-      "integrity": "sha512-SCY7hzIqG1RclU0QzU2MlGtPOujPu6dvaPYqDvhAHpkvRXtX0hnyOrrfqf7GcBdDbASxV8LDlBWpY46JO2cjAA==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-win32-x64/-/node-win32-x64-0.18.1.tgz",
+      "integrity": "sha512-SNRE/NvcKXvh4UwXTRrujNSWaCj/3E+FFN+FLOBaN4FY+dZG83h6nWxGHJ5+LAoJxVTU7Al1e8toi4JjHpzv2w==",
       "cpu": [
         "x64"
       ],
@@ -1196,9 +1196,9 @@
       }
     },
     "node_modules/@oxc-project/types": {
-      "version": "0.96.0",
-      "resolved": "https://registry.npmjs.org/@oxc-project/types/-/types-0.96.0.tgz",
-      "integrity": "sha512-r/xkmoXA0xEpU6UGtn18CNVjXH6erU3KCpCDbpLmbVxBFor1U9MqN5Z2uMmCHJuXjJzlnDR+hWY+yPoLo8oHDw==",
+      "version": "0.99.0",
+      "resolved": "https://registry.npmjs.org/@oxc-project/types/-/types-0.99.0.tgz",
+      "integrity": "sha512-LLDEhXB7g1m5J+woRSgfKsFPS3LhR9xRhTeIoEBm5WrkwMxn6eZ0Ld0c0K5eHB57ChZX6I3uSmmLjZ8pcjlRcw==",
       "license": "MIT",
       "funding": {
         "url": "https://github.com/sponsors/Boshen"
@@ -2081,9 +2081,9 @@
       }
     },
     "node_modules/@rolldown/binding-android-arm64": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.0.0-beta.47.tgz",
-      "integrity": "sha512-vPP9/MZzESh9QtmvQYojXP/midjgkkc1E4AdnPPAzQXo668ncHJcVLKjJKzoBdsQmaIvNjrMdsCwES8vTQHRQw==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.0.0-beta.52.tgz",
+      "integrity": "sha512-MBGIgysimZPqTDcLXI+i9VveijkP5C3EAncEogXhqfax6YXj1Tr2LY3DVuEOMIjWfMPMhtQSPup4fSTAmgjqIw==",
       "cpu": [
         "arm64"
       ],
@@ -2097,9 +2097,9 @@
       }
     },
     "node_modules/@rolldown/binding-darwin-arm64": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.0.0-beta.47.tgz",
-      "integrity": "sha512-Lc3nrkxeaDVCVl8qR3qoxh6ltDZfkQ98j5vwIr5ALPkgjZtDK4BGCrrBoLpGVMg+csWcaqUbwbKwH5yvVa0oOw==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.0.0-beta.52.tgz",
+      "integrity": "sha512-MmKeoLnKu1d9j6r19K8B+prJnIZ7u+zQ+zGQ3YHXGnr41rzE3eqQLovlkvoZnRoxDGPA4ps0pGiwXy6YE3lJyg==",
       "cpu": [
         "arm64"
       ],
@@ -2113,9 +2113,9 @@
       }
     },
     "node_modules/@rolldown/binding-darwin-x64": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.0.0-beta.47.tgz",
-      "integrity": "sha512-eBYxQDwP0O33plqNVqOtUHqRiSYVneAknviM5XMawke3mwMuVlAsohtOqEjbCEl/Loi/FWdVeks5WkqAkzkYWQ==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.0.0-beta.52.tgz",
+      "integrity": "sha512-qpHedvQBmIjT8zdnjN3nWPR2qjQyJttbXniCEKKdHeAbZG9HyNPBUzQF7AZZGwmS9coQKL+hWg9FhWzh2dZ2IA==",
       "cpu": [
         "x64"
       ],
@@ -2129,9 +2129,9 @@
       }
     },
     "node_modules/@rolldown/binding-freebsd-x64": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-freebsd-x64/-/binding-freebsd-x64-1.0.0-beta.47.tgz",
-      "integrity": "sha512-Ns+kgp2+1Iq/44bY/Z30DETUSiHY7ZuqaOgD5bHVW++8vme9rdiWsN4yG4rRPXkdgzjvQ9TDHmZZKfY4/G11AA==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-freebsd-x64/-/binding-freebsd-x64-1.0.0-beta.52.tgz",
+      "integrity": "sha512-dDp7WbPapj/NVW0LSiH/CLwMhmLwwKb3R7mh2kWX+QW85X1DGVnIEyKh9PmNJjB/+suG1dJygdtdNPVXK1hylg==",
       "cpu": [
         "x64"
       ],
@@ -2145,9 +2145,9 @@
       }
     },
     "node_modules/@rolldown/binding-linux-arm-gnueabihf": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm-gnueabihf/-/binding-linux-arm-gnueabihf-1.0.0-beta.47.tgz",
-      "integrity": "sha512-4PecgWCJhTA2EFOlptYJiNyVP2MrVP4cWdndpOu3WmXqWqZUmSubhb4YUAIxAxnXATlGjC1WjxNPhV7ZllNgdA==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm-gnueabihf/-/binding-linux-arm-gnueabihf-1.0.0-beta.52.tgz",
+      "integrity": "sha512-9e4l6vy5qNSliDPqNfR6CkBOAx6PH7iDV4OJiEJzajajGrVy8gc/IKKJUsoE52G8ud8MX6r3PMl97NfwgOzB7g==",
       "cpu": [
         "arm"
       ],
@@ -2161,9 +2161,9 @@
       }
     },
     "node_modules/@rolldown/binding-linux-arm64-gnu": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.0.0-beta.47.tgz",
-      "integrity": "sha512-CyIunZ6D9U9Xg94roQI1INt/bLkOpPsZjZZkiaAZ0r6uccQdICmC99M9RUPlMLw/qg4yEWLlQhG73W/mG437NA==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.0.0-beta.52.tgz",
+      "integrity": "sha512-V48oDR84feRU2KRuzpALp594Uqlx27+zFsT6+BgTcXOtu7dWy350J1G28ydoCwKB+oxwsRPx2e7aeQnmd3YJbQ==",
       "cpu": [
         "arm64"
       ],
@@ -2177,9 +2177,9 @@
       }
     },
     "node_modules/@rolldown/binding-linux-arm64-musl": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-musl/-/binding-linux-arm64-musl-1.0.0-beta.47.tgz",
-      "integrity": "sha512-doozc/Goe7qRCSnzfJbFINTHsMktqmZQmweull6hsZZ9sjNWQ6BWQnbvOlfZJe4xE5NxM1NhPnY5Giqnl3ZrYQ==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-musl/-/binding-linux-arm64-musl-1.0.0-beta.52.tgz",
+      "integrity": "sha512-ENLmSQCWqSA/+YN45V2FqTIemg7QspaiTjlm327eUAMeOLdqmSOVVyrQexJGNTQ5M8sDYCgVAig2Kk01Ggmqaw==",
       "cpu": [
         "arm64"
       ],
@@ -2193,9 +2193,9 @@
       }
     },
     "node_modules/@rolldown/binding-linux-x64-gnu": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.0.0-beta.47.tgz",
-      "integrity": "sha512-fodvSMf6Aqwa0wEUSTPewmmZOD44rc5Tpr5p9NkwQ6W1SSpUKzD3SwpJIgANDOhwiYhDuiIaYPGB7Ujkx1q0UQ==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.0.0-beta.52.tgz",
+      "integrity": "sha512-klahlb2EIFltSUubn/VLjuc3qxp1E7th8ukayPfdkcKvvYcQ5rJztgx8JsJSuAKVzKtNTqUGOhy4On71BuyV8g==",
       "cpu": [
         "x64"
       ],
@@ -2209,9 +2209,9 @@
       }
     },
     "node_modules/@rolldown/binding-linux-x64-musl": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-x64-musl/-/binding-linux-x64-musl-1.0.0-beta.47.tgz",
-      "integrity": "sha512-Rxm5hYc0mGjwLh5sjlGmMygxAaV2gnsx7CNm2lsb47oyt5UQyPDZf3GP/ct8BEcwuikdqzsrrlIp8+kCSvMFNQ==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-linux-x64-musl/-/binding-linux-x64-musl-1.0.0-beta.52.tgz",
+      "integrity": "sha512-UuA+JqQIgqtkgGN2c/AQ5wi8M6mJHrahz/wciENPTeI6zEIbbLGoth5XN+sQe2pJDejEVofN9aOAp0kaazwnVg==",
       "cpu": [
         "x64"
       ],
@@ -2225,9 +2225,9 @@
       }
     },
     "node_modules/@rolldown/binding-openharmony-arm64": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-openharmony-arm64/-/binding-openharmony-arm64-1.0.0-beta.47.tgz",
-      "integrity": "sha512-YakuVe+Gc87jjxazBL34hbr8RJpRuFBhun7NEqoChVDlH5FLhLXjAPHqZd990TVGVNkemourf817Z8u2fONS8w==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-openharmony-arm64/-/binding-openharmony-arm64-1.0.0-beta.52.tgz",
+      "integrity": "sha512-1BNQW8u4ro8bsN1+tgKENJiqmvc+WfuaUhXzMImOVSMw28pkBKdfZtX2qJPADV3terx+vNJtlsgSGeb3+W6Jiw==",
       "cpu": [
         "arm64"
       ],
@@ -2241,9 +2241,9 @@
       }
     },
     "node_modules/@rolldown/binding-wasm32-wasi": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-wasm32-wasi/-/binding-wasm32-wasi-1.0.0-beta.47.tgz",
-      "integrity": "sha512-ak2GvTFQz3UAOw8cuQq8pWE+TNygQB6O47rMhvevvTzETh7VkHRFtRUwJynX5hwzFvQMP6G0az5JrBGuwaMwYQ==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-wasm32-wasi/-/binding-wasm32-wasi-1.0.0-beta.52.tgz",
+      "integrity": "sha512-K/p7clhCqJOQpXGykrFaBX2Dp9AUVIDHGc+PtFGBwg7V+mvBTv/tsm3LC3aUmH02H2y3gz4y+nUTQ0MLpofEEg==",
       "cpu": [
         "wasm32"
       ],
@@ -2257,21 +2257,21 @@
       }
     },
     "node_modules/@rolldown/binding-wasm32-wasi/node_modules/@napi-rs/wasm-runtime": {
-      "version": "1.0.7",
-      "resolved": "https://registry.npmjs.org/@napi-rs/wasm-runtime/-/wasm-runtime-1.0.7.tgz",
-      "integrity": "sha512-SeDnOO0Tk7Okiq6DbXmmBODgOAb9dp9gjlphokTUxmt8U3liIP1ZsozBahH69j/RJv+Rfs6IwUKHTgQYJ/HBAw==",
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/@napi-rs/wasm-runtime/-/wasm-runtime-1.1.0.tgz",
+      "integrity": "sha512-Fq6DJW+Bb5jaWE69/qOE0D1TUN9+6uWhCeZpdnSBk14pjLcCWR7Q8n49PTSPHazM37JqrsdpEthXy2xn6jWWiA==",
       "license": "MIT",
       "optional": true,
       "dependencies": {
-        "@emnapi/core": "^1.5.0",
-        "@emnapi/runtime": "^1.5.0",
+        "@emnapi/core": "^1.7.1",
+        "@emnapi/runtime": "^1.7.1",
         "@tybys/wasm-util": "^0.10.1"
       }
     },
     "node_modules/@rolldown/binding-win32-arm64-msvc": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-1.0.0-beta.47.tgz",
-      "integrity": "sha512-o5BpmBnXU+Cj+9+ndMcdKjhZlPb79dVPBZnWwMnI4RlNSSq5yOvFZqvfPYbyacvnW03Na4n5XXQAPhu3RydZ0w==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-1.0.0-beta.52.tgz",
+      "integrity": "sha512-a4EkXBtnYYsKipjS7QOhEBM4bU5IlR9N1hU+JcVEVeuTiaslIyhWVKsvf7K2YkQHyVAJ+7/A9BtrGqORFcTgng==",
       "cpu": [
         "arm64"
       ],
@@ -2285,9 +2285,9 @@
       }
     },
     "node_modules/@rolldown/binding-win32-ia32-msvc": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-win32-ia32-msvc/-/binding-win32-ia32-msvc-1.0.0-beta.47.tgz",
-      "integrity": "sha512-FVOmfyYehNE92IfC9Kgs913UerDog2M1m+FADJypKz0gmRg3UyTt4o1cZMCAl7MiR89JpM9jegNO1nXuP1w1vw==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-win32-ia32-msvc/-/binding-win32-ia32-msvc-1.0.0-beta.52.tgz",
+      "integrity": "sha512-5ZXcYyd4GxPA6QfbGrNcQjmjbuLGvfz6728pZMsQvGHI+06LT06M6TPtXvFvLgXtexc+OqvFe1yAIXJU1gob/w==",
       "cpu": [
         "ia32"
       ],
@@ -2301,9 +2301,9 @@
       }
     },
     "node_modules/@rolldown/binding-win32-x64-msvc": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.0.0-beta.47.tgz",
-      "integrity": "sha512-by/70F13IUE101Bat0oeH8miwWX5mhMFPk1yjCdxoTNHTyTdLgb0THNaebRM6AP7Kz+O3O2qx87sruYuF5UxHg==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.0.0-beta.52.tgz",
+      "integrity": "sha512-tzpnRQXJrSzb8Z9sm97UD3cY0toKOImx+xRKsDLX4zHaAlRXWh7jbaKBePJXEN7gNw7Nm03PBNwphdtA8KSUYQ==",
       "cpu": [
         "x64"
       ],
@@ -2317,9 +2317,9 @@
       }
     },
     "node_modules/@rolldown/pluginutils": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-beta.47.tgz",
-      "integrity": "sha512-8QagwMH3kNCuzD8EWL8R2YPW5e4OrHNSAHRFDdmFqEwEaD/KcNKjVoumo+gP2vW5eKB2UPbM6vTYiGZX0ixLnw==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-beta.52.tgz",
+      "integrity": "sha512-/L0htLJZbaZFL1g9OHOblTxbCYIGefErJjtYOwgl9ZqNx27P3L0SDfjhhHIss32gu5NWgnxuT2a2Hnnv6QGHKA==",
       "license": "MIT"
     },
     "node_modules/@rollup/plugin-virtual": {
@@ -8151,13 +8151,13 @@
       "license": "MIT"
     },
     "node_modules/rolldown": {
-      "version": "1.0.0-beta.47",
-      "resolved": "https://registry.npmjs.org/rolldown/-/rolldown-1.0.0-beta.47.tgz",
-      "integrity": "sha512-Mid74GckX1OeFAOYz9KuXeWYhq3xkXbMziYIC+ULVdUzPTG9y70OBSBQDQn9hQP8u/AfhuYw1R0BSg15nBI4Dg==",
+      "version": "1.0.0-beta.52",
+      "resolved": "https://registry.npmjs.org/rolldown/-/rolldown-1.0.0-beta.52.tgz",
+      "integrity": "sha512-Hbnpljue+JhMJrlOjQ1ixp9me7sUec7OjFvS+A1Qm8k8Xyxmw3ZhxFu7LlSXW1s9AX3POE9W9o2oqCEeR5uDmg==",
       "license": "MIT",
       "dependencies": {
-        "@oxc-project/types": "=0.96.0",
-        "@rolldown/pluginutils": "1.0.0-beta.47"
+        "@oxc-project/types": "=0.99.0",
+        "@rolldown/pluginutils": "1.0.0-beta.52"
       },
       "bin": {
         "rolldown": "bin/cli.mjs"
@@ -8166,20 +8166,20 @@
         "node": "^20.19.0 || >=22.12.0"
       },
       "optionalDependencies": {
-        "@rolldown/binding-android-arm64": "1.0.0-beta.47",
-        "@rolldown/binding-darwin-arm64": "1.0.0-beta.47",
-        "@rolldown/binding-darwin-x64": "1.0.0-beta.47",
-        "@rolldown/binding-freebsd-x64": "1.0.0-beta.47",
-        "@rolldown/binding-linux-arm-gnueabihf": "1.0.0-beta.47",
-        "@rolldown/binding-linux-arm64-gnu": "1.0.0-beta.47",
-        "@rolldown/binding-linux-arm64-musl": "1.0.0-beta.47",
-        "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.47",
-        "@rolldown/binding-linux-x64-musl": "1.0.0-beta.47",
-        "@rolldown/binding-openharmony-arm64": "1.0.0-beta.47",
-        "@rolldown/binding-wasm32-wasi": "1.0.0-beta.47",
-        "@rolldown/binding-win32-arm64-msvc": "1.0.0-beta.47",
-        "@rolldown/binding-win32-ia32-msvc": "1.0.0-beta.47",
-        "@rolldown/binding-win32-x64-msvc": "1.0.0-beta.47"
+        "@rolldown/binding-android-arm64": "1.0.0-beta.52",
+        "@rolldown/binding-darwin-arm64": "1.0.0-beta.52",
+        "@rolldown/binding-darwin-x64": "1.0.0-beta.52",
+        "@rolldown/binding-freebsd-x64": "1.0.0-beta.52",
+        "@rolldown/binding-linux-arm-gnueabihf": "1.0.0-beta.52",
+        "@rolldown/binding-linux-arm64-gnu": "1.0.0-beta.52",
+        "@rolldown/binding-linux-arm64-musl": "1.0.0-beta.52",
+        "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.52",
+        "@rolldown/binding-linux-x64-musl": "1.0.0-beta.52",
+        "@rolldown/binding-openharmony-arm64": "1.0.0-beta.52",
+        "@rolldown/binding-wasm32-wasi": "1.0.0-beta.52",
+        "@rolldown/binding-win32-arm64-msvc": "1.0.0-beta.52",
+        "@rolldown/binding-win32-ia32-msvc": "1.0.0-beta.52",
+        "@rolldown/binding-win32-x64-msvc": "1.0.0-beta.52"
       }
     },
     "node_modules/run-parallel": {
