@@ -49,8 +49,9 @@ export async function executeServerCode(serverCodeMap, requireFn) {
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} entries - The JSX AST entry to process.
  * @param {string} template - The HTML template string that serves as the base for the output page.
  * @param {ReturnType<import('./generate.mjs')>} astBuilders - The AST generators
- * @param {version} version - The version to generator the documentation for
  * @param {ReturnType<import('node:module').createRequire>} requireFn - A Node.js `require` function.
+ * @param {Object} options - Processing options
+ * @param {Object} options.version - Version info
  */
 export async function processJSXEntries(
   entries,

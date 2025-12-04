@@ -4,7 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createSectionBuilder } from './utils/buildSection.mjs';
-import { groupNodesByModule } from '../../utils/generators.mjs';
+import { getHeadNodes, groupNodesByModule } from '../../utils/generators.mjs';
 
 /**
  * This generator is responsible for generating the legacy JSON files for the
@@ -29,51 +29,48 @@ export default {
   dependsOn: 'metadata',
 
   /**
+   * Process a chunk of items in a worker thread.
+   * Called by chunk-worker.mjs for parallel processing.
+   *
+   * @param {Input} fullInput - Full input to rebuild context
+   * @param {number[]} itemIndices - Indices of head nodes to process
+   * @param {Partial<GeneratorOptions>} options
+   * @returns {Promise<import('./types.d.ts').ModuleSection[]>}
+   */
+  async processChunk(fullInput, itemIndices, { output }) {
+    const buildSection = createSectionBuilder();
+    const groupedModules = groupNodesByModule(fullInput);
+    const headNodes = getHeadNodes(fullInput);
+
+    const results = [];
+
+    for (const idx of itemIndices) {
+      const head = headNodes[idx];
+      const nodes = groupedModules.get(head.api);
+      const section = buildSection(head, nodes);
+
+      if (output) {
+        await writeFile(
+          join(output, `${head.api}.json`),
+          JSON.stringify(section)
+        );
+      }
+
+      results.push(section);
+    }
+
+    return results;
+  },
+
+  /**
    * Generates a legacy JSON file.
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
    */
-  async generate(input, { output }) {
-    const buildSection = createSectionBuilder();
+  async generate(input, { output, worker }) {
+    const headNodes = getHeadNodes(input);
 
-    // This array holds all the generated values for each module
-    const generatedValues = [];
-
-    const groupedModules = groupNodesByModule(input);
-
-    // Gets the first nodes of each module, which is considered the "head"
-    const headNodes = input.filter(node => node.heading.depth === 1);
-
-    /**
-     * @param {ApiDocMetadataEntry} head
-     * @returns {import('./types.d.ts').ModuleSection}
-     */
-    const processModuleNodes = head => {
-      const nodes = groupedModules.get(head.api);
-
-      const section = buildSection(head, nodes);
-
-      generatedValues.push(section);
-
-      return section;
-    };
-
-    await Promise.all(
-      headNodes.map(async node => {
-        // Get the json for the node's section
-        const section = processModuleNodes(node);
-
-        // Write it to the output file
-        if (output) {
-          await writeFile(
-            join(output, `${node.api}.json`),
-            JSON.stringify(section)
-          );
-        }
-      })
-    );
-
-    return generatedValues;
+    return worker.map(headNodes, input, { output });
   },
 };

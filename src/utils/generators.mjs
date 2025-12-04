@@ -3,6 +3,60 @@
 import { coerce, compare, major } from 'semver';
 
 import { DOC_API_BASE_URL_VERSION } from '../constants.mjs';
+import { OVERRIDDEN_POSITIONS } from '../generators/jsx-ast/constants.mjs';
+
+/**
+ * Gets head nodes (depth === 1) sorted alphabetically by name.
+ * Used by legacy-html and legacy-json generators.
+ *
+ * @param {Array<ApiDocMetadataEntry>} entries
+ * @returns {Array<ApiDocMetadataEntry>}
+ */
+export const getHeadNodes = entries =>
+  entries
+    .filter(node => node.heading.depth === 1)
+    .sort((a, b) => a.heading.data.name.localeCompare(b.heading.data.name));
+
+/**
+ * Gets head nodes (depth === 1) sorted with overridden positions first,
+ * then alphabetically. Used by jsx-ast and web generators.
+ *
+ * @param {Array<ApiDocMetadataEntry>} entries
+ * @returns {Array<ApiDocMetadataEntry>}
+ */
+export const getSortedHeadNodes = entries =>
+  entries
+    .filter(node => node.heading.depth === 1)
+    .sort((a, b) => {
+      const ai = OVERRIDDEN_POSITIONS.indexOf(a.api);
+      const bi = OVERRIDDEN_POSITIONS.indexOf(b.api);
+
+      if (ai !== -1 && bi !== -1) {
+        return ai - bi;
+      }
+
+      if (ai !== -1) {
+        return -1;
+      }
+
+      if (bi !== -1) {
+        return 1;
+      }
+
+      return a.heading.data.name.localeCompare(b.heading.data.name);
+    });
+
+/**
+ * Builds doc pages array for sidebar navigation.
+ *
+ * @param {Array<ApiDocMetadataEntry>} headNodes
+ * @param {Array<{section: string, api: string}>} [index]
+ * @returns {Array<[string, string]>}
+ */
+export const buildDocPages = (headNodes, index) =>
+  index
+    ? index.map(({ section, api }) => [section, `${api}.html`])
+    : headNodes.map(node => [node.heading.data.name, `${node.api}.html`]);
 
 /**
  * Groups all the API metadata nodes by module (`api` property) so that we can process each different file

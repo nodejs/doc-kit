@@ -1,15 +1,33 @@
 import { Worker } from 'node:worker_threads';
 
 /**
- * WorkerPool class to manage a pool of worker threads
+ * WorkerPool class to manage a pool of worker threads.
+ * Can be configured with different worker scripts for different use cases.
  */
 export default class WorkerPool {
+  /** @private {URL} - Path to the worker script */
+  workerScript;
+  /** @private {number} - Maximum concurrent threads */
+  maxThreads;
   /** @private {SharedArrayBuffer} - Shared memory for active thread count */
   sharedBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT);
   /** @private {Int32Array} - A typed array to access shared memory */
   activeThreads = new Int32Array(this.sharedBuffer);
   /** @private {Array<Function>} - Queue of pending tasks */
   queue = [];
+
+  /**
+   * @param {string | URL} workerScript - Path to the worker script (relative to this file or absolute URL)
+   * @param {number} maxThreads - Maximum number of concurrent worker threads
+   */
+  constructor(workerScript = './generator-worker.mjs', maxThreads = 1) {
+    this.workerScript =
+      workerScript instanceof URL
+        ? workerScript
+        : new URL(workerScript, import.meta.url);
+
+    this.maxThreads = Math.max(1, maxThreads);
+  }
 
   /**
    * Gets the current active thread count.
@@ -28,64 +46,68 @@ export default class WorkerPool {
   }
 
   /**
-   * Runs a generator within a worker thread.
-   * @param {string} name - The name of the generator to execute
-   * @param {any} dependencyOutput - Input data for the generator
-   * @param {number} threads - Maximum number of threads to run concurrently
-   * @param {Object} extra - Additional options for the generator
-   * @returns {Promise<any>} Resolves with the generator result, or rejects with an error
+   * Runs a task in a worker thread with the given data.
+   * @param {Object} workerData - Data to pass to the worker thread
+   * @returns {Promise<any>} Resolves with the worker result, or rejects with an error
    */
-  run(name, dependencyOutput, threads, extra) {
+  run(workerData) {
     return new Promise((resolve, reject) => {
       /**
-       * Function to run the generator in a worker thread
+       * Executes the worker thread by creating a new Worker instance and
+       * handling the message and error events.
        */
-      const run = () => {
+      const execute = () => {
         this.changeActiveThreadCount(1);
 
-        // Create and start the worker thread
-        const worker = new Worker(new URL('./worker.mjs', import.meta.url), {
-          workerData: { name, dependencyOutput, extra },
-        });
+        const worker = new Worker(this.workerScript, { workerData });
 
-        // Handle worker thread messages (result or error)
         worker.on('message', result => {
           this.changeActiveThreadCount(-1);
-          this.processQueue(threads);
+          this.processQueue();
 
           if (result?.error) {
-            reject(result.error);
+            reject(new Error(result.error));
           } else {
             resolve(result);
           }
         });
 
-        // Handle worker thread errors
         worker.on('error', err => {
           this.changeActiveThreadCount(-1);
-          this.processQueue(threads);
+          this.processQueue();
           reject(err);
         });
       };
 
-      // If the active thread count exceeds the limit, add the task to the queue
-      if (this.getActiveThreadCount() >= threads) {
-        this.queue.push(run);
+      if (this.getActiveThreadCount() >= this.maxThreads) {
+        this.queue.push(execute);
       } else {
-        run();
+        execute();
       }
     });
   }
 
   /**
-   * Process the worker thread queue to start the next available task
-   * when there is room for more threads.
-   * @param {number} threads - Maximum number of threads to run concurrently
+   * Run multiple tasks in parallel, distributing across worker threads.
+   * @template T, R
+   * @param {T[]} tasks - Array of task data to process
+   * @returns {Promise<R[]>} Results in same order as input tasks
+   */
+  async runAll(tasks) {
+    return Promise.all(tasks.map(task => this.run(task)));
+  }
+
+  /**
+   * Process the worker thread queue to start the next available task.
    * @private
    */
-  processQueue(threads) {
-    if (this.queue.length > 0 && this.getActiveThreadCount() < threads) {
+  processQueue() {
+    while (
+      this.queue.length > 0 &&
+      this.getActiveThreadCount() < this.maxThreads
+    ) {
       const next = this.queue.shift();
+
       if (next) {
         next();
       }
