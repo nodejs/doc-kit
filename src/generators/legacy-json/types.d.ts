@@ -78,7 +78,7 @@ export interface SectionBase {
   /**
    * Stability index of the section.
    */
-  stability?: string;
+  stability?: number;
 
   /**
    * Descriptive text related to the stability of the section (E.G. "Experimental").
