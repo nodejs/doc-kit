@@ -53,8 +53,14 @@ export default {
     input.forEach(section => {
       // Copy the relevant properties from each section into our output
       propertiesToCopy.forEach(property => {
-        if (section[property]) {
-          generatedValue[property].push(...section[property]);
+        if (Array.isArray(section[property])) {
+          let toPush = section[property];
+
+          if (section.source) {
+            toPush = toPush.map(item => ({ ...item, source: section.source }));
+          }
+
+          generatedValue[property].push(...toPush);
         }
       });
     });

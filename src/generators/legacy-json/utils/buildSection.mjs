@@ -36,7 +36,7 @@ export const createSectionBuilder = () => {
   /**
    * Creates metadata from a hierarchized entry.
    * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry to create metadata from.
-   * @returns {import('../types.d.ts').Meta} The created metadata.
+   * @returns {import('../types.d.ts').Meta | undefined} The created metadata, or undefined if all fields are empty.
    */
   const createMeta = ({
     added_in = [],
@@ -44,13 +44,33 @@ export const createSectionBuilder = () => {
     deprecated_in = [],
     removed_in = [],
     changes,
-  }) => ({
-    changes,
-    added: enforceArray(added_in),
-    napiVersion: enforceArray(n_api_version),
-    deprecated: enforceArray(deprecated_in),
-    removed: enforceArray(removed_in),
-  });
+  }) => {
+    const meta = { changes };
+
+    if (enforceArray(added_in).length) {
+      meta.added = enforceArray(added_in);
+    }
+
+    if (enforceArray(n_api_version).length) {
+      meta.napiVersion = enforceArray(n_api_version);
+    }
+
+    if (enforceArray(deprecated_in).length) {
+      meta.deprecated = enforceArray(deprecated_in);
+    }
+
+    if (enforceArray(removed_in).length) {
+      meta.removed = enforceArray(removed_in);
+    }
+
+    // Check if there are any non-empty fields in the meta object
+    const atLeastOneNonEmptyField = Object.values(meta).some(
+      value => value.length > 0
+    );
+
+    // Return undefined if the meta object is completely empty
+    return atLeastOneNonEmptyField ? meta : undefined;
+  };
 
   /**
    * Creates a section from an entry and its heading.
@@ -58,13 +78,22 @@ export const createSectionBuilder = () => {
    * @param {HeadingMetadataParent} head - The head node of the entry.
    * @returns {import('../types.d.ts').Section} The created section.
    */
-  const createSection = (entry, head) => ({
-    textRaw: transformNodesToString(head.children),
-    name: head.data.name,
-    type: head.data.type,
-    meta: createMeta(entry),
-    introduced_in: entry.introduced_in,
-  });
+  const createSection = (entry, head) => {
+    const section = {
+      textRaw: transformNodesToString(head.children),
+      name: head.data.name,
+      type: head.data.type,
+      introduced_in: entry.introduced_in,
+    };
+
+    const meta = createMeta(entry);
+
+    if (meta !== undefined) {
+      section.meta = meta;
+    }
+
+    return section;
+  };
 
   /**
    * Parses stability metadata and adds it to the section.
@@ -76,7 +105,7 @@ export const createSectionBuilder = () => {
     const stabilityInfo = stability.children.map(node => node.data)?.[0];
 
     if (stabilityInfo) {
-      section.stability = stabilityInfo.index;
+      section.stability = Number(stabilityInfo.index);
       section.stabilityText = stabilityInfo.description;
       nodes.shift(); // Remove stability node from processing
     }
