@@ -53,14 +53,14 @@ export default {
     input.forEach(section => {
       // Copy the relevant properties from each section into our output
       propertiesToCopy.forEach(property => {
-        if (Array.isArray(section[property])) {
-          let toPush = section[property];
+        const items = section[property];
 
-          if (section.source) {
-            toPush = toPush.map(item => ({ ...item, source: section.source }));
-          }
+        if (Array.isArray(items)) {
+          const enrichedItems = section.source
+            ? items.map(item => ({ ...item, source: section.source }))
+            : items;
 
-          generatedValue[property].push(...toPush);
+          generatedValue[property].push(...enrichedItems);
         }
       });
     });

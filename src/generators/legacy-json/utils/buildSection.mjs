@@ -64,9 +64,8 @@ export const createSectionBuilder = () => {
     }
 
     // Check if there are any non-empty fields in the meta object
-    const atLeastOneNonEmptyField = Object.values(meta).some(
-      value => value.length > 0
-    );
+    const atLeastOneNonEmptyField =
+      changes?.length || Object.keys(meta).length > 1;
 
     // Return undefined if the meta object is completely empty
     return atLeastOneNonEmptyField ? meta : undefined;
