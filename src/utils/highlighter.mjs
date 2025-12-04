@@ -32,10 +32,12 @@ function isCodeBlock(node) {
   );
 }
 
-export const highlighter = await createHighlighter();
+export const highlighter = await createHighlighter({ wasm: true });
 
 /**
  * Creates a HAST transformer for Shiki which is used for transforming our codeboxes
+ *
+ * @deprecated This is used only for the legacy-html generator, please use `@node-core/rehype-shiki` directly instead.
  *
  * @type {import('unified').Plugin}
  */

@@ -53,6 +53,7 @@ export default {
       const nodes = groupedModules.get(head.api);
 
       const section = buildSection(head, nodes);
+
       generatedValues.push(section);
 
       return section;

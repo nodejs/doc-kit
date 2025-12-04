@@ -10,7 +10,7 @@ import dropdowns from './utils/buildDropdowns.mjs';
 import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
-import { getRemarkRehype } from '../../utils/remark.mjs';
+import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
 
 /**
  * @typedef {{
@@ -53,7 +53,7 @@ export default {
     const generatedValues = [];
 
     // Gets a Remark Processor that parses Markdown to minified HTML
-    const remarkRehypeProcessor = getRemarkRehype();
+    const remarkRehypeProcessor = getRemarkRehypeWithShiki();
 
     const groupedModules = groupNodesByModule(input);
 
