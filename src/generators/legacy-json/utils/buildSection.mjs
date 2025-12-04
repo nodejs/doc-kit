@@ -47,28 +47,20 @@ export const createSectionBuilder = () => {
   }) => {
     const meta = { changes };
 
-    const aded_in_array = enforceArray(added_in);
-
-    if (aded_in_array.length) {
-      meta.added = aded_in_array;
+    if (added_in?.length) {
+      meta.added = enforceArray(added_in);
     }
 
-    const n_api_version_array = enforceArray(n_api_version);
-
-    if (n_api_version_array.length) {
-      meta.napiVersion = n_api_version_array;
+    if (n_api_version?.length) {
+      meta.napiVersion = enforceArray(n_api_version);
     }
 
-    const deprecated_in_array = enforceArray(deprecated_in);
-
-    if (deprecated_in_array.length) {
-      meta.deprecated = deprecated_in_array;
+    if (deprecated_in?.length) {
+      meta.deprecated = enforceArray(deprecated_in);
     }
 
-    const removed_in_array = enforceArray(removed_in);
-
-    if (removed_in_array.length) {
-      meta.removed = removed_in_array;
+    if (removed_in?.length) {
+      meta.removed = enforceArray(removed_in);
     }
 
     // Check if there are any non-empty fields in the meta object
