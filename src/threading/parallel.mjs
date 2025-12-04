@@ -1,46 +1,6 @@
 'use strict';
 
-/**
- * Calculates optimal chunk distribution for parallel processing.
- * Balances work evenly across workers while respecting max chunk size.
- *
- * @param {number} itemCount - Total number of items
- * @param {number} threads - Number of available worker threads
- * @param {number} maxChunkSize - Maximum items per chunk
- * @returns {{ chunkSize: number, numChunks: number }}
- */
-function calculateChunkStrategy(itemCount, threads, maxChunkSize) {
-  // Determine how many chunks we want (ideally one per thread, but not more than items)
-  const targetChunks = Math.min(threads, itemCount);
-
-  // Calculate base chunk size to distribute work evenly
-  const baseChunkSize = Math.ceil(itemCount / targetChunks);
-
-  // Respect the max chunk size limit
-  const chunkSize = Math.min(baseChunkSize, maxChunkSize);
-
-  // Calculate actual number of chunks needed
-  const numChunks = Math.ceil(itemCount / chunkSize);
-
-  return { chunkSize, numChunks };
-}
-
-/**
- * Splits indices into chunks of specified size.
- * @param {number} count - Number of items
- * @param {number} chunkSize - Items per chunk
- * @returns {number[][]} Array of index arrays
- */
-function createIndexChunks(count, chunkSize) {
-  const chunks = [];
-
-  for (let i = 0; i < count; i += chunkSize) {
-    const end = Math.min(i + chunkSize, count);
-    chunks.push(Array.from({ length: end - i }, (_, j) => i + j));
-  }
-
-  return chunks;
-}
+import { allGenerators } from '../generators/index.mjs';
 
 /**
  * Creates a ParallelWorker that uses real Node.js Worker threads
@@ -52,29 +12,40 @@ function createIndexChunks(count, chunkSize) {
  * @returns {ParallelWorker}
  */
 export default function createParallelWorker(generatorName, pool, options) {
-  const { threads = 1, chunkSize: maxChunkSize = 20 } = options;
+  const { threads, chunkSize } = options;
 
-  // Cache for lazy-loaded generator reference
-  let cachedGenerator;
+  const generator = allGenerators[generatorName];
 
   /**
-   * Gets the generator (lazy-loaded and cached)
+   * Splits items into chunks of specified size.
+   * @param {number} count - Number of items
+   * @param {number} size - Items per chunk
+   * @returns {number[][]} Array of index arrays
    */
-  const getGenerator = async () => {
-    if (!cachedGenerator) {
-      const { allGenerators } = await import('../generators/index.mjs');
+  const createIndexChunks = (count, size) => {
+    const chunks = [];
 
-      cachedGenerator = allGenerators[generatorName];
+    for (let i = 0; i < count; i += size) {
+      const end = Math.min(i + size, count);
+
+      const chunk = [];
+
+      for (let j = i; j < end; j++) {
+        chunk.push(j);
+      }
+
+      chunks.push(chunk);
     }
-    return cachedGenerator;
+
+    return chunks;
   };
 
   /**
    * Strips non-serializable properties from options for worker transfer
-   * @param {object} opts - Options to serialize
+   * @param {object} extra - Extra options to merge
    */
-  const serializeOptions = opts => {
-    const serialized = { ...options, ...opts };
+  const serializeOptions = extra => {
+    const serialized = { ...options, ...extra };
 
     delete serialized.worker;
 
@@ -89,17 +60,15 @@ export default function createParallelWorker(generatorName, pool, options) {
      * @template T, R
      * @param {T[]} items - Items to process (must be serializable)
      * @param {T[]} fullInput - Full input data for context rebuilding in workers
-     * @param {object} opts - Additional options to pass to workers
+     * @param {object} extra - Generator-specific context (e.g. apiTemplate, parsedSideNav)
      * @returns {Promise<R[]>} - Results in same order as input items
      */
-    async map(items, fullInput, opts = {}) {
+    async map(items, fullInput, extra) {
       const itemCount = items.length;
 
       if (itemCount === 0) {
         return [];
       }
-
-      const generator = await getGenerator();
 
       if (!generator.processChunk) {
         throw new Error(
@@ -107,27 +76,21 @@ export default function createParallelWorker(generatorName, pool, options) {
         );
       }
 
-      // For single thread, single item, or very small workloads - run in main thread
-      // Worker overhead isn't worth it for small tasks
-      const shouldUseMainThread = threads <= 1 || itemCount <= 2;
+      // For single thread or small workloads - run in main thread
+      if (threads <= 1 || itemCount <= 2) {
+        const indices = [];
 
-      if (shouldUseMainThread) {
-        const indices = Array.from({ length: itemCount }, (_, i) => i);
+        for (let i = 0; i < itemCount; i++) {
+          indices.push(i);
+        }
 
         return generator.processChunk(fullInput, indices, {
           ...options,
-          ...opts,
+          ...extra,
         });
       }
 
-      // Calculate optimal chunk distribution
-      const { chunkSize } = calculateChunkStrategy(
-        itemCount,
-        threads,
-        maxChunkSize
-      );
-
-      // Create index chunks for parallel processing
+      // Divide items into chunks based on chunkSize
       const indexChunks = createIndexChunks(itemCount, chunkSize);
 
       // Process chunks in parallel using worker threads
@@ -136,11 +99,11 @@ export default function createParallelWorker(generatorName, pool, options) {
           generatorName,
           fullInput,
           itemIndices: indices,
-          options: serializeOptions(opts),
+          options: serializeOptions(extra),
         }))
       );
 
-      // Flatten results (each worker returns array of results for its chunk)
+      // Flatten results
       return chunkResults.flat();
     },
 
@@ -149,11 +112,11 @@ export default function createParallelWorker(generatorName, pool, options) {
      * @template T
      * @param {T[]} items - Items to process
      * @param {T[]} fullInput - Full input data for context rebuilding
-     * @param {object} opts - Additional options
+     * @param {object} extra - Generator-specific context
      * @returns {Promise<void>}
      */
-    async forEach(items, fullInput, opts = {}) {
-      await this.map(items, fullInput, opts);
+    async forEach(items, fullInput, extra) {
+      await this.map(items, fullInput, extra);
     },
   };
 }

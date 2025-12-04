@@ -7,8 +7,8 @@ import { allGenerators } from '../generators/index.mjs';
 const { generatorName, input, options } = workerData;
 const generator = allGenerators[generatorName];
 
-// Create a ParallelWorker for the generator to use (for item-level parallelization)
-const chunkPool = new WorkerPool('./chunk-worker.mjs', options.threads ?? 1);
+// Create a ParallelWorker for the generator to use for item-level parallelization
+const chunkPool = new WorkerPool('./chunk-worker.mjs', options.threads);
 const worker = createParallelWorker(generatorName, chunkPool, options);
 
 // Execute the generator and send the result or error back to the parent thread

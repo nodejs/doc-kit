@@ -24,15 +24,12 @@ export default {
 
   /**
    * Process a chunk of JavaScript files in a worker thread.
-   * Called by chunk-worker.mjs for parallel processing.
-   *
-   * @param {unknown} _ - Unused (we use options.input instead)
-   * @param {number[]} itemIndices - Indices of source files to process
+   * @param {unknown} _
+   * @param {number[]} itemIndices
    * @param {Partial<GeneratorOptions>} options
    */
   async processChunk(_, itemIndices, { input }) {
     const { loadFiles } = createJsLoader();
-
     const sourceFiles = loadFiles(input ?? []);
 
     const { parseJsSource } = createJsParser();
@@ -57,8 +54,6 @@ export default {
     const sourceFiles = loadFiles(input ?? []);
 
     // Parse the Javascript sources into ASTs in parallel using worker threads
-    // Note: We pass sourceFiles as items but _ (empty) as fullInput since
-    // processChunk reloads files from options.input
     return worker.map(sourceFiles, _, { input });
   },
 };

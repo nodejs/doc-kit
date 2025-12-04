@@ -1,14 +1,9 @@
 import { Worker } from 'node:worker_threads';
 
 /**
- * WorkerPool class to manage a pool of worker threads.
- * Can be configured with different worker scripts for different use cases.
+ * WorkerPool class to manage a pool of worker threads
  */
 export default class WorkerPool {
-  /** @private {URL} - Path to the worker script */
-  workerScript;
-  /** @private {number} - Maximum concurrent threads */
-  maxThreads;
   /** @private {SharedArrayBuffer} - Shared memory for active thread count */
   sharedBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT);
   /** @private {Int32Array} - A typed array to access shared memory */
@@ -18,15 +13,15 @@ export default class WorkerPool {
 
   /**
    * @param {string | URL} workerScript - Path to the worker script (relative to this file or absolute URL)
-   * @param {number} maxThreads - Maximum number of concurrent worker threads
+   * @param {number} threads - Maximum number of concurrent worker threads
    */
-  constructor(workerScript = './generator-worker.mjs', maxThreads = 1) {
+  constructor(workerScript = './generator-worker.mjs', threads = 1) {
     this.workerScript =
       workerScript instanceof URL
         ? workerScript
         : new URL(workerScript, import.meta.url);
 
-    this.maxThreads = Math.max(1, maxThreads);
+    this.threads = threads;
   }
 
   /**
@@ -53,10 +48,10 @@ export default class WorkerPool {
   run(workerData) {
     return new Promise((resolve, reject) => {
       /**
-       * Executes the worker thread by creating a new Worker instance and
-       * handling the message and error events.
+       * Runs the worker thread and handles the result or error.
+       * @private
        */
-      const execute = () => {
+      const run = () => {
         this.changeActiveThreadCount(1);
 
         const worker = new Worker(this.workerScript, { workerData });
@@ -79,10 +74,10 @@ export default class WorkerPool {
         });
       };
 
-      if (this.getActiveThreadCount() >= this.maxThreads) {
-        this.queue.push(execute);
+      if (this.getActiveThreadCount() >= this.threads) {
+        this.queue.push(run);
       } else {
-        execute();
+        run();
       }
     });
   }
@@ -102,10 +97,7 @@ export default class WorkerPool {
    * @private
    */
   processQueue() {
-    while (
-      this.queue.length > 0 &&
-      this.getActiveThreadCount() < this.maxThreads
-    ) {
+    if (this.queue.length > 0 && this.getActiveThreadCount() < this.threads) {
       const next = this.queue.shift();
 
       if (next) {

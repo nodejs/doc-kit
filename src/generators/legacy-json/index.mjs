@@ -4,7 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createSectionBuilder } from './utils/buildSection.mjs';
-import { getHeadNodes, groupNodesByModule } from '../../utils/generators.mjs';
+import { groupNodesByModule } from '../../utils/generators.mjs';
 
 /**
  * This generator is responsible for generating the legacy JSON files for the
@@ -30,17 +30,15 @@ export default {
 
   /**
    * Process a chunk of items in a worker thread.
-   * Called by chunk-worker.mjs for parallel processing.
-   *
-   * @param {Input} fullInput - Full input to rebuild context
-   * @param {number[]} itemIndices - Indices of head nodes to process
+   * @param {Input} fullInput
+   * @param {number[]} itemIndices
    * @param {Partial<GeneratorOptions>} options
-   * @returns {Promise<import('./types.d.ts').ModuleSection[]>}
    */
   async processChunk(fullInput, itemIndices, { output }) {
     const buildSection = createSectionBuilder();
     const groupedModules = groupNodesByModule(fullInput);
-    const headNodes = getHeadNodes(fullInput);
+
+    const headNodes = fullInput.filter(node => node.heading.depth === 1);
 
     const results = [];
 
@@ -69,7 +67,7 @@ export default {
    * @param {Partial<GeneratorOptions>} options
    */
   async generate(input, { output, worker }) {
-    const headNodes = getHeadNodes(input);
+    const headNodes = input.filter(node => node.heading.depth === 1);
 
     return worker.map(headNodes, input, { output });
   },

@@ -37,20 +37,14 @@ const createGenerator = input => {
    *
    * @param {GeneratorOptions} options The options for the generator runtime
    */
-  const runGenerators = async ({
-    generators,
-    threads,
-    chunkSize,
-    ...extra
-  }) => {
+  const runGenerators = async options => {
+    const { generators, threads } = options;
+
     // WorkerPool for running full generators in worker threads
     const generatorPool = new WorkerPool('./generator-worker.mjs', threads);
 
     // WorkerPool for chunk-level parallelization within generators
     const chunkPool = new WorkerPool('./chunk-worker.mjs', threads);
-
-    // Options including threading config
-    const threadingOptions = { threads, chunkSize };
 
     // Note that this method is blocking, and will only execute one generator per-time
     // but it ensures all dependencies are resolved, and that multiple bottom-level generators
@@ -61,11 +55,7 @@ const createGenerator = input => {
       // If the generator dependency has not yet been resolved, we resolve
       // the dependency first before running the current generator
       if (dependsOn && dependsOn in cachedGenerators === false) {
-        await runGenerators({
-          ...extra,
-          ...threadingOptions,
-          generators: [dependsOn],
-        });
+        await runGenerators({ ...options, generators: [dependsOn] });
       }
 
       // Ensures that the dependency output gets resolved before we run the current
@@ -73,22 +63,13 @@ const createGenerator = input => {
       const input = await cachedGenerators[dependsOn];
 
       // Create a ParallelWorker for this generator to use for item-level parallelization
-      const worker = createParallelWorker(generatorName, chunkPool, {
-        ...extra,
-        ...threadingOptions,
-      });
-
-      // Generator options with worker instance
-      const generatorOptions = { ...extra, ...threadingOptions, worker };
-
-      // Worker options for the worker thread
-      const workerOptions = { ...extra, ...threadingOptions };
+      const worker = createParallelWorker(generatorName, chunkPool, options);
 
       // Adds the current generator execution Promise to the cache
       cachedGenerators[generatorName] =
         threads < 2
-          ? generate(input, generatorOptions) // Run in main thread
-          : generatorPool.run({ generatorName, input, options: workerOptions }); // Offload to worker thread
+          ? generate(input, { ...options, worker })
+          : generatorPool.run({ generatorName, input, options });
     }
 
     // Returns the value of the last generator of the current pipeline
