@@ -40,40 +40,43 @@ const createGenerator = input => {
   const runGenerators = async options => {
     const { generators, threads } = options;
 
-    // WorkerPool for running full generators in worker threads
-    const generatorPool = new WorkerPool('./generator-worker.mjs', threads);
-
     // WorkerPool for chunk-level parallelization within generators
     const chunkPool = new WorkerPool('./chunk-worker.mjs', threads);
 
-    // Note that this method is blocking, and will only execute one generator per-time
-    // but it ensures all dependencies are resolved, and that multiple bottom-level generators
-    // can reuse the already parsed content from the top-level/dependency generators
+    // Schedule all generators, allowing independent ones to run in parallel.
+    // Each generator awaits its own dependency internally, so generators
+    // with the same dependency (e.g. legacy-html and legacy-json both depend
+    // on metadata) will run concurrently once metadata resolves.
     for (const generatorName of generators) {
+      // Skip if already scheduled
+      if (generatorName in cachedGenerators) {
+        continue;
+      }
+
       const { dependsOn, generate } = allGenerators[generatorName];
 
-      // If the generator dependency has not yet been resolved, we resolve
-      // the dependency first before running the current generator
-      if (dependsOn && dependsOn in cachedGenerators === false) {
+      // Ensure dependency is scheduled (but don't await its result yet)
+      if (dependsOn && !(dependsOn in cachedGenerators)) {
         await runGenerators({ ...options, generators: [dependsOn] });
       }
 
-      // Ensures that the dependency output gets resolved before we run the current
-      // generator with its dependency output as the input
-      const input = await cachedGenerators[dependsOn];
-
-      // Create a ParallelWorker for this generator to use for item-level parallelization
+      // Create a ParallelWorker for this generator
       const worker = createParallelWorker(generatorName, chunkPool, options);
 
-      // Adds the current generator execution Promise to the cache
-      cachedGenerators[generatorName] =
-        threads < 2
-          ? generate(input, { ...options, worker })
-          : generatorPool.run({ generatorName, input, options });
+      /**
+       * Schedule the generator - it awaits its dependency internally
+       * his allows multiple generators with the same dependency to run in parallel
+       */
+      const scheduledGenerator = async () => {
+        const input = await cachedGenerators[dependsOn];
+
+        return generate(input, { ...options, worker });
+      };
+
+      cachedGenerators[generatorName] = scheduledGenerator();
     }
 
     // Returns the value of the last generator of the current pipeline
-    // Note that dependencies will be awaited (as shown on line 48)
     return cachedGenerators[generators[generators.length - 1]];
   };
 

@@ -18,7 +18,7 @@ const availableGenerators = Object.keys(publicGenerators);
 
 // Half of available logical CPUs guarantees in general all physical CPUs are being used
 // which in most scenarios is the best way to maximize performance
-const optimalThreads = Math.floor(cpus().length / 2) - 1;
+const optimalThreads = Math.floor(cpus().length / 2) + 1;
 
 /**
  * @typedef {Object} Options
@@ -79,7 +79,7 @@ export default {
       prompt: {
         type: 'text',
         message: 'Items per worker thread',
-        initialValue: '20',
+        initialValue: '10',
       },
     },
     version: {

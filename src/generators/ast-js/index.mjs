@@ -30,14 +30,16 @@ export default {
    */
   async processChunk(_, itemIndices, { input }) {
     const { loadFiles } = createJsLoader();
-    const sourceFiles = loadFiles(input ?? []);
-
     const { parseJsSource } = createJsParser();
 
     const results = [];
 
     for (const idx of itemIndices) {
-      results.push(await parseJsSource(sourceFiles[idx]));
+      const [file] = loadFiles(input[idx]);
+
+      const parsedFile = await parseJsSource(file);
+
+      results.push(parsedFile);
     }
 
     return results;
@@ -48,12 +50,11 @@ export default {
    * @param {Partial<GeneratorOptions>} options
    */
   async generate(_, { input, worker }) {
-    const { loadFiles } = createJsLoader();
-
     // Load all of the Javascript sources into memory
-    const sourceFiles = loadFiles(input ?? []);
+    const sourceFiles =
+      input?.filter(filename => filename.endsWith('.js')) ?? [];
 
     // Parse the Javascript sources into ASTs in parallel using worker threads
-    return worker.map(sourceFiles, _, { input });
+    return worker.map(sourceFiles, _, { input: sourceFiles });
   },
 };
