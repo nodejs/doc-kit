@@ -13,6 +13,13 @@ import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
 
 /**
+ * Creates a heading object with the given name.
+ * @param {string} name - The name of the heading
+ * @returns {HeadingMetadataEntry} The heading object
+ */
+const getHeading = name => ({ data: { depth: 1, name } });
+
+/**
  * @typedef {{
  * api: string;
  * added: string;
@@ -44,53 +51,31 @@ export default {
   dependsOn: 'metadata',
 
   /**
-   * Generates the legacy version of the API docs in HTML
-   * @param {Input} input
+   * Process a chunk of items in a worker thread.
+   * @param {Input} fullInput
+   * @param {number[]} itemIndices
    * @param {Partial<GeneratorOptions>} options
    */
-  async generate(input, { index, releases, version, output }) {
-    // This array holds all the generated values for each module
-    const generatedValues = [];
-
-    // Gets a Remark Processor that parses Markdown to minified HTML
+  async processChunk(
+    fullInput,
+    itemIndices,
+    { releases, version, output, apiTemplate, parsedSideNav }
+  ) {
     const remarkRehypeProcessor = getRemarkRehypeWithShiki();
+    const groupedModules = groupNodesByModule(fullInput);
 
-    const groupedModules = groupNodesByModule(input);
-
-    // Current directory path relative to the `index.mjs` file
-    const baseDir = import.meta.dirname;
-
-    // Reads the API template.html file to be used as a base for the HTML files
-    const apiTemplate = await readFile(join(baseDir, 'template.html'), 'utf-8');
-
-    // Gets the first nodes of each module, which is considered the "head" of the module
-    // and sorts them alphabetically by the "name" property of the heading
-    const headNodes = input
+    const headNodes = fullInput
       .filter(node => node.heading.depth === 1)
       .sort((a, b) => a.heading.data.name.localeCompare(b.heading.data.name));
 
-    const indexOfFiles = index
-      ? index.map(entry => ({
-          api: entry.api,
-          heading: { data: { depth: 1, name: entry.section } },
-        }))
-      : headNodes;
-
-    // Generates the global Table of Contents (Sidebar Navigation)
-    const parsedSideNav = remarkRehypeProcessor.processSync(
-      tableOfContents(indexOfFiles, {
-        maxDepth: 1,
-        parser: tableOfContents.parseNavigationNode,
-      })
-    );
-
     /**
-     * Replaces the aggregated data from a node within a template
-     *
-     * @param {TemplateValues} values The values to be replaced in the template
+     * Replaces the template values in the API template with the given values.
+     * @param {TemplateValues} values - The values to replace the template values with
+     * @returns {string} The replaced template values
      */
     const replaceTemplateValues = values => {
       const { api, added, section, version, toc, nav, content } = values;
+
       return apiTemplate
         .replace('__ID__', api)
         .replace(/__FILENAME__/g, api)
@@ -105,24 +90,17 @@ export default {
         .replace('__EDIT_ON_GITHUB__', dropdowns.buildGitHub(api));
     };
 
-    /**
-     * Processes each module node to generate the HTML content
-     *
-     * @param {ApiDocMetadataEntry} head The name of the module to be generated
-     * @param {string} template The template to be used to generate the HTML content
-     */
-    const processModuleNodes = head => {
+    const results = [];
+
+    for (const idx of itemIndices) {
+      const head = headNodes[idx];
       const nodes = groupedModules.get(head.api);
 
-      // Replaces the entry corresponding to the current module
-      // as an active entry within the side navigation
       const activeSideNav = String(parsedSideNav).replace(
         `class="nav-${head.api}`,
         `class="nav-${head.api} active`
       );
 
-      // Generates the Table of Contents for the current module, which is appended
-      // to the top of the page and also to a dropdown
       const parsedToC = remarkRehypeProcessor.processSync(
         tableOfContents(nodes, {
           maxDepth: 4,
@@ -130,15 +108,12 @@ export default {
         })
       );
 
-      // Builds the content of the module, including all sections,
-      // stability indexes, and content for the current file
       const parsedContent = buildContent(
         headNodes,
         nodes,
         remarkRehypeProcessor
       );
 
-      // In case there's no Heading, we make a little capitalization of the filename
       const apiAsHeading = head.api.charAt(0).toUpperCase() + head.api.slice(1);
 
       const generatedTemplate = {
@@ -151,23 +126,55 @@ export default {
         content: parsedContent,
       };
 
-      // Adds the generated template to the list of generated values
-      generatedValues.push(generatedTemplate);
-
-      // Replaces all the values within the template for the current doc
-      return replaceTemplateValues(generatedTemplate);
-    };
-
-    for (const node of headNodes) {
-      const result = processModuleNodes(node);
-
       if (output) {
         // We minify the html result to reduce the file size and keep it "clean"
+        const result = replaceTemplateValues(generatedTemplate);
         const minified = HTMLMinifier.minify(Buffer.from(result), {});
 
-        await writeFile(join(output, `${node.api}.html`), minified);
+        await writeFile(join(output, `${head.api}.html`), minified);
       }
+
+      results.push(generatedTemplate);
     }
+
+    return results;
+  },
+
+  /**
+   * Generates the legacy version of the API docs in HTML
+   * @param {Input} input
+   * @param {Partial<GeneratorOptions>} options
+   */
+  async generate(input, { index, releases, version, output, worker }) {
+    const remarkRehypeProcessor = getRemarkRehypeWithShiki();
+
+    const baseDir = import.meta.dirname;
+
+    const apiTemplate = await readFile(join(baseDir, 'template.html'), 'utf-8');
+
+    const headNodes = input
+      .filter(node => node.heading.depth === 1)
+      .sort((a, b) => a.heading.data.name.localeCompare(b.heading.data.name));
+
+    const indexOfFiles = index
+      ? index.map(({ api, section }) => ({ api, heading: getHeading(section) }))
+      : headNodes;
+
+    const parsedSideNav = remarkRehypeProcessor.processSync(
+      tableOfContents(indexOfFiles, {
+        maxDepth: 1,
+        parser: tableOfContents.parseNavigationNode,
+      })
+    );
+
+    const generatedValues = await worker.map(headNodes, input, {
+      index,
+      releases,
+      version,
+      output,
+      apiTemplate,
+      parsedSideNav: String(parsedSideNav),
+    });
 
     if (output) {
       // Define the source folder for API docs assets

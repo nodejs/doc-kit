@@ -65,12 +65,14 @@ export default {
     }
 
     const db = create({ schema: SCHEMA });
+
     const apiGroups = groupNodesByModule(input);
 
     // Process all API groups and flatten into a single document array
     const documents = Array.from(apiGroups.values()).flatMap(headings =>
       headings.map((entry, index) => {
         const hierarchicalTitle = buildHierarchicalTitle(headings, index);
+
         const paragraph = entry.content.children.find(
           child => child.type === 'paragraph'
         );

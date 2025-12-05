@@ -16,6 +16,10 @@ import { loadAndParse } from '../utils.mjs';
 
 const availableGenerators = Object.keys(publicGenerators);
 
+// Half of available logical CPUs guarantees in general all physical CPUs are being used
+// which in most scenarios is the best way to maximize performance
+const optimalThreads = Math.floor(cpus().length / 2) + 1;
+
 /**
  * @typedef {Object} Options
  * @property {Array<string>|string} input - Specifies the glob/path for input files.
@@ -26,6 +30,7 @@ const availableGenerators = Object.keys(publicGenerators);
  * @property {string} typeMap - Specifies the path to the Node.js Type Map.
  * @property {string} [gitRef] - Git ref/commit URL.
  * @property {number} [threads] - Number of threads to allow.
+ * @property {number} [chunkSize] - Number of items to process per worker thread.
  */
 
 /**
@@ -61,10 +66,20 @@ export default {
     },
     threads: {
       flags: ['-p', '--threads <number>'],
+      desc: 'Number of worker threads to use',
       prompt: {
         type: 'text',
         message: 'How many threads to allow',
-        initialValue: String(Math.max(cpus().length, 1)),
+        initialValue: String(Math.max(optimalThreads, 1)),
+      },
+    },
+    chunkSize: {
+      flags: ['--chunk-size <number>'],
+      desc: 'Number of items to process per worker thread (default: auto)',
+      prompt: {
+        type: 'text',
+        message: 'Items per worker thread',
+        initialValue: '10',
       },
     },
     version: {
@@ -149,6 +164,7 @@ export default {
       releases,
       gitRef: opts.gitRef,
       threads: parseInt(opts.threads, 10),
+      chunkSize: parseInt(opts.chunkSize, 10),
       index,
       typeMap,
     });

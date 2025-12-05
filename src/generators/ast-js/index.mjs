@@ -1,3 +1,7 @@
+import { extname } from 'node:path';
+
+import { globSync } from 'glob';
+
 import createJsLoader from '../../loaders/javascript.mjs';
 import createJsParser from '../../parsers/javascript.mjs';
 
@@ -23,21 +27,38 @@ export default {
   dependsOn: 'metadata',
 
   /**
+   * Process a chunk of JavaScript files in a worker thread.
+   * @param {unknown} _
+   * @param {number[]} itemIndices
+   * @param {Partial<GeneratorOptions>} options
+   */
+  async processChunk(_, itemIndices, { input }) {
+    const { loadFiles } = createJsLoader();
+    const { parseJsSource } = createJsParser();
+
+    const results = [];
+
+    for (const idx of itemIndices) {
+      const [file] = loadFiles(input[idx]);
+
+      const parsedFile = await parseJsSource(file);
+
+      results.push(parsedFile);
+    }
+
+    return results;
+  },
+
+  /**
    * @param {Input} _
    * @param {Partial<GeneratorOptions>} options
    */
-  async generate(_, options) {
-    const { loadFiles } = createJsLoader();
+  async generate(_, { input = [], worker }) {
+    const sourceFiles = globSync(input).filter(
+      filePath => extname(filePath) === '.js'
+    );
 
-    // Load all of the Javascript sources into memory
-    const sourceFiles = loadFiles(options.input ?? []);
-
-    const { parseJsSources } = createJsParser();
-
-    // Parse the Javascript sources into ASTs
-    const parsedJsFiles = await parseJsSources(sourceFiles);
-
-    // Return the ASTs so they can be used in another generator
-    return parsedJsFiles;
+    // Parse the Javascript sources into ASTs in parallel using worker threads
+    return worker.map(sourceFiles, _, { input: sourceFiles });
   },
 };

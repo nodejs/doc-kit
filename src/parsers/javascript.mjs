@@ -29,10 +29,7 @@ const createParser = () => {
       locations: true,
     });
 
-    return {
-      ...res,
-      path: resolvedSourceFile.path,
-    };
+    return { ...res, path: resolvedSourceFile.path };
   };
 
   /**

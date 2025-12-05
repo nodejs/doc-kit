@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 
 import HTMLMinifier from '@minify-html/node';
 
-import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
+import { getRemarkRehype } from '../../utils/remark.mjs';
 import dropdowns from '../legacy-html/utils/buildDropdowns.mjs';
 import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
 
@@ -49,7 +49,7 @@ export default {
     const inputWithoutIndex = input.filter(entry => entry.api !== 'index');
 
     // Gets a Remark Processor that parses Markdown to minified HTML
-    const remarkWithRehype = getRemarkRehypeWithShiki();
+    const remarkWithRehype = getRemarkRehype();
 
     // Current directory path relative to the `index.mjs` file
     // from the `legacy-html` generator, as all the assets are there

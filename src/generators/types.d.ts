@@ -1,4 +1,3 @@
-import type { SemVer } from 'semver';
 import type { ApiDocReleaseEntry } from '../types';
 import type { publicGenerators } from './index.mjs';
 
@@ -6,6 +5,24 @@ declare global {
   // All available generators as an inferable type, to allow Generator interfaces
   // to be type complete and runtime friendly within `runGenerators`
   export type AvailableGenerators = typeof publicGenerators;
+
+  // ParallelWorker interface for item-level parallelization using real worker threads
+  export interface ParallelWorker {
+    /**
+     * Process items in parallel using real worker threads.
+     * Items are split into chunks, each chunk processed by a separate worker.
+     *
+     * @param items - Items to process (used to determine indices)
+     * @param fullInput - Full input data for context rebuilding in workers
+     * @param opts - Additional options to pass to workers
+     * @returns Results in same order as input items
+     */
+    map<T, R>(
+      items: T[],
+      fullInput: unknown,
+      opts?: Record<string, unknown>
+    ): Promise<R[]>;
+  }
 
   // This is the runtime config passed to the API doc generators
   export interface GeneratorOptions {
@@ -43,8 +60,14 @@ declare global {
     // The number of threads the process is allowed to use
     threads: number;
 
+    // Number of items to process per worker thread
+    chunkSize: number;
+
     // The type map
     typeMap: Record<string, string>;
+
+    // Parallel worker instance for generators to parallelize work on individual items
+    worker: ParallelWorker;
   }
 
   export interface GeneratorMetadata<I extends any, O extends any> {
@@ -91,5 +114,23 @@ declare global {
      * Hence you can combine different generators to achieve different outputs.
      */
     generate: (input: I, options: Partial<GeneratorOptions>) => Promise<O>;
+
+    /**
+     * Optional method for chunk-level parallelization using real worker threads.
+     * Called by chunk-worker.mjs when processing items in parallel.
+     *
+     * Generators that implement this method can have their work distributed
+     * across multiple worker threads for true parallel processing.
+     *
+     * @param fullInput - Full input data (for rebuilding context in workers)
+     * @param itemIndices - Array of indices of items to process
+     * @param options - Generator options (without worker, which isn't serializable)
+     * @returns Array of results for the processed items
+     */
+    processChunk?: (
+      fullInput: I,
+      itemIndices: number[],
+      options: Partial<Omit<GeneratorOptions, 'worker'>>
+    ) => Promise<unknown[]>;
   }
 }

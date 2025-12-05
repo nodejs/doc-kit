@@ -1,8 +1,17 @@
+import { join } from 'node:path';
+
 import virtual from '@rollup/plugin-virtual';
 import { build } from 'rolldown';
 
 import cssLoader from './css.mjs';
 import staticData from './data.mjs';
+
+// Resolve node_modules relative to this package (doc-kit), not cwd.
+// This ensures modules are found when running from external directories.
+const DOC_KIT_NODE_MODULES = join(
+  import.meta.dirname,
+  '../../../../node_modules'
+);
 
 /**
  * Asynchronously bundles JavaScript source code (and its CSS imports),
@@ -71,14 +80,16 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       jsx: 'react-jsx',
     },
 
-    // Module resolution aliases.
-    // This tells the bundler to use `preact/compat` wherever `react` or `react-dom` is imported.
-    // Allows you to write React-style code but ship much smaller Preact bundles.
+    // Module resolution configuration.
     resolve: {
-      alias: {
-        react: 'preact/compat',
-        'react-dom': 'preact/compat',
-      },
+      // Alias react imports to preact/compat for smaller bundle sizes.
+      // Explicit jsx-runtime aliases are required for the automatic JSX transform.
+      alias: { react: 'preact/compat' },
+
+      // Tell the bundler where to find node_modules.
+      // This ensures packages are found when running doc-kit from external directories
+      // (e.g., running from the node repository via tools/doc/node_modules/.bin/doc-kit).
+      modules: [DOC_KIT_NODE_MODULES, 'node_modules'],
     },
 
     // Array of plugins to apply during the build.
