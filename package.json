@@ -47,7 +47,7 @@
     "@orama/orama": "^3.1.16",
     "@orama/react-components": "^0.8.1",
     "@rollup/plugin-virtual": "^3.0.2",
-    "oxc-parser": "^0.101.0",
+    "acorn": "^8.15.0",
     "commander": "^14.0.2",
     "dedent": "^1.7.0",
     "eslint-plugin-react-x": "^2.3.12",

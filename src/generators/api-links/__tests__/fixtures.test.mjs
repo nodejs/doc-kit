@@ -1,7 +1,10 @@
 import { readdir } from 'node:fs/promises';
+import { cpus } from 'node:os';
 import { basename, extname, join } from 'node:path';
 import { describe, it } from 'node:test';
 
+import WorkerPool from '../../../threading/index.mjs';
+import createParallelWorker from '../../../threading/parallel.mjs';
 import astJs from '../../ast-js/index.mjs';
 import apiLinks from '../index.mjs';
 
@@ -16,8 +19,16 @@ describe('api links', () => {
   describe('should work correctly for all fixtures', () => {
     sourceFiles.forEach(sourceFile => {
       it(`${basename(sourceFile)}`, async t => {
+        const pool = new WorkerPool('../chunk-worker.mjs', cpus().length);
+
+        const worker = createParallelWorker('ast-js', pool, {
+          threads: 1,
+          chunkSize: 10,
+        });
+
         const astJsResult = await astJs.generate(undefined, {
           input: [sourceFile],
+          worker,
         });
 
         const actualOutput = await apiLinks.generate(astJsResult, {

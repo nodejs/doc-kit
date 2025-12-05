@@ -6,6 +6,8 @@ import console from '../../transports/console.mjs';
 
 describe('console', () => {
   it('should print debug messages', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');
@@ -33,6 +35,8 @@ describe('console', () => {
   });
 
   it('should print info messages', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
     const fn = t.mock.method(process.stdout, 'write');
 
@@ -59,6 +63,8 @@ describe('console', () => {
   });
 
   it('should print error messages ', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');
@@ -86,6 +92,8 @@ describe('console', () => {
   });
 
   it('should print fatal messages', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');
@@ -113,6 +121,8 @@ describe('console', () => {
   });
 
   it('should print messages with file', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');
@@ -151,6 +161,8 @@ describe('console', () => {
   });
 
   it('should print child logger name', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');

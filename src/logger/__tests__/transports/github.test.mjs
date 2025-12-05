@@ -6,6 +6,8 @@ import github from '../../transports/github.mjs';
 
 describe('github', () => {
   it('should print debug messages', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');
@@ -31,6 +33,8 @@ describe('github', () => {
   });
 
   it('should print info messages', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
     const fn = t.mock.method(process.stdout, 'write');
 
@@ -55,6 +59,8 @@ describe('github', () => {
   });
 
   it('should print error messages ', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');
@@ -80,6 +86,8 @@ describe('github', () => {
   });
 
   it('should print fatal messages', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');
@@ -105,6 +113,8 @@ describe('github', () => {
   });
 
   it('should print messages with file', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
 
     const fn = t.mock.method(process.stdout, 'write');
@@ -139,6 +149,8 @@ describe('github', () => {
   });
 
   it('should print child logger name', t => {
+    process.env.FORCE_COLOR = '1';
+
     t.mock.timers.enable({ apis: ['Date'] });
     const fn = t.mock.method(process.stdout, 'write');
 
