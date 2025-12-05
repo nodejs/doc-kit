@@ -1,6 +1,6 @@
 'use strict';
 
-import * as acorn from 'acorn';
+import { parseSync } from 'oxc-parser';
 
 /**
  * Creates a Javascript source parser for a given source file
@@ -23,13 +23,15 @@ const createParser = () => {
       );
     }
 
-    const res = acorn.parse(resolvedSourceFile.value, {
-      allowReturnOutsideFunction: true,
-      ecmaVersion: 'latest',
-      locations: true,
-    });
+    const result = parseSync(resolvedSourceFile.path, resolvedSourceFile.value);
 
-    return { ...res, path: resolvedSourceFile.path };
+    if (result.errors.length > 0) {
+      throw new Error(
+        `Failed to parse ${resolvedSourceFile.path}: ${result.errors[0].message}`
+      );
+    }
+
+    return { ...result.program, path: resolvedSourceFile.path };
   };
 
   /**
