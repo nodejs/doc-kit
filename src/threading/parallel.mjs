@@ -106,17 +106,5 @@ export default function createParallelWorker(generatorName, pool, options) {
       // Flatten results
       return chunkResults.flat();
     },
-
-    /**
-     * Process items in parallel, ignoring return values.
-     * @template T
-     * @param {T[]} items - Items to process
-     * @param {T[]} fullInput - Full input data for context rebuilding
-     * @param {object} extra - Generator-specific context
-     * @returns {Promise<void>}
-     */
-    async forEach(items, fullInput, extra) {
-      await this.map(items, fullInput, extra);
-    },
   };
 }

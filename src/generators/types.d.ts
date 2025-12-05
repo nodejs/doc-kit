@@ -22,15 +22,6 @@ declare global {
       fullInput: unknown,
       opts?: Record<string, unknown>
     ): Promise<R[]>;
-
-    /**
-     * Process items in parallel, ignoring return values.
-     */
-    forEach<T>(
-      items: T[],
-      fullInput: unknown,
-      opts?: Record<string, unknown>
-    ): Promise<void>;
   }
 
   // This is the runtime config passed to the API doc generators
