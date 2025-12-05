@@ -1,3 +1,7 @@
+import { extname } from 'node:path';
+
+import { globSync } from 'glob';
+
 import createJsLoader from '../../loaders/javascript.mjs';
 import createJsParser from '../../parsers/javascript.mjs';
 
@@ -49,10 +53,10 @@ export default {
    * @param {Input} _
    * @param {Partial<GeneratorOptions>} options
    */
-  async generate(_, { input, worker }) {
-    // Load all of the Javascript sources into memory
-    const sourceFiles =
-      input?.filter(filename => filename.endsWith('.js')) ?? [];
+  async generate(_, { input = [], worker }) {
+    const sourceFiles = globSync(input).filter(
+      filePath => extname(filePath) === '.js'
+    );
 
     // Parse the Javascript sources into ASTs in parallel using worker threads
     return worker.map(sourceFiles, _, { input: sourceFiles });
