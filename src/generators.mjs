@@ -1,6 +1,7 @@
 'use strict';
 
 import { allGenerators } from './generators/index.mjs';
+import { isAsyncGenerator, createStreamingCache } from './streaming.mjs';
 import WorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
 
@@ -26,11 +27,37 @@ const createGenerator = input => {
   /**
    * We store all the registered generators to be processed
    * within a Record, so we can access their results at any time whenever needed
-   * (we store the Promises of the generator outputs)
+   * (we store the Promises of the generator outputs, or AsyncGenerators for streaming)
    *
    * @type {{ [K in keyof AllGenerators]: ReturnType<AllGenerators[K]['generate']> }}
    */
   const cachedGenerators = { ast: Promise.resolve(input) };
+
+  /**
+   * Cache for collected async generator results.
+   * When a streaming generator is first consumed, we collect all chunks
+   * and store the promise here so subsequent consumers share the same result.
+   */
+  const streamingCache = createStreamingCache();
+
+  /**
+   * Gets the dependency input, handling both regular promises and async generators.
+   * For async generators, ensures only one collection happens and result is cached.
+   * @param {string} dependsOn - Name of the dependency generator
+   * @returns {Promise<any>}
+   */
+  const getDependencyInput = async dependsOn => {
+    // First, await the cached promise to get the actual result
+    const result = await cachedGenerators[dependsOn];
+
+    // Check if the result is an async generator (streaming)
+    if (isAsyncGenerator(result)) {
+      return streamingCache.getOrCollect(dependsOn, result);
+    }
+
+    // Regular result - return it directly
+    return result;
+  };
 
   /**
    * Runs the Generator engine with the provided top-level input and the given generator options
@@ -57,18 +84,20 @@ const createGenerator = input => {
 
       // Ensure dependency is scheduled (but don't await its result yet)
       if (dependsOn && !(dependsOn in cachedGenerators)) {
-        await runGenerators({ ...options, generators: [dependsOn] });
+        // Recursively schedule - don't await, just ensure it's in cachedGenerators
+        runGenerators({ ...options, generators: [dependsOn] });
       }
 
       // Create a ParallelWorker for this generator
+      // The worker supports both batch (map) and streaming (stream) modes
       const worker = createParallelWorker(generatorName, chunkPool, options);
 
       /**
        * Schedule the generator - it awaits its dependency internally
-       * his allows multiple generators with the same dependency to run in parallel
+       * This allows multiple generators with the same dependency to run in parallel
        */
       const scheduledGenerator = async () => {
-        const input = await cachedGenerators[dependsOn];
+        const input = await getDependencyInput(dependsOn);
 
         return generate(input, { ...options, worker });
       };

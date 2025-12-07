@@ -50,15 +50,20 @@ export default {
   },
 
   /**
-   * @param {Input} _
+   * @param {Input} i
    * @param {Partial<GeneratorOptions>} options
+   * @returns {AsyncGenerator<Array<object>>}
    */
-  async generate(_, { input = [], worker }) {
+  async *generate(i, { input = [], worker }) {
     const sourceFiles = globSync(input).filter(
       filePath => extname(filePath) === '.js'
     );
 
+    const deps = { input: sourceFiles };
+
     // Parse the Javascript sources into ASTs in parallel using worker threads
-    return worker.map(sourceFiles, _, { input: sourceFiles });
+    for await (const chunkResult of worker.stream(sourceFiles, i, deps)) {
+      yield chunkResult;
+    }
   },
 };

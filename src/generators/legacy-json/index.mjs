@@ -65,10 +65,15 @@ export default {
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
+   * @returns {AsyncGenerator<Array<import('./types.d.ts').Section>>}
    */
-  async generate(input, { output, worker }) {
+  async *generate(input, { output, worker }) {
     const headNodes = input.filter(node => node.heading.depth === 1);
 
-    return worker.map(headNodes, input, { output });
+    const deps = { output };
+
+    for await (const chunkResult of worker.stream(headNodes, input, deps)) {
+      yield chunkResult;
+    }
   },
 };

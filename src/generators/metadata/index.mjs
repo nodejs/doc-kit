@@ -39,11 +39,15 @@ export default {
   /**
    * @param {Input} inputs
    * @param {GeneratorOptions} options
-   * @returns {Promise<Array<ApiDocMetadataEntry>>}
+   * @returns {AsyncGenerator<Array<ApiDocMetadataEntry>>}
    */
-  async generate(inputs, { typeMap, worker }) {
-    const results = await worker.map(inputs, inputs, { typeMap });
+  async *generate(inputs, { typeMap, worker }) {
+    const deps = { typeMap };
 
-    return results.flat();
+    // Stream chunks as they complete - allows dependent generators
+    // to start collecting/preparing while we're still processing
+    for await (const chunkResult of worker.stream(inputs, inputs, deps)) {
+      yield chunkResult.flat();
+    }
   },
 };

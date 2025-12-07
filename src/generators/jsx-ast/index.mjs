@@ -1,41 +1,8 @@
-import { OVERRIDDEN_POSITIONS } from './constants.mjs';
 import { buildSideBarProps } from './utils/buildBarProps.mjs';
 import buildContent from './utils/buildContent.mjs';
+import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRecma } from '../../utils/remark.mjs';
-
-/**
- * Sorts entries by OVERRIDDEN_POSITIONS and then heading name.
- * @param {Array<ApiDocMetadataEntry>} entries
- */
-const getSortedHeadNodes = entries => {
-  /**
-   * Sorts entries by OVERRIDDEN_POSITIONS and then heading name.
-   * @param {ApiDocMetadataEntry} a
-   * @param {ApiDocMetadataEntry} b
-   * @returns {number}
-   */
-  const headingSortFn = (a, b) => {
-    const ai = OVERRIDDEN_POSITIONS.indexOf(a.api);
-    const bi = OVERRIDDEN_POSITIONS.indexOf(b.api);
-
-    if (ai !== -1 && bi !== -1) {
-      return ai - bi;
-    }
-
-    if (ai !== -1) {
-      return -1;
-    }
-
-    if (bi !== -1) {
-      return 1;
-    }
-
-    return a.heading.data.name.localeCompare(b.heading.data.name);
-  };
-
-  return entries.filter(node => node.heading.depth === 1).sort(headingSortFn);
-};
 
 /**
  * Generator for converting MDAST to JSX AST.
@@ -97,11 +64,15 @@ export default {
    *
    * @param {Input} entries
    * @param {Partial<GeneratorOptions>} options
-   * @returns {Promise<Array<string>>} Array of generated content
+   * @returns {AsyncGenerator<Array<string>>}
    */
-  async generate(entries, { index, releases, version, worker }) {
+  async *generate(entries, { index, releases, version, worker }) {
     const headNodes = entries.filter(node => node.heading.depth === 1);
 
-    return worker.map(headNodes, entries, { index, releases, version });
+    const deps = { index, releases, version };
+
+    for await (const chunkResult of worker.stream(headNodes, entries, deps)) {
+      yield chunkResult;
+    }
   },
 };

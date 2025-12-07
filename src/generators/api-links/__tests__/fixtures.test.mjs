@@ -26,12 +26,17 @@ describe('api links', () => {
           chunkSize: 10,
         });
 
-        const astJsResult = await astJs.generate(undefined, {
+        // Collect results from the async generator
+        const astJsResults = [];
+
+        for await (const chunk of astJs.generate(undefined, {
           input: [sourceFile],
           worker,
-        });
+        })) {
+          astJsResults.push(...chunk);
+        }
 
-        const actualOutput = await apiLinks.generate(astJsResult, {
+        const actualOutput = await apiLinks.generate(astJsResults, {
           gitRef: 'https://github.com/nodejs/node/tree/HEAD',
         });
 

@@ -79,7 +79,7 @@ export default {
       prompt: {
         type: 'text',
         message: 'Items per worker thread',
-        initialValue: '10',
+        initialValue: '20',
       },
     },
     version: {

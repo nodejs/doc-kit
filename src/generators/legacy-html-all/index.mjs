@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 import HTMLMinifier from '@minify-html/node';
 
 import { getRemarkRehype } from '../../utils/remark.mjs';
-import dropdowns from '../legacy-html/utils/buildDropdowns.mjs';
+import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValues.mjs';
 import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
 
 /**
@@ -41,66 +41,108 @@ export default {
   dependsOn: 'legacy-html',
 
   /**
+   * Process a chunk of template values from the dependency.
+   * Extracts toc and content from each entry for aggregation.
+   * @param {Input} fullInput
+   * @param {number[]} itemIndices
+   */
+  processChunk(fullInput, itemIndices) {
+    const results = [];
+
+    for (const idx of itemIndices) {
+      const entry = fullInput[idx];
+
+      // Skip the index entry
+      if (entry.api === 'index') {
+        continue;
+      }
+
+      results.push({
+        api: entry.api,
+        section: entry.section,
+        toc: entry.toc,
+        content: entry.content,
+      });
+    }
+
+    return results;
+  },
+
+  /**
    * Generates the `all.html` file from the `legacy-html` generator
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
+   * @returns {AsyncGenerator<Array<{api: string; section: string; toc: string; content: string}>>}
    */
-  async generate(input, { version, releases, output }) {
-    const inputWithoutIndex = input.filter(entry => entry.api !== 'index');
+  async *generate(input, { version, releases, output, worker }) {
+    // Collect all chunks as they stream in
+    const allChunks = [];
 
-    // Gets a Remark Processor that parses Markdown to minified HTML
-    const remarkWithRehype = getRemarkRehype();
+    for await (const chunkResult of worker.stream(input, input, {})) {
+      allChunks.push(...chunkResult);
 
-    // Current directory path relative to the `index.mjs` file
-    // from the `legacy-html` generator, as all the assets are there
-    const baseDir = resolve(import.meta.dirname, '..', 'legacy-html');
-
-    // Reads the API template.html file to be used as a base for the HTML files
-    const apiTemplate = await readFile(join(baseDir, 'template.html'), 'utf-8');
-
-    // Aggregates all individual Table of Contents into one giant string
-    const aggregatedToC = inputWithoutIndex.map(entry => entry.toc).join('\n');
-
-    // Aggregates all individual content into one giant string
-    const aggregatedContent = inputWithoutIndex
-      .map(entry => entry.content)
-      .join('\n');
-
-    // Creates a "mimic" of an `ApiDocMetadataEntry` which fulfils the requirements
-    // for generating the `tableOfContents` with the `tableOfContents.parseNavigationNode` parser
-    const sideNavigationFromValues = inputWithoutIndex.map(entry => ({
-      api: entry.api,
-      heading: { data: { depth: 1, name: entry.section } },
-    }));
-
-    // Generates the global Table of Contents (Sidebar Navigation)
-    const parsedSideNav = remarkWithRehype.processSync(
-      tableOfContents(sideNavigationFromValues, {
-        maxDepth: 1,
-        parser: tableOfContents.parseNavigationNode,
-      })
-    );
-
-    const generatedAllTemplate = apiTemplate
-      .replace('__ID__', 'all')
-      .replace(/__FILENAME__/g, 'all')
-      .replace('__SECTION__', 'All')
-      .replace(/__VERSION__/g, `v${version.version}`)
-      .replace(/__TOC__/g, tableOfContents.wrapToC(aggregatedToC))
-      .replace(/__GTOC__/g, parsedSideNav)
-      .replace('__CONTENT__', aggregatedContent)
-      .replace(/__TOC_PICKER__/g, dropdowns.buildToC(aggregatedToC))
-      .replace(/__GTOC_PICKER__/g, '')
-      .replace('__ALTDOCS__', dropdowns.buildVersions('all', '', releases))
-      .replace('__EDIT_ON_GITHUB__', '');
-
-    // We minify the html result to reduce the file size and keep it "clean"
-    const minified = HTMLMinifier.minify(Buffer.from(generatedAllTemplate), {});
-
-    if (output) {
-      await writeFile(join(output, 'all.html'), minified);
+      yield chunkResult;
     }
 
-    return minified;
+    // After all chunks are collected, build and write the final file
+    if (output) {
+      // Gets a Remark Processor that parses Markdown to minified HTML
+      const remarkWithRehype = getRemarkRehype();
+
+      // Current directory path relative to the `index.mjs` file
+      // from the `legacy-html` generator, as all the assets are there
+      const baseDir = resolve(import.meta.dirname, '..', 'legacy-html');
+
+      // Reads the API template.html file to be used as a base for the HTML files
+      const apiTemplate = await readFile(
+        join(baseDir, 'template.html'),
+        'utf-8'
+      );
+
+      // Aggregates all individual Table of Contents into one giant string
+      const aggregatedToC = allChunks.map(entry => entry.toc).join('\n');
+
+      // Aggregates all individual content into one giant string
+      const aggregatedContent = allChunks
+        .map(entry => entry.content)
+        .join('\n');
+
+      // Creates a "mimic" of an `ApiDocMetadataEntry` which fulfils the requirements
+      // for generating the `tableOfContents` with the `tableOfContents.parseNavigationNode` parser
+      const sideNavigationFromValues = allChunks.map(entry => ({
+        api: entry.api,
+        heading: { data: { depth: 1, name: entry.section } },
+      }));
+
+      // Generates the global Table of Contents (Sidebar Navigation)
+      const parsedSideNav = remarkWithRehype.processSync(
+        tableOfContents(sideNavigationFromValues, {
+          maxDepth: 1,
+          parser: tableOfContents.parseNavigationNode,
+        })
+      );
+
+      const templateValues = {
+        api: 'all',
+        added: '',
+        section: 'All',
+        version: `v${version.version}`,
+        toc: aggregatedToC,
+        nav: String(parsedSideNav),
+        content: aggregatedContent,
+      };
+
+      const generatedAllTemplate = replaceTemplateValues(
+        apiTemplate,
+        templateValues,
+        releases,
+        { skipGitHub: true, skipGtocPicker: true }
+      );
+
+      // We minify the html result to reduce the file size and keep it "clean"
+      const minified = HTMLMinifier.minify(Buffer.from(generatedAllTemplate));
+
+      await writeFile(join(output, 'all.html'), minified);
+    }
   },
 };
