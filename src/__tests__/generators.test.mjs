@@ -2,7 +2,6 @@ import { ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import createGenerator from '../generators.mjs';
-import { isAsyncGenerator } from '../streaming.mjs';
 
 describe('createGenerator', () => {
   // Simple mock input for testing
@@ -37,88 +36,99 @@ describe('createGenerator', () => {
   it('should return the ast input directly when generators list is empty', async () => {
     const { runGenerators } = createGenerator(mockInput);
 
-    const result = await runGenerators({
+    const results = await runGenerators({
       ...mockOptions,
       generators: ['ast'],
     });
 
-    // The 'ast' key should resolve to the original input
-    ok(result);
+    // Returns array of results, first element is the 'ast' result
+    ok(Array.isArray(results));
+    strictEqual(results.length, 1);
+    ok(results[0]);
   });
 
   it('should run metadata generator', async () => {
     const { runGenerators } = createGenerator(mockInput);
 
-    const result = await runGenerators({
+    const results = await runGenerators({
       ...mockOptions,
       generators: ['metadata'],
     });
 
-    // metadata returns an async generator
-    ok(isAsyncGenerator(result));
+    // Returns array with one element - the collected metadata array
+    ok(Array.isArray(results));
+    strictEqual(results.length, 1);
+    ok(Array.isArray(results[0]));
   });
 
   it('should handle generator with dependency', async () => {
     const { runGenerators } = createGenerator(mockInput);
 
     // legacy-html depends on metadata
-    const result = await runGenerators({
+    const results = await runGenerators({
       ...mockOptions,
       generators: ['legacy-html'],
     });
 
-    // Should complete without error
-    ok(result !== undefined);
+    // Should complete without error - returns array of results
+    ok(Array.isArray(results));
+    strictEqual(results.length, 1);
   });
 
   it('should skip already scheduled generators', async () => {
     const { runGenerators } = createGenerator(mockInput);
 
     // Running with ['metadata', 'metadata'] should skip the second
-    const result = await runGenerators({
+    const results = await runGenerators({
       ...mockOptions,
       generators: ['metadata', 'metadata'],
     });
 
-    ok(isAsyncGenerator(result));
+    // Returns array with two elements (same result cached for both)
+    ok(Array.isArray(results));
+    strictEqual(results.length, 2);
   });
 
   it('should handle multiple generators in sequence', async () => {
     const { runGenerators } = createGenerator(mockInput);
 
-    // Run metadata twice - the system should skip the already scheduled one
-    // Avoid json-simple since it writes to disk
-    const result = await runGenerators({
+    // Run metadata - just one generator
+    const results = await runGenerators({
       ...mockOptions,
       generators: ['metadata'],
     });
 
-    // Result should be from the last generator
-    ok(result !== undefined);
+    // Returns array of results
+    ok(Array.isArray(results));
+    strictEqual(results.length, 1);
   });
 
   it('should collect async generator results for dependents', async () => {
     const { runGenerators } = createGenerator(mockInput);
 
     // legacy-json depends on metadata (async generator)
-    const result = await runGenerators({
+    const results = await runGenerators({
       ...mockOptions,
       generators: ['legacy-json'],
     });
 
-    ok(result !== undefined);
+    ok(Array.isArray(results));
+    strictEqual(results.length, 1);
   });
 
   it('should use multiple threads when specified', async () => {
     const { runGenerators } = createGenerator(mockInput);
 
-    const result = await runGenerators({
+    const results = await runGenerators({
       ...mockOptions,
       threads: 4,
       generators: ['metadata'],
     });
 
-    ok(isAsyncGenerator(result));
+    // Returns array of results
+    ok(Array.isArray(results));
+    strictEqual(results.length, 1);
+    ok(Array.isArray(results[0]));
   });
 
   it('should pass options to generators', async () => {
@@ -126,12 +136,15 @@ describe('createGenerator', () => {
 
     const customTypeMap = { TestType: 'https://example.com/TestType' };
 
-    const result = await runGenerators({
+    const results = await runGenerators({
       ...mockOptions,
       typeMap: customTypeMap,
       generators: ['metadata'],
     });
 
-    ok(isAsyncGenerator(result));
+    // Returns array of results
+    ok(Array.isArray(results));
+    strictEqual(results.length, 1);
+    ok(Array.isArray(results[0]));
   });
 });

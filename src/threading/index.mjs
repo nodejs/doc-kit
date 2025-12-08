@@ -30,6 +30,12 @@ export default class WorkerPool {
   allWorkers = new Set();
 
   /**
+   * Number of workers currently being spawned (to prevent over-spawning).
+   * @type {number}
+   */
+  spawningCount = 0;
+
+  /**
    * Queue of pending tasks waiting for available workers.
    * Each entry contains { workerData, resolve, reject }.
    * @type {Array<{ workerData: object, resolve: Function, reject: Function }>}
@@ -169,9 +175,11 @@ export default class WorkerPool {
     // First, assign tasks to any idle workers
     while (this.queue.length > 0 && this.idleWorkers.length > 0) {
       const worker = this.idleWorkers.pop();
+
       const { workerData, resolve, reject } = this.queue.shift();
 
       poolLogger.debug(`Task started (reusing worker)`, {
+        generator: workerData.generatorName,
         idleWorkers: this.idleWorkers.length,
         totalWorkers: this.allWorkers.size,
         queueSize: this.queue.length,
@@ -180,16 +188,19 @@ export default class WorkerPool {
       this.executeTask(worker, workerData, resolve, reject);
     }
 
-    // Calculate how many new workers we need
+    // Calculate how many new workers we need (account for workers being spawned)
+    const totalPendingWorkers = this.allWorkers.size + this.spawningCount;
+
     const workersNeeded = Math.min(
       this.queue.length,
-      this.threads - this.allWorkers.size
+      this.threads - totalPendingWorkers
     );
 
     if (workersNeeded > 0) {
       poolLogger.debug(`Spawning workers in parallel`, {
         workersNeeded,
         currentWorkers: this.allWorkers.size,
+        spawning: this.spawningCount,
         maxThreads: this.threads,
         queueSize: this.queue.length,
       });
@@ -198,8 +209,13 @@ export default class WorkerPool {
       for (let i = 0; i < workersNeeded; i++) {
         const { workerData, resolve, reject } = this.queue.shift();
 
+        // Track that we're spawning a worker
+        this.spawningCount++;
+
         // Use setImmediate to spawn workers concurrently rather than blocking
         setImmediate(() => {
+          this.spawningCount--;
+
           const worker = this.spawnWorker();
 
           this.executeTask(worker, workerData, resolve, reject);
@@ -217,17 +233,16 @@ export default class WorkerPool {
 
   /**
    * Terminates all workers in the pool.
-   * Should be called when the pool is no longer needed.
-   *
-   * @returns {Promise<void>}
+   * Kills workers immediately without waiting for graceful shutdown.
    */
-  async terminate() {
-    const terminations = [...this.allWorkers].map(worker => worker.terminate());
-
-    await Promise.all(terminations);
+  terminate() {
+    for (const worker of this.allWorkers) {
+      worker.terminate();
+    }
 
     this.allWorkers.clear();
     this.idleWorkers = [];
     this.queue = [];
+    this.spawningCount = 0;
   }
 }

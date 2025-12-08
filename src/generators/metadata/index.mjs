@@ -27,15 +27,18 @@ export default {
    * @param {Partial<Omit<GeneratorOptions, 'worker'>>} options - Serializable options
    * @returns {Promise<ApiDocMetadataEntry[]>} Metadata entries for processed files
    */
-  async processChunk(fullInput, itemIndices, { typeMap }) {
-    const results = [];
+  processChunk: Object.assign(
+    async (fullInput, itemIndices, { typeMap }) => {
+      const results = [];
 
-    for (const idx of itemIndices) {
-      results.push(...parseApiDoc(fullInput[idx], typeMap));
-    }
+      for (const idx of itemIndices) {
+        results.push(...parseApiDoc(fullInput[idx], typeMap));
+      }
 
-    return results;
-  },
+      return results;
+    },
+    { sliceInput: true } // Only needs individual items, not full context
+  ),
 
   /**
    * @param {Input} inputs

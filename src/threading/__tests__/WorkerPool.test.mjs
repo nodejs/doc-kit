@@ -1,4 +1,4 @@
-import { ok, rejects, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import WorkerPool from '../index.mjs';
@@ -217,5 +217,118 @@ describe('WorkerPool', () => {
 
     strictEqual(pool.allWorkers.size, 0);
     strictEqual(pool.idleWorkers.length, 0);
+  });
+
+  it('should clear queue on terminate', async () => {
+    const pool = new WorkerPool(workerPath, 1);
+
+    // Start one task to occupy the single worker
+    const runningTask = pool.run({
+      generatorName: 'ast-js',
+      fullInput: [],
+      itemIndices: [],
+      options: {},
+    });
+
+    // Queue more tasks than threads available
+    pool.run({
+      generatorName: 'ast-js',
+      fullInput: [],
+      itemIndices: [],
+      options: {},
+    });
+
+    pool.run({
+      generatorName: 'ast-js',
+      fullInput: [],
+      itemIndices: [],
+      options: {},
+    });
+
+    // Wait for first task to finish
+    await runningTask;
+
+    // Terminate should clear any remaining queue
+    await pool.terminate();
+
+    strictEqual(pool.queue.length, 0);
+  });
+
+  it('should handle multiple terminates gracefully', async () => {
+    const pool = new WorkerPool(workerPath, 2);
+
+    await pool.run({
+      generatorName: 'ast-js',
+      fullInput: [],
+      itemIndices: [],
+      options: {},
+    });
+
+    await pool.terminate();
+    await pool.terminate(); // Second terminate should not throw
+
+    strictEqual(pool.allWorkers.size, 0);
+  });
+
+  it('should spawn workers up to thread limit only', async () => {
+    const pool = new WorkerPool(workerPath, 2);
+
+    // Queue 4 tasks with limit of 2 threads
+    const tasks = Array.from({ length: 4 }, () =>
+      pool.run({
+        generatorName: 'ast-js',
+        fullInput: [],
+        itemIndices: [],
+        options: {},
+      })
+    );
+
+    await Promise.all(tasks);
+
+    // After all tasks complete, should have at most 2 workers
+    ok(pool.allWorkers.size <= 2);
+
+    await pool.terminate();
+  });
+
+  it('should process tasks in FIFO order when queued', async () => {
+    const pool = new WorkerPool(workerPath, 1);
+
+    const order = [];
+
+    // Queue 3 tasks with single thread
+    const task1 = pool
+      .run({
+        generatorName: 'ast-js',
+        fullInput: [],
+        itemIndices: [],
+        options: {},
+      })
+      .then(() => order.push(1));
+
+    const task2 = pool
+      .run({
+        generatorName: 'ast-js',
+        fullInput: [],
+        itemIndices: [],
+        options: {},
+      })
+      .then(() => order.push(2));
+
+    const task3 = pool
+      .run({
+        generatorName: 'ast-js',
+        fullInput: [],
+        itemIndices: [],
+        options: {},
+      })
+      .then(() => order.push(3));
+
+    await Promise.all([task1, task2, task3]);
+
+    // Tasks should complete in order they were queued
+    deepStrictEqual(order, [1, 2, 3]);
+
+    await pool.terminate();
   });
 });

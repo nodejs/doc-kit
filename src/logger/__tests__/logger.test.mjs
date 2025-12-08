@@ -306,5 +306,78 @@ describe('createLogger', () => {
       child.error('Error message');
       strictEqual(transport.mock.callCount(), 3);
     });
+
+    it('should propagate to nested child loggers', t => {
+      const transport = t.mock.fn();
+
+      const logger = createLogger(transport, LogLevel.error);
+      const child1 = logger.child('child1');
+      const child2 = child1.child('child2');
+      const child3 = child2.child('child3');
+
+      // None should log debug initially
+      logger.debug('root debug');
+      child1.debug('child1 debug');
+      child2.debug('child2 debug');
+      child3.debug('child3 debug');
+      strictEqual(transport.mock.callCount(), 0);
+
+      // Change root to debug level
+      logger.setLogLevel(LogLevel.debug);
+
+      // All should now log debug
+      child1.debug('child1 debug after');
+      strictEqual(transport.mock.callCount(), 1);
+
+      child2.debug('child2 debug after');
+      strictEqual(transport.mock.callCount(), 2);
+
+      child3.debug('child3 debug after');
+      strictEqual(transport.mock.callCount(), 3);
+    });
+
+    it('should propagate to multiple children at same level', t => {
+      const transport = t.mock.fn();
+
+      const logger = createLogger(transport, LogLevel.error);
+      const childA = logger.child('childA');
+      const childB = logger.child('childB');
+      const childC = logger.child('childC');
+
+      // None should log info
+      childA.info('A info');
+      childB.info('B info');
+      childC.info('C info');
+      strictEqual(transport.mock.callCount(), 0);
+
+      // Change root to info
+      logger.setLogLevel(LogLevel.info);
+
+      // All children should now log info
+      childA.info('A info after');
+      strictEqual(transport.mock.callCount(), 1);
+
+      childB.info('B info after');
+      strictEqual(transport.mock.callCount(), 2);
+
+      childC.info('C info after');
+      strictEqual(transport.mock.callCount(), 3);
+    });
+
+    it('should ignore invalid string level names', t => {
+      const transport = t.mock.fn();
+
+      const logger = createLogger(transport, LogLevel.info);
+
+      // Try to set invalid level
+      logger.setLogLevel('invalid');
+
+      // Should still log at info level
+      logger.info('Info message');
+      strictEqual(transport.mock.callCount(), 1);
+
+      logger.debug('Debug message');
+      strictEqual(transport.mock.callCount(), 1); // Debug should be filtered
+    });
   });
 });

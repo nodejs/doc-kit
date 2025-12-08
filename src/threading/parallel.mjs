@@ -157,14 +157,22 @@ export default function createParallelWorker(generatorName, pool, options) {
         }
       );
 
-      const chunkPromises = indexChunks.map(indices =>
-        pool.run({
+      const chunkPromises = indexChunks.map(indices => {
+        // If generator's processChunk supports sliced input (doesn't need full context),
+        // send only the items at the specified indices to reduce serialization overhead
+        const inputData = generator.processChunk.sliceInput
+          ? indices.map(i => fullInput[i])
+          : fullInput;
+
+        return pool.run({
           generatorName,
-          fullInput,
-          itemIndices: indices,
+          fullInput: inputData,
+          itemIndices: generator.processChunk.sliceInput
+            ? indices.map((_, i) => i) // Renumber indices for sliced array
+            : indices,
           options: serializeOptions(extra),
-        })
-      );
+        });
+      });
 
       // Yield results as each chunk completes
       let completedChunks = 0;

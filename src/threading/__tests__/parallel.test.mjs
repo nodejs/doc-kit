@@ -252,4 +252,34 @@ describe('createParallelWorker', () => {
 
     await pool.terminate();
   });
+
+  it('should use sliceInput for metadata generator', async () => {
+    const pool = new WorkerPool(workerPath, 2);
+
+    // metadata generator also has sliceInput = true
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 2,
+      chunkSize: 1,
+    });
+
+    const mockInput = [
+      {
+        file: { stem: 'test1', basename: 'test1.md' },
+        tree: { type: 'root', children: [] },
+      },
+      {
+        file: { stem: 'test2', basename: 'test2.md' },
+        tree: { type: 'root', children: [] },
+      },
+    ];
+
+    const chunks = await collectChunks(
+      worker.stream(mockInput, mockInput, { typeMap: {} })
+    );
+
+    // Should process both items
+    strictEqual(chunks.length, 2);
+
+    await pool.terminate();
+  });
 });

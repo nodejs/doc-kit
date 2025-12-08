@@ -131,10 +131,20 @@ declare global {
      * @param options - Generator options (without worker, which isn't serializable)
      * @returns Array of results for the processed items
      */
-    processChunk?: (
+    processChunk?: ((
       fullInput: I,
       itemIndices: number[],
       options: Partial<Omit<GeneratorOptions, 'worker'>>
-    ) => Promise<unknown[]>;
+    ) => Promise<unknown[]>) & {
+      /**
+       * When true, only the items at the specified indices are sent to workers
+       * instead of the full input array. This reduces serialization overhead
+       * for generators that don't need full context to process individual items.
+       *
+       * Set this to true when processChunk only accesses `fullInput[idx]` for
+       * each index in itemIndices, and doesn't need the full array for context.
+       */
+      sliceInput?: boolean;
+    };
   }
 }

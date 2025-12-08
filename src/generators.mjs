@@ -120,7 +120,7 @@ const createGenerator = input => {
    * their dependencies to complete.
    *
    * @param {GeneratorOptions} options - Generator runtime options
-   * @returns {Promise<unknown>} Result of the last generator in the pipeline
+   * @returns {Promise<unknown[]>} Results of all requested generators
    */
   const runGenerators = async options => {
     const { generators, threads } = options;
@@ -138,15 +138,31 @@ const createGenerator = input => {
     // Schedule all generators using the shared pool
     scheduleGenerators(options, sharedPool);
 
-    // Wait for the last generator's result
-    const result = await cachedGenerators[generators[generators.length - 1]];
+    // Wait for ALL requested generators to complete (not just the last one)
+    const results = [];
 
-    // Terminate workers after all work is complete
-    await sharedPool.terminate();
+    for (const generatorName of generators) {
+      let result = await cachedGenerators[generatorName];
+
+      // If the generator returns an async generator, consume it
+      // to ensure all side effects (file writes, etc.) complete
+      if (isAsyncGenerator(result)) {
+        generatorsLogger.debug(
+          `Consuming async generator output from "${generatorName}"`
+        );
+
+        result = await streamingCache.getOrCollect(generatorName, result);
+      }
+
+      results.push(result);
+    }
+
+    // Terminate workers after all work is complete (fire-and-forget)
+    sharedPool.terminate();
 
     sharedPool = null;
 
-    return result;
+    return results;
   };
 
   return { runGenerators };
