@@ -3,10 +3,7 @@ import { resolve } from 'node:path';
 
 import { coerce } from 'semver';
 
-import {
-  DOC_NODE_CHANGELOG_URL,
-  DOC_NODE_VERSION,
-} from '../../src/constants.mjs';
+import { NODE_CHANGELOG_URL, NODE_VERSION } from '../../src/constants.mjs';
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
@@ -18,7 +15,10 @@ const availableGenerators = Object.keys(publicGenerators);
 
 // Half of available logical CPUs guarantees in general all physical CPUs are being used
 // which in most scenarios is the best way to maximize performance
-const optimalThreads = Math.floor(cpus().length / 2) + 1;
+// When spawning more than a said number of threads, the overhead of context switching
+// and CPU contention starts to degrade performance rather than improve it.
+// Therefore, we set the optimal threads to half the number of CPU cores, with a minimum of 6.
+const optimalThreads = Math.min(Math.floor(cpus().length / 2), 6);
 
 /**
  * @typedef {Object} Options
@@ -88,7 +88,7 @@ export default {
       prompt: {
         type: 'text',
         message: 'Enter Node.js version',
-        initialValue: DOC_NODE_VERSION,
+        initialValue: NODE_VERSION,
       },
     },
     changelog: {
@@ -97,7 +97,7 @@ export default {
       prompt: {
         type: 'text',
         message: 'Enter changelog URL',
-        initialValue: DOC_NODE_CHANGELOG_URL,
+        initialValue: NODE_CHANGELOG_URL,
       },
     },
     gitRef: {

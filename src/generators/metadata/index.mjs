@@ -22,9 +22,10 @@ export default {
    * Process a chunk of API doc files in a worker thread.
    * Called by chunk-worker.mjs for parallel processing.
    *
-   * @param {Input} fullInput - Full input array
-   * @param {number[]} itemIndices - Indices of items to process
-   * @param {Partial<GeneratorOptions>} options
+   * @param {Input} fullInput - Full input array (parsed API doc files)
+   * @param {number[]} itemIndices - Indices of files to process
+   * @param {Partial<Omit<GeneratorOptions, 'worker'>>} options - Serializable options
+   * @returns {Promise<ApiDocMetadataEntry[]>} Metadata entries for processed files
    */
   async processChunk(fullInput, itemIndices, { typeMap }) {
     const results = [];

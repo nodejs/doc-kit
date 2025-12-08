@@ -46,6 +46,11 @@ export interface Meta {
  */
 export interface SectionBase {
   /**
+   * The inferred API file or module name (e.g., 'fs', 'http', 'path').
+   */
+  api: string;
+
+  /**
    * The type of section (e.g., 'module', 'method', 'property').
    */
   type: string;

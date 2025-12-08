@@ -30,49 +30,13 @@ export default {
   dependsOn: 'legacy-json',
 
   /**
-   * Process a chunk of sections from the dependency.
-   * Extracts and enriches relevant properties for aggregation.
-   * @param {Input} fullInput
-   * @param {number[]} itemIndices
-   */
-  processChunk(fullInput, itemIndices) {
-    /** @type {import('./types.d.ts').Output} */
-    const chunkResult = {
-      miscs: [],
-      modules: [],
-      classes: [],
-      globals: [],
-      methods: [],
-    };
-
-    for (const idx of itemIndices) {
-      const section = fullInput[idx];
-
-      // Copy the relevant properties from each section into our chunk result
-      for (const property of PROPERTIES_TO_COPY) {
-        const items = section[property];
-
-        if (Array.isArray(items)) {
-          const enrichedItems = section.source
-            ? items.map(item => ({ ...item, source: section.source }))
-            : items;
-
-          chunkResult[property].push(...enrichedItems);
-        }
-      }
-    }
-
-    return chunkResult;
-  },
-
-  /**
    * Generates the legacy JSON `all.json` file.
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<import('./types.d.ts').Output>}
+   * @returns {Promise<import('./types.d.ts').Output>}
    */
-  async *generate(input, { output, worker }) {
+  async generate(input, { output }) {
     /**
      * The consolidated output object that will contain
      * combined data from all sections in the input.
@@ -87,18 +51,25 @@ export default {
       methods: [],
     };
 
-    // Stream chunks as they complete and aggregate results
-    for await (const chunkResult of worker.stream(input, input, {})) {
-      // Merge chunk result into generatedValue
+    // Aggregate all sections into the output
+    for (const section of input) {
       for (const property of PROPERTIES_TO_COPY) {
-        generatedValue[property].push(...chunkResult[property]);
-      }
+        const items = section[property];
 
-      yield chunkResult;
+        if (Array.isArray(items)) {
+          const enrichedItems = section.source
+            ? items.map(item => ({ ...item, source: section.source }))
+            : items;
+
+          generatedValue[property].push(...enrichedItems);
+        }
+      }
     }
 
     if (output) {
       await writeFile(join(output, 'all.json'), JSON.stringify(generatedValue));
     }
+
+    return generatedValue;
   },
 };

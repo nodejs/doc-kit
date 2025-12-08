@@ -7,10 +7,27 @@ import { Command, Option } from 'commander';
 import commands from './commands/index.mjs';
 import interactive from './commands/interactive.mjs';
 import { errorWrap } from './utils.mjs';
+import logger from '../src/logger/index.mjs';
 
 const program = new Command()
   .name('@nodejs/doc-kit')
   .description('CLI tool to generate the Node.js API documentation');
+
+// Add global log level option
+program.addOption(
+  new Option('--log-level <level>', 'Log level')
+    .choices(['debug', 'info', 'warn', 'error', 'fatal'])
+    .default('info')
+);
+
+// Set log level before any command runs
+program.hook('preAction', thisCommand => {
+  const logLevel = thisCommand.opts().logLevel;
+
+  if (logLevel) {
+    logger.setLogLevel(logLevel);
+  }
+});
 
 // Registering commands
 commands.forEach(({ name, description, options, action }) => {

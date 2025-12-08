@@ -187,7 +187,11 @@ export const createSectionBuilder = () => {
    * @returns {import('../types.d.ts').ModuleSection} The constructed module section.
    */
   return (head, entries) => {
-    const rootModule = { type: 'module', source: head.api_doc_source };
+    const rootModule = {
+      type: 'module',
+      api: head.api,
+      source: head.api_doc_source,
+    };
 
     buildHierarchy(entries).forEach(entry => handleEntry(entry, rootModule));
 

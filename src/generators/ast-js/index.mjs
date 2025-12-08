@@ -28,9 +28,12 @@ export default {
 
   /**
    * Process a chunk of JavaScript files in a worker thread.
-   * @param {unknown} _
-   * @param {number[]} itemIndices
-   * @param {Partial<GeneratorOptions>} options
+   * Parses JS source files into AST representations.
+   *
+   * @param {Input} _ - Unused (files loaded from input paths)
+   * @param {number[]} itemIndices - Indices of input paths to process
+   * @param {Partial<Omit<GeneratorOptions, 'worker'>>} options - Serializable options
+   * @returns {Promise<object[]>} Parsed JS AST objects for each file
    */
   async processChunk(_, itemIndices, { input }) {
     const { loadFiles } = createJsLoader();
@@ -50,11 +53,11 @@ export default {
   },
 
   /**
-   * @param {Input} i
+   * @param {Input} _ - Unused (files loaded from input paths)
    * @param {Partial<GeneratorOptions>} options
    * @returns {AsyncGenerator<Array<object>>}
    */
-  async *generate(i, { input = [], worker }) {
+  async *generate(_, { input = [], worker }) {
     const sourceFiles = globSync(input).filter(
       filePath => extname(filePath) === '.js'
     );
@@ -62,7 +65,7 @@ export default {
     const deps = { input: sourceFiles };
 
     // Parse the Javascript sources into ASTs in parallel using worker threads
-    for await (const chunkResult of worker.stream(sourceFiles, i, deps)) {
+    for await (const chunkResult of worker.stream(sourceFiles, _, deps)) {
       yield chunkResult;
     }
   },

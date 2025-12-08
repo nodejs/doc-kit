@@ -221,4 +221,90 @@ describe('createLogger', () => {
       },
     ]);
   });
+
+  describe('setLogLevel', () => {
+    it('should change log level at runtime using number', t => {
+      const transport = t.mock.fn();
+
+      const logger = createLogger(transport, LogLevel.info);
+
+      // Should log at info level
+      logger.info('Info message');
+      strictEqual(transport.mock.callCount(), 1);
+
+      // Change to error level
+      logger.setLogLevel(LogLevel.error);
+
+      // Should not log info anymore
+      logger.info('Another info message');
+      strictEqual(transport.mock.callCount(), 1);
+
+      // Should log error
+      logger.error('Error message');
+      strictEqual(transport.mock.callCount(), 2);
+    });
+
+    it('should change log level at runtime using string', t => {
+      const transport = t.mock.fn();
+
+      const logger = createLogger(transport, LogLevel.error);
+
+      // Should not log at info level initially
+      logger.info('Info message');
+      strictEqual(transport.mock.callCount(), 0);
+
+      // Change to debug level using string
+      logger.setLogLevel('debug');
+
+      // Should now log info
+      logger.info('Another info message');
+      strictEqual(transport.mock.callCount(), 1);
+    });
+
+    it('should handle case-insensitive level names', t => {
+      const transport = t.mock.fn();
+
+      const logger = createLogger(transport, LogLevel.fatal);
+
+      logger.setLogLevel('DEBUG');
+      logger.debug('Debug message');
+      strictEqual(transport.mock.callCount(), 1);
+
+      logger.setLogLevel('Info');
+      logger.debug('Debug message 2');
+      strictEqual(transport.mock.callCount(), 1); // Should not log debug at info level
+    });
+
+    it('should propagate to child loggers', t => {
+      const transport = t.mock.fn();
+
+      const logger = createLogger(transport, LogLevel.info);
+      const child = logger.child('child-module');
+
+      // Child should initially respect parent's info level
+      child.debug('Debug message');
+      strictEqual(transport.mock.callCount(), 0);
+
+      child.info('Info message');
+      strictEqual(transport.mock.callCount(), 1);
+
+      // Change parent to debug level
+      logger.setLogLevel(LogLevel.debug);
+
+      // Child should now log debug messages
+      child.debug('Debug message after level change');
+      strictEqual(transport.mock.callCount(), 2);
+
+      // Change parent to error level
+      logger.setLogLevel(LogLevel.error);
+
+      // Child should not log info anymore
+      child.info('Info message after error level');
+      strictEqual(transport.mock.callCount(), 2);
+
+      // Child should log error
+      child.error('Error message');
+      strictEqual(transport.mock.callCount(), 3);
+    });
+  });
 });

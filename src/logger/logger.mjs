@@ -9,7 +9,7 @@ import { LogLevel } from './constants.mjs';
 
 /**
  * Creates a logger instance with the specified transport, log level and an
- * optional module name.
+ * optional module name. Child loggers share the parent's log level.
  *
  * @param {import('./types').Transport} transport - Function to handle log output.
  * @param {number} [loggerLevel] - Minimum log level to output.
@@ -20,6 +20,21 @@ export const createLogger = (
   loggerLevel = LogLevel.info,
   module
 ) => {
+  /** @type {number} */
+  let currentLevel = loggerLevel;
+
+  /** @type {Set<ReturnType<typeof createLogger>>} */
+  const children = new Set();
+
+  /**
+   * Checks if the given log level should be logged based on the current logger
+   * level.
+   *
+   * @param {number} level - Log level to check.
+   * @returns {boolean}
+   */
+  const shouldLog = level => level >= currentLevel;
+
   /**
    * Logs a message at the given level with optional metadata.
    *
@@ -41,8 +56,10 @@ export const createLogger = (
 
     // Extract message string from Error object or use message as-is
     let msg;
+
     if (message instanceof Error) {
       msg = message.message;
+
       metadata.stack = message.stack;
     } else {
       msg = message;
@@ -108,22 +125,44 @@ export const createLogger = (
     log(LogLevel.debug, message, metadata);
 
   /**
-   * Creates a child logger for a specific module.
+   * Creates a child logger for a specific module. Child loggers share the
+   * parent's log level.
    *
-   * @param {string} module - Module name for the child logger.
+   * @param {string} childModule - Module name for the child logger.
    * @returns {ReturnType<typeof createLogger>}
    */
-  const child = module => createLogger(transport, loggerLevel, module);
+  const child = childModule => {
+    const childLogger = createLogger(transport, currentLevel, childModule);
+
+    children.add(childLogger);
+
+    return childLogger;
+  };
 
   /**
-   * Checks if the given log level should be logged based on the current logger
-   * level.
+   * Sets the log level for this logger instance and all child loggers.
    *
-   * @param {number} level - Log level to check.
-   * @returns {boolean}
+   * @param {number | string} level - Log level (number) or level name (string)
    */
-  const shouldLog = level => {
-    return level >= loggerLevel;
+  const setLogLevel = level => {
+    let newLogLevel = level;
+
+    if (typeof newLogLevel === 'string') {
+      newLogLevel = newLogLevel.toLowerCase();
+
+      if (newLogLevel in LogLevel === false) {
+        return;
+      }
+
+      newLogLevel = LogLevel[newLogLevel];
+    }
+
+    currentLevel = newLogLevel;
+
+    // Propagate to all child loggers
+    for (const childLogger of children) {
+      childLogger.setLogLevel(currentLevel);
+    }
   };
 
   return {
@@ -133,5 +172,6 @@ export const createLogger = (
     fatal,
     debug,
     child,
+    setLogLevel,
   };
 };

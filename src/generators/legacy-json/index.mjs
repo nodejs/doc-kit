@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import { createSectionBuilder } from './utils/buildSection.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 
+const buildSection = createSectionBuilder();
+
 /**
  * This generator is responsible for generating the legacy JSON files for the
  * legacy API docs for retro-compatibility. It is to be replaced while we work
@@ -30,12 +32,14 @@ export default {
 
   /**
    * Process a chunk of items in a worker thread.
-   * @param {Input} fullInput
-   * @param {number[]} itemIndices
-   * @param {Partial<GeneratorOptions>} options
+   * Builds JSON sections - FS operations happen in generate().
+   *
+   * @param {Input} fullInput - Full metadata input for context rebuilding
+   * @param {number[]} itemIndices - Indices of head nodes to process
+   * @param {Partial<Omit<GeneratorOptions, 'worker'>>} _options - Serializable options (unused)
+   * @returns {Promise<import('./types.d.ts').Section[]>} JSON sections for each processed module
    */
-  async processChunk(fullInput, itemIndices, { output }) {
-    const buildSection = createSectionBuilder();
+  async processChunk(fullInput, itemIndices) {
     const groupedModules = groupNodesByModule(fullInput);
 
     const headNodes = fullInput.filter(node => node.heading.depth === 1);
@@ -45,16 +49,8 @@ export default {
     for (const idx of itemIndices) {
       const head = headNodes[idx];
       const nodes = groupedModules.get(head.api);
-      const section = buildSection(head, nodes);
 
-      if (output) {
-        await writeFile(
-          join(output, `${head.api}.json`),
-          JSON.stringify(section)
-        );
-      }
-
-      results.push(section);
+      results.push(buildSection(head, nodes));
     }
 
     return results;
@@ -73,6 +69,14 @@ export default {
     const deps = { output };
 
     for await (const chunkResult of worker.stream(headNodes, input, deps)) {
+      if (output) {
+        for (const section of chunkResult) {
+          const out = join(output, `${section.api}.json`);
+
+          await writeFile(out, JSON.stringify(section));
+        }
+      }
+
       yield chunkResult;
     }
   },

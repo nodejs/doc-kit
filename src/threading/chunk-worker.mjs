@@ -1,13 +1,35 @@
-import { parentPort, workerData } from 'node:worker_threads';
+import { parentPort } from 'node:worker_threads';
 
 import { allGenerators } from '../generators/index.mjs';
 
-const { generatorName, fullInput, itemIndices, options } = workerData;
+/**
+ * Handles incoming work requests from the parent thread.
+ * Processes a chunk of items using the specified generator's processChunk method.
+ *
+ * @param {{
+ * generatorName: string,
+ * fullInput: unknown[],
+ * itemIndices: number[],
+ * options: object
+ * }} opts - Task options from parent thread
+ * @returns {Promise<void>}
+ */
+const handleWork = async opts => {
+  const { generatorName, fullInput, itemIndices, options } = opts;
 
-const generator = allGenerators[generatorName];
+  try {
+    const generator = allGenerators[generatorName];
 
-// Generators must implement processChunk for item-level parallelization
-generator
-  .processChunk(fullInput, itemIndices, options)
-  .then(result => parentPort.postMessage(result))
-  .catch(error => parentPort.postMessage({ error: error.message }));
+    const result = await generator.processChunk(
+      fullInput,
+      itemIndices,
+      options
+    );
+
+    parentPort.postMessage(result);
+  } catch (error) {
+    parentPort.postMessage({ error: error.message });
+  }
+};
+
+parentPort.on('message', handleWork);

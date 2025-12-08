@@ -6,22 +6,26 @@ declare global {
   // to be type complete and runtime friendly within `runGenerators`
   export type AvailableGenerators = typeof publicGenerators;
 
-  // ParallelWorker interface for item-level parallelization using real worker threads
+  /**
+   * ParallelWorker interface for distributing work across Node.js worker threads.
+   * Streams results as chunks complete, enabling pipeline parallelism.
+   */
   export interface ParallelWorker {
     /**
-     * Process items in parallel using real worker threads.
-     * Items are split into chunks, each chunk processed by a separate worker.
+     * Processes items in parallel across worker threads and yields results
+     * as each chunk completes. Enables downstream processing to begin
+     * while upstream chunks are still being processed.
      *
-     * @param items - Items to process (used to determine indices)
+     * @param items - Items to process (determines chunk distribution)
      * @param fullInput - Full input data for context rebuilding in workers
      * @param opts - Additional options to pass to workers
-     * @returns Results in same order as input items
+     * @yields Each chunk's results as they complete
      */
-    map<T, R>(
+    stream<T, R>(
       items: T[],
       fullInput: unknown,
       opts?: Record<string, unknown>
-    ): Promise<R[]>;
+    ): AsyncGenerator<R[], void, unknown>;
   }
 
   // This is the runtime config passed to the API doc generators

@@ -21,9 +21,12 @@ export default {
 
   /**
    * Process a chunk of items in a worker thread.
-   * @param {Input} fullInput
-   * @param {number[]} itemIndices
-   * @param {Partial<GeneratorOptions>} options
+   * Transforms metadata entries into JSX AST nodes.
+   *
+   * @param {Input} fullInput - Full metadata input for context rebuilding
+   * @param {number[]} itemIndices - Indices of head nodes to process
+   * @param {Partial<Omit<GeneratorOptions, 'worker'>>} options - Serializable options
+   * @returns {Promise<Array<import('estree-jsx').Program>>} JSX AST programs for each module
    */
   async processChunk(fullInput, itemIndices, { index, releases, version }) {
     const remarkRecma = getRemarkRecma();

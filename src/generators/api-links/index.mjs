@@ -72,10 +72,9 @@ export default {
     });
 
     if (output) {
-      await writeFile(
-        join(output, 'apilinks.json'),
-        JSON.stringify(definitions)
-      );
+      const out = join(output, 'apilinks.json');
+
+      await writeFile(out, JSON.stringify(definitions));
     }
 
     return definitions;

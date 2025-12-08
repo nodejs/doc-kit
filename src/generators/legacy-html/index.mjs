@@ -19,6 +19,8 @@ import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
  */
 const getHeading = name => ({ data: { depth: 1, name } });
 
+const remarkRehypeProcessor = getRemarkRehypeWithShiki();
+
 /**
  * @typedef {{
  * api: string;
@@ -52,16 +54,14 @@ export default {
 
   /**
    * Process a chunk of items in a worker thread.
-   * @param {Input} fullInput
-   * @param {number[]} itemIndices
-   * @param {Partial<GeneratorOptions>} options
+   * Builds HTML template objects - FS operations happen in generate().
+   *
+   * @param {Input} fullInput - Full metadata input for context rebuilding
+   * @param {number[]} itemIndices - Indices of head nodes to process
+   * @param {Partial<Omit<GeneratorOptions, 'worker'>>} options - Serializable options
+   * @returns {Promise<TemplateValues[]>} Template objects for each processed module
    */
-  async processChunk(
-    fullInput,
-    itemIndices,
-    { releases, version, output, apiTemplate, parsedSideNav }
-  ) {
-    const remarkRehypeProcessor = getRemarkRehypeWithShiki();
+  async processChunk(fullInput, itemIndices, { version, parsedSideNav }) {
     const groupedModules = groupNodesByModule(fullInput);
 
     const headNodes = fullInput
@@ -104,15 +104,6 @@ export default {
         content: parsedContent,
       };
 
-      if (output) {
-        // We minify the html result to reduce the file size and keep it "clean"
-        const result = replaceTemplateValues(apiTemplate, template, releases);
-
-        const minified = HTMLMinifier.minify(Buffer.from(result), {});
-
-        await writeFile(join(output, `${head.api}.html`), minified);
-      }
-
       results.push(template);
     }
 
@@ -126,8 +117,6 @@ export default {
    * @returns {AsyncGenerator<Array<TemplateValues>>}
    */
   async *generate(input, { index, releases, version, output, worker }) {
-    const remarkRehypeProcessor = getRemarkRehypeWithShiki();
-
     const baseDir = import.meta.dirname;
 
     const apiTemplate = await readFile(join(baseDir, 'template.html'), 'utf-8');
@@ -156,11 +145,6 @@ export default {
       parsedSideNav: String(parsedSideNav),
     };
 
-    // Stream chunks as they complete - HTML files are written immediately
-    for await (const chunkResult of worker.stream(headNodes, input, deps)) {
-      yield chunkResult;
-    }
-
     if (output) {
       // Define the source folder for API docs assets
       const srcAssets = join(baseDir, 'assets');
@@ -173,6 +157,22 @@ export default {
 
       // Copy all files from assets folder to output, skipping unchanged files
       await safeCopy(srcAssets, assetsFolder);
+    }
+
+    // Stream chunks as they complete - HTML files are written immediately
+    for await (const chunkResult of worker.stream(headNodes, input, deps)) {
+      // Write files for this chunk in the generate method (main thread)
+      if (output) {
+        for (const template of chunkResult) {
+          const result = replaceTemplateValues(apiTemplate, template, releases);
+
+          const minified = HTMLMinifier.minify(Buffer.from(result), {});
+
+          await writeFile(join(output, `${template.api}.html`), minified);
+        }
+      }
+
+      yield chunkResult;
     }
   },
 };

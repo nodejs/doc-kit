@@ -1,19 +1,58 @@
 import { Worker } from 'node:worker_threads';
 
+import logger from '../logger/index.mjs';
+
+const poolLogger = logger.child('WorkerPool');
+
 /**
- * WorkerPool class to manage a pool of worker threads
+ * WorkerPool manages a pool of reusable Node.js worker threads for parallel processing.
+ * Workers are spawned on-demand and kept alive to process multiple tasks, avoiding
+ * the overhead of creating new workers for each task.
+ *
+ * Tasks are distributed to available workers. If all workers are busy, tasks are
+ * queued and processed in FIFO order as workers become free.
+ *
+ * @example
+ * const pool = new WorkerPool('./my-worker.mjs', 4);
+ * const result = await pool.run({ task: 'process', data: [1, 2, 3] });
  */
 export default class WorkerPool {
-  /** @private {SharedArrayBuffer} - Shared memory for active thread count */
-  sharedBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT);
-  /** @private {Int32Array} - A typed array to access shared memory */
-  activeThreads = new Int32Array(this.sharedBuffer);
-  /** @private {Array<Function>} - Queue of pending tasks */
+  /**
+   * Pool of idle workers ready to accept tasks.
+   * @type {Worker[]}
+   */
+  idleWorkers = [];
+
+  /**
+   * Set of all spawned workers (for cleanup).
+   * @type {Set<Worker>}
+   */
+  allWorkers = new Set();
+
+  /**
+   * Queue of pending tasks waiting for available workers.
+   * Each entry contains { workerData, resolve, reject }.
+   * @type {Array<{ workerData: object, resolve: Function, reject: Function }>}
+   */
   queue = [];
 
   /**
-   * @param {string | URL} workerScript - Path to the worker script (relative to this file or absolute URL)
-   * @param {number} threads - Maximum number of concurrent worker threads
+   * URL to the worker script file.
+   * @type {URL}
+   */
+  workerScript;
+
+  /**
+   * Maximum number of concurrent worker threads.
+   * @type {number}
+   */
+  threads;
+
+  /**
+   * Creates a new WorkerPool instance.
+   *
+   * @param {string | URL} workerScript - Path to worker script file (relative to this module or absolute URL)
+   * @param {number} [threads=1] - Maximum concurrent worker threads
    */
   constructor(workerScript = './generator-worker.mjs', threads = 1) {
     this.workerScript =
@@ -22,87 +61,173 @@ export default class WorkerPool {
         : new URL(workerScript, import.meta.url);
 
     this.threads = threads;
+
+    poolLogger.debug(`WorkerPool initialized`, { threads, workerScript });
   }
 
   /**
-   * Gets the current active thread count.
-   * @returns {number} The current active thread count.
+   * Spawns a new worker and sets up message handling.
+   * The worker will be reused for multiple tasks.
+   *
+   * @private
+   * @returns {Worker} The newly spawned worker
    */
-  getActiveThreadCount() {
-    return Atomics.load(this.activeThreads, 0);
+  spawnWorker() {
+    const worker = new Worker(this.workerScript);
+
+    this.allWorkers.add(worker);
+
+    worker.on('message', result => {
+      // Get the current task before clearing it
+      const currentTask = worker.currentTask;
+
+      worker.currentTask = null;
+
+      // Resolve/reject the completed task first
+      if (currentTask) {
+        if (result?.error) {
+          currentTask.reject(new Error(result.error));
+        } else {
+          currentTask.resolve(result);
+        }
+      }
+
+      // Mark worker as idle and process any queued work
+      this.idleWorkers.push(worker);
+      this.processQueue();
+    });
+
+    worker.on('error', err => {
+      poolLogger.debug(`Worker error`, { error: err.message });
+
+      // Remove failed worker from pool
+      this.allWorkers.delete(worker);
+
+      const idx = this.idleWorkers.indexOf(worker);
+
+      if (idx !== -1) {
+        this.idleWorkers.splice(idx, 1);
+      }
+
+      // Reject current task if any
+      if (worker.currentTask) {
+        worker.currentTask.reject(err);
+
+        worker.currentTask = null;
+      }
+    });
+
+    return worker;
   }
 
   /**
-   * Changes the active thread count atomically by a given delta.
-   * @param {number} delta - The value to increment or decrement the active thread count by.
+   * Executes a task on a specific worker.
+   *
+   * @private
+   * @param {Worker} worker - Worker to execute the task
+   * @param {object} workerData - Data to send to the worker
+   * @param {Function} resolve - Promise resolve function
+   * @param {Function} reject - Promise reject function
    */
-  changeActiveThreadCount(delta) {
-    Atomics.add(this.activeThreads, 0, delta);
+  executeTask(worker, workerData, resolve, reject) {
+    worker.currentTask = { resolve, reject };
+
+    worker.postMessage(workerData);
   }
 
   /**
-   * Runs a task in a worker thread with the given data.
-   * @param {Object} workerData - Data to pass to the worker thread
-   * @returns {Promise<any>} Resolves with the worker result, or rejects with an error
+   * Runs a task in a worker thread. If all workers are busy, the task
+   * is queued and executed when a worker becomes available.
+   *
+   * Workers are reused across tasks for efficiency.
+   *
+   * @template T
+   * @param {object} workerData - Data to pass to the worker thread
+   * @param {string} workerData.generatorName - Name of the generator to run
+   * @param {unknown} workerData.fullInput - Full input data for context
+   * @param {number[]} workerData.itemIndices - Indices of items to process
+   * @param {object} workerData.options - Generator options
+   * @returns {Promise<T>} Resolves with the worker result, rejects on error
    */
   run(workerData) {
     return new Promise((resolve, reject) => {
-      /**
-       * Runs the worker thread and handles the result or error.
-       * @private
-       */
-      const run = () => {
-        this.changeActiveThreadCount(1);
+      // Always queue the task first
+      this.queue.push({ workerData, resolve, reject });
 
-        const worker = new Worker(this.workerScript, { workerData });
-
-        worker.on('message', result => {
-          this.changeActiveThreadCount(-1);
-          this.processQueue();
-
-          if (result?.error) {
-            reject(new Error(result.error));
-          } else {
-            resolve(result);
-          }
-        });
-
-        worker.on('error', err => {
-          this.changeActiveThreadCount(-1);
-          this.processQueue();
-          reject(err);
-        });
-      };
-
-      if (this.getActiveThreadCount() >= this.threads) {
-        this.queue.push(run);
-      } else {
-        run();
-      }
+      // Then try to process the queue
+      this.processQueue();
     });
   }
 
   /**
-   * Run multiple tasks in parallel, distributing across worker threads.
-   * @template T, R
-   * @param {T[]} tasks - Array of task data to process
-   * @returns {Promise<R[]>} Results in same order as input tasks
-   */
-  async runAll(tasks) {
-    return Promise.all(tasks.map(task => this.run(task)));
-  }
-
-  /**
-   * Process the worker thread queue to start the next available task.
+   * Processes queued tasks by assigning them to available or new workers.
+   * Spawns all needed workers in parallel to minimize startup latency.
+   *
    * @private
    */
   processQueue() {
-    if (this.queue.length > 0 && this.getActiveThreadCount() < this.threads) {
-      const next = this.queue.shift();
+    // First, assign tasks to any idle workers
+    while (this.queue.length > 0 && this.idleWorkers.length > 0) {
+      const worker = this.idleWorkers.pop();
+      const { workerData, resolve, reject } = this.queue.shift();
 
-      if (next) {
-        next();
+      poolLogger.debug(`Task started (reusing worker)`, {
+        idleWorkers: this.idleWorkers.length,
+        totalWorkers: this.allWorkers.size,
+        queueSize: this.queue.length,
+      });
+
+      this.executeTask(worker, workerData, resolve, reject);
+    }
+
+    // Calculate how many new workers we need
+    const workersNeeded = Math.min(
+      this.queue.length,
+      this.threads - this.allWorkers.size
+    );
+
+    if (workersNeeded > 0) {
+      poolLogger.debug(`Spawning workers in parallel`, {
+        workersNeeded,
+        currentWorkers: this.allWorkers.size,
+        maxThreads: this.threads,
+        queueSize: this.queue.length,
+      });
+
+      // Spawn all needed workers in parallel (don't await, just fire them off)
+      for (let i = 0; i < workersNeeded; i++) {
+        const { workerData, resolve, reject } = this.queue.shift();
+
+        // Use setImmediate to spawn workers concurrently rather than blocking
+        setImmediate(() => {
+          const worker = this.spawnWorker();
+
+          this.executeTask(worker, workerData, resolve, reject);
+        });
       }
     }
+
+    if (this.queue.length > 0) {
+      poolLogger.debug(`Tasks queued (waiting for workers)`, {
+        queueSize: this.queue.length,
+        totalWorkers: this.allWorkers.size,
+      });
+    }
+  }
+
+  /**
+   * Terminates all workers in the pool.
+   * Should be called when the pool is no longer needed.
+   *
+   * @returns {Promise<void>}
+   */
+  async terminate() {
+    const terminations = [...this.allWorkers].map(worker => worker.terminate());
+
+    await Promise.all(terminations);
+
+    this.allWorkers.clear();
+    this.idleWorkers = [];
+    this.queue = [];
   }
 }

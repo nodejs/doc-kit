@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual } from 'node:assert';
+import { ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import WorkerPool from '../index.mjs';
@@ -11,26 +11,14 @@ describe('WorkerPool', () => {
     const pool = new WorkerPool(workerPath, 4);
 
     strictEqual(pool.threads, 4);
-    strictEqual(pool.getActiveThreadCount(), 0);
+    strictEqual(pool.allWorkers.size, 0);
   });
 
-  it('should initialize with zero active threads', () => {
+  it('should initialize with no workers', () => {
     const pool = new WorkerPool(workerPath, 2);
 
-    strictEqual(pool.getActiveThreadCount(), 0);
-  });
-
-  it('should change active thread count atomically', () => {
-    const pool = new WorkerPool(workerPath, 2);
-
-    pool.changeActiveThreadCount(1);
-    strictEqual(pool.getActiveThreadCount(), 1);
-
-    pool.changeActiveThreadCount(2);
-    strictEqual(pool.getActiveThreadCount(), 3);
-
-    pool.changeActiveThreadCount(-1);
-    strictEqual(pool.getActiveThreadCount(), 2);
+    strictEqual(pool.allWorkers.size, 0);
+    strictEqual(pool.idleWorkers.length, 0);
   });
 
   it('should queue tasks when thread limit is reached', async () => {
@@ -54,9 +42,11 @@ describe('WorkerPool', () => {
 
     ok(Array.isArray(results));
     strictEqual(results.length, 2);
+
+    await pool.terminate();
   });
 
-  it('should run multiple tasks in parallel with runAll', async () => {
+  it('should run multiple tasks via individual run calls', async () => {
     const pool = new WorkerPool(workerPath, 2);
 
     const tasks = [
@@ -74,17 +64,158 @@ describe('WorkerPool', () => {
       },
     ];
 
-    const results = await pool.runAll(tasks);
+    const results = await Promise.all(tasks.map(task => pool.run(task)));
 
     ok(Array.isArray(results));
     strictEqual(results.length, 2);
+
+    await pool.terminate();
   });
 
-  it('should handle empty task array', async () => {
+  it('should handle default thread count', () => {
+    const pool = new WorkerPool(workerPath);
+
+    strictEqual(pool.threads, 1);
+  });
+
+  it('should accept URL for worker script', () => {
+    const url = new URL('./chunk-worker.mjs', import.meta.url);
+    const pool = new WorkerPool(url, 2);
+
+    ok(pool.workerScript instanceof URL);
+    strictEqual(pool.threads, 2);
+  });
+
+  it('should process queued tasks after completion', async () => {
+    const pool = new WorkerPool(workerPath, 1);
+
+    // Queue up 3 tasks with only 1 thread
+    const tasks = [];
+
+    for (let i = 0; i < 3; i++) {
+      tasks.push(
+        pool.run({
+          generatorName: 'ast-js',
+          fullInput: [],
+          itemIndices: [],
+          options: {},
+        })
+      );
+    }
+
+    // All should complete even with only 1 thread
+    const results = await Promise.all(tasks);
+
+    strictEqual(results.length, 3);
+
+    await pool.terminate();
+  });
+
+  it('should reject on worker error with result.error', async () => {
+    const pool = new WorkerPool(workerPath, 1);
+
+    // Using an invalid generator name should cause an error
+    await rejects(async () => {
+      await pool.run({
+        generatorName: 'nonexistent-generator',
+        fullInput: [],
+        itemIndices: [0],
+        options: {},
+      });
+    }, Error);
+
+    await pool.terminate();
+  });
+
+  it('should handle concurrent tasks up to thread limit', async () => {
+    const pool = new WorkerPool(workerPath, 4);
+
+    // Run 4 tasks concurrently (at thread limit)
+    const tasks = Array.from({ length: 4 }, () =>
+      pool.run({
+        generatorName: 'ast-js',
+        fullInput: [],
+        itemIndices: [],
+        options: {},
+      })
+    );
+
+    const results = await Promise.all(tasks);
+
+    strictEqual(results.length, 4);
+    results.forEach(r => ok(Array.isArray(r)));
+
+    await pool.terminate();
+  });
+
+  it('should return results correctly from workers', async () => {
     const pool = new WorkerPool(workerPath, 2);
 
-    const results = await pool.runAll([]);
+    const result = await pool.run({
+      generatorName: 'ast-js',
+      fullInput: [],
+      itemIndices: [],
+      options: {},
+    });
 
-    deepStrictEqual(results, []);
+    ok(Array.isArray(result));
+
+    await pool.terminate();
+  });
+
+  it('should reuse workers for multiple tasks', async () => {
+    const pool = new WorkerPool(workerPath, 2);
+
+    // Run first batch
+    await pool.run({
+      generatorName: 'ast-js',
+      fullInput: [],
+      itemIndices: [],
+      options: {},
+    });
+
+    // Workers should now be idle
+    strictEqual(pool.idleWorkers.length, 1);
+    strictEqual(pool.allWorkers.size, 1);
+
+    // Run another task - should reuse idle worker
+    await pool.run({
+      generatorName: 'ast-js',
+      fullInput: [],
+      itemIndices: [],
+      options: {},
+    });
+
+    // Still same number of workers
+    strictEqual(pool.allWorkers.size, 1);
+
+    await pool.terminate();
+  });
+
+  it('should terminate all workers', async () => {
+    const pool = new WorkerPool(workerPath, 2);
+
+    // Spawn some workers
+    await Promise.all([
+      pool.run({
+        generatorName: 'ast-js',
+        fullInput: [],
+        itemIndices: [],
+        options: {},
+      }),
+      pool.run({
+        generatorName: 'ast-js',
+        fullInput: [],
+        itemIndices: [],
+        options: {},
+      }),
+    ]);
+
+    strictEqual(pool.allWorkers.size, 2);
+
+    await pool.terminate();
+
+    strictEqual(pool.allWorkers.size, 0);
+    strictEqual(pool.idleWorkers.length, 0);
   });
 });
