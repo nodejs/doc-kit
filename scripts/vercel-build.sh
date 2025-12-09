@@ -7,7 +7,6 @@ node bin/cli.mjs generate \
   -o "./out" \
   -c "./node/CHANGELOG.md" \
   --index "./node/doc/api/index.md" \
-  --type-map "./node/doc/type-map.json" \
   --log-level debug
 
 rm -rf node/
