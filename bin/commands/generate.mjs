@@ -18,7 +18,7 @@ const availableGenerators = Object.keys(publicGenerators);
 // When spawning more than a said number of threads, the overhead of context switching
 // and CPU contention starts to degrade performance rather than improve it.
 // Therefore, we set the optimal threads to half the number of CPU cores, with a minimum of 6.
-const optimalThreads = Math.min(Math.floor(cpus().length / 2), 6);
+const optimalThreads = Math.max(cpus().length, 2);
 
 /**
  * @typedef {Object} Options
@@ -66,11 +66,11 @@ export default {
     },
     threads: {
       flags: ['-p', '--threads <number>'],
-      desc: 'Number of worker threads to use',
+      desc: 'Number of worker threads to use (minimum: 2)',
       prompt: {
         type: 'text',
         message: 'How many threads to allow',
-        initialValue: String(Math.max(optimalThreads, 1)),
+        initialValue: String(Math.max(optimalThreads, 2)),
       },
     },
     chunkSize: {
@@ -79,7 +79,7 @@ export default {
       prompt: {
         type: 'text',
         message: 'Items per worker thread',
-        initialValue: '20',
+        initialValue: '10',
       },
     },
     version: {
@@ -163,7 +163,7 @@ export default {
       version: coerce(opts.version),
       releases,
       gitRef: opts.gitRef,
-      threads: parseInt(opts.threads, 10),
+      threads: Math.max(parseInt(opts.threads, 10), 2),
       chunkSize: parseInt(opts.chunkSize, 10),
       index,
       typeMap,

@@ -3,7 +3,7 @@
 import { allGenerators } from './generators/index.mjs';
 import logger from './logger/index.mjs';
 import { isAsyncGenerator, createStreamingCache } from './streaming.mjs';
-import WorkerPool from './threading/index.mjs';
+import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
 
 const generatorsLogger = logger.child('generators');
@@ -13,52 +13,28 @@ const generatorsLogger = logger.child('generators');
  * documentation generators in dependency order, with support for parallel
  * processing and streaming results.
  *
- * Generators can output content consumed by other generators or write to files.
- * The system handles dependency resolution, parallel scheduling, and result caching.
- *
- * @typedef {{ ast: GeneratorMetadata<ParserOutput, ParserOutput>}} AstGenerator
- * @typedef {AvailableGenerators & AstGenerator} AllGenerators
- *
  * @param {ParserOutput} input - The API doc AST tree
- * @returns {{ runGenerators: (options: GeneratorOptions) => Promise<unknown> }}
+ * @returns {{ runGenerators: (options: GeneratorOptions) => Promise<unknown[]> }}
  */
 const createGenerator = input => {
-  /**
-   * Cache for generator results (Promises or AsyncGenerators).
-   * @type {{ [K in keyof AllGenerators]?: ReturnType<AllGenerators[K]['generate']> }}
-   */
+  /** @type {{ [key: string]: Promise<unknown> | AsyncGenerator }} */
   const cachedGenerators = { ast: Promise.resolve(input) };
 
-  /**
-   * Cache for async generator collection results.
-   * Ensures collection happens only once when multiple generators depend on
-   * the same streaming generator.
-   */
   const streamingCache = createStreamingCache();
 
-  /**
-   * Shared WorkerPool instance for all generators.
-   * @type {WorkerPool | null}
-   */
-  let sharedPool = null;
+  /** @type {import('piscina').Piscina} */
+  let pool;
 
   /**
-   * Resolves the dependency input for a generator, handling both regular
-   * promises and async generators. For async generators, creates a shared
-   * collection so multiple dependents reuse the same result.
+   * Gets the collected input from a dependency generator.
    *
-   * @param {string} dependsOn - Name of the dependency generator
-   * @returns {Promise<unknown>} Collected results from the dependency
+   * @param {string} dependsOn - Dependency generator name
+   * @returns {Promise<unknown>}
    */
   const getDependencyInput = async dependsOn => {
     const result = await cachedGenerators[dependsOn];
 
-    // For async generators, collect all chunks (shared across dependents)
     if (isAsyncGenerator(result)) {
-      generatorsLogger.debug(
-        `Collecting async generator output from "${dependsOn}"`
-      );
-
       return streamingCache.getOrCollect(dependsOn, result);
     }
 
@@ -66,101 +42,87 @@ const createGenerator = input => {
   };
 
   /**
-   * Schedules generators for execution without creating new pools.
-   * Uses the shared pool for all parallel work.
+   * Schedules a generator and its dependencies for execution.
    *
-   * @param {GeneratorOptions} options - Generator runtime options
-   * @param {WorkerPool} pool - Shared worker pool
+   * @param {string} generatorName - Generator to schedule
+   * @param {GeneratorOptions} options - Runtime options
    */
-  const scheduleGenerators = (options, pool) => {
-    const { generators } = options;
-
-    for (const generatorName of generators) {
-      // Skip already scheduled generators
-      if (generatorName in cachedGenerators) {
-        generatorsLogger.debug(`Skipping "${generatorName}"`);
-
-        continue;
-      }
-
-      const { dependsOn, generate } = allGenerators[generatorName];
-
-      // Recursively schedule dependencies (without awaiting)
-      if (dependsOn && !(dependsOn in cachedGenerators)) {
-        generatorsLogger.debug(`Scheduling "${dependsOn}":"${generatorName}"`);
-
-        scheduleGenerators({ ...options, generators: [dependsOn] }, pool);
-      }
-
-      // Create a ParallelWorker for this generator's chunk processing
-      const worker = createParallelWorker(generatorName, pool, options);
-
-      generatorsLogger.debug(`Scheduling generator "${generatorName}"`, {
-        dependsOn: dependsOn || 'none',
-      });
-
-      // Schedule the generator (awaits dependency internally)
-      cachedGenerators[generatorName] = (async () => {
-        const dependencyInput = await getDependencyInput(dependsOn);
-
-        generatorsLogger.debug(`Starting generator "${generatorName}"`);
-
-        const result = await generate(dependencyInput, { ...options, worker });
-
-        generatorsLogger.debug(`Completed generator "${generatorName}"`);
-
-        return result;
-      })();
+  const scheduleGenerator = (generatorName, options) => {
+    if (generatorName in cachedGenerators) {
+      return;
     }
+
+    const { dependsOn, generate, processChunk } = allGenerators[generatorName];
+
+    // Schedule dependency first
+    if (dependsOn && !(dependsOn in cachedGenerators)) {
+      scheduleGenerator(dependsOn, options);
+    }
+
+    generatorsLogger.debug(`Scheduling "${generatorName}"`, {
+      dependsOn: dependsOn || 'none',
+      streaming: Boolean(processChunk),
+    });
+
+    // Schedule the generator
+    cachedGenerators[generatorName] = (async () => {
+      const dependencyInput = await getDependencyInput(dependsOn);
+
+      generatorsLogger.debug(`Starting "${generatorName}"`);
+
+      // Create parallel worker for streaming generators
+      const worker = processChunk
+        ? createParallelWorker(generatorName, pool, options)
+        : null;
+
+      const result = await generate(dependencyInput, { ...options, worker });
+
+      // For streaming generators, "Completed" is logged when collection finishes
+      // (in streamingCache.getOrCollect), not here when the generator returns
+      if (!isAsyncGenerator(result)) {
+        generatorsLogger.debug(`Completed "${generatorName}"`);
+      }
+
+      return result;
+    })();
   };
 
   /**
-   * Schedules and runs all requested generators with their dependencies.
-   * Independent generators run in parallel; dependent generators wait for
-   * their dependencies to complete.
+   * Runs all requested generators with their dependencies.
    *
-   * @param {GeneratorOptions} options - Generator runtime options
+   * @param {GeneratorOptions} options - Runtime options
    * @returns {Promise<unknown[]>} Results of all requested generators
    */
   const runGenerators = async options => {
     const { generators, threads } = options;
 
-    generatorsLogger.debug(`Starting generator pipeline`, {
+    generatorsLogger.debug(`Starting pipeline`, {
       generators: generators.join(', '),
       threads,
     });
 
-    // Create shared WorkerPool for all generators (only once)
-    if (!sharedPool) {
-      sharedPool = new WorkerPool('./chunk-worker.mjs', threads);
+    // Create worker pool
+    pool = createWorkerPool(threads);
+
+    // Schedule all generators
+    for (const name of generators) {
+      scheduleGenerator(name, options);
     }
 
-    // Schedule all generators using the shared pool
-    scheduleGenerators(options, sharedPool);
+    // Start all collections in parallel (don't await sequentially)
+    const resultPromises = generators.map(async name => {
+      let result = await cachedGenerators[name];
 
-    // Wait for ALL requested generators to complete (not just the last one)
-    const results = [];
-
-    for (const generatorName of generators) {
-      let result = await cachedGenerators[generatorName];
-
-      // If the generator returns an async generator, consume it
-      // to ensure all side effects (file writes, etc.) complete
       if (isAsyncGenerator(result)) {
-        generatorsLogger.debug(
-          `Consuming async generator output from "${generatorName}"`
-        );
-
-        result = await streamingCache.getOrCollect(generatorName, result);
+        result = await streamingCache.getOrCollect(name, result);
       }
 
-      results.push(result);
-    }
+      return result;
+    });
 
-    // Terminate workers after all work is complete (fire-and-forget)
-    sharedPool.terminate();
+    const results = await Promise.all(resultPromises);
 
-    sharedPool = null;
+    await pool.destroy();
 
     return results;
   };

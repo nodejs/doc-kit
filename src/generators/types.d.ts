@@ -1,10 +1,12 @@
 import type { ApiDocReleaseEntry } from '../types';
-import type { publicGenerators } from './index.mjs';
+import type { publicGenerators, allGenerators } from './index.mjs';
 
 declare global {
-  // All available generators as an inferable type, to allow Generator interfaces
-  // to be type complete and runtime friendly within `runGenerators`
+  // Public generators exposed to the CLI
   export type AvailableGenerators = typeof publicGenerators;
+
+  // All generators including internal ones (metadata, jsx-ast, ast-js)
+  export type AllGenerators = typeof allGenerators;
 
   /**
    * ParallelWorker interface for distributing work across Node.js worker threads.
@@ -23,7 +25,7 @@ declare global {
      */
     stream<T, R>(
       items: T[],
-      fullInput: unknown,
+      fullInput: T[],
       opts?: Record<string, unknown>
     ): AsyncGenerator<R[], void, unknown>;
   }
@@ -75,8 +77,8 @@ declare global {
   }
 
   export interface GeneratorMetadata<I extends any, O extends any> {
-    // The name of the Generator. Must match the Key in the AvailableGenerators
-    name: keyof AvailableGenerators;
+    // The name of the Generator. Must match the Key in AllGenerators
+    name: keyof AllGenerators;
 
     version: string;
 
@@ -106,7 +108,7 @@ declare global {
      * passes the ASTs for any JavaScript files given in the input. Like `ast`,
      * any generator depending on it is marked as a top-level generator.
      */
-    dependsOn: keyof AvailableGenerators | 'ast' | 'ast-js';
+    dependsOn: keyof AllGenerators | 'ast';
 
     /**
      * Generators are abstract and the different generators have different sort of inputs and outputs.
