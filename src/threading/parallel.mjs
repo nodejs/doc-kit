@@ -90,24 +90,30 @@ export default function createParallelWorker(generatorName, pool, options) {
         { generator: generatorName, chunks: chunks.length, chunkSize, threads }
       );
 
-      // Submit all tasks to Piscina and wrap with index tracking
-      const pending = chunks.map((indices, i) =>
-        pool
-          .run(createTask(generator, fullInput, indices, opts, generatorName))
-          .then(result => ({ i, result }))
+      // Submit all tasks to Piscina - each promise resolves to itself for removal
+      const pending = new Set(
+        chunks.map(indices => {
+          const promise = pool
+            .run(createTask(generator, fullInput, indices, opts, generatorName))
+            .then(result => ({ promise, result }));
+
+          return promise;
+        })
       );
 
       // Yield results as they complete (true parallel collection)
-      for (let completed = 0; completed < chunks.length; completed++) {
-        const { i, result } = await Promise.race(pending);
+      let completed = 0;
 
-        // Replace completed promise with one that never resolves
-        pending[i] = new Promise(() => {});
+      while (pending.size > 0) {
+        const { promise, result } = await Promise.race(pending);
 
-        parallelLogger.debug(
-          `Chunk ${completed + 1}/${chunks.length} completed`,
-          { generator: generatorName }
-        );
+        pending.delete(promise);
+
+        completed++;
+
+        parallelLogger.debug(`Chunk ${completed}/${chunks.length} completed`, {
+          generator: generatorName,
+        });
 
         yield result;
       }
