@@ -145,12 +145,11 @@ export default {
 
     const releases = await parseChangelog(opts.changelog);
 
-    const rawTypeMap = await loadFromURL(opts.typeMap);
-    const typeMap = JSON.parse(rawTypeMap);
+    const typeMap = JSON.parse(await loadFromURL(opts.typeMap));
 
     const index = opts.index && (await parseIndex(opts.index));
 
-    logger.debug(`Starting generation with targets: ${opts.target.join(', ')}`);
+    logger.debug('Starting generation', { targets: opts.target });
 
     await runGenerators({
       generators: opts.target,
