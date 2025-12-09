@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import { cpus } from 'node:os';
 import { basename, extname, join } from 'node:path';
-import { describe, it } from 'node:test';
+import { after, before, describe, it } from 'node:test';
 
 import createWorkerPool from '../../../threading/index.mjs';
 import createParallelWorker from '../../../threading/parallel.mjs';
@@ -16,12 +16,20 @@ const sourceFiles = fixtures
   .map(fixture => join(FIXTURES_DIRECTORY, fixture));
 
 describe('api links', () => {
+  const threads = cpus().length;
+  let pool;
+
+  before(() => {
+    pool = createWorkerPool(threads);
+  });
+
+  after(async () => {
+    await pool.destroy();
+  });
+
   describe('should work correctly for all fixtures', () => {
     sourceFiles.forEach(sourceFile => {
       it(`${basename(sourceFile)}`, async t => {
-        const threads = cpus().length;
-        const pool = createWorkerPool(threads);
-
         const worker = createParallelWorker('ast-js', pool, {
           threads,
           chunkSize: 10,
@@ -46,8 +54,6 @@ describe('api links', () => {
         }
 
         t.assert.snapshot(actualOutput);
-
-        await pool.destroy();
       });
     });
   });

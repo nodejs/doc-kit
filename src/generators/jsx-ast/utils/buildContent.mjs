@@ -295,10 +295,7 @@ const buildContent = async (metadataEntries, head, sideBarProps, remark) => {
   const ast = await remark.run(root);
 
   // The final MDX content is the expression in the Program's first body node
-  return {
-    ...ast.body[0].expression,
-    data: head,
-  };
+  return { ...ast.body[0].expression, data: head };
 };
 
 export default buildContent;

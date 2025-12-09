@@ -13,12 +13,11 @@ const generatorsLogger = logger.child('generators');
  * documentation generators in dependency order, with support for parallel
  * processing and streaming results.
  *
- * @param {ParserOutput} input - The API doc AST tree
  * @returns {{ runGenerators: (options: GeneratorOptions) => Promise<unknown[]> }}
  */
-const createGenerator = input => {
+const createGenerator = () => {
   /** @type {{ [key: string]: Promise<unknown> | AsyncGenerator }} */
-  const cachedGenerators = { ast: Promise.resolve(input) };
+  const cachedGenerators = {};
 
   const streamingCache = createStreamingCache();
 
@@ -28,10 +27,14 @@ const createGenerator = input => {
   /**
    * Gets the collected input from a dependency generator.
    *
-   * @param {string} dependsOn - Dependency generator name
+   * @param {string | undefined} dependsOn - Dependency generator name
    * @returns {Promise<unknown>}
    */
   const getDependencyInput = async dependsOn => {
+    if (!dependsOn) {
+      return undefined;
+    }
+
     const result = await cachedGenerators[dependsOn];
 
     if (isAsyncGenerator(result)) {

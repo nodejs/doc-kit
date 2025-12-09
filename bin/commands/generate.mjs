@@ -6,19 +6,12 @@ import { coerce } from 'semver';
 import { NODE_CHANGELOG_URL, NODE_VERSION } from '../../src/constants.mjs';
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
+import logger from '../../src/logger/index.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
 import { DEFAULT_TYPE_MAP } from '../../src/utils/parser/constants.mjs';
 import { loadFromURL } from '../../src/utils/parser.mjs';
-import { loadAndParse } from '../utils.mjs';
 
 const availableGenerators = Object.keys(publicGenerators);
-
-// Half of available logical CPUs guarantees in general all physical CPUs are being used
-// which in most scenarios is the best way to maximize performance
-// When spawning more than a said number of threads, the overhead of context switching
-// and CPU contention starts to degrade performance rather than improve it.
-// Therefore, we set the optimal threads to half the number of CPU cores, with a minimum of 6.
-const optimalThreads = Math.max(cpus().length, 2);
 
 /**
  * @typedef {Object} Options
@@ -70,7 +63,7 @@ export default {
       prompt: {
         type: 'text',
         message: 'How many threads to allow',
-        initialValue: String(Math.max(optimalThreads, 2)),
+        initialValue: String(cpus().length),
       },
     },
     chunkSize: {
@@ -146,7 +139,10 @@ export default {
    * @returns {Promise<void>}
    */
   async action(opts) {
-    const docs = await loadAndParse(opts.input, opts.ignore);
+    logger.debug('Starting doc-kit', opts);
+
+    const { runGenerators } = createGenerator();
+
     const releases = await parseChangelog(opts.changelog);
 
     const rawTypeMap = await loadFromURL(opts.typeMap);
@@ -154,7 +150,7 @@ export default {
 
     const index = opts.index && (await parseIndex(opts.index));
 
-    const { runGenerators } = createGenerator(docs);
+    logger.debug(`Starting generation with targets: ${opts.target.join(', ')}`);
 
     await runGenerators({
       generators: opts.target,

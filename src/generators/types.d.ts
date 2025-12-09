@@ -101,14 +101,12 @@ declare global {
      * If you pass `createGenerator` with ['react', 'html'], the 'react' generator will be executed first,
      * as it is a top level generator and then the 'html' generator would be executed after the 'react' generator.
      *
-     * The 'ast' generator is the top-level parser, and if 'ast' is passed to `dependsOn`, then the generator
-     * will be marked as a top-level generator.
+     * The 'ast' generator is the top-level parser for markdown files. It has no dependencies.
      *
      * The `ast-js` generator is the top-level parser for JavaScript files. It
-     * passes the ASTs for any JavaScript files given in the input. Like `ast`,
-     * any generator depending on it is marked as a top-level generator.
+     * passes the ASTs for any JavaScript files given in the input.
      */
-    dependsOn: keyof AllGenerators | 'ast';
+    dependsOn: keyof AllGenerators | undefined;
 
     /**
      * Generators are abstract and the different generators have different sort of inputs and outputs.

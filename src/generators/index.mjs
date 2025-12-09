@@ -2,6 +2,7 @@
 
 import addonVerify from './addon-verify/index.mjs';
 import apiLinks from './api-links/index.mjs';
+import ast from './ast/index.mjs';
 import astJs from './ast-js/index.mjs';
 import jsonSimple from './json-simple/index.mjs';
 import jsxAst from './jsx-ast/index.mjs';
@@ -32,6 +33,7 @@ export const publicGenerators = {
 // These ones are special since they don't produce standard output,
 // and hence, we don't expose them to the CLI.
 const internalGenerators = {
+  ast,
   metadata,
   'jsx-ast': jsxAst,
   'ast-js': astJs,

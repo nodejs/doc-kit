@@ -30,31 +30,31 @@ export default {
 
   dependsOn: 'metadata',
 
-  /**
-   * Process a chunk of items in a worker thread.
-   * Builds JSON sections - FS operations happen in generate().
-   *
-   * @param {Input} fullInput - Full metadata input for context rebuilding
-   * @param {number[]} itemIndices - Indices of head nodes to process
-   * @param {Partial<Omit<GeneratorOptions, 'worker'>>} _options - Serializable options (unused)
-   * @returns {Promise<import('./types.d.ts').Section[]>} JSON sections for each processed module
-   */
-  async processChunk(fullInput, itemIndices) {
-    const groupedModules = groupNodesByModule(fullInput);
+  processChunk: Object.assign(
+    /**
+     * Process a chunk of items in a worker thread.
+     * Builds JSON sections - FS operations happen in generate().
+     *
+     * With sliceInput, each item is pre-grouped {head, nodes} - no need to
+     * recompute groupNodesByModule for every chunk.
+     *
+     * @param {Array<{head: ApiDocMetadataEntry, nodes: ApiDocMetadataEntry[]}>} slicedInput - Pre-sliced module data
+     * @param {number[]} itemIndices - Indices into the sliced array
+     * @returns {Promise<import('./types.d.ts').Section[]>} JSON sections for each processed module
+     */
+    async (slicedInput, itemIndices) => {
+      const results = [];
 
-    const headNodes = fullInput.filter(node => node.heading.depth === 1);
+      for (const idx of itemIndices) {
+        const { head, nodes } = slicedInput[idx];
 
-    const results = [];
+        results.push(buildSection(head, nodes));
+      }
 
-    for (const idx of itemIndices) {
-      const head = headNodes[idx];
-      const nodes = groupedModules.get(head.api);
-
-      results.push(buildSection(head, nodes));
-    }
-
-    return results;
-  },
+      return results;
+    },
+    { sliceInput: true }
+  ),
 
   /**
    * Generates a legacy JSON file.
@@ -64,11 +64,18 @@ export default {
    * @returns {AsyncGenerator<Array<import('./types.d.ts').Section>>}
    */
   async *generate(input, { output, worker }) {
+    const groupedModules = groupNodesByModule(input);
+
     const headNodes = input.filter(node => node.heading.depth === 1);
 
-    const deps = { output };
+    // Create sliced input: each item contains head + its module's entries
+    // This avoids sending all 4900+ entries to every worker
+    const slicedInput = headNodes.map(head => ({
+      head,
+      nodes: groupedModules.get(head.api),
+    }));
 
-    for await (const chunkResult of worker.stream(headNodes, input, deps)) {
+    for await (const chunkResult of worker.stream(slicedInput, slicedInput)) {
       if (output) {
         for (const section of chunkResult) {
           const out = join(output, `${section.api}.json`);
