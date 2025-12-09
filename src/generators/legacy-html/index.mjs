@@ -52,63 +52,63 @@ export default {
 
   dependsOn: 'metadata',
 
-  /**
-   * Process a chunk of items in a worker thread.
-   * Builds HTML template objects - FS operations happen in generate().
-   *
-   * @param {Input} fullInput - Full metadata input for context rebuilding
-   * @param {number[]} itemIndices - Indices of head nodes to process
-   * @param {Partial<Omit<GeneratorOptions, 'worker'>>} options - Serializable options
-   * @returns {Promise<TemplateValues[]>} Template objects for each processed module
-   */
-  async processChunk(fullInput, itemIndices, { version, parsedSideNav }) {
-    const groupedModules = groupNodesByModule(fullInput);
+  processChunk: Object.assign(
+    /**
+     * Process a chunk of items in a worker thread.
+     * Builds HTML template objects - FS operations happen in generate().
+     *
+     * With sliceInput, each item is pre-grouped {head, nodes, headNodes} - no need to
+     * recompute groupNodesByModule for every chunk.
+     *
+     * @param {Array<{head: ApiDocMetadataEntry, nodes: ApiDocMetadataEntry[], headNodes: ApiDocMetadataEntry[]}>} slicedInput - Pre-sliced module data
+     * @param {number[]} itemIndices - Indices into the sliced array
+     * @param {{version: string, parsedSideNav: string}} options - Dependencies passed from generate()
+     * @returns {Promise<TemplateValues[]>} Template objects for each processed module
+     */
+    async (slicedInput, itemIndices, { version, parsedSideNav }) => {
+      const results = [];
 
-    const headNodes = fullInput
-      .filter(node => node.heading.depth === 1)
-      .sort((a, b) => a.heading.data.name.localeCompare(b.heading.data.name));
+      for (const idx of itemIndices) {
+        const { head, nodes, headNodes } = slicedInput[idx];
 
-    const results = [];
+        const activeSideNav = String(parsedSideNav).replace(
+          `class="nav-${head.api}`,
+          `class="nav-${head.api} active`
+        );
 
-    for (const idx of itemIndices) {
-      const head = headNodes[idx];
-      const nodes = groupedModules.get(head.api);
+        const parsedToC = remarkRehypeProcessor.processSync(
+          tableOfContents(nodes, {
+            maxDepth: 4,
+            parser: tableOfContents.parseToCNode,
+          })
+        );
 
-      const activeSideNav = String(parsedSideNav).replace(
-        `class="nav-${head.api}`,
-        `class="nav-${head.api} active`
-      );
+        const parsedContent = buildContent(
+          headNodes,
+          nodes,
+          remarkRehypeProcessor
+        );
 
-      const parsedToC = remarkRehypeProcessor.processSync(
-        tableOfContents(nodes, {
-          maxDepth: 4,
-          parser: tableOfContents.parseToCNode,
-        })
-      );
+        const apiAsHeading =
+          head.api.charAt(0).toUpperCase() + head.api.slice(1);
 
-      const parsedContent = buildContent(
-        headNodes,
-        nodes,
-        remarkRehypeProcessor
-      );
+        const template = {
+          api: head.api,
+          added: head.introduced_in ?? '',
+          section: head.heading.data.name || apiAsHeading,
+          version: `v${version.version}`,
+          toc: String(parsedToC),
+          nav: String(activeSideNav),
+          content: parsedContent,
+        };
 
-      const apiAsHeading = head.api.charAt(0).toUpperCase() + head.api.slice(1);
+        results.push(template);
+      }
 
-      const template = {
-        api: head.api,
-        added: head.introduced_in ?? '',
-        section: head.heading.data.name || apiAsHeading,
-        version: `v${version.version}`,
-        toc: String(parsedToC),
-        nav: String(activeSideNav),
-        content: parsedContent,
-      };
-
-      results.push(template);
-    }
-
-    return results;
-  },
+      return results;
+    },
+    { sliceInput: true }
+  ),
 
   /**
    * Generates the legacy version of the API docs in HTML
@@ -120,6 +120,8 @@ export default {
     const baseDir = import.meta.dirname;
 
     const apiTemplate = await readFile(join(baseDir, 'template.html'), 'utf-8');
+
+    const groupedModules = groupNodesByModule(input);
 
     const headNodes = input
       .filter(node => node.heading.depth === 1)
@@ -135,6 +137,14 @@ export default {
         parser: tableOfContents.parseNavigationNode,
       })
     );
+
+    // Create sliced input: each item contains head + its module's entries + headNodes reference
+    // This avoids sending all ~4900 entries to every worker and recomputing groupings
+    const slicedInput = headNodes.map(head => ({
+      head,
+      nodes: groupedModules.get(head.api),
+      headNodes,
+    }));
 
     const deps = {
       version,
@@ -156,7 +166,11 @@ export default {
     }
 
     // Stream chunks as they complete - HTML files are written immediately
-    for await (const chunkResult of worker.stream(headNodes, input, deps)) {
+    for await (const chunkResult of worker.stream(
+      slicedInput,
+      slicedInput,
+      deps
+    )) {
       // Write files for this chunk in the generate method (main thread)
       if (output) {
         for (const template of chunkResult) {
