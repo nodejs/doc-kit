@@ -8,6 +8,38 @@ import bundleCode from './bundle.mjs';
 import { createChunkedRequire } from './chunks.mjs';
 
 /**
+ * Converts JSX AST entries to server and client JavaScript code.
+ * This is the CPU-intensive step that can be parallelized.
+ *
+ * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} entries - JSX AST entries
+ * @param {function} buildServerProgram - Wraps code for server execution
+ * @param {function} buildClientProgram - Wraps code for client hydration
+ * @returns {{serverCodeMap: Map<string, string>, clientCodeMap: Map<string, string>}}
+ */
+export function convertJSXToCode(
+  entries,
+  { buildServerProgram, buildClientProgram }
+) {
+  const serverCodeMap = new Map();
+  const clientCodeMap = new Map();
+
+  for (const entry of entries) {
+    const fileName = `${entry.data.api}.jsx`;
+
+    // Convert AST to JavaScript string with JSX syntax
+    const { value: code } = toJs(entry, { handlers: jsx });
+
+    // Prepare code for server-side execution (wrapped for SSR)
+    serverCodeMap.set(fileName, buildServerProgram(code));
+
+    // Prepare code for client-side execution (wrapped for hydration)
+    clientCodeMap.set(fileName, buildClientProgram(code));
+  }
+
+  return { serverCodeMap, clientCodeMap };
+}
+
+/**
  * Executes server-side JavaScript code in an isolated context with virtual module support.
  *
  * Takes a map of server-side JavaScript code, bundles it (which may produce code-split chunks),
@@ -56,38 +88,27 @@ export async function executeServerCode(serverCodeMap, requireFn) {
 export async function processJSXEntries(
   entries,
   template,
-  { buildServerProgram, buildClientProgram },
+  astBuilders,
   requireFn,
   { version }
 ) {
-  const serverCodeMap = new Map();
-  const clientCodeMap = new Map();
+  // Step 1: Convert JSX AST to JavaScript (CPU-intensive, could be parallelized)
+  const { serverCodeMap, clientCodeMap } = convertJSXToCode(
+    entries,
+    astBuilders
+  );
 
-  // Convert JSX AST to JavaScript for both server and client
-  for (const entry of entries) {
-    const fileName = `${entry.data.api}.jsx`;
-
-    // Convert AST to JavaScript string with JSX syntax
-    const { value: code } = toJs(entry, { handlers: jsx });
-
-    // Prepare code for server-side execution (wrapped for SSR)
-    serverCodeMap.set(fileName, buildServerProgram(code));
-
-    // Prepare code for client-side execution (wrapped for hydration)
-    clientCodeMap.set(fileName, buildClientProgram(code));
-  }
-
-  // Execute all server code at once to get dehydrated HTML
-  const serverBundle = await executeServerCode(serverCodeMap, requireFn);
-
-  // Bundle all client code at once (with code splitting for shared chunks)
-  const clientBundle = await bundleCode(clientCodeMap);
+  // Step 2: Bundle server and client code IN PARALLEL
+  // Both need all entries for code-splitting, but are independent of each other
+  const [serverBundle, clientBundle] = await Promise.all([
+    executeServerCode(serverCodeMap, requireFn),
+    bundleCode(clientCodeMap),
+  ]);
 
   const titleSuffix = `Node.js v${version.version} Documentation`;
-
   const speculationRulesString = JSON.stringify(SPECULATION_RULES, null, 2);
 
-  // Process each entry to create final HTML
+  // Step 3: Create final HTML (could be parallelized in workers)
   const results = entries.map(({ data: { api, heading } }) => {
     const fileName = `${api}.js`;
 
