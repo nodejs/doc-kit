@@ -22,7 +22,6 @@ export default function createWorkerPool(threads) {
     filename: workerScript,
     minThreads: threads,
     maxThreads: threads,
-    maxQueue: threads * 2,
     idleTimeout: Infinity, // Keep workers alive
   });
 }
