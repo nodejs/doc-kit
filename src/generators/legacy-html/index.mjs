@@ -62,7 +62,7 @@ export default {
      *
      * @param {Array<{head: ApiDocMetadataEntry, nodes: ApiDocMetadataEntry[], headNodes: ApiDocMetadataEntry[]}>} slicedInput - Pre-sliced module data
      * @param {number[]} itemIndices - Indices into the sliced array
-     * @param {{version: string, parsedSideNav: string}} options - Dependencies passed from generate()
+     * @param {{version: SemVer, parsedSideNav: string}} deps - Dependencies passed from generate()
      * @returns {Promise<TemplateValues[]>} Template objects for each processed module
      */
     async (slicedInput, itemIndices, { version, parsedSideNav }) => {

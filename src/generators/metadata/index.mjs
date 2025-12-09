@@ -24,7 +24,7 @@ export default {
    *
    * @param {Input} fullInput - Full input array (parsed API doc files)
    * @param {number[]} itemIndices - Indices of files to process
-   * @param {Partial<Omit<GeneratorOptions, 'worker'>>} options - Serializable options
+   * @param {{typeMap: Record<string, string>}} deps - Dependencies passed from generate()
    * @returns {Promise<ApiDocMetadataEntry[]>} Metadata entries for processed files
    */
   processChunk: Object.assign(
