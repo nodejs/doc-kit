@@ -21,6 +21,7 @@ const { updateStabilityPrefixToLink } = createQueries();
  */
 const parseMarkdownFile = async filePath => {
   const fileContents = await readFile(filePath, 'utf-8');
+
   const vfile = new VFile({ path: filePath, value: fileContents });
 
   // Normalizes all the Stability Index prefixes with Markdown links
@@ -47,30 +48,25 @@ export default {
 
   description: 'Parses Markdown API doc files into AST trees',
 
-  dependsOn: undefined,
+  /**
+   * Process a chunk of markdown files in a worker thread.
+   * Loads and parses markdown files into AST representations.
+   *
+   * @param {string[]} inputSlice - Sliced input paths for this chunk
+   * @param {number[]} itemIndices - Indices into the sliced array
+   * @returns {Promise<Array<ParserOutput<import('mdast').Root>>>}
+   */
+  async processChunk(inputSlice, itemIndices) {
+    const results = [];
 
-  processChunk: Object.assign(
-    /**
-     * Process a chunk of markdown files in a worker thread.
-     * Loads and parses markdown files into AST representations.
-     *
-     * @param {string[]} inputSlice - Sliced input paths for this chunk
-     * @param {number[]} itemIndices - Indices into the sliced array
-     * @returns {Promise<Array<ParserOutput<import('mdast').Root>>>}
-     */
-    async (inputSlice, itemIndices) => {
-      const results = [];
+    for (const idx of itemIndices) {
+      const parsed = await parseMarkdownFile(inputSlice[idx]);
 
-      for (const idx of itemIndices) {
-        const parsed = await parseMarkdownFile(inputSlice[idx]);
+      results.push(parsed);
+    }
 
-        results.push(parsed);
-      }
-
-      return results;
-    },
-    { sliceInput: true }
-  ),
+    return results;
+  },
 
   /**
    * Generates AST trees from markdown input files.

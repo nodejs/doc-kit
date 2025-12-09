@@ -12,13 +12,8 @@ import { allGenerators } from '../generators/index.mjs';
  * }} opts - Task options from Piscina
  * @returns {Promise<unknown>} The processed result
  */
-export default async function processChunk({
-  generatorName,
-  fullInput,
-  itemIndices,
-  options,
-}) {
+export default async ({ generatorName, fullInput, itemIndices, options }) => {
   const generator = allGenerators[generatorName];
 
   return generator.processChunk(fullInput, itemIndices, options);
-}
+};

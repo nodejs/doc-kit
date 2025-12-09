@@ -14,16 +14,17 @@ import { loadFromURL } from '../../src/utils/parser.mjs';
 const availableGenerators = Object.keys(publicGenerators);
 
 /**
- * @typedef {Object} Options
- * @property {Array<string>|string} input - Specifies the glob/path for input files.
- * @property {Array<string>|string} [ignore] - Specifies the glob/path for ignoring files.
- * @property {Array<keyof publicGenerators>} target - Specifies the generator target mode.
- * @property {string} version - Specifies the target Node.js version.
- * @property {string} changelog - Specifies the path to the Node.js CHANGELOG.md file.
- * @property {string} typeMap - Specifies the path to the Node.js Type Map.
- * @property {string} [gitRef] - Git ref/commit URL.
- * @property {number} [threads] - Number of threads to allow.
- * @property {number} [chunkSize] - Number of items to process per worker thread.
+ * @typedef {{
+ * input: Array<string> | string;
+ * ignore?: Array<string> | string;
+ * target: Array<keyof publicGenerators>;
+ * version: string;
+ * changelog: string;
+ * typeMap: string;
+ * gitRef?: string;
+ * threads?: number;
+ * chunkSize?: number;
+ * }} Options
  */
 
 /**

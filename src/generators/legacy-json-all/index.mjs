@@ -3,14 +3,6 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const PROPERTIES_TO_COPY = [
-  'miscs',
-  'modules',
-  'classes',
-  'globals',
-  'methods',
-];
-
 /**
  * This generator consolidates data from the `legacy-json` generator into a single
  * JSON file (`all.json`).
@@ -51,9 +43,14 @@ export default {
       methods: [],
     };
 
+    /**
+     * The properties to copy from each section in the input
+     */
+    const propertiesToCopy = Object.keys(generatedValue);
+
     // Aggregate all sections into the output
     for (const section of input) {
-      for (const property of PROPERTIES_TO_COPY) {
+      for (const property of propertiesToCopy) {
         const items = section[property];
 
         if (Array.isArray(items)) {

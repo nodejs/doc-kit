@@ -30,31 +30,28 @@ export default {
 
   dependsOn: 'metadata',
 
-  processChunk: Object.assign(
-    /**
-     * Process a chunk of items in a worker thread.
-     * Builds JSON sections - FS operations happen in generate().
-     *
-     * With sliceInput, each item is pre-grouped {head, nodes} - no need to
-     * recompute groupNodesByModule for every chunk.
-     *
-     * @param {Array<{head: ApiDocMetadataEntry, nodes: ApiDocMetadataEntry[]}>} slicedInput - Pre-sliced module data
-     * @param {number[]} itemIndices - Indices into the sliced array
-     * @returns {Promise<import('./types.d.ts').Section[]>} JSON sections for each processed module
-     */
-    async (slicedInput, itemIndices) => {
-      const results = [];
+  /**
+   * Process a chunk of items in a worker thread.
+   * Builds JSON sections - FS operations happen in generate().
+   *
+   * Each item is pre-grouped {head, nodes} - no need to
+   * recompute groupNodesByModule for every chunk.
+   *
+   * @param {Array<{head: ApiDocMetadataEntry, nodes: ApiDocMetadataEntry[]}>} slicedInput - Pre-sliced module data
+   * @param {number[]} itemIndices - Indices into the sliced array
+   * @returns {Promise<import('./types.d.ts').Section[]>} JSON sections for each processed module
+   */
+  async processChunk(slicedInput, itemIndices) {
+    const results = [];
 
-      for (const idx of itemIndices) {
-        const { head, nodes } = slicedInput[idx];
+    for (const idx of itemIndices) {
+      const { head, nodes } = slicedInput[idx];
 
-        results.push(buildSection(head, nodes));
-      }
+      results.push(buildSection(head, nodes));
+    }
 
-      return results;
-    },
-    { sliceInput: true }
-  ),
+    return results;
+  },
 
   /**
    * Generates a legacy JSON file.

@@ -52,63 +52,59 @@ export default {
 
   dependsOn: 'metadata',
 
-  processChunk: Object.assign(
-    /**
-     * Process a chunk of items in a worker thread.
-     * Builds HTML template objects - FS operations happen in generate().
-     *
-     * With sliceInput, each item is pre-grouped {head, nodes, headNodes} - no need to
-     * recompute groupNodesByModule for every chunk.
-     *
-     * @param {Array<{head: ApiDocMetadataEntry, nodes: ApiDocMetadataEntry[], headNodes: ApiDocMetadataEntry[]}>} slicedInput - Pre-sliced module data
-     * @param {number[]} itemIndices - Indices into the sliced array
-     * @param {{version: SemVer, parsedSideNav: string}} deps - Dependencies passed from generate()
-     * @returns {Promise<TemplateValues[]>} Template objects for each processed module
-     */
-    async (slicedInput, itemIndices, { version, parsedSideNav }) => {
-      const results = [];
+  /**
+   * Process a chunk of items in a worker thread.
+   * Builds HTML template objects - FS operations happen in generate().
+   *
+   * Each item is pre-grouped {head, nodes, headNodes} - no need to
+   * recompute groupNodesByModule for every chunk.
+   *
+   * @param {Array<{head: ApiDocMetadataEntry, nodes: ApiDocMetadataEntry[], headNodes: ApiDocMetadataEntry[]}>} slicedInput - Pre-sliced module data
+   * @param {number[]} itemIndices - Indices into the sliced array
+   * @param {{version: SemVer, parsedSideNav: string}} deps - Dependencies passed from generate()
+   * @returns {Promise<TemplateValues[]>} Template objects for each processed module
+   */
+  async processChunk(slicedInput, itemIndices, { version, parsedSideNav }) {
+    const results = [];
 
-      for (const idx of itemIndices) {
-        const { head, nodes, headNodes } = slicedInput[idx];
+    for (const idx of itemIndices) {
+      const { head, nodes, headNodes } = slicedInput[idx];
 
-        const activeSideNav = String(parsedSideNav).replace(
-          `class="nav-${head.api}`,
-          `class="nav-${head.api} active`
-        );
+      const activeSideNav = String(parsedSideNav).replace(
+        `class="nav-${head.api}`,
+        `class="nav-${head.api} active`
+      );
 
-        const parsedToC = remarkRehypeProcessor.processSync(
-          tableOfContents(nodes, {
-            maxDepth: 4,
-            parser: tableOfContents.parseToCNode,
-          })
-        );
+      const parsedToC = remarkRehypeProcessor.processSync(
+        tableOfContents(nodes, {
+          maxDepth: 4,
+          parser: tableOfContents.parseToCNode,
+        })
+      );
 
-        const parsedContent = buildContent(
-          headNodes,
-          nodes,
-          remarkRehypeProcessor
-        );
+      const parsedContent = buildContent(
+        headNodes,
+        nodes,
+        remarkRehypeProcessor
+      );
 
-        const apiAsHeading =
-          head.api.charAt(0).toUpperCase() + head.api.slice(1);
+      const apiAsHeading = head.api.charAt(0).toUpperCase() + head.api.slice(1);
 
-        const template = {
-          api: head.api,
-          added: head.introduced_in ?? '',
-          section: head.heading.data.name || apiAsHeading,
-          version: `v${version.version}`,
-          toc: String(parsedToC),
-          nav: String(activeSideNav),
-          content: parsedContent,
-        };
+      const template = {
+        api: head.api,
+        added: head.introduced_in ?? '',
+        section: head.heading.data.name || apiAsHeading,
+        version: `v${version.version}`,
+        toc: String(parsedToC),
+        nav: String(activeSideNav),
+        content: parsedContent,
+      };
 
-        results.push(template);
-      }
+      results.push(template);
+    }
 
-      return results;
-    },
-    { sliceInput: true }
-  ),
+    return results;
+  },
 
   /**
    * Generates the legacy version of the API docs in HTML

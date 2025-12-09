@@ -27,18 +27,15 @@ export default {
    * @param {{typeMap: Record<string, string>}} deps - Dependencies passed from generate()
    * @returns {Promise<ApiDocMetadataEntry[]>} Metadata entries for processed files
    */
-  processChunk: Object.assign(
-    async (fullInput, itemIndices, { typeMap }) => {
-      const results = [];
+  async processChunk(fullInput, itemIndices, { typeMap }) {
+    const results = [];
 
-      for (const idx of itemIndices) {
-        results.push(...parseApiDoc(fullInput[idx], typeMap));
-      }
+    for (const idx of itemIndices) {
+      results.push(...parseApiDoc(fullInput[idx], typeMap));
+    }
 
-      return results;
-    },
-    { sliceInput: true } // Only needs individual items, not full context
-  ),
+    return results;
+  },
 
   /**
    * @param {Input} inputs

@@ -29,30 +29,27 @@ export default {
 
   dependsOn: 'metadata',
 
-  processChunk: Object.assign(
-    /**
-     * Process a chunk of JavaScript files in a worker thread.
-     * Parses JS source files into AST representations.
-     *
-     * @param {string[]} inputSlice - Sliced input paths for this chunk
-     * @param {number[]} itemIndices - Indices into the sliced array
-     * @returns {Promise<object[]>} Parsed JS AST objects for each file
-     */
-    async (inputSlice, itemIndices) => {
-      const results = [];
+  /**
+   * Process a chunk of JavaScript files in a worker thread.
+   * Parses JS source files into AST representations.
+   *
+   * @param {string[]} inputSlice - Sliced input paths for this chunk
+   * @param {number[]} itemIndices - Indices into the sliced array
+   * @returns {Promise<object[]>} Parsed JS AST objects for each file
+   */
+  async processChunk(inputSlice, itemIndices) {
+    const results = [];
 
-      for (const idx of itemIndices) {
-        const [file] = loadFiles(inputSlice[idx]);
+    for (const idx of itemIndices) {
+      const [file] = loadFiles(inputSlice[idx]);
 
-        const parsedFile = await parseJsSource(file);
+      const parsedFile = await parseJsSource(file);
 
-        results.push(parsedFile);
-      }
+      results.push(parsedFile);
+    }
 
-      return results;
-    },
-    { sliceInput: true }
-  ),
+    return results;
+  },
 
   /**
    * Generates a JavaScript AST from the input files.

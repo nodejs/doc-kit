@@ -1,6 +1,5 @@
 'use strict';
 
-import { allGenerators } from '../generators/index.mjs';
 import logger from '../logger/index.mjs';
 
 const parallelLogger = logger.child('parallel');
@@ -25,23 +24,20 @@ const createChunks = (count, size) => {
 };
 
 /**
- * Prepares task data for a chunk, handling sliceInput optimization.
+ * Prepares task data for a chunk, slicing input to only include relevant items.
  *
- * @param {object} generator - Generator with processChunk method
  * @param {unknown[]} fullInput - Full input array
  * @param {number[]} indices - Indices to process
  * @param {object} options - Serialized options
  * @param {string} generatorName - Name of the generator
  * @returns {object} Task data for Piscina
  */
-const createTask = (generator, fullInput, indices, options, generatorName) => ({
+const createTask = (fullInput, indices, options, generatorName) => ({
   generatorName,
-  fullInput: generator.processChunk.sliceInput
-    ? indices.map(i => fullInput[i])
-    : fullInput,
-  itemIndices: generator.processChunk.sliceInput
-    ? indices.map((_, i) => i)
-    : indices,
+  // Only send the items needed for this chunk (reduces serialization overhead)
+  fullInput: indices.map(i => fullInput[i]),
+  // Remap indices to 0-based for the sliced array
+  itemIndices: indices.map((_, i) => i),
   options,
 });
 
@@ -55,7 +51,6 @@ const createTask = (generator, fullInput, indices, options, generatorName) => ({
  */
 export default function createParallelWorker(generatorName, pool, options) {
   const { threads, chunkSize } = options;
-  const generator = allGenerators[generatorName];
 
   /** @param {object} extra */
   const serializeOptions = extra => {
@@ -94,7 +89,7 @@ export default function createParallelWorker(generatorName, pool, options) {
       const pending = new Set(
         chunks.map(indices => {
           const promise = pool
-            .run(createTask(generator, fullInput, indices, opts, generatorName))
+            .run(createTask(fullInput, indices, opts, generatorName))
             .then(result => ({ promise, result }));
 
           return promise;

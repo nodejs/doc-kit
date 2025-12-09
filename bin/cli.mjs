@@ -5,7 +5,6 @@ import process from 'node:process';
 import { Command, Option } from 'commander';
 
 import commands from './commands/index.mjs';
-import interactive from './commands/interactive.mjs';
 import { errorWrap } from './utils.mjs';
 import logger from '../src/logger/index.mjs';
 
@@ -22,11 +21,9 @@ program.addOption(
 
 // Set log level before any command runs
 program.hook('preAction', thisCommand => {
-  const logLevel = thisCommand.opts().logLevel;
+  const { logLevel } = thisCommand.opts();
 
-  if (logLevel) {
-    logger.setLogLevel(logLevel);
-  }
+  logger.setLogLevel(logLevel);
 });
 
 // Registering commands
@@ -53,12 +50,6 @@ commands.forEach(({ name, description, options, action }) => {
   // Set the action for the command
   cmd.action(errorWrap(action));
 });
-
-// Register the interactive command
-program
-  .command('interactive')
-  .description('Launch guided CLI wizard')
-  .action(errorWrap(interactive));
 
 // Parse and execute command-line arguments
 program.parse(process.argv);

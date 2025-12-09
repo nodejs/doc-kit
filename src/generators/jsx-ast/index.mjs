@@ -21,49 +21,45 @@ export default {
 
   dependsOn: 'metadata',
 
-  processChunk: Object.assign(
-    /**
-     * Process a chunk of items in a worker thread.
-     * Transforms metadata entries into JSX AST nodes.
-     *
-     * With sliceInput, each item is a SlicedModuleInput containing the head node
-     * and all entries for that module - no need to recompute grouping.
-     *
-     * @param {Array<{head: ApiDocMetadataEntry, entries: Array<ApiDocMetadataEntry>}>} slicedInput - Pre-sliced module data
-     * @param {number[]} itemIndices - Indices of items to process
-     * @param {object} options - Serializable options
-     * @param {Array<[string, string]>} options.docPages - Pre-computed doc pages for sidebar
-     * @param {Array<ApiDocReleaseEntry>} options.releases - Release information
-     * @param {import('semver').SemVer} options.version - Target Node.js version
-     * @returns {Promise<Array<import('estree-jsx').Program>>} JSX AST programs for each module
-     */
-    async (slicedInput, itemIndices, { docPages, releases, version }) => {
-      const results = [];
+  /**
+   * Process a chunk of items in a worker thread.
+   * Transforms metadata entries into JSX AST nodes.
+   *
+   * Each item is a SlicedModuleInput containing the head node
+   * and all entries for that module - no need to recompute grouping.
+   *
+   * @param {Array<{head: ApiDocMetadataEntry, entries: Array<ApiDocMetadataEntry>}>} slicedInput - Pre-sliced module data
+   * @param {number[]} itemIndices - Indices of items to process
+   * @param {object} options - Serializable options
+   * @param {Array<[string, string]>} options.docPages - Pre-computed doc pages for sidebar
+   * @param {Array<ApiDocReleaseEntry>} options.releases - Release information
+   * @param {import('semver').SemVer} options.version - Target Node.js version
+   * @returns {Promise<Array<import('estree-jsx').Program>>} JSX AST programs for each module
+   */
+  async processChunk(
+    slicedInput,
+    itemIndices,
+    { docPages, releases, version }
+  ) {
+    const results = [];
 
-      for (const idx of itemIndices) {
-        const { head, entries } = slicedInput[idx];
+    for (const idx of itemIndices) {
+      const { head, entries } = slicedInput[idx];
 
-        const sideBarProps = buildSideBarProps(
-          head,
-          releases,
-          version,
-          docPages
-        );
+      const sideBarProps = buildSideBarProps(head, releases, version, docPages);
 
-        const content = await buildContent(
-          entries,
-          head,
-          sideBarProps,
-          remarkRecma
-        );
+      const content = await buildContent(
+        entries,
+        head,
+        sideBarProps,
+        remarkRecma
+      );
 
-        results.push(content);
-      }
+      results.push(content);
+    }
 
-      return results;
-    },
-    { sliceInput: true }
-  ),
+    return results;
+  },
 
   /**
    * Generates a JSX AST

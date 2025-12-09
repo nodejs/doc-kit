@@ -70,6 +70,6 @@ export default {
       await writeFile(join(output, 'styles.css'), css, 'utf-8');
     }
 
-    return results;
+    return results.map(({ html }) => ({ html, css }));
   },
 };
