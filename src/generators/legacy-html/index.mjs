@@ -137,11 +137,7 @@ export default {
     );
 
     const deps = {
-      index,
-      releases,
       version,
-      output,
-      apiTemplate,
       parsedSideNav: String(parsedSideNav),
     };
 

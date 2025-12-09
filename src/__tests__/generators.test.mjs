@@ -4,14 +4,6 @@ import { describe, it } from 'node:test';
 import createGenerator from '../generators.mjs';
 
 describe('createGenerator', () => {
-  // Simple mock input for testing
-  const mockInput = [
-    {
-      file: { stem: 'test', basename: 'test.md' },
-      tree: { type: 'root', children: [] },
-    },
-  ];
-
   // Mock options with minimal required fields
   const mockOptions = {
     input: '/tmp/test',
@@ -27,14 +19,14 @@ describe('createGenerator', () => {
   };
 
   it('should create a generator orchestrator with runGenerators method', () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     ok(runGenerators);
     strictEqual(typeof runGenerators, 'function');
   });
 
   it('should return the ast input directly when generators list is empty', async () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     const results = await runGenerators({
       ...mockOptions,
@@ -48,7 +40,7 @@ describe('createGenerator', () => {
   });
 
   it('should run metadata generator', async () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     const results = await runGenerators({
       ...mockOptions,
@@ -62,7 +54,7 @@ describe('createGenerator', () => {
   });
 
   it('should handle generator with dependency', async () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     // legacy-html depends on metadata
     const results = await runGenerators({
@@ -76,7 +68,7 @@ describe('createGenerator', () => {
   });
 
   it('should skip already scheduled generators', async () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     // Running with ['metadata', 'metadata'] should skip the second
     const results = await runGenerators({
@@ -90,7 +82,7 @@ describe('createGenerator', () => {
   });
 
   it('should handle multiple generators in sequence', async () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     // Run metadata - just one generator
     const results = await runGenerators({
@@ -104,7 +96,7 @@ describe('createGenerator', () => {
   });
 
   it('should collect async generator results for dependents', async () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     // legacy-json depends on metadata (async generator)
     const results = await runGenerators({
@@ -117,7 +109,7 @@ describe('createGenerator', () => {
   });
 
   it('should use multiple threads when specified', async () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     const results = await runGenerators({
       ...mockOptions,
@@ -132,7 +124,7 @@ describe('createGenerator', () => {
   });
 
   it('should pass options to generators', async () => {
-    const { runGenerators } = createGenerator(mockInput);
+    const { runGenerators } = createGenerator();
 
     const customTypeMap = { TestType: 'https://example.com/TestType' };
 
