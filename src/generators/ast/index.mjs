@@ -1,37 +1,15 @@
 'use strict';
 
-import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
 import { globSync } from 'glob';
-import { VFile } from 'vfile';
 
-import createQueries from '../../utils/queries/index.mjs';
+import createLoader from '../../loaders/markdown.mjs';
 import { getRemark } from '../../utils/remark.mjs';
 
+const { loadFiles } = createLoader();
+
 const remarkProcessor = getRemark();
-
-const { updateStabilityPrefixToLink } = createQueries();
-
-/**
- * Parses a single markdown file into an AST.
- *
- * @param {string} filePath - Path to the markdown file
- * @returns {Promise<ParserOutput<import('mdast').Root>>}
- */
-const parseMarkdownFile = async filePath => {
-  const fileContents = await readFile(filePath, 'utf-8');
-
-  const vfile = new VFile({ path: filePath, value: fileContents });
-
-  // Normalizes all the Stability Index prefixes with Markdown links
-  updateStabilityPrefixToLink(vfile);
-
-  // Parses the API doc into an AST tree using `unified` and `remark`
-  const tree = remarkProcessor.parse(vfile);
-
-  return { file: { stem: vfile.stem, basename: vfile.basename }, tree };
-};
 
 /**
  * This generator parses Markdown API doc files into AST trees.
@@ -57,15 +35,17 @@ export default {
    * @returns {Promise<Array<ParserOutput<import('mdast').Root>>>}
    */
   async processChunk(inputSlice, itemIndices) {
-    const results = [];
+    const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
-    for (const idx of itemIndices) {
-      const parsed = await parseMarkdownFile(inputSlice[idx]);
+    const vfiles = await Promise.all(loadFiles(filePaths));
 
-      results.push(parsed);
-    }
+    return vfiles.map(vfile => {
+      const tree = remarkProcessor.parse(vfile);
 
-    return results;
+      const minimalVfile = { stem: vfile.stem, basename: vfile.basename };
+
+      return { file: minimalVfile, tree };
+    });
   },
 
   /**

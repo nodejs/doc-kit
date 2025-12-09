@@ -6,6 +6,7 @@ import createJsLoader from '../../loaders/javascript.mjs';
 import createJsParser from '../../parsers/javascript.mjs';
 
 const { loadFiles } = createJsLoader();
+
 const { parseJsSource } = createJsParser();
 
 /**
@@ -38,17 +39,11 @@ export default {
    * @returns {Promise<object[]>} Parsed JS AST objects for each file
    */
   async processChunk(inputSlice, itemIndices) {
-    const results = [];
+    const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
-    for (const idx of itemIndices) {
-      const [file] = loadFiles(inputSlice[idx]);
+    const vfiles = await Promise.all(loadFiles(filePaths));
 
-      const parsedFile = await parseJsSource(file);
-
-      results.push(parsedFile);
-    }
-
-    return results;
+    return Promise.all(vfiles.map(parseJsSource));
   },
 
   /**
