@@ -18,8 +18,9 @@ const { parseJsSource } = createJsParser();
  * so we're only parsing the Javascript sources when we need to.
  *
  * @typedef {unknown} Input
+ * @typedef {Array<JsProgram>} Output
  *
- * @type {GeneratorMetadata<Input, Array<JsProgram>>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'ast-js',
@@ -34,14 +35,24 @@ export default {
    *
    * @param {string[]} inputSlice - Sliced input paths for this chunk
    * @param {number[]} itemIndices - Indices into the sliced array
-   * @returns {Promise<object[]>} Parsed JS AST objects for each file
+   * @returns {Promise<Output>} Parsed JS AST objects for each file
    */
   async processChunk(inputSlice, itemIndices) {
     const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
-    const vfiles = await Promise.all(loadFiles(filePaths));
+    const vfilesPromises = loadFiles(filePaths);
 
-    return Promise.all(vfiles.map(parseJsSource));
+    const results = [];
+
+    for (const vfilePromise of vfilesPromises) {
+      const vfile = await vfilePromise;
+
+      const parsed = await parseJsSource(vfile);
+
+      results.push(parsed);
+    }
+
+    return results;
   },
 
   /**
@@ -49,7 +60,7 @@ export default {
    *
    * @param {Input} _ - Unused (files loaded from input paths)
    * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<Array<object>>}
+   * @returns {AsyncGenerator<Output>}
    */
   async *generate(_, { input = [], worker }) {
     const source = globSync(input).filter(path => extname(path) === '.js');

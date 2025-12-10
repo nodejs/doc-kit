@@ -78,24 +78,5 @@ export const createStreamingCache = () => {
 
       return cache.get(key);
     },
-
-    /**
-     * Checks if a key exists in the cache.
-     *
-     * @param {string} key - Cache key to check
-     * @returns {boolean} True if the key exists
-     */
-    has(key) {
-      return cache.has(key);
-    },
-
-    /**
-     * Clears all cached results.
-     */
-    clear() {
-      streamingLogger.debug(`Clearing streaming cache`);
-
-      cache.clear();
-    },
   };
 };

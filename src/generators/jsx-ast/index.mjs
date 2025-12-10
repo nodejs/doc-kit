@@ -10,7 +10,9 @@ const remarkRecma = getRemarkRecma();
  * Generator for converting MDAST to JSX AST.
  *
  * @typedef {Array<ApiDocMetadataEntry>} Input
- * @type {GeneratorMetadata<Input, string>}
+ * @typedef {Array<import('./utils/buildContent.mjs').JSXContent>} Output
+ *
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'jsx-ast',
@@ -30,11 +32,8 @@ export default {
    *
    * @param {Array<{head: ApiDocMetadataEntry, entries: Array<ApiDocMetadataEntry>}>} slicedInput - Pre-sliced module data
    * @param {number[]} itemIndices - Indices of items to process
-   * @param {object} options - Serializable options
-   * @param {Array<[string, string]>} options.docPages - Pre-computed doc pages for sidebar
-   * @param {Array<ApiDocReleaseEntry>} options.releases - Release information
-   * @param {import('semver').SemVer} options.version - Target Node.js version
-   * @returns {Promise<Array<import('estree-jsx').Program>>} JSX AST programs for each module
+   * @param {{ docPages: Array<[string, string]>, releases: Array<ApiDocReleaseEntry>, version: import('semver').SemVer }} options - Serializable options
+   * @returns {Promise<Output>} JSX AST programs for each module
    */
   async processChunk(
     slicedInput,
@@ -66,7 +65,6 @@ export default {
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<Array<string>>}
    */
   async *generate(input, { index, releases, version, worker }) {
     const groupedModules = groupNodesByModule(input);

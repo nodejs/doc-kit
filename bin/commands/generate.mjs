@@ -7,28 +7,14 @@ import { NODE_CHANGELOG_URL, NODE_VERSION } from '../../src/constants.mjs';
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
 import logger from '../../src/logger/index.mjs';
+import { parseTypeMap } from '../../src/parsers/json.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
 import { DEFAULT_TYPE_MAP } from '../../src/utils/parser/constants.mjs';
-import { loadFromURL } from '../../src/utils/parser.mjs';
 
 const availableGenerators = Object.keys(publicGenerators);
 
 /**
- * @typedef {{
- * input: Array<string> | string;
- * ignore?: Array<string> | string;
- * target: Array<keyof publicGenerators>;
- * version: string;
- * changelog: string;
- * typeMap: string;
- * gitRef?: string;
- * threads?: number;
- * chunkSize?: number;
- * }} Options
- */
-
-/**
- * @type {import('../utils.mjs').Command}
+ * @type {import('./types').Command}
  */
 export default {
   description: 'Generate API docs',
@@ -60,7 +46,7 @@ export default {
     },
     threads: {
       flags: ['-p', '--threads <number>'],
-      desc: 'Number of worker threads to use (minimum: 2)',
+      desc: 'Number of threads to use (minimum: 1)',
       prompt: {
         type: 'text',
         message: 'How many threads to allow',
@@ -134,7 +120,20 @@ export default {
       },
     },
   },
+
   /**
+   * @typedef {Object} Options
+   * @property {Array<string>|string} input - Specifies the glob/path for input files.
+   * @property {Array<string>|string} [ignore] - Specifies the glob/path for ignoring files.
+   * @property {Array<keyof AvailableGenerators>} target - Specifies the generator target mode.
+   * @property {string} version - Specifies the target Node.js version.
+   * @property {string} changelog - Specifies the path to the Node.js CHANGELOG.md file.
+   * @property {string} typeMap - Specifies the path to the Node.js Type Map.
+   * @property {string} index - Specifies the path to the index document.
+   * @property {string} [gitRef] - Git ref/commit URL.
+   * @property {number} [threads] - Number of threads to allow.
+   * @property {number} [chunkSize] - Number of items to process per worker thread.
+   *
    * Handles the action for generating API docs
    * @param {Options} opts - The options to generate API docs.
    * @returns {Promise<void>}
@@ -144,12 +143,6 @@ export default {
 
     const { runGenerators } = createGenerator();
 
-    const releases = await parseChangelog(opts.changelog);
-
-    const typeMap = JSON.parse(await loadFromURL(opts.typeMap));
-
-    const index = opts.index && (await parseIndex(opts.index));
-
     logger.debug('Starting generation', { targets: opts.target });
 
     await runGenerators({
@@ -157,12 +150,12 @@ export default {
       input: opts.input,
       output: opts.output && resolve(opts.output),
       version: coerce(opts.version),
-      releases,
+      releases: await parseChangelog(opts.changelog),
       gitRef: opts.gitRef,
-      threads: Math.max(parseInt(opts.threads, 10), 2),
-      chunkSize: parseInt(opts.chunkSize, 10),
-      index,
-      typeMap,
+      threads: Math.max(parseInt(opts.threads, 10), 1),
+      chunkSize: Math.max(parseInt(opts.chunkSize, 10), 1),
+      index: await parseIndex(opts.index),
+      typeMap: await parseTypeMap(opts.typeMap),
     });
   },
 };

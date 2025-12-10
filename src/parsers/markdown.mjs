@@ -37,6 +37,10 @@ export const parseChangelog = async path => {
  * @returns {Promise<Array<{ section: string, api: string }>>}
  */
 export const parseIndex = async path => {
+  if (!path || !path.length) {
+    return [];
+  }
+
   const index = await loadFromURL(path);
 
   const items = Array.from(index.matchAll(LIST_ITEM_REGEX));

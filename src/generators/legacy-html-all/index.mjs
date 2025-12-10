@@ -10,23 +10,13 @@ import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValue
 import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
 
 /**
- * @typedef {{
- * api: string;
- * added: string;
- * section: string;
- * version: string;
- * toc: string;
- * nav: string;
- * content: string;
- * }} TemplateValues
- *
  * This generator generates the legacy HTML pages of the legacy API docs
  * for retro-compatibility and while we are implementing the new 'react' and 'html' generators.
  *
  * This generator is a top-level generator, and it takes the raw AST tree of the API doc files
  * and generates the HTML files to the specified output directory from the configuration settings
  *
- * @typedef {Array<TemplateValues>} Input
+ * @typedef {Array<import('../legacy-html/types').TemplateValues>} Input
  *
  * @type {GeneratorMetadata<Input, string>}
  */

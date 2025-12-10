@@ -4,7 +4,7 @@ import logger from '../logger/index.mjs';
 
 const poolLogger = logger.child('WorkerPool');
 
-const workerScript = new URL('./chunk-worker.mjs', import.meta.url).href;
+const workerScript = import.meta.resolve('./chunk-worker.mjs');
 
 /**
  * Creates a Piscina worker pool for parallel processing.
@@ -15,7 +15,7 @@ const workerScript = new URL('./chunk-worker.mjs', import.meta.url).href;
 export default function createWorkerPool(threads) {
   poolLogger.debug(`WorkerPool initialized`, {
     threads,
-    workerScript: './chunk-worker.mjs',
+    workerScript,
   });
 
   return new Piscina({

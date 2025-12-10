@@ -6,8 +6,9 @@ import { parseApiDoc } from './utils/parse.mjs';
  * This generator generates a flattened list of metadata entries from a API doc
  *
  * @typedef {Array<ParserOutput<import('mdast').Root>>} Input
+ * @typedef {Array<ApiDocMetadataEntry>} Output
  *
- * @type {GeneratorMetadata<Input, Array<ApiDocMetadataEntry>>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'metadata',
@@ -24,8 +25,8 @@ export default {
    *
    * @param {Input} fullInput - Full input array (parsed API doc files)
    * @param {number[]} itemIndices - Indices of files to process
-   * @param {{typeMap: Record<string, string>}} deps - Dependencies passed from generate()
-   * @returns {Promise<ApiDocMetadataEntry[]>} Metadata entries for processed files
+   * @param {Partial<GeneratorOptions>} deps - Dependencies passed from generate()
+   * @returns {Promise<Output>} Metadata entries for processed files
    */
   async processChunk(fullInput, itemIndices, { typeMap }) {
     const results = [];
@@ -39,8 +40,8 @@ export default {
 
   /**
    * @param {Input} inputs
-   * @param {GeneratorOptions} options
-   * @returns {AsyncGenerator<Array<ApiDocMetadataEntry>>}
+   * @param {Partial<GeneratorOptions>} options
+   * @returns {AsyncGenerator<Output>}
    */
   async *generate(inputs, { typeMap, worker }) {
     const deps = { typeMap };

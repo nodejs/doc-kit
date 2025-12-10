@@ -8,8 +8,9 @@ import { join } from 'node:path';
  * JSON file (`all.json`).
  *
  * @typedef {Array<import('../legacy-json/types.d.ts').Section>} Input
+ * @typedef {import('./types.d.ts').Output} Output
  *
- * @type {GeneratorMetadata<Input, import('./types.d.ts').Output>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'legacy-json-all',
@@ -26,7 +27,7 @@ export default {
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
-   * @returns {Promise<import('./types.d.ts').Output>}
+   * @returns {Promise<Output>}
    */
   async generate(input, { output }) {
     /**

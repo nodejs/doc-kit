@@ -16,22 +16,26 @@ import { processJSXEntries } from './utils/processing.mjs';
  * Note: This generator does NOT support streaming/chunked processing because
  * processJSXEntries needs all entries together to generate code-split bundles.
  *
- * @type {GeneratorMetadata<Input, string>}
+ * @typedef {Array<import('../jsx-ast/utils/buildContent.mjs').JSXContent>} Input
+ * @typedef {Array<{ html: string, css: string }>} Output
+ *
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'web',
+
   version: '1.0.0',
+
   description: 'Generates HTML/CSS/JS bundles from JSX AST entries',
+
   dependsOn: 'jsx-ast',
 
   /**
    * Main generation function that processes JSX AST entries into web bundles.
    *
-   * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} input - JSX AST entries to process.
+   * @param {Input} input - JSX AST entries to process.
    * @param {Partial<GeneratorOptions>} options - Generator options.
-   * @param {string} [options.output] - Output directory for generated files.
-   * @param {string} options.version - Documentation version string.
-   * @returns {Promise<import('../jsx-ast/utils/buildContent.mjs').JSXContent[]>}
+   * @returns {Promise<Output>} Processed HTML/CSS/JS content.
    */
   async generate(input, { output, version }) {
     const template = await readFile(
@@ -70,6 +74,6 @@ export default {
       await writeFile(join(output, 'styles.css'), css, 'utf-8');
     }
 
-    return results.map(({ html }) => ({ html, css }));
+    return results.map(({ html }) => ({ html: html.toString(), css }));
   },
 };

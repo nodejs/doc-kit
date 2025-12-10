@@ -1,3 +1,4 @@
+import type { SemVer } from 'semver';
 import type { ApiDocReleaseEntry } from '../types';
 import type { publicGenerators, allGenerators } from './index.mjs';
 
@@ -76,6 +77,17 @@ declare global {
     worker: ParallelWorker;
   }
 
+  export type ParallelGeneratorOptions = Partial<
+    Omit<GeneratorOptions, 'worker'>
+  >;
+
+  export interface ParallelTaskOptions {
+    generatorName: keyof AllGenerators;
+    input: unknown[];
+    itemIndices: number[];
+    options: ParallelGeneratorOptions & Record<string, unknown>;
+  }
+
   export interface GeneratorMetadata<I extends any, O extends any> {
     // The name of the Generator. Must match the Key in AllGenerators
     name: keyof AllGenerators;
@@ -126,25 +138,19 @@ declare global {
      * Generators that implement this method can have their work distributed
      * across multiple worker threads for true parallel processing.
      *
-     * @param fullInput - Full input data (for rebuilding context in workers)
-     * @param itemIndices - Array of indices of items to process
+     * Input is automatically sliced to only include items at the specified indices,
+     * reducing serialization overhead. The itemIndices are remapped to 0-based
+     * indices into the sliced array.
+     *
+     * @param slicedInput - Sliced input containing only items for this chunk
+     * @param itemIndices - Array of 0-based indices into slicedInput
      * @param options - Generator options (without worker, which isn't serializable)
      * @returns Array of results for the processed items
      */
-    processChunk?: ((
-      fullInput: I,
+    processChunk?: (
+      slicedInput: I,
       itemIndices: number[],
       options: Partial<Omit<GeneratorOptions, 'worker'>>
-    ) => Promise<unknown[]>) & {
-      /**
-       * When true, only the items at the specified indices are sent to workers
-       * instead of the full input array. This reduces serialization overhead
-       * for generators that don't need full context to process individual items.
-       *
-       * Set this to true when processChunk only accesses `fullInput[idx]` for
-       * each index in itemIndices, and doesn't need the full array for context.
-       */
-      sliceInput?: boolean;
-    };
+    ) => Promise<unknown[]>;
   }
 }

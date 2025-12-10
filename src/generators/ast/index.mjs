@@ -16,8 +16,9 @@ const remarkProcessor = getRemark();
  * It parallelizes the parsing across worker threads for better performance.
  *
  * @typedef {undefined} Input
+ * @typedef {Array<ParserOutput<import('mdast').Root>>} Output
  *
- * @type {GeneratorMetadata<Input, Array<ParserOutput<import('mdast').Root>>>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'ast',
@@ -32,20 +33,25 @@ export default {
    *
    * @param {string[]} inputSlice - Sliced input paths for this chunk
    * @param {number[]} itemIndices - Indices into the sliced array
-   * @returns {Promise<Array<ParserOutput<import('mdast').Root>>>}
+   * @returns {Promise<Output>}
    */
   async processChunk(inputSlice, itemIndices) {
     const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
-    const vfiles = await Promise.all(loadFiles(filePaths));
+    const vfilesPromises = loadFiles(filePaths);
 
-    return vfiles.map(vfile => {
-      const tree = remarkProcessor.parse(vfile);
+    const results = [];
 
-      const minimalVfile = { stem: vfile.stem, basename: vfile.basename };
+    for (const vfilePromise of vfilesPromises) {
+      const vfile = await vfilePromise;
 
-      return { file: minimalVfile, tree };
-    });
+      results.push({
+        tree: remarkProcessor.parse(vfile),
+        file: { stem: vfile.stem, basename: vfile.basename },
+      });
+    }
+
+    return results;
   },
 
   /**
@@ -53,7 +59,7 @@ export default {
    *
    * @param {Input} _ - Unused (top-level generator)
    * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<Array<ParserOutput<import('mdast').Root>>>}
+   * @returns {AsyncGenerator<Output>}
    */
   async *generate(_, { input = [], worker }) {
     const files = globSync(input).filter(path => extname(path) === '.md');

@@ -32,6 +32,7 @@ export default {
 
   /**
    * Generates the Node.js man-page
+   *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
    */

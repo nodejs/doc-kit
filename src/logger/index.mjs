@@ -1,6 +1,5 @@
 'use strict';
 
-import { LogLevel } from './constants.mjs';
 import { createLogger } from './logger.mjs';
 import { transports } from './transports/index.mjs';
 
@@ -26,5 +25,3 @@ export const Logger = (transportName = 'console') => {
 
 // Default logger instance using console transport
 export default Logger();
-
-export { LogLevel };

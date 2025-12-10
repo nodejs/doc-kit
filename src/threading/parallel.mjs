@@ -1,5 +1,6 @@
 'use strict';
 
+import { allGenerators } from '../generators/index.mjs';
 import logger from '../logger/index.mjs';
 
 const parallelLogger = logger.child('parallel');
@@ -30,12 +31,12 @@ const createChunks = (count, size) => {
  * @param {number[]} indices - Indices to process
  * @param {object} options - Serialized options
  * @param {string} generatorName - Name of the generator
- * @returns {object} Task data for Piscina
+ * @returns {ParallelTaskOptions} Task data for Piscina
  */
 const createTask = (fullInput, indices, options, generatorName) => ({
   generatorName,
   // Only send the items needed for this chunk (reduces serialization overhead)
-  fullInput: indices.map(i => fullInput[i]),
+  input: indices.map(i => fullInput[i]),
   // Remap indices to 0-based for the sliced array
   itemIndices: indices.map((_, i) => i),
   options,
@@ -61,6 +62,8 @@ export default function createParallelWorker(generatorName, pool, options) {
     return opts;
   };
 
+  const generator = allGenerators[generatorName];
+
   return {
     /**
      * Processes items in parallel, yielding results as chunks complete.
@@ -76,18 +79,28 @@ export default function createParallelWorker(generatorName, pool, options) {
         return;
       }
 
-      const chunks = createChunks(items.length, chunkSize);
-
       const opts = serializeOptions(extra);
+
+      const chunks = createChunks(items.length, chunkSize);
 
       parallelLogger.debug(
         `Distributing ${items.length} items across ${chunks.length} chunks`,
         { generator: generatorName, chunks: chunks.length, chunkSize, threads }
       );
 
+      const runInOneGo = threads <= 1 || items.length <= 2;
+
       // Submit all tasks to Piscina - each promise resolves to itself for removal
       const pending = new Set(
         chunks.map(indices => {
+          if (runInOneGo) {
+            const promise = generator
+              .processChunk(fullInput, indices, opts)
+              .then(result => ({ promise, result }));
+
+            return promise;
+          }
+
           const promise = pool
             .run(createTask(fullInput, indices, opts, generatorName))
             .then(result => ({ promise, result }));

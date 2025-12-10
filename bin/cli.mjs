@@ -6,7 +6,8 @@ import { Command, Option } from 'commander';
 
 import commands from './commands/index.mjs';
 import { errorWrap } from './utils.mjs';
-import logger, { LogLevel } from '../src/logger/index.mjs';
+import { LogLevel } from '../src/logger/constants.mjs';
+import logger from '../src/logger/index.mjs';
 
 const logLevelOption = new Option('--log-level <level>', 'Log level')
   .choices(Object.keys(LogLevel))

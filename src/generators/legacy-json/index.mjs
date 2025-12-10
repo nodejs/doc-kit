@@ -18,8 +18,9 @@ const buildSection = createSectionBuilder();
  * config.
  *
  * @typedef {Array<ApiDocMetadataEntry>} Input
+ * @typedef {Array<import('./types.d.ts').Section>} Output
  *
- * @type {GeneratorMetadata<Input, import('./types.d.ts').Section[]>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'legacy-json',
@@ -37,9 +38,9 @@ export default {
    * Each item is pre-grouped {head, nodes} - no need to
    * recompute groupNodesByModule for every chunk.
    *
-   * @param {Array<{head: ApiDocMetadataEntry, nodes: ApiDocMetadataEntry[]}>} slicedInput - Pre-sliced module data
+   * @param {Array<{ head: ApiDocMetadataEntry, nodes: Array<ApiDocMetadataEntry> }>} slicedInput - Pre-sliced module data
    * @param {number[]} itemIndices - Indices into the sliced array
-   * @returns {Promise<import('./types.d.ts').Section[]>} JSON sections for each processed module
+   * @returns {Promise<Output>} JSON sections for each processed module
    */
   async processChunk(slicedInput, itemIndices) {
     const results = [];
@@ -58,7 +59,7 @@ export default {
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<Array<import('./types.d.ts').Section>>}
+   * @returns {AsyncGenerator<Output>}
    */
   async *generate(input, { output, worker }) {
     const groupedModules = groupNodesByModule(input);
@@ -67,12 +68,12 @@ export default {
 
     // Create sliced input: each item contains head + its module's entries
     // This avoids sending all 4900+ entries to every worker
-    const slicedInput = headNodes.map(head => ({
+    const entries = headNodes.map(head => ({
       head,
       nodes: groupedModules.get(head.api),
     }));
 
-    for await (const chunkResult of worker.stream(slicedInput, slicedInput)) {
+    for await (const chunkResult of worker.stream(entries, entries)) {
       if (output) {
         for (const section of chunkResult) {
           const out = join(output, `${section.api}.json`);

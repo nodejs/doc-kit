@@ -10,10 +10,7 @@ type NodeWithData<T extends Node, J extends Data> = T & {
 
 declare global {
   export interface ParserOutput<T> {
-    file: {
-      stem?: string;
-      basename?: string;
-    };
+    file: { stem?: string; basename?: string };
     tree: T;
   }
 
