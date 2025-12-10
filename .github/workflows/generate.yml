@@ -59,6 +59,7 @@ jobs:
           sparse-checkout: |
             doc/api
             lib
+            .
           path: node
 
       - name: Setup Node.js
