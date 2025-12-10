@@ -1,13 +1,9 @@
 import { extname } from 'node:path';
 
 import { globSync } from 'glob';
+import { read } from 'to-vfile';
 
-import createJsLoader from '../../loaders/javascript.mjs';
-import createJsParser from '../../parsers/javascript.mjs';
-
-const { loadFiles } = createJsLoader();
-
-const { parseJsSource } = createJsParser();
+import { parseJsSource } from '../../parsers/javascript.mjs';
 
 /**
  * This generator parses Javascript sources passed into the generator's input
@@ -40,19 +36,9 @@ export default {
   async processChunk(inputSlice, itemIndices) {
     const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
-    const vfilesPromises = loadFiles(filePaths);
-
-    const results = [];
-
-    for (const vfilePromise of vfilesPromises) {
-      const vfile = await vfilePromise;
-
-      const parsed = await parseJsSource(vfile);
-
-      results.push(parsed);
-    }
-
-    return results;
+    return Promise.all(
+      filePaths.map(async path => parseJsSource(await read(path, 'utf-8')))
+    );
   },
 
   /**

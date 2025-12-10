@@ -3,12 +3,12 @@
 import { extname } from 'node:path';
 
 import { globSync } from 'glob';
+import { read } from 'to-vfile';
 
-import createLoader from '../../loaders/markdown.mjs';
+import createQueries from '../../utils/queries/index.mjs';
 import { getRemark } from '../../utils/remark.mjs';
 
-const { loadFiles } = createLoader();
-
+const { updateStabilityPrefixToLink } = createQueries();
 const remarkProcessor = getRemark();
 
 /**
@@ -38,20 +38,18 @@ export default {
   async processChunk(inputSlice, itemIndices) {
     const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
-    const vfilesPromises = loadFiles(filePaths);
+    return Promise.all(
+      filePaths.map(async path => {
+        const vfile = await read(path, 'utf-8');
 
-    const results = [];
+        updateStabilityPrefixToLink(vfile);
 
-    for (const vfilePromise of vfilesPromises) {
-      const vfile = await vfilePromise;
-
-      results.push({
-        tree: remarkProcessor.parse(vfile),
-        file: { stem: vfile.stem, basename: vfile.basename },
-      });
-    }
-
-    return results;
+        return {
+          tree: remarkProcessor.parse(vfile),
+          file: { stem: vfile.stem, basename: vfile.basename },
+        };
+      })
+    );
   },
 
   /**
