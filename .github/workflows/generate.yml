@@ -79,7 +79,9 @@ jobs:
             -t ${{ matrix.target }} \
             -i "${{ matrix.input }}" \
             -o "out/${{ matrix.target }}" \
-            --index ./node/doc/api/index.md
+            -c ./node/CHANGELOG.md \
+            --index ./node/doc/api/index.md \
+            --log-level debug
 
       - name: Upload ${{ matrix.target }} artifacts
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
