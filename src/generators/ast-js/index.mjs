@@ -28,8 +28,6 @@ export default {
 
   description: 'Parses Javascript source files passed into the input.',
 
-  dependsOn: 'metadata',
-
   /**
    * Process a chunk of JavaScript files in a worker thread.
    * Parses JS source files into AST representations.
