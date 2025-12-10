@@ -88,13 +88,13 @@ export default {
       { skipGitHub: true, skipGtocPicker: true }
     );
 
-    if (output) {
-      // We minify the html result to reduce the file size and keep it "clean"
-      const minified = HTMLMinifier.minify(Buffer.from(result), {});
+    // We minify the html result to reduce the file size and keep it "clean"
+    const minified = HTMLMinifier.minify(Buffer.from(result), {});
 
+    if (output) {
       await writeFile(join(output, 'all.html'), minified);
     }
 
-    return result;
+    return minified;
   },
 };
