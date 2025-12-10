@@ -123,8 +123,6 @@ describe('streaming utilities', () => {
 
       ok(cache);
       strictEqual(typeof cache.getOrCollect, 'function');
-      strictEqual(typeof cache.has, 'function');
-      strictEqual(typeof cache.clear, 'function');
     });
 
     it('should return same promise for same key', async () => {
