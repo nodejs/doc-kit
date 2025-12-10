@@ -37,7 +37,7 @@ export default {
     const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
     return Promise.all(
-      filePaths.map(async path => parseJsSource(await read(path)))
+      filePaths.map(async path => parseJsSource(await read(path, 'utf-8')))
     );
   },
 
