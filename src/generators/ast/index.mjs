@@ -6,7 +6,9 @@ import { globSync } from 'glob';
 import { read } from 'to-vfile';
 
 import { getRemark } from '../../utils/remark.mjs';
+import createQueries from '../utils/queries/index.mjs';
 
+const { updateStabilityPrefixToLink } = createQueries();
 const remarkProcessor = getRemark();
 
 /**
@@ -39,6 +41,8 @@ export default {
     return Promise.all(
       filePaths.map(async path => {
         const vfile = await read(path);
+
+        updateStabilityPrefixToLink(vfile);
 
         return {
           tree: remarkProcessor.parse(vfile),
