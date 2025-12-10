@@ -64,13 +64,13 @@ export default {
   /**
    * Generates a JSX AST
    *
-   * @param {Input} entries
+   * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
    * @returns {AsyncGenerator<Array<string>>}
    */
-  async *generate(entries, { index, releases, version, worker }) {
-    const groupedModules = groupNodesByModule(entries);
-    const headNodes = getSortedHeadNodes(entries);
+  async *generate(input, { index, releases, version, worker }) {
+    const groupedModules = groupNodesByModule(input);
+    const headNodes = getSortedHeadNodes(input);
 
     // Pre-compute docPages once in main thread
     const docPages = index
@@ -79,14 +79,14 @@ export default {
 
     // Create sliced input: each item contains head + its module's entries
     // This avoids sending all 4700+ entries to every worker
-    const input = headNodes.map(head => ({
+    const entries = headNodes.map(head => ({
       head,
       entries: groupedModules.get(head.api),
     }));
 
     const deps = { docPages, releases, version };
 
-    for await (const chunkResult of worker.stream(input, input, deps)) {
+    for await (const chunkResult of worker.stream(entries, entries, deps)) {
       yield chunkResult;
     }
   },

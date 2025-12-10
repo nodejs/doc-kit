@@ -27,13 +27,13 @@ export default {
   /**
    * Main generation function that processes JSX AST entries into web bundles.
    *
-   * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries - JSX AST entries to process.
+   * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} input - JSX AST entries to process.
    * @param {Partial<GeneratorOptions>} options - Generator options.
    * @param {string} [options.output] - Output directory for generated files.
    * @param {string} options.version - Documentation version string.
    * @returns {Promise<import('../jsx-ast/utils/buildContent.mjs').JSXContent[]>}
    */
-  async generate(entries, { output, version }) {
+  async generate(input, { output, version }) {
     const template = await readFile(
       new URL('template.html', import.meta.url),
       'utf-8'
@@ -47,7 +47,7 @@ export default {
 
     // Process all entries: convert JSX to HTML/CSS/JS
     const { results, css, chunks } = await processJSXEntries(
-      entries,
+      input,
       template,
       astBuilders,
       requireFn,

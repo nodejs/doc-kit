@@ -24,18 +24,17 @@ export default {
   /**
    * Generates a llms.txt file
    *
-   * @param {Input} entries
+   * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
    * @returns {Promise<void>}
    */
-  async generate(entries, { output }) {
+  async generate(input, { output }) {
     const template = await readFile(
       join(import.meta.dirname, 'template.txt'),
       'utf-8'
     );
 
-    const apiDocsLinks = entries
-      // Filter non top-level headings
+    const apiDocsLinks = input
       .filter(entry => entry.heading.depth === 1)
       .map(entry => `- ${buildApiDocLink(entry)}`)
       .join('\n');
