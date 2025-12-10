@@ -32,12 +32,14 @@ export default {
 
   /**
    * Generates the Node.js man-page
+   *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
    */
   async generate(input, options) {
     // Filter to only 'cli'.
     const components = input.filter(({ api }) => api === 'cli');
+
     if (!components.length) {
       throw new Error('Could not find any `cli` documentation.');
     }
@@ -46,9 +48,11 @@ export default {
     const optionsStart = components.findIndex(
       ({ slug }) => slug === DOC_SLUG_OPTIONS
     );
+
     const environmentStart = components.findIndex(
       ({ slug }) => slug === DOC_SLUG_ENVIRONMENT
     );
+
     // The first header that is <3 in depth after environmentStart
     const environmentEnd = components.findIndex(
       ({ heading }, index) => heading.depth < 3 && index > environmentStart

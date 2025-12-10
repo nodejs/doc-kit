@@ -1,83 +1,133 @@
 'use strict';
 
 import { allGenerators } from './generators/index.mjs';
-import WorkerPool from './threading/index.mjs';
+import logger from './logger/index.mjs';
+import { isAsyncGenerator, createStreamingCache } from './streaming.mjs';
+import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
 
+const generatorsLogger = logger.child('generators');
+
 /**
- * This method creates a system that allows you to register generators
- * and then execute them in a specific order, keeping track of the
- * generation process, and handling errors that may occur from the
- * execution of generating content.
+ * Creates a generator orchestration system that manages the execution of
+ * documentation generators in dependency order, with support for parallel
+ * processing and streaming results.
  *
- * When the final generator is reached, the system will return the
- * final generated content.
- *
- * Generators can output content that can be consumed by other generators;
- * Generators can also write to files. These would usually be considered
- * the final generators in the chain.
- *
- * @typedef {{ ast: GeneratorMetadata<ParserOutput, ParserOutput>}} AstGenerator The AST "generator" is a facade for the AST tree and it isn't really a generator
- * @typedef {AvailableGenerators & AstGenerator} AllGenerators A complete set of the available generators, including the AST one
- *
- * @param {ParserOutput} input The API doc AST tree
+ * @returns {{ runGenerators: (options: GeneratorOptions) => Promise<unknown[]> }}
  */
-const createGenerator = input => {
-  /**
-   * We store all the registered generators to be processed
-   * within a Record, so we can access their results at any time whenever needed
-   * (we store the Promises of the generator outputs)
-   *
-   * @type {{ [K in keyof AllGenerators]: ReturnType<AllGenerators[K]['generate']> }}
-   */
-  const cachedGenerators = { ast: Promise.resolve(input) };
+const createGenerator = () => {
+  /** @type {{ [key: string]: Promise<unknown> | AsyncGenerator }} */
+  const cachedGenerators = {};
+
+  const streamingCache = createStreamingCache();
+
+  /** @type {import('piscina').Piscina} */
+  let pool;
 
   /**
-   * Runs the Generator engine with the provided top-level input and the given generator options
+   * Gets the collected input from a dependency generator.
    *
-   * @param {GeneratorOptions} options The options for the generator runtime
+   * @param {string | undefined} dependsOn - Dependency generator name
+   * @returns {Promise<unknown>}
+   */
+  const getDependencyInput = async dependsOn => {
+    if (!dependsOn) {
+      return undefined;
+    }
+
+    const result = await cachedGenerators[dependsOn];
+
+    if (isAsyncGenerator(result)) {
+      return streamingCache.getOrCollect(dependsOn, result);
+    }
+
+    return result;
+  };
+
+  /**
+   * Schedules a generator and its dependencies for execution.
+   *
+   * @param {string} generatorName - Generator to schedule
+   * @param {GeneratorOptions} options - Runtime options
+   */
+  const scheduleGenerator = (generatorName, options) => {
+    if (generatorName in cachedGenerators) {
+      return;
+    }
+
+    const { dependsOn, generate, processChunk } = allGenerators[generatorName];
+
+    // Schedule dependency first
+    if (dependsOn && !(dependsOn in cachedGenerators)) {
+      scheduleGenerator(dependsOn, options);
+    }
+
+    generatorsLogger.debug(`Scheduling "${generatorName}"`, {
+      dependsOn: dependsOn || 'none',
+      streaming: Boolean(processChunk),
+    });
+
+    // Schedule the generator
+    cachedGenerators[generatorName] = (async () => {
+      const dependencyInput = await getDependencyInput(dependsOn);
+
+      generatorsLogger.debug(`Starting "${generatorName}"`);
+
+      // Create parallel worker for streaming generators
+      const worker = processChunk
+        ? createParallelWorker(generatorName, pool, options)
+        : null;
+
+      const result = await generate(dependencyInput, { ...options, worker });
+
+      // For streaming generators, "Completed" is logged when collection finishes
+      // (in streamingCache.getOrCollect), not here when the generator returns
+      if (!isAsyncGenerator(result)) {
+        generatorsLogger.debug(`Completed "${generatorName}"`);
+      }
+
+      return result;
+    })();
+  };
+
+  /**
+   * Runs all requested generators with their dependencies.
+   *
+   * @param {GeneratorOptions} options - Runtime options
+   * @returns {Promise<unknown[]>} Results of all requested generators
    */
   const runGenerators = async options => {
     const { generators, threads } = options;
 
-    // WorkerPool for chunk-level parallelization within generators
-    const chunkPool = new WorkerPool('./chunk-worker.mjs', threads);
+    generatorsLogger.debug(`Starting pipeline`, {
+      generators: generators.join(', '),
+      threads,
+    });
 
-    // Schedule all generators, allowing independent ones to run in parallel.
-    // Each generator awaits its own dependency internally, so generators
-    // with the same dependency (e.g. legacy-html and legacy-json both depend
-    // on metadata) will run concurrently once metadata resolves.
-    for (const generatorName of generators) {
-      // Skip if already scheduled
-      if (generatorName in cachedGenerators) {
-        continue;
-      }
+    // Create worker pool
+    pool = createWorkerPool(threads);
 
-      const { dependsOn, generate } = allGenerators[generatorName];
-
-      // Ensure dependency is scheduled (but don't await its result yet)
-      if (dependsOn && !(dependsOn in cachedGenerators)) {
-        await runGenerators({ ...options, generators: [dependsOn] });
-      }
-
-      // Create a ParallelWorker for this generator
-      const worker = createParallelWorker(generatorName, chunkPool, options);
-
-      /**
-       * Schedule the generator - it awaits its dependency internally
-       * his allows multiple generators with the same dependency to run in parallel
-       */
-      const scheduledGenerator = async () => {
-        const input = await cachedGenerators[dependsOn];
-
-        return generate(input, { ...options, worker });
-      };
-
-      cachedGenerators[generatorName] = scheduledGenerator();
+    // Schedule all generators
+    for (const name of generators) {
+      scheduleGenerator(name, options);
     }
 
-    // Returns the value of the last generator of the current pipeline
-    return cachedGenerators[generators[generators.length - 1]];
+    // Start all collections in parallel (don't await sequentially)
+    const resultPromises = generators.map(async name => {
+      let result = await cachedGenerators[name];
+
+      if (isAsyncGenerator(result)) {
+        result = await streamingCache.getOrCollect(name, result);
+      }
+
+      return result;
+    });
+
+    const results = await Promise.all(resultPromises);
+
+    await pool.destroy();
+
+    return results;
   };
 
   return { runGenerators };

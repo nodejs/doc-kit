@@ -5,6 +5,10 @@ import { globSync } from 'glob';
 import createJsLoader from '../../loaders/javascript.mjs';
 import createJsParser from '../../parsers/javascript.mjs';
 
+const { loadFiles } = createJsLoader();
+
+const { parseJsSource } = createJsParser();
+
 /**
  * This generator parses Javascript sources passed into the generator's input
  * field. This is separate from the Markdown parsing step since it's not as
@@ -14,8 +18,9 @@ import createJsParser from '../../parsers/javascript.mjs';
  * so we're only parsing the Javascript sources when we need to.
  *
  * @typedef {unknown} Input
+ * @typedef {Array<JsProgram>} Output
  *
- * @type {GeneratorMetadata<Input, Array<JsProgram>>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'ast-js',
@@ -24,41 +29,46 @@ export default {
 
   description: 'Parses Javascript source files passed into the input.',
 
-  dependsOn: 'metadata',
-
   /**
    * Process a chunk of JavaScript files in a worker thread.
-   * @param {unknown} _
-   * @param {number[]} itemIndices
-   * @param {Partial<GeneratorOptions>} options
+   * Parses JS source files into AST representations.
+   *
+   * @param {string[]} inputSlice - Sliced input paths for this chunk
+   * @param {number[]} itemIndices - Indices into the sliced array
+   * @returns {Promise<Output>} Parsed JS AST objects for each file
    */
-  async processChunk(_, itemIndices, { input }) {
-    const { loadFiles } = createJsLoader();
-    const { parseJsSource } = createJsParser();
+  async processChunk(inputSlice, itemIndices) {
+    const filePaths = itemIndices.map(idx => inputSlice[idx]);
+
+    const vfilesPromises = loadFiles(filePaths);
 
     const results = [];
 
-    for (const idx of itemIndices) {
-      const [file] = loadFiles(input[idx]);
+    for (const vfilePromise of vfilesPromises) {
+      const vfile = await vfilePromise;
 
-      const parsedFile = await parseJsSource(file);
+      const parsed = await parseJsSource(vfile);
 
-      results.push(parsedFile);
+      results.push(parsed);
     }
 
     return results;
   },
 
   /**
-   * @param {Input} _
+   * Generates a JavaScript AST from the input files.
+   *
+   * @param {Input} _ - Unused (files loaded from input paths)
    * @param {Partial<GeneratorOptions>} options
+   * @returns {AsyncGenerator<Output>}
    */
-  async generate(_, { input = [], worker }) {
-    const sourceFiles = globSync(input).filter(
-      filePath => extname(filePath) === '.js'
-    );
+  async *generate(_, { input = [], worker }) {
+    const source = globSync(input).filter(path => extname(path) === '.js');
 
     // Parse the Javascript sources into ASTs in parallel using worker threads
-    return worker.map(sourceFiles, _, { input: sourceFiles });
+    // source is both the items list and the fullInput since we use sliceInput
+    for await (const chunkResult of worker.stream(source, source)) {
+      yield chunkResult;
+    }
   },
 };

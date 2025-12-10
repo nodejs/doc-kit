@@ -1,9 +1,9 @@
 import { readdir } from 'node:fs/promises';
 import { cpus } from 'node:os';
 import { basename, extname, join } from 'node:path';
-import { describe, it } from 'node:test';
+import { after, before, describe, it } from 'node:test';
 
-import WorkerPool from '../../../threading/index.mjs';
+import createWorkerPool from '../../../threading/index.mjs';
 import createParallelWorker from '../../../threading/parallel.mjs';
 import astJs from '../../ast-js/index.mjs';
 import apiLinks from '../index.mjs';
@@ -16,22 +16,36 @@ const sourceFiles = fixtures
   .map(fixture => join(FIXTURES_DIRECTORY, fixture));
 
 describe('api links', () => {
+  const threads = cpus().length;
+  let pool;
+
+  before(() => {
+    pool = createWorkerPool(threads);
+  });
+
+  after(async () => {
+    await pool.destroy();
+  });
+
   describe('should work correctly for all fixtures', () => {
     sourceFiles.forEach(sourceFile => {
       it(`${basename(sourceFile)}`, async t => {
-        const pool = new WorkerPool('../chunk-worker.mjs', cpus().length);
-
         const worker = createParallelWorker('ast-js', pool, {
-          threads: 1,
+          threads,
           chunkSize: 10,
         });
 
-        const astJsResult = await astJs.generate(undefined, {
+        // Collect results from the async generator
+        const astJsResults = [];
+
+        for await (const chunk of astJs.generate(undefined, {
           input: [sourceFile],
           worker,
-        });
+        })) {
+          astJsResults.push(...chunk);
+        }
 
-        const actualOutput = await apiLinks.generate(astJsResult, {
+        const actualOutput = await apiLinks.generate(astJsResults, {
           gitRef: 'https://github.com/nodejs/node/tree/HEAD',
         });
 

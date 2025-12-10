@@ -1,85 +1,182 @@
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
-import WorkerPool from '../index.mjs';
+import createWorkerPool from '../index.mjs';
 import createParallelWorker from '../parallel.mjs';
 
+/**
+ * Helper to collect all results from an async generator.
+ *
+ * @template T
+ * @param {AsyncGenerator<T[], void, unknown>} generator
+ * @returns {Promise<T[]>}
+ */
+async function collectStream(generator) {
+  const results = [];
+
+  for await (const chunk of generator) {
+    results.push(...chunk);
+  }
+
+  return results;
+}
+
+/**
+ * Helper to collect chunks (not flattened)
+ *
+ * @template T
+ * @param {AsyncGenerator<T[], void, unknown>} generator
+ * @returns {Promise<T[][]>}
+ */
+async function collectChunks(generator) {
+  const chunks = [];
+
+  for await (const chunk of generator) {
+    chunks.push(chunk);
+  }
+
+  return chunks;
+}
+
 describe('createParallelWorker', () => {
-  // Use relative path from WorkerPool's location (src/threading/)
-  const workerPath = './chunk-worker.mjs';
-
-  it('should create a ParallelWorker with map method', () => {
-    const pool = new WorkerPool(workerPath, 2);
-
+  it('should create a ParallelWorker with stream method', async () => {
+    const pool = createWorkerPool(2);
     const worker = createParallelWorker('metadata', pool, { threads: 2 });
 
     ok(worker);
-    strictEqual(typeof worker.map, 'function');
-  });
+    strictEqual(typeof worker.stream, 'function');
 
-  it('should use main thread for single-threaded execution', async () => {
-    const pool = new WorkerPool(workerPath, 1);
-
-    const worker = createParallelWorker('ast-js', pool, { threads: 1 });
-    const items = [];
-    const results = await worker.map(items, items, {});
-
-    ok(Array.isArray(results));
-    strictEqual(results.length, 0);
-  });
-
-  it('should use main thread for small item counts', async () => {
-    const pool = new WorkerPool(workerPath, 4);
-
-    const worker = createParallelWorker('ast-js', pool, { threads: 4 });
-    const items = [];
-    const results = await worker.map(items, items, {});
-
-    ok(Array.isArray(results));
-    strictEqual(results.length, 0);
-  });
-
-  it('should chunk items for parallel processing', async () => {
-    const pool = new WorkerPool(workerPath, 2);
-
-    const worker = createParallelWorker('ast-js', pool, { threads: 2 });
-    const items = [];
-
-    const results = await worker.map(items, items, {});
-
-    strictEqual(results.length, 0);
-    ok(Array.isArray(results));
-  });
-
-  it('should pass extra options to worker', async () => {
-    const pool = new WorkerPool(workerPath, 1);
-
-    const worker = createParallelWorker('ast-js', pool, { threads: 1 });
-    const extra = { gitRef: 'main', customOption: 'value' };
-    const items = [];
-
-    const results = await worker.map(items, items, extra);
-
-    ok(Array.isArray(results));
-  });
-
-  it('should serialize and deserialize data correctly', async () => {
-    const pool = new WorkerPool(workerPath, 2);
-
-    const worker = createParallelWorker('ast-js', pool, { threads: 2 });
-    const items = [];
-
-    const results = await worker.map(items, items, {});
-
-    ok(Array.isArray(results));
+    await pool.destroy();
   });
 
   it('should handle empty items array', async () => {
-    const pool = new WorkerPool(workerPath, 2);
+    const pool = createWorkerPool(2);
+    const worker = createParallelWorker('ast-js', pool, {
+      threads: 2,
+      chunkSize: 10,
+    });
 
-    const worker = createParallelWorker('ast-js', pool, { threads: 2 });
-    const results = await worker.map([], [], {});
+    const results = await collectStream(worker.stream([], [], {}));
 
     deepStrictEqual(results, []);
+
+    await pool.destroy();
+  });
+
+  it('should distribute items to multiple worker threads', async () => {
+    const pool = createWorkerPool(4);
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 4,
+      chunkSize: 1,
+    });
+
+    const mockInput = [
+      {
+        file: { stem: 'test1', basename: 'test1.md' },
+        tree: { type: 'root', children: [] },
+      },
+      {
+        file: { stem: 'test2', basename: 'test2.md' },
+        tree: { type: 'root', children: [] },
+      },
+      {
+        file: { stem: 'test3', basename: 'test3.md' },
+        tree: { type: 'root', children: [] },
+      },
+      {
+        file: { stem: 'test4', basename: 'test4.md' },
+        tree: { type: 'root', children: [] },
+      },
+    ];
+
+    const chunks = await collectChunks(
+      worker.stream(mockInput, mockInput, { typeMap: {} })
+    );
+
+    strictEqual(chunks.length, 4);
+
+    for (const chunk of chunks) {
+      ok(Array.isArray(chunk));
+    }
+
+    await pool.destroy();
+  });
+
+  it('should yield results as chunks complete', async () => {
+    const pool = createWorkerPool(2);
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 2,
+      chunkSize: 1,
+    });
+
+    const mockInput = [
+      {
+        file: { stem: 'test1', basename: 'test1.md' },
+        tree: { type: 'root', children: [] },
+      },
+      {
+        file: { stem: 'test2', basename: 'test2.md' },
+        tree: { type: 'root', children: [] },
+      },
+    ];
+
+    const chunks = await collectChunks(
+      worker.stream(mockInput, mockInput, { typeMap: {} })
+    );
+
+    strictEqual(chunks.length, 2);
+
+    await pool.destroy();
+  });
+
+  it('should work with single thread and items', async () => {
+    const pool = createWorkerPool(2);
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 2,
+      chunkSize: 5,
+    });
+
+    const mockInput = [
+      {
+        file: { stem: 'test1', basename: 'test1.md' },
+        tree: { type: 'root', children: [] },
+      },
+    ];
+
+    const chunks = await collectChunks(
+      worker.stream(mockInput, mockInput, { typeMap: {} })
+    );
+
+    strictEqual(chunks.length, 1);
+    ok(Array.isArray(chunks[0]));
+
+    await pool.destroy();
+  });
+
+  it('should use sliceInput for metadata generator', async () => {
+    const pool = createWorkerPool(2);
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 2,
+      chunkSize: 1,
+    });
+
+    const mockInput = [
+      {
+        file: { stem: 'test1', basename: 'test1.md' },
+        tree: { type: 'root', children: [] },
+      },
+      {
+        file: { stem: 'test2', basename: 'test2.md' },
+        tree: { type: 'root', children: [] },
+      },
+    ];
+
+    const chunks = await collectChunks(
+      worker.stream(mockInput, mockInput, { typeMap: {} })
+    );
+
+    strictEqual(chunks.length, 2);
+
+    await pool.destroy();
   });
 });

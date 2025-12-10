@@ -5,12 +5,19 @@ import process from 'node:process';
 import { Command, Option } from 'commander';
 
 import commands from './commands/index.mjs';
-import interactive from './commands/interactive.mjs';
 import { errorWrap } from './utils.mjs';
+import { LogLevel } from '../src/logger/constants.mjs';
+import logger from '../src/logger/index.mjs';
+
+const logLevelOption = new Option('--log-level <level>', 'Log level')
+  .choices(Object.keys(LogLevel))
+  .default('info');
 
 const program = new Command()
   .name('@nodejs/doc-kit')
-  .description('CLI tool to generate the Node.js API documentation');
+  .description('CLI tool to generate the Node.js API documentation')
+  .addOption(logLevelOption)
+  .hook('preAction', cmd => logger.setLogLevel(cmd.opts().logLevel));
 
 // Registering commands
 commands.forEach(({ name, description, options, action }) => {
@@ -36,12 +43,6 @@ commands.forEach(({ name, description, options, action }) => {
   // Set the action for the command
   cmd.action(errorWrap(action));
 });
-
-// Register the interactive command
-program
-  .command('interactive')
-  .description('Launch guided CLI wizard')
-  .action(errorWrap(interactive));
 
 // Parse and execute command-line arguments
 program.parse(process.argv);

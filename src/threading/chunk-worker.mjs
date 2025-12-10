@@ -1,13 +1,14 @@
-import { parentPort, workerData } from 'node:worker_threads';
-
 import { allGenerators } from '../generators/index.mjs';
 
-const { generatorName, fullInput, itemIndices, options } = workerData;
+/**
+ * Processes a chunk of items using the specified generator's processChunk method.
+ * This is the worker entry point for Piscina.
+ *
+ * @param {ParallelTaskOptions} opts - Task options from Piscina
+ * @returns {Promise<unknown>} The processed result
+ */
+export default async ({ generatorName, input, itemIndices, options }) => {
+  const generator = allGenerators[generatorName];
 
-const generator = allGenerators[generatorName];
-
-// Generators must implement processChunk for item-level parallelization
-generator
-  .processChunk(fullInput, itemIndices, options)
-  .then(result => parentPort.postMessage(result))
-  .catch(error => parentPort.postMessage({ error: error.message }));
+  return generator.processChunk(input, itemIndices, options);
+};

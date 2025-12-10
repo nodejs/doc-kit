@@ -5,6 +5,8 @@ node bin/cli.mjs generate \
   -t web \
   -i "./node/doc/api/*.md" \
   -o "./out" \
-  --index "./node/doc/api/index.md"
+  -c "./node/CHANGELOG.md" \
+  --index "./node/doc/api/index.md" \
+  --log-level debug
 
 rm -rf node/

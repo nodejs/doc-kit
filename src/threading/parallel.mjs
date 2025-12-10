@@ -1,110 +1,130 @@
 'use strict';
 
 import { allGenerators } from '../generators/index.mjs';
+import logger from '../logger/index.mjs';
+
+const parallelLogger = logger.child('parallel');
 
 /**
- * Creates a ParallelWorker that uses real Node.js Worker threads
- * for parallel processing of items.
+ * Splits items into chunks of specified size.
  *
- * @param {string} generatorName - Name of the generator (for chunk processing)
- * @param {import('./index.mjs').default} pool - WorkerPool instance for spawning workers
- * @param {object} options - Generator options
+ * @param {number} count - Total number of items
+ * @param {number} size - Maximum items per chunk
+ * @returns {number[][]} Array of index arrays for each chunk
+ */
+const createChunks = (count, size) => {
+  const chunks = [];
+
+  for (let i = 0; i < count; i += size) {
+    chunks.push(
+      Array.from({ length: Math.min(size, count - i) }, (_, j) => i + j)
+    );
+  }
+
+  return chunks;
+};
+
+/**
+ * Prepares task data for a chunk, slicing input to only include relevant items.
+ *
+ * @param {unknown[]} fullInput - Full input array
+ * @param {number[]} indices - Indices to process
+ * @param {object} options - Serialized options
+ * @param {string} generatorName - Name of the generator
+ * @returns {ParallelTaskOptions} Task data for Piscina
+ */
+const createTask = (fullInput, indices, options, generatorName) => ({
+  generatorName,
+  // Only send the items needed for this chunk (reduces serialization overhead)
+  input: indices.map(i => fullInput[i]),
+  // Remap indices to 0-based for the sliced array
+  itemIndices: indices.map((_, i) => i),
+  options,
+});
+
+/**
+ * Creates a parallel worker that distributes work across a Piscina thread pool.
+ *
+ * @param {keyof AllGenerators} generatorName - Generator name
+ * @param {import('piscina').Piscina} pool - Piscina instance
+ * @param {Partial<GeneratorOptions>} options - Generator options
  * @returns {ParallelWorker}
  */
 export default function createParallelWorker(generatorName, pool, options) {
   const { threads, chunkSize } = options;
 
-  const generator = allGenerators[generatorName];
-
-  /**
-   * Splits items into chunks of specified size.
-   * @param {number} count - Number of items
-   * @param {number} size - Items per chunk
-   * @returns {number[][]} Array of index arrays
-   */
-  const createIndexChunks = (count, size) => {
-    const chunks = [];
-
-    for (let i = 0; i < count; i += size) {
-      const end = Math.min(i + size, count);
-
-      const chunk = [];
-
-      for (let j = i; j < end; j++) {
-        chunk.push(j);
-      }
-
-      chunks.push(chunk);
-    }
-
-    return chunks;
-  };
-
-  /**
-   * Strips non-serializable properties from options for worker transfer
-   * @param {object} extra - Extra options to merge
-   */
+  /** @param {object} extra */
   const serializeOptions = extra => {
-    const serialized = { ...options, ...extra };
+    const opts = { ...options, ...extra };
 
-    delete serialized.worker;
+    delete opts.worker;
 
-    return serialized;
+    return opts;
   };
+
+  const generator = allGenerators[generatorName];
 
   return {
     /**
-     * Process items in parallel using real worker threads.
-     * Items are split into chunks, each chunk processed by a separate worker.
+     * Processes items in parallel, yielding results as chunks complete.
      *
      * @template T, R
-     * @param {T[]} items - Items to process (must be serializable)
-     * @param {T[]} fullInput - Full input data for context rebuilding in workers
-     * @param {object} extra - Generator-specific context (e.g. apiTemplate, parsedSideNav)
-     * @returns {Promise<R[]>} - Results in same order as input items
+     * @param {T[]} items - Items to process
+     * @param {T[]} fullInput - Full input for context
+     * @param {object} extra - Extra options
+     * @yields {R[]} Chunk results as they complete
      */
-    async map(items, fullInput, extra) {
-      const itemCount = items.length;
-
-      if (itemCount === 0) {
-        return [];
+    async *stream(items, fullInput, extra) {
+      if (items.length === 0) {
+        return;
       }
 
-      if (!generator.processChunk) {
-        throw new Error(
-          `Generator "${generatorName}" does not support chunk processing`
-        );
-      }
+      const opts = serializeOptions(extra);
 
-      // For single thread or small workloads - run in main thread
-      if (threads <= 1 || itemCount <= 2) {
-        const indices = [];
+      const chunks = createChunks(items.length, chunkSize);
 
-        for (let i = 0; i < itemCount; i++) {
-          indices.push(i);
-        }
-
-        return generator.processChunk(fullInput, indices, {
-          ...options,
-          ...extra,
-        });
-      }
-
-      // Divide items into chunks based on chunkSize
-      const indexChunks = createIndexChunks(itemCount, chunkSize);
-
-      // Process chunks in parallel using worker threads
-      const chunkResults = await pool.runAll(
-        indexChunks.map(indices => ({
-          generatorName,
-          fullInput,
-          itemIndices: indices,
-          options: serializeOptions(extra),
-        }))
+      parallelLogger.debug(
+        `Distributing ${items.length} items across ${chunks.length} chunks`,
+        { generator: generatorName, chunks: chunks.length, chunkSize, threads }
       );
 
-      // Flatten results
-      return chunkResults.flat();
+      const runInOneGo = threads <= 1 || items.length <= 2;
+
+      // Submit all tasks to Piscina - each promise resolves to itself for removal
+      const pending = new Set(
+        chunks.map(indices => {
+          if (runInOneGo) {
+            const promise = generator
+              .processChunk(fullInput, indices, opts)
+              .then(result => ({ promise, result }));
+
+            return promise;
+          }
+
+          const promise = pool
+            .run(createTask(fullInput, indices, opts, generatorName))
+            .then(result => ({ promise, result }));
+
+          return promise;
+        })
+      );
+
+      // Yield results as they complete (true parallel collection)
+      let completed = 0;
+
+      while (pending.size > 0) {
+        const { promise, result } = await Promise.race(pending);
+
+        pending.delete(promise);
+
+        completed++;
+
+        parallelLogger.debug(`Chunk ${completed}/${chunks.length} completed`, {
+          generator: generatorName,
+        });
+
+        yield result;
+      }
     },
   };
 }

@@ -1,27 +1,34 @@
+import type { SemVer } from 'semver';
 import type { ApiDocReleaseEntry } from '../types';
-import type { publicGenerators } from './index.mjs';
+import type { publicGenerators, allGenerators } from './index.mjs';
 
 declare global {
-  // All available generators as an inferable type, to allow Generator interfaces
-  // to be type complete and runtime friendly within `runGenerators`
+  // Public generators exposed to the CLI
   export type AvailableGenerators = typeof publicGenerators;
 
-  // ParallelWorker interface for item-level parallelization using real worker threads
+  // All generators including internal ones (metadata, jsx-ast, ast-js)
+  export type AllGenerators = typeof allGenerators;
+
+  /**
+   * ParallelWorker interface for distributing work across Node.js worker threads.
+   * Streams results as chunks complete, enabling pipeline parallelism.
+   */
   export interface ParallelWorker {
     /**
-     * Process items in parallel using real worker threads.
-     * Items are split into chunks, each chunk processed by a separate worker.
+     * Processes items in parallel across worker threads and yields results
+     * as each chunk completes. Enables downstream processing to begin
+     * while upstream chunks are still being processed.
      *
-     * @param items - Items to process (used to determine indices)
+     * @param items - Items to process (determines chunk distribution)
      * @param fullInput - Full input data for context rebuilding in workers
      * @param opts - Additional options to pass to workers
-     * @returns Results in same order as input items
+     * @yields Each chunk's results as they complete
      */
-    map<T, R>(
+    stream<T, R>(
       items: T[],
-      fullInput: unknown,
+      fullInput: T[],
       opts?: Record<string, unknown>
-    ): Promise<R[]>;
+    ): AsyncGenerator<R[], void, unknown>;
   }
 
   // This is the runtime config passed to the API doc generators
@@ -70,9 +77,20 @@ declare global {
     worker: ParallelWorker;
   }
 
+  export type ParallelGeneratorOptions = Partial<
+    Omit<GeneratorOptions, 'worker'>
+  >;
+
+  export interface ParallelTaskOptions {
+    generatorName: keyof AllGenerators;
+    input: unknown[];
+    itemIndices: number[];
+    options: ParallelGeneratorOptions & Record<string, unknown>;
+  }
+
   export interface GeneratorMetadata<I extends any, O extends any> {
-    // The name of the Generator. Must match the Key in the AvailableGenerators
-    name: keyof AvailableGenerators;
+    // The name of the Generator. Must match the Key in AllGenerators
+    name: keyof AllGenerators;
 
     version: string;
 
@@ -95,14 +113,12 @@ declare global {
      * If you pass `createGenerator` with ['react', 'html'], the 'react' generator will be executed first,
      * as it is a top level generator and then the 'html' generator would be executed after the 'react' generator.
      *
-     * The 'ast' generator is the top-level parser, and if 'ast' is passed to `dependsOn`, then the generator
-     * will be marked as a top-level generator.
+     * The 'ast' generator is the top-level parser for markdown files. It has no dependencies.
      *
      * The `ast-js` generator is the top-level parser for JavaScript files. It
-     * passes the ASTs for any JavaScript files given in the input. Like `ast`,
-     * any generator depending on it is marked as a top-level generator.
+     * passes the ASTs for any JavaScript files given in the input.
      */
-    dependsOn: keyof AvailableGenerators | 'ast' | 'ast-js';
+    dependsOn: keyof AllGenerators | undefined;
 
     /**
      * Generators are abstract and the different generators have different sort of inputs and outputs.
@@ -122,13 +138,17 @@ declare global {
      * Generators that implement this method can have their work distributed
      * across multiple worker threads for true parallel processing.
      *
-     * @param fullInput - Full input data (for rebuilding context in workers)
-     * @param itemIndices - Array of indices of items to process
+     * Input is automatically sliced to only include items at the specified indices,
+     * reducing serialization overhead. The itemIndices are remapped to 0-based
+     * indices into the sliced array.
+     *
+     * @param slicedInput - Sliced input containing only items for this chunk
+     * @param itemIndices - Array of 0-based indices into slicedInput
      * @param options - Generator options (without worker, which isn't serializable)
      * @returns Array of results for the processed items
      */
     processChunk?: (
-      fullInput: I,
+      slicedInput: I,
       itemIndices: number[],
       options: Partial<Omit<GeneratorOptions, 'worker'>>
     ) => Promise<unknown[]>;

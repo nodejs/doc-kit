@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import HTMLMinifier from '@minify-html/node';
 
 import buildContent from './utils/buildContent.mjs';
-import dropdowns from './utils/buildDropdowns.mjs';
+import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
 import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
@@ -19,16 +19,9 @@ import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
  */
 const getHeading = name => ({ data: { depth: 1, name } });
 
+const remarkRehypeProcessor = getRemarkRehypeWithShiki();
+
 /**
- * @typedef {{
- * api: string;
- * added: string;
- * section: string;
- * version: string;
- * toc: string;
- * nav: string;
- * content: string;
- * }} TemplateValues
  *
  * This generator generates the legacy HTML pages of the legacy API docs
  * for retro-compatibility and while we are implementing the new 'react' and 'html' generators.
@@ -37,8 +30,9 @@ const getHeading = name => ({ data: { depth: 1, name } });
  * and generates the HTML files to the specified output directory from the configuration settings
  *
  * @typedef {Array<ApiDocMetadataEntry>} Input
+ * @typedef {Array<import('./types').TemplateValues>} Output
  *
- * @type {GeneratorMetadata<Input, Array<TemplateValues>>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'legacy-html',
@@ -52,49 +46,21 @@ export default {
 
   /**
    * Process a chunk of items in a worker thread.
-   * @param {Input} fullInput
-   * @param {number[]} itemIndices
-   * @param {Partial<GeneratorOptions>} options
+   * Builds HTML template objects - FS operations happen in generate().
+   *
+   * Each item is pre-grouped {head, nodes, headNodes} - no need to
+   * recompute groupNodesByModule for every chunk.
+   *
+   * @param {Array<{ head: ApiDocMetadataEntry, nodes: Array<ApiDocMetadataEntry>, headNodes: Array<ApiDocMetadataEntry> }> } slicedInput - Pre-sliced module data
+   * @param {number[]} itemIndices - Indices into the sliced array
+   * @param {{ version: SemVer, parsedSideNav: string }} deps - Dependencies passed from generate()
+   * @returns {Promise<Output>} Template objects for each processed module
    */
-  async processChunk(
-    fullInput,
-    itemIndices,
-    { releases, version, output, apiTemplate, parsedSideNav }
-  ) {
-    const remarkRehypeProcessor = getRemarkRehypeWithShiki();
-    const groupedModules = groupNodesByModule(fullInput);
-
-    const headNodes = fullInput
-      .filter(node => node.heading.depth === 1)
-      .sort((a, b) => a.heading.data.name.localeCompare(b.heading.data.name));
-
-    /**
-     * Replaces the template values in the API template with the given values.
-     * @param {TemplateValues} values - The values to replace the template values with
-     * @returns {string} The replaced template values
-     */
-    const replaceTemplateValues = values => {
-      const { api, added, section, version, toc, nav, content } = values;
-
-      return apiTemplate
-        .replace('__ID__', api)
-        .replace(/__FILENAME__/g, api)
-        .replace('__SECTION__', section)
-        .replace(/__VERSION__/g, version)
-        .replace(/__TOC__/g, tableOfContents.wrapToC(toc))
-        .replace(/__GTOC__/g, nav)
-        .replace('__CONTENT__', content)
-        .replace(/__TOC_PICKER__/g, dropdowns.buildToC(toc))
-        .replace(/__GTOC_PICKER__/g, dropdowns.buildNavigation(nav))
-        .replace('__ALTDOCS__', dropdowns.buildVersions(api, added, releases))
-        .replace('__EDIT_ON_GITHUB__', dropdowns.buildGitHub(api));
-    };
-
+  async processChunk(slicedInput, itemIndices, { version, parsedSideNav }) {
     const results = [];
 
     for (const idx of itemIndices) {
-      const head = headNodes[idx];
-      const nodes = groupedModules.get(head.api);
+      const { head, nodes, headNodes } = slicedInput[idx];
 
       const activeSideNav = String(parsedSideNav).replace(
         `class="nav-${head.api}`,
@@ -116,7 +82,7 @@ export default {
 
       const apiAsHeading = head.api.charAt(0).toUpperCase() + head.api.slice(1);
 
-      const generatedTemplate = {
+      const template = {
         api: head.api,
         added: head.introduced_in ?? '',
         section: head.heading.data.name || apiAsHeading,
@@ -126,15 +92,7 @@ export default {
         content: parsedContent,
       };
 
-      if (output) {
-        // We minify the html result to reduce the file size and keep it "clean"
-        const result = replaceTemplateValues(generatedTemplate);
-        const minified = HTMLMinifier.minify(Buffer.from(result), {});
-
-        await writeFile(join(output, `${head.api}.html`), minified);
-      }
-
-      results.push(generatedTemplate);
+      results.push(template);
     }
 
     return results;
@@ -144,13 +102,14 @@ export default {
    * Generates the legacy version of the API docs in HTML
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
+   * @returns {AsyncGenerator<Output>}
    */
-  async generate(input, { index, releases, version, output, worker }) {
-    const remarkRehypeProcessor = getRemarkRehypeWithShiki();
-
+  async *generate(input, { index, releases, version, output, worker }) {
     const baseDir = import.meta.dirname;
 
     const apiTemplate = await readFile(join(baseDir, 'template.html'), 'utf-8');
+
+    const groupedModules = groupNodesByModule(input);
 
     const headNodes = input
       .filter(node => node.heading.depth === 1)
@@ -167,15 +126,6 @@ export default {
       })
     );
 
-    const generatedValues = await worker.map(headNodes, input, {
-      index,
-      releases,
-      version,
-      output,
-      apiTemplate,
-      parsedSideNav: String(parsedSideNav),
-    });
-
     if (output) {
       // Define the source folder for API docs assets
       const srcAssets = join(baseDir, 'assets');
@@ -190,6 +140,30 @@ export default {
       await safeCopy(srcAssets, assetsFolder);
     }
 
-    return generatedValues;
+    // Create sliced input: each item contains head + its module's entries + headNodes reference
+    // This avoids sending all ~4900 entries to every worker and recomputing groupings
+    const entries = headNodes.map(head => ({
+      head,
+      nodes: groupedModules.get(head.api),
+      headNodes,
+    }));
+
+    const deps = { version, parsedSideNav: String(parsedSideNav) };
+
+    // Stream chunks as they complete - HTML files are written immediately
+    for await (const chunkResult of worker.stream(entries, entries, deps)) {
+      // Write files for this chunk in the generate method (main thread)
+      if (output) {
+        for (const template of chunkResult) {
+          const result = replaceTemplateValues(apiTemplate, template, releases);
+
+          const minified = HTMLMinifier.minify(Buffer.from(result), {});
+
+          await writeFile(join(output, `${template.api}.html`), minified);
+        }
+      }
+
+      yield chunkResult;
+    }
   },
 };

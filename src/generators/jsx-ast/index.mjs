@@ -1,47 +1,18 @@
-import { OVERRIDDEN_POSITIONS } from './constants.mjs';
 import { buildSideBarProps } from './utils/buildBarProps.mjs';
 import buildContent from './utils/buildContent.mjs';
+import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRecma } from '../../utils/remark.mjs';
 
-/**
- * Sorts entries by OVERRIDDEN_POSITIONS and then heading name.
- * @param {Array<ApiDocMetadataEntry>} entries
- */
-const getSortedHeadNodes = entries => {
-  /**
-   * Sorts entries by OVERRIDDEN_POSITIONS and then heading name.
-   * @param {ApiDocMetadataEntry} a
-   * @param {ApiDocMetadataEntry} b
-   * @returns {number}
-   */
-  const headingSortFn = (a, b) => {
-    const ai = OVERRIDDEN_POSITIONS.indexOf(a.api);
-    const bi = OVERRIDDEN_POSITIONS.indexOf(b.api);
-
-    if (ai !== -1 && bi !== -1) {
-      return ai - bi;
-    }
-
-    if (ai !== -1) {
-      return -1;
-    }
-
-    if (bi !== -1) {
-      return 1;
-    }
-
-    return a.heading.data.name.localeCompare(b.heading.data.name);
-  };
-
-  return entries.filter(node => node.heading.depth === 1).sort(headingSortFn);
-};
+const remarkRecma = getRemarkRecma();
 
 /**
  * Generator for converting MDAST to JSX AST.
  *
  * @typedef {Array<ApiDocMetadataEntry>} Input
- * @type {GeneratorMetadata<Input, string>}
+ * @typedef {Array<import('./utils/buildContent.mjs').JSXContent>} Output
+ *
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'jsx-ast',
@@ -54,34 +25,31 @@ export default {
 
   /**
    * Process a chunk of items in a worker thread.
-   * @param {Input} fullInput
-   * @param {number[]} itemIndices
-   * @param {Partial<GeneratorOptions>} options
+   * Transforms metadata entries into JSX AST nodes.
+   *
+   * Each item is a SlicedModuleInput containing the head node
+   * and all entries for that module - no need to recompute grouping.
+   *
+   * @param {Array<{head: ApiDocMetadataEntry, entries: Array<ApiDocMetadataEntry>}>} slicedInput - Pre-sliced module data
+   * @param {number[]} itemIndices - Indices of items to process
+   * @param {{ docPages: Array<[string, string]>, releases: Array<ApiDocReleaseEntry>, version: import('semver').SemVer }} options - Serializable options
+   * @returns {Promise<Output>} JSX AST programs for each module
    */
-  async processChunk(fullInput, itemIndices, { index, releases, version }) {
-    const remarkRecma = getRemarkRecma();
-    const groupedModules = groupNodesByModule(fullInput);
-    const headNodes = getSortedHeadNodes(fullInput);
-
-    const docPages = index
-      ? index.map(({ section, api }) => [section, `${api}.html`])
-      : headNodes.map(node => [node.heading.data.name, `${node.api}.html`]);
-
+  async processChunk(
+    slicedInput,
+    itemIndices,
+    { docPages, releases, version }
+  ) {
     const results = [];
 
     for (const idx of itemIndices) {
-      const entry = headNodes[idx];
+      const { head, entries } = slicedInput[idx];
 
-      const sideBarProps = buildSideBarProps(
-        entry,
-        releases,
-        version,
-        docPages
-      );
+      const sideBarProps = buildSideBarProps(head, releases, version, docPages);
 
       const content = await buildContent(
-        groupedModules.get(entry.api),
-        entry,
+        entries,
+        head,
         sideBarProps,
         remarkRecma
       );
@@ -95,13 +63,29 @@ export default {
   /**
    * Generates a JSX AST
    *
-   * @param {Input} entries
+   * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
-   * @returns {Promise<Array<string>>} Array of generated content
    */
-  async generate(entries, { index, releases, version, worker }) {
-    const headNodes = entries.filter(node => node.heading.depth === 1);
+  async *generate(input, { index, releases, version, worker }) {
+    const groupedModules = groupNodesByModule(input);
+    const headNodes = getSortedHeadNodes(input);
 
-    return worker.map(headNodes, entries, { index, releases, version });
+    // Pre-compute docPages once in main thread
+    const docPages = index
+      ? index.map(({ section, api }) => [section, `${api}.html`])
+      : headNodes.map(node => [node.heading.data.name, `${node.api}.html`]);
+
+    // Create sliced input: each item contains head + its module's entries
+    // This avoids sending all 4700+ entries to every worker
+    const entries = headNodes.map(head => ({
+      head,
+      entries: groupedModules.get(head.api),
+    }));
+
+    const deps = { docPages, releases, version };
+
+    for await (const chunkResult of worker.stream(entries, entries, deps)) {
+      yield chunkResult;
+    }
   },
 };

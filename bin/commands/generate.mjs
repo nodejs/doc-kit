@@ -3,38 +3,18 @@ import { resolve } from 'node:path';
 
 import { coerce } from 'semver';
 
-import {
-  DOC_NODE_CHANGELOG_URL,
-  DOC_NODE_VERSION,
-} from '../../src/constants.mjs';
+import { NODE_CHANGELOG_URL, NODE_VERSION } from '../../src/constants.mjs';
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
+import logger from '../../src/logger/index.mjs';
+import { parseTypeMap } from '../../src/parsers/json.mjs';
 import { parseChangelog, parseIndex } from '../../src/parsers/markdown.mjs';
 import { DEFAULT_TYPE_MAP } from '../../src/utils/parser/constants.mjs';
-import { loadFromURL } from '../../src/utils/parser.mjs';
-import { loadAndParse } from '../utils.mjs';
 
 const availableGenerators = Object.keys(publicGenerators);
 
-// Half of available logical CPUs guarantees in general all physical CPUs are being used
-// which in most scenarios is the best way to maximize performance
-const optimalThreads = Math.floor(cpus().length / 2) + 1;
-
 /**
- * @typedef {Object} Options
- * @property {Array<string>|string} input - Specifies the glob/path for input files.
- * @property {Array<string>|string} [ignore] - Specifies the glob/path for ignoring files.
- * @property {Array<keyof publicGenerators>} target - Specifies the generator target mode.
- * @property {string} version - Specifies the target Node.js version.
- * @property {string} changelog - Specifies the path to the Node.js CHANGELOG.md file.
- * @property {string} typeMap - Specifies the path to the Node.js Type Map.
- * @property {string} [gitRef] - Git ref/commit URL.
- * @property {number} [threads] - Number of threads to allow.
- * @property {number} [chunkSize] - Number of items to process per worker thread.
- */
-
-/**
- * @type {import('../utils.mjs').Command}
+ * @type {import('./types').Command}
  */
 export default {
   description: 'Generate API docs',
@@ -66,11 +46,11 @@ export default {
     },
     threads: {
       flags: ['-p', '--threads <number>'],
-      desc: 'Number of worker threads to use',
+      desc: 'Number of threads to use (minimum: 1)',
       prompt: {
         type: 'text',
         message: 'How many threads to allow',
-        initialValue: String(Math.max(optimalThreads, 1)),
+        initialValue: String(cpus().length),
       },
     },
     chunkSize: {
@@ -88,7 +68,7 @@ export default {
       prompt: {
         type: 'text',
         message: 'Enter Node.js version',
-        initialValue: DOC_NODE_VERSION,
+        initialValue: NODE_VERSION,
       },
     },
     changelog: {
@@ -97,7 +77,7 @@ export default {
       prompt: {
         type: 'text',
         message: 'Enter changelog URL',
-        initialValue: DOC_NODE_CHANGELOG_URL,
+        initialValue: NODE_CHANGELOG_URL,
       },
     },
     gitRef: {
@@ -140,33 +120,42 @@ export default {
       },
     },
   },
+
   /**
+   * @typedef {Object} Options
+   * @property {Array<string>|string} input - Specifies the glob/path for input files.
+   * @property {Array<string>|string} [ignore] - Specifies the glob/path for ignoring files.
+   * @property {Array<keyof AvailableGenerators>} target - Specifies the generator target mode.
+   * @property {string} version - Specifies the target Node.js version.
+   * @property {string} changelog - Specifies the path to the Node.js CHANGELOG.md file.
+   * @property {string} typeMap - Specifies the path to the Node.js Type Map.
+   * @property {string} index - Specifies the path to the index document.
+   * @property {string} [gitRef] - Git ref/commit URL.
+   * @property {number} [threads] - Number of threads to allow.
+   * @property {number} [chunkSize] - Number of items to process per worker thread.
+   *
    * Handles the action for generating API docs
    * @param {Options} opts - The options to generate API docs.
    * @returns {Promise<void>}
    */
   async action(opts) {
-    const docs = await loadAndParse(opts.input, opts.ignore);
-    const releases = await parseChangelog(opts.changelog);
+    logger.debug('Starting doc-kit', opts);
 
-    const rawTypeMap = await loadFromURL(opts.typeMap);
-    const typeMap = JSON.parse(rawTypeMap);
+    const { runGenerators } = createGenerator();
 
-    const index = opts.index && (await parseIndex(opts.index));
-
-    const { runGenerators } = createGenerator(docs);
+    logger.debug('Starting generation', { targets: opts.target });
 
     await runGenerators({
       generators: opts.target,
       input: opts.input,
       output: opts.output && resolve(opts.output),
       version: coerce(opts.version),
-      releases,
+      releases: await parseChangelog(opts.changelog),
       gitRef: opts.gitRef,
-      threads: parseInt(opts.threads, 10),
-      chunkSize: parseInt(opts.chunkSize, 10),
-      index,
-      typeMap,
+      threads: Math.max(parseInt(opts.threads, 10), 1),
+      chunkSize: Math.max(parseInt(opts.chunkSize, 10), 1),
+      index: await parseIndex(opts.index),
+      typeMap: await parseTypeMap(opts.typeMap),
     });
   },
 };

@@ -8,8 +8,9 @@ import { join } from 'node:path';
  * JSON file (`all.json`).
  *
  * @typedef {Array<import('../legacy-json/types.d.ts').Section>} Input
+ * @typedef {import('./types.d.ts').Output} Output
  *
- * @type {GeneratorMetadata<Input, import('./types.d.ts').Output>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'legacy-json-all',
@@ -26,6 +27,7 @@ export default {
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
+   * @returns {Promise<Output>}
    */
   async generate(input, { output }) {
     /**
@@ -42,17 +44,14 @@ export default {
       methods: [],
     };
 
-    const propertiesToCopy = [
-      'miscs',
-      'modules',
-      'classes',
-      'globals',
-      'methods',
-    ];
+    /**
+     * The properties to copy from each section in the input
+     */
+    const propertiesToCopy = Object.keys(generatedValue);
 
-    input.forEach(section => {
-      // Copy the relevant properties from each section into our output
-      propertiesToCopy.forEach(property => {
+    // Aggregate all sections into the output
+    for (const section of input) {
+      for (const property of propertiesToCopy) {
         const items = section[property];
 
         if (Array.isArray(items)) {
@@ -62,8 +61,8 @@ export default {
 
           generatedValue[property].push(...enrichedItems);
         }
-      });
-    });
+      }
+    }
 
     if (output) {
       await writeFile(join(output, 'all.json'), JSON.stringify(generatedValue));

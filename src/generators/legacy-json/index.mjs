@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import { createSectionBuilder } from './utils/buildSection.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 
+const buildSection = createSectionBuilder();
+
 /**
  * This generator is responsible for generating the legacy JSON files for the
  * legacy API docs for retro-compatibility. It is to be replaced while we work
@@ -16,8 +18,9 @@ import { groupNodesByModule } from '../../utils/generators.mjs';
  * config.
  *
  * @typedef {Array<ApiDocMetadataEntry>} Input
+ * @typedef {Array<import('./types.d.ts').Section>} Output
  *
- * @type {GeneratorMetadata<Input, import('./types.d.ts').Section[]>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'legacy-json',
@@ -30,31 +33,22 @@ export default {
 
   /**
    * Process a chunk of items in a worker thread.
-   * @param {Input} fullInput
-   * @param {number[]} itemIndices
-   * @param {Partial<GeneratorOptions>} options
+   * Builds JSON sections - FS operations happen in generate().
+   *
+   * Each item is pre-grouped {head, nodes} - no need to
+   * recompute groupNodesByModule for every chunk.
+   *
+   * @param {Array<{ head: ApiDocMetadataEntry, nodes: Array<ApiDocMetadataEntry> }>} slicedInput - Pre-sliced module data
+   * @param {number[]} itemIndices - Indices into the sliced array
+   * @returns {Promise<Output>} JSON sections for each processed module
    */
-  async processChunk(fullInput, itemIndices, { output }) {
-    const buildSection = createSectionBuilder();
-    const groupedModules = groupNodesByModule(fullInput);
-
-    const headNodes = fullInput.filter(node => node.heading.depth === 1);
-
+  async processChunk(slicedInput, itemIndices) {
     const results = [];
 
     for (const idx of itemIndices) {
-      const head = headNodes[idx];
-      const nodes = groupedModules.get(head.api);
-      const section = buildSection(head, nodes);
+      const { head, nodes } = slicedInput[idx];
 
-      if (output) {
-        await writeFile(
-          join(output, `${head.api}.json`),
-          JSON.stringify(section)
-        );
-      }
-
-      results.push(section);
+      results.push(buildSection(head, nodes));
     }
 
     return results;
@@ -65,10 +59,30 @@ export default {
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} options
+   * @returns {AsyncGenerator<Output>}
    */
-  async generate(input, { output, worker }) {
+  async *generate(input, { output, worker }) {
+    const groupedModules = groupNodesByModule(input);
+
     const headNodes = input.filter(node => node.heading.depth === 1);
 
-    return worker.map(headNodes, input, { output });
+    // Create sliced input: each item contains head + its module's entries
+    // This avoids sending all 4900+ entries to every worker
+    const entries = headNodes.map(head => ({
+      head,
+      nodes: groupedModules.get(head.api),
+    }));
+
+    for await (const chunkResult of worker.stream(entries, entries)) {
+      if (output) {
+        for (const section of chunkResult) {
+          const out = join(output, `${section.api}.json`);
+
+          await writeFile(out, JSON.stringify(section));
+        }
+      }
+
+      yield chunkResult;
+    }
   },
 };

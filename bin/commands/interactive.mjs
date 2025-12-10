@@ -12,7 +12,6 @@ import {
   cancel,
 } from '@clack/prompts';
 
-import commands from './index.mjs';
 import logger from '../../src/logger/index.mjs';
 
 /**
@@ -53,127 +52,143 @@ function escapeShellArg(arg) {
 }
 
 /**
- * Main interactive function for the API Docs Tooling command line interface.
- * Guides the user through a series of prompts, validates inputs, and generates a command to run.
- * @returns {Promise<void>} Resolves once the command is generated and executed.
+ * @type {import('../utils.mjs').Command}
  */
-export default async function interactive() {
-  // Step 1: Introduction to the tool
-  intro('Welcome to API Docs Tooling');
+export default {
+  name: 'interactive',
+  description: 'Launch guided CLI wizard',
+  options: {},
+  /**
+   * Main interactive function for the API Docs Tooling command line interface.
+   * Guides the user through a series of prompts, validates inputs, and generates a command to run.
+   * @returns {Promise<void>} Resolves once the command is generated and executed.
+   */
+  async action() {
+    // Import commands dynamically to avoid circular dependency
+    const { default: commands } = await import('./index.mjs');
 
-  // Step 2: Choose the action based on available command definitions
-  const actionOptions = commands.map(({ description }, i) => ({
-    label: description,
-    value: i,
-  }));
+    // Filter out the interactive command itself
+    const availableCommands = commands.filter(
+      cmd => cmd.name !== 'interactive'
+    );
 
-  const selectedAction = await select({
-    message: 'What would you like to do?',
-    options: actionOptions,
-  });
+    // Step 1: Introduction to the tool
+    intro('Welcome to API Docs Tooling');
 
-  if (isCancel(selectedAction)) {
-    cancel('Cancelled.');
-    process.exit(0);
-  }
+    // Step 2: Choose the action based on available command definitions
+    const actionOptions = availableCommands.map((cmd, i) => ({
+      label: cmd.description,
+      value: i,
+    }));
 
-  // Retrieve the options for the selected action
-  const { options, name } = commands[selectedAction];
-  const answers = {}; // Store answers from user prompts
+    const selectedAction = await select({
+      message: 'What would you like to do?',
+      options: actionOptions,
+    });
 
-  // Step 3: Collect input for each option
-  for (const [key, { prompt }] of Object.entries(options)) {
-    let response;
-    const promptMessage = getMessage(prompt);
-
-    switch (prompt.type) {
-      case 'text':
-        response = await text({
-          message: promptMessage,
-          initialValue: prompt.initialValue || '',
-          validate: prompt.required ? requireValue : undefined,
-        });
-        if (response) {
-          // Store response; split into an array if variadic
-          answers[key] = prompt.variadic
-            ? response.split(',').map(s => s.trim())
-            : response;
-        }
-        break;
-
-      case 'confirm':
-        response = await confirm({
-          message: promptMessage,
-          initialValue: prompt.initialValue,
-        });
-        answers[key] = response;
-        break;
-
-      case 'multiselect':
-        response = await multiselect({
-          message: promptMessage,
-          options: prompt.options,
-          required: !!prompt.required,
-        });
-        answers[key] = response;
-        break;
-
-      case 'select':
-        response = await select({
-          message: promptMessage,
-          options: prompt.options,
-        });
-        answers[key] = response;
-        break;
-    }
-
-    // Handle cancellation
-    if (isCancel(response)) {
+    if (isCancel(selectedAction)) {
       cancel('Cancelled.');
       process.exit(0);
     }
-  }
 
-  // Step 4: Build the final command by escaping values
-  const cmdParts = ['npx', 'doc-kit', name];
-  const executionArgs = [name];
+    // Retrieve the options for the selected action
+    const { options, name } = availableCommands[selectedAction];
+    const answers = {}; // Store answers from user prompts
 
-  for (const [key, { flags }] of Object.entries(options)) {
-    const value = answers[key];
-    // Skip empty values
-    if (value == null || (Array.isArray(value) && value.length === 0)) {
-      continue;
+    // Step 3: Collect input for each option
+    for (const [key, { prompt }] of Object.entries(options)) {
+      let response;
+      const promptMessage = getMessage(prompt);
+
+      switch (prompt.type) {
+        case 'text':
+          response = await text({
+            message: promptMessage,
+            initialValue: prompt.initialValue || '',
+            validate: prompt.required ? requireValue : undefined,
+          });
+          if (response) {
+            // Store response; split into an array if variadic
+            answers[key] = prompt.variadic
+              ? response.split(',').map(s => s.trim())
+              : response;
+          }
+          break;
+
+        case 'confirm':
+          response = await confirm({
+            message: promptMessage,
+            initialValue: prompt.initialValue,
+          });
+          answers[key] = response;
+          break;
+
+        case 'multiselect':
+          response = await multiselect({
+            message: promptMessage,
+            options: prompt.options,
+            required: !!prompt.required,
+          });
+          answers[key] = response;
+          break;
+
+        case 'select':
+          response = await select({
+            message: promptMessage,
+            options: prompt.options,
+          });
+          answers[key] = response;
+          break;
+      }
+
+      // Handle cancellation
+      if (isCancel(response)) {
+        cancel('Cancelled.');
+        process.exit(0);
+      }
     }
 
-    const flag = flags[0].split(/[\s,]+/)[0]; // Use the first flag
+    // Step 4: Build the final command by escaping values
+    const cmdParts = ['npx', 'doc-kit', name];
+    const executionArgs = [name];
 
-    // Handle different value types (boolean, array, string)
-    if (typeof value === 'boolean') {
-      if (value) {
-        cmdParts.push(flag);
-        executionArgs.push(flag);
+    for (const [key, { flags }] of Object.entries(options)) {
+      const value = answers[key];
+      // Skip empty values
+      if (value == null || (Array.isArray(value) && value.length === 0)) {
+        continue;
       }
-    } else if (Array.isArray(value)) {
-      for (const item of value) {
-        cmdParts.push(flag, escapeShellArg(item));
-        executionArgs.push(flag, item);
+
+      const flag = flags[0].split(/[\s,]+/)[0]; // Use the first flag
+
+      // Handle different value types (boolean, array, string)
+      if (typeof value === 'boolean') {
+        if (value) {
+          cmdParts.push(flag);
+          executionArgs.push(flag);
+        }
+      } else if (Array.isArray(value)) {
+        for (const item of value) {
+          cmdParts.push(flag, escapeShellArg(item));
+          executionArgs.push(flag, item);
+        }
+      } else {
+        cmdParts.push(flag, escapeShellArg(value));
+        executionArgs.push(flag, value);
       }
-    } else {
-      cmdParts.push(flag, escapeShellArg(value));
-      executionArgs.push(flag, value);
     }
-  }
 
-  const finalCommand = cmdParts.join(' ');
+    const finalCommand = cmdParts.join(' ');
 
-  logger.info(`\nGenerated command:\n${finalCommand}\n`);
+    logger.info(`\nGenerated command:\n${finalCommand}\n`);
 
-  // Step 5: Confirm and execute the generated command
-  if (await confirm({ message: 'Run now?', initialValue: true })) {
-    spawnSync(process.execPath, [process.argv[1], ...executionArgs], {
-      stdio: 'inherit',
-    });
-  }
+    // Step 5: Confirm and execute the generated command
+    if (await confirm({ message: 'Run now?', initialValue: true })) {
+      spawnSync(process.execPath, [process.argv[1], ...executionArgs], {
+        stdio: 'inherit',
+      });
+    }
 
-  outro('Done!');
-}
+    outro('Done!');
+  },
+};

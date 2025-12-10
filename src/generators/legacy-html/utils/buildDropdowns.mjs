@@ -15,7 +15,7 @@ import {
  *
  * @param {string} tableOfContents The stringified ToC
  */
-const buildToC = tableOfContents => {
+export const buildToC = tableOfContents => {
   if (tableOfContents.length) {
     return (
       `<li class="picker-header"><a href="#toc-picker" aria-controls="toc-picker">` +
@@ -36,7 +36,7 @@ const buildToC = tableOfContents => {
  *
  * @param {string} navigationContents The stringified Navigation
  */
-const buildNavigation = navigationContents =>
+export const buildNavigation = navigationContents =>
   `<li class="picker-header"><a href="#gtoc-picker" aria-controls="gtoc-picker">` +
   `<span class="picker-arrow"></span>Index</a>` +
   `<div class="picker" tabindex="-1" id="gtoc-picker"><ul><li><a href="index.html">Index</a>` +
@@ -52,7 +52,7 @@ const buildNavigation = navigationContents =>
  * @param {string} added The version the API was added
  * @param {Array<ApiDocReleaseEntry>} versions All available Node.js releases
  */
-const buildVersions = (api, added, versions) => {
+export const buildVersions = (api, added, versions) => {
   const compatibleVersions = getCompatibleVersions(added, versions);
 
   // Parses the SemVer version into something we use for URLs and to display the Node.js version
@@ -80,14 +80,7 @@ const buildVersions = (api, added, versions) => {
  *
  * @param {string} api The current API node name
  */
-const buildGitHub = api =>
+export const buildGitHub = api =>
   `<li class="edit_on_github">` +
   `<a href="${DOC_API_BLOB_EDIT_BASE_URL}${api}.md">` +
   `Edit on GitHub</a></li>`;
-
-export default {
-  buildToC,
-  buildNavigation,
-  buildVersions,
-  buildGitHub,
-};

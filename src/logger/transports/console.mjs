@@ -1,5 +1,7 @@
 'use strict';
 
+import { styleText } from 'node:util';
+
 import { prettifyLevel } from '../utils/colors.mjs';
 import { prettifyTimestamp } from '../utils/time.mjs';
 
@@ -10,7 +12,7 @@ import { prettifyTimestamp } from '../utils/time.mjs';
  * @returns {void}
  */
 const console = ({ level, message, timestamp, metadata = {}, module }) => {
-  const { file, stack } = metadata;
+  const { file, stack, ...rest } = metadata;
 
   const time = prettifyTimestamp(timestamp);
 
@@ -34,6 +36,12 @@ const console = ({ level, message, timestamp, metadata = {}, module }) => {
     const position = `(${file.position.start.line}:${file.position.end.line})`;
 
     process.stdout.write(position);
+  }
+
+  // Print remaining metadata inline in purple
+  if (Object.keys(rest).length > 0) {
+    const metaStr = styleText('magenta', JSON.stringify(rest));
+    process.stdout.write(` ${metaStr}`);
   }
 
   process.stdout.write('\n');

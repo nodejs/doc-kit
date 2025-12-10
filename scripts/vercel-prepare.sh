@@ -5,7 +5,7 @@ git clone --depth 1 --filter=blob:none --sparse https://github.com/nodejs/node.g
 cd node
 
 # Enable sparse checkout and specify the folder
-git sparse-checkout set doc/
+git sparse-checkout set lib doc/api .
 
 # Move back out
 cd ..

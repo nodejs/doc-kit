@@ -6,39 +6,36 @@ import { extname } from 'node:path';
 import { globSync } from 'glob';
 import { VFile } from 'vfile';
 
+import createQueries from '../utils/queries/index.mjs';
+
+const { updateStabilityPrefixToLink } = createQueries();
+
 /**
- * This method creates a simple abstract "Loader", which technically
- * could be used for different things, but here we want to use it to load
- * Markdown files and transform them into VFiles
+ * This creates a "loader" for loading Markdown API doc files into VFiles.
  */
 const createLoader = () => {
   /**
-   * Loads API Doc files and transforms it into VFiles
+   * Loads Markdown source files and transforms them into VFiles.
+   * Applies stability index normalization during load.
    *
-   * @param {Array<string>} searchPath A glob/path for API docs to be loaded
-   * @param {Array<string> | undefined} [ignorePath] A glob/path of files to ignore
-   * The input string can be a simple path (relative or absolute)
-   * The input string can also be any allowed glob string
-   *
-   * @see https://code.visualstudio.com/docs/editor/glob-patterns
+   * @param {string | string[]} searchPath - Glob pattern(s) or file paths
+   * @returns {Promise<VFile>[]} Array of promises resolving to VFiles
    */
-  const loadFiles = async (searchPath, ignorePath) => {
-    const ignoredFiles = ignorePath
-      ? globSync(ignorePath).filter(filePath => extname(filePath) === '.md')
-      : [];
-
+  const loadFiles = searchPath => {
     const resolvedFiles = globSync(searchPath).filter(
-      filePath =>
-        extname(filePath) === '.md' && !ignoredFiles.includes(filePath)
+      filePath => extname(filePath) === '.md'
     );
 
-    return Promise.all(
-      resolvedFiles.map(async filePath => {
-        const fileContents = await readFile(filePath, 'utf-8');
+    return resolvedFiles.map(async filePath => {
+      const fileContents = await readFile(filePath, 'utf-8');
 
-        return new VFile({ path: filePath, value: fileContents });
-      })
-    );
+      const vfile = new VFile({ path: filePath, value: fileContents });
+
+      // Normalizes all the Stability Index prefixes with Markdown links
+      updateStabilityPrefixToLink(vfile);
+
+      return vfile;
+    });
   };
 
   return { loadFiles };

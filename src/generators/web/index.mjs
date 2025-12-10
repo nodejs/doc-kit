@@ -13,25 +13,31 @@ import { processJSXEntries } from './utils/processing.mjs';
  * - Client-side JavaScript with code splitting
  * - Bundled CSS styles
  *
- * @type {GeneratorMetadata<Input, string>}
+ * Note: This generator does NOT support streaming/chunked processing because
+ * processJSXEntries needs all entries together to generate code-split bundles.
+ *
+ * @typedef {Array<import('../jsx-ast/utils/buildContent.mjs').JSXContent>} Input
+ * @typedef {Array<{ html: string, css: string }>} Output
+ *
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'web',
+
   version: '1.0.0',
+
   description: 'Generates HTML/CSS/JS bundles from JSX AST entries',
+
   dependsOn: 'jsx-ast',
 
   /**
    * Main generation function that processes JSX AST entries into web bundles.
    *
-   * @param {import('../jsx-ast/utils/buildContent.mjs').JSXContent[]} entries - JSX AST entries to process.
+   * @param {Input} input - JSX AST entries to process.
    * @param {Partial<GeneratorOptions>} options - Generator options.
-   * @param {string} [options.output] - Output directory for generated files.
-   * @param {string} options.version - Documentation version string.
-   * @returns {Promise<Array<{html: Buffer, css: string}>>} Generated HTML and CSS.
+   * @returns {Promise<Output>} Processed HTML/CSS/JS content.
    */
-  async generate(entries, { output, version }) {
-    // Load the HTML template with placeholders
+  async generate(input, { output, version }) {
     const template = await readFile(
       new URL('template.html', import.meta.url),
       'utf-8'
@@ -45,14 +51,14 @@ export default {
 
     // Process all entries: convert JSX to HTML/CSS/JS
     const { results, css, chunks } = await processJSXEntries(
-      entries,
+      input,
       template,
       astBuilders,
       requireFn,
       { version }
     );
 
-    // Write files to disk if output directory is specified
+    // Process all entries together (required for code-split bundles)
     if (output) {
       // Write HTML files
       for (const { html, api } of results) {
@@ -68,7 +74,6 @@ export default {
       await writeFile(join(output, 'styles.css'), css, 'utf-8');
     }
 
-    // Return HTML and CSS for each entry
-    return results.map(({ html }) => ({ html, css }));
+    return results.map(({ html }) => ({ html: html.toString(), css }));
   },
 };

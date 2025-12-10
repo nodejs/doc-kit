@@ -12,6 +12,10 @@ import createQueries from '../../../utils/queries/index.mjs';
 import { getRemark } from '../../../utils/remark.mjs';
 import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
 
+// Creates an instance of the Remark processor with GFM support
+// which is used for stringifying the AST tree back to Markdown
+const remarkProcessor = getRemark();
+
 /**
  * This generator generates a flattened list of metadata entries from a API doc
  *
@@ -41,10 +45,6 @@ export const parseApiDoc = ({ file, tree }, typeMap) => {
     updateLinkReference,
     addStabilityMetadata,
   } = createQueries(typeMap);
-
-  // Creates an instance of the Remark processor with GFM support
-  // which is used for stringifying the AST tree back to Markdown
-  const remarkProcessor = getRemark();
 
   // Creates a new Slugger instance for the current API doc file
   const nodeSlugger = createNodeSlugger();
