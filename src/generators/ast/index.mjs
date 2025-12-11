@@ -38,18 +38,20 @@ export default {
   async processChunk(inputSlice, itemIndices) {
     const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
-    return Promise.all(
-      filePaths.map(async path => {
-        const vfile = await read(path, 'utf-8');
+    const results = [];
 
-        updateStabilityPrefixToLink(vfile);
+    for (const path of filePaths) {
+      const vfile = await read(path, 'utf-8');
 
-        return {
-          tree: remarkProcessor.parse(vfile),
-          file: { stem: vfile.stem, basename: vfile.basename },
-        };
-      })
-    );
+      updateStabilityPrefixToLink(vfile);
+
+      results.push({
+        tree: remarkProcessor.parse(vfile),
+        file: { stem: vfile.stem, basename: vfile.basename },
+      });
+    }
+
+    return results;
   },
 
   /**

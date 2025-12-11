@@ -36,9 +36,17 @@ export default {
   async processChunk(inputSlice, itemIndices) {
     const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
-    return Promise.all(
-      filePaths.map(async path => parseJsSource(await read(path, 'utf-8')))
-    );
+    const results = [];
+
+    for (const path of filePaths) {
+      const vfile = await read(path, 'utf-8');
+
+      const parsedJS = await parseJsSource(vfile);
+
+      results.push(parsedJS);
+    }
+
+    return results;
   },
 
   /**
