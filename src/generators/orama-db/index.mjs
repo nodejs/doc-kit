@@ -21,7 +21,7 @@ export function buildHierarchicalTitle(headings, currentIndex) {
   let targetDepth = currentNode.heading.depth - 1;
 
   // Walk backwards through preceding headings to build hierarchy
-  for (let i = currentIndex - 1; i >= 0 && targetDepth > 0; i--) {
+  for (let i = currentIndex - 1; i >= 1 && targetDepth > 0; i--) {
     const heading = headings[i];
     const headingDepth = heading.heading.depth;
 
@@ -84,7 +84,8 @@ export default {
           description: paragraph
             ? transformNodeToString(paragraph, true)
             : undefined,
-          path: `${entry.api}.html#${entry.slug}`,
+          href: `${entry.api}.html#${entry.slug}`,
+          siteSection: headings[0].heading.data.name,
         };
       })
     );
