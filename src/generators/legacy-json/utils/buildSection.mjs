@@ -45,11 +45,13 @@ export const createSectionBuilder = () => {
     removed_in = [],
     changes,
   }) => {
-    const meta = { changes };
+    const meta = {};
 
     if (added_in?.length) {
       meta.added = enforceArray(added_in);
     }
+
+    meta.changes = changes;
 
     if (n_api_version?.length) {
       meta.napiVersion = enforceArray(n_api_version);
@@ -81,8 +83,8 @@ export const createSectionBuilder = () => {
     const section = {
       textRaw: transformNodesToString(head.children),
       name: head.data.name,
-      type: head.data.type,
       introduced_in: entry.introduced_in,
+      type: head.data.type,
     };
 
     const meta = createMeta(entry);
@@ -135,8 +137,11 @@ export const createSectionBuilder = () => {
    * @param {import('../../types.d.ts').NodeWithData} heading - The heading node of the section.
    */
   const addAdditionalMetadata = (section, parent, heading) => {
-    if (!section.type) {
+    if (!section.type || section.type === 'module') {
       section.name = section.textRaw.toLowerCase().trim().replace(/\s+/g, '_');
+    }
+
+    if (!section.type) {
       section.displayName = heading.data.name;
       section.type = parent.type === 'misc' ? 'misc' : 'module';
     }
