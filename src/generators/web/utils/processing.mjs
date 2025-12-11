@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import HTMLMinifier from '@minify-html/node';
 import { jsx, toJs } from 'estree-util-to-js';
+import { transform } from 'lightningcss';
 
 import { SPECULATION_RULES } from '../constants.mjs';
 import bundleCode from './bundle.mjs';
@@ -48,13 +49,13 @@ export function convertJSXToCode(
  *
  * @param {Map<string, string>} serverCodeMap - Map of fileName to server-side JavaScript code.
  * @param {ReturnType<import('node:module').createRequire>} requireFn - Node.js require function for external packages.
- * @returns {Promise<Map<string, string>>} Map of fileName to dehydrated (server-rendered) HTML content.
+ * @returns {{ pages: Map<string, string>, css: string }} Map of fileName to dehydrated (server-rendered) HTML content.
  */
 export async function executeServerCode(serverCodeMap, requireFn) {
   const dehydratedMap = new Map();
 
   // Bundle all server-side code, which may produce code-split chunks
-  const { chunks } = await bundleCode(serverCodeMap, { server: true });
+  const { chunks, css } = await bundleCode(serverCodeMap, { server: true });
 
   const entryChunks = chunks.filter(c => c.isEntry);
   const otherChunks = chunks.filter(c => !c.isEntry);
@@ -71,7 +72,7 @@ export async function executeServerCode(serverCodeMap, requireFn) {
     dehydratedMap.set(chunk.fileName, executedFunction(enhancedRequire));
   }
 
-  return dehydratedMap;
+  return { pages: dehydratedMap, css };
 }
 
 /**
@@ -115,7 +116,7 @@ export async function processJSXEntries(
     // Replace template placeholders with actual content
     const renderedHtml = template
       .replace('{{title}}', `${heading.data.name} | ${titleSuffix}`)
-      .replace('{{dehydrated}}', serverBundle.get(fileName) ?? '')
+      .replace('{{dehydrated}}', serverBundle.pages.get(fileName) ?? '')
       .replace('{{importMap}}', clientBundle.importMap ?? '')
       .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
       .replace('{{speculationRules}}', speculationRulesString);
@@ -126,5 +127,10 @@ export async function processJSXEntries(
     return { html: finalHTMLBuffer, api };
   });
 
-  return { results, ...clientBundle };
+  const { code: minifiedCSS } = transform({
+    code: Buffer.from(`${serverBundle.css}\n${clientBundle.css}`),
+    minify: true,
+  });
+
+  return { results, chunks: clientBundle.chunks, css: minifiedCSS };
 }

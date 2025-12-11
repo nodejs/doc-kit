@@ -81,15 +81,16 @@ export default () => {
       ...baseImports,
 
       // Import Preact's SSR render function (named import)
-      createImportDeclaration('render', 'preact-render-to-string', false),
+      createImportDeclaration(
+        'renderToString',
+        'preact-render-to-string',
+        false
+      ),
 
       // Render component to HTML string and return it
-      `return render(${componentCode});`,
+      `return renderToString(${componentCode});`,
     ].join('\n');
   };
 
-  return {
-    buildClientProgram,
-    buildServerProgram,
-  };
+  return { buildClientProgram, buildServerProgram };
 };
