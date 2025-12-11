@@ -49,7 +49,7 @@ export function convertJSXToCode(
  *
  * @param {Map<string, string>} serverCodeMap - Map of fileName to server-side JavaScript code.
  * @param {ReturnType<import('node:module').createRequire>} requireFn - Node.js require function for external packages.
- * @returns {{ pages: Map<string, string>, css: string }} Map of fileName to dehydrated (server-rendered) HTML content.
+ * @returns {{ pages: Map<string, string>, css: string }} An object containing a Map of fileName to dehydrated (server-rendered) HTML content (`pages`), and a string of collected CSS (`css`).
  */
 export async function executeServerCode(serverCodeMap, requireFn) {
   const dehydratedMap = new Map();

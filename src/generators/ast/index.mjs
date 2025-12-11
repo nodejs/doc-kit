@@ -55,7 +55,7 @@ export default {
   },
 
   /**
-   * Generates AST trees from markdown input fileAs.
+   * Generates AST trees from markdown input files.
    *
    * @param {Input} _ - Unused (top-level generator)
    * @param {Partial<GeneratorOptions>} options
