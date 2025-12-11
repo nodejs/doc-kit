@@ -1,4 +1,4 @@
-import { create, load } from '@orama/orama';
+import { create, search, load } from '@orama/orama';
 import { useState, useEffect } from 'react';
 
 /**
@@ -12,6 +12,12 @@ export default () => {
     const db = create({
       schema: {},
     });
+
+    // TODO(@avivkeller): Ask Orama to support this functionality natively
+    /**
+     * @param {any} options
+     */
+    db.search = options => search(db, options);
 
     setClient(db);
 

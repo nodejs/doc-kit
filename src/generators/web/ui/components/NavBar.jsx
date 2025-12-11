@@ -19,8 +19,7 @@ export default () => {
       sidebarItemTogglerAriaLabel="Toggle navigation menu"
       navItems={[]}
     >
-      {/* TODO(@avivkeller): Orama doesn't support Server-Side rendering yet */}
-      {CLIENT && <SearchBox theme={theme} />}
+      <SearchBox />
       <ThemeToggle
         onClick={toggleTheme}
         aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}

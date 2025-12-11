@@ -18,17 +18,17 @@ describe('buildHierarchicalTitle', () => {
 
   it('should build two level hierarchy', () => {
     const result = buildHierarchicalTitle(mockHeadings, 1);
-    assert.equal(result, 'Module > Class');
+    assert.equal(result, 'Class');
   });
 
   it('should build three level hierarchy', () => {
     const result = buildHierarchicalTitle(mockHeadings, 2);
-    assert.equal(result, 'Module > Class > Method');
+    assert.equal(result, 'Class > Method');
   });
 
   it('should build full hierarchy', () => {
     const result = buildHierarchicalTitle(mockHeadings, 3);
-    assert.equal(result, 'Module > Class > Method > Parameter');
+    assert.equal(result, 'Class > Method > Parameter');
   });
 
   it('should handle non-sequential depths', () => {
@@ -38,7 +38,7 @@ describe('buildHierarchicalTitle', () => {
     ];
 
     const result = buildHierarchicalTitle(headings, 1);
-    assert.equal(result, 'Root > Deep');
+    assert.equal(result, 'Deep');
   });
 
   it('should handle same depth headings', () => {
