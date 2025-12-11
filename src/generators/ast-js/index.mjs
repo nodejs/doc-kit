@@ -41,7 +41,9 @@ export default {
     for (const path of filePaths) {
       const vfile = await read(path, 'utf-8');
 
-      results.push(parseJsSource(vfile));
+      const parsedJS = await parseJsSource(vfile);
+
+      results.push(parsedJS);
     }
 
     return results;
