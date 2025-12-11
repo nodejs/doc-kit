@@ -9,7 +9,7 @@
         "@actions/core": "^1.11.1",
         "@clack/prompts": "^0.11.0",
         "@heroicons/react": "^2.2.0",
-        "@minify-html/node": "^0.16.4",
+        "@minify-html/node": "^0.18.1",
         "@node-core/rehype-shiki": "1.3.0",
         "@node-core/ui-components": "1.4.1",
         "@orama/orama": "^3.1.16",
@@ -668,9 +668,9 @@
       }
     },
     "node_modules/@minify-html/node": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node/-/node-0.16.4.tgz",
-      "integrity": "sha512-ykQgl6xcQQDE1shUExeObPSNwAf00DVUt/GrxdjiqFNCVGu7DXK9nuH29sNTyKKYnJJLZAi6OEib2bDfxW3udg==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node/-/node-0.18.1.tgz",
+      "integrity": "sha512-pNOv6z9zUDrjTU1+VcPOnDzGeaaqd6m9kbyHU+sg9O35450uzfke8ahx8gKlFdp/kQFrRn2rFIGAoANUZ62nSw==",
       "license": "MIT",
       "bin": {
         "minify-html": "cli.js"
@@ -679,17 +679,17 @@
         "node": ">= 8.6.0"
       },
       "optionalDependencies": {
-        "@minify-html/node-darwin-arm64": "0.16.4",
-        "@minify-html/node-darwin-x64": "0.16.4",
-        "@minify-html/node-linux-arm64": "0.16.4",
-        "@minify-html/node-linux-x64": "0.16.4",
-        "@minify-html/node-win32-x64": "0.16.4"
+        "@minify-html/node-darwin-arm64": "0.18.1",
+        "@minify-html/node-darwin-x64": "0.18.1",
+        "@minify-html/node-linux-arm64": "0.18.1",
+        "@minify-html/node-linux-x64": "0.18.1",
+        "@minify-html/node-win32-x64": "0.18.1"
       }
     },
     "node_modules/@minify-html/node-darwin-arm64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-darwin-arm64/-/node-darwin-arm64-0.16.4.tgz",
-      "integrity": "sha512-9H8hcywDb8zo2jEJfaIAibgsKjMqE+XF7SyqTtJ5H8lVXHxffOkawH4TQtphf9V/x7zXeb/nByAvHe1orJ/RHA==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-darwin-arm64/-/node-darwin-arm64-0.18.1.tgz",
+      "integrity": "sha512-sc/VJHRcHtEk0IQP2hRA/TWkAQntaYH3RCw8n750NbfzliQqkyrDqNAGiKBOli7UlhFtG/H2aWqGjtOjIM/dZA==",
       "cpu": [
         "arm64"
       ],
@@ -699,9 +699,9 @@
       ]
     },
     "node_modules/@minify-html/node-darwin-x64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-darwin-x64/-/node-darwin-x64-0.16.4.tgz",
-      "integrity": "sha512-P0Krf5nwXbccMrC7ragKAIVOENHFoVRQi+v/8k5pmfjrNlxgXGVILacG0FbUZXsH2Z2XaIo39HxuMf70L6wQlA==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-darwin-x64/-/node-darwin-x64-0.18.1.tgz",
+      "integrity": "sha512-0bff2ng4Vgp3+kdC8zgjd5dMN04zkM4nGuYEVP4dLR7J5NCD/Ka4XD4CKNSDZ9goLYQ8BjtKD6AeDTfJ8KBjrA==",
       "cpu": [
         "x64"
       ],
@@ -711,9 +711,9 @@
       ]
     },
     "node_modules/@minify-html/node-linux-arm64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-linux-arm64/-/node-linux-arm64-0.16.4.tgz",
-      "integrity": "sha512-GDRExKf7AmyAdBTdhMkMyzFhJu5VeyJTu0OnNH2ekp69JrhQTrrrt9UYqnjen+7qLIaZB/R8urDRAYNk0HZi5w==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-linux-arm64/-/node-linux-arm64-0.18.1.tgz",
+      "integrity": "sha512-CVGu5XVmmDrGFuA9/b/695rJBFvfTZFwKJJYA1ZXAsBZrqlKVO4bfXPq9DVNmhQ76ky3LFtVZ/+UsU7xpyK5Qw==",
       "cpu": [
         "arm64"
       ],
@@ -723,9 +723,9 @@
       ]
     },
     "node_modules/@minify-html/node-linux-x64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-linux-x64/-/node-linux-x64-0.16.4.tgz",
-      "integrity": "sha512-MS/gF1gxJoeHqEGcb1xoUIRv6gVin4cGJszgHPYSikzkK8Yg0p6rVOZdDAE4AAnp/NW0DYNq7fwYgw3igmppFw==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-linux-x64/-/node-linux-x64-0.18.1.tgz",
+      "integrity": "sha512-qmIv4kRyhZTKO3nXDXHlFrhnmwIKTM57ZRomlYRYdZTWiFW3CbJ4Ggg57qIgx7D/t4dgyS7/O8OTetrWvmEg9w==",
       "cpu": [
         "x64"
       ],
@@ -735,9 +735,9 @@
       ]
     },
     "node_modules/@minify-html/node-win32-x64": {
-      "version": "0.16.4",
-      "resolved": "https://registry.npmjs.org/@minify-html/node-win32-x64/-/node-win32-x64-0.16.4.tgz",
-      "integrity": "sha512-SCY7hzIqG1RclU0QzU2MlGtPOujPu6dvaPYqDvhAHpkvRXtX0hnyOrrfqf7GcBdDbASxV8LDlBWpY46JO2cjAA==",
+      "version": "0.18.1",
+      "resolved": "https://registry.npmjs.org/@minify-html/node-win32-x64/-/node-win32-x64-0.18.1.tgz",
+      "integrity": "sha512-SNRE/NvcKXvh4UwXTRrujNSWaCj/3E+FFN+FLOBaN4FY+dZG83h6nWxGHJ5+LAoJxVTU7Al1e8toi4JjHpzv2w==",
       "cpu": [
         "x64"
       ],
@@ -1055,6 +1055,7 @@
       "version": "0.2.12",
       "resolved": "https://registry.npmjs.org/@napi-rs/wasm-runtime/-/wasm-runtime-0.2.12.tgz",
       "integrity": "sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==",
+      "dev": true,
       "license": "MIT",
       "optional": true,
       "dependencies": {
@@ -2815,6 +2816,60 @@
       "engines": {
         "node": ">=14.0.0"
       }
+    },
+    "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/@emnapi/core": {
+      "version": "1.6.0",
+      "inBundle": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "@emnapi/wasi-threads": "1.1.0",
+        "tslib": "^2.4.0"
+      }
+    },
+    "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/@emnapi/runtime": {
+      "version": "1.6.0",
+      "inBundle": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "tslib": "^2.4.0"
+      }
+    },
+    "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/@emnapi/wasi-threads": {
+      "version": "1.1.0",
+      "inBundle": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "tslib": "^2.4.0"
+      }
+    },
+    "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/@napi-rs/wasm-runtime": {
+      "version": "1.0.7",
+      "inBundle": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "@emnapi/core": "^1.5.0",
+        "@emnapi/runtime": "^1.5.0",
+        "@tybys/wasm-util": "^0.10.1"
+      }
+    },
+    "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/@tybys/wasm-util": {
+      "version": "0.10.1",
+      "inBundle": true,
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "tslib": "^2.4.0"
+      }
+    },
+    "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/tslib": {
+      "version": "2.8.1",
+      "inBundle": true,
+      "license": "0BSD",
+      "optional": true
     },
     "node_modules/@tailwindcss/oxide-win32-arm64-msvc": {
       "version": "4.1.17",
