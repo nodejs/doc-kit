@@ -81,14 +81,10 @@ export default () => {
       ...baseImports,
 
       // Import Preact's SSR render function (named import)
-      createImportDeclaration(
-        'renderToString',
-        'preact-render-to-string',
-        false
-      ),
+      createImportDeclaration('render', 'preact-render-to-string', false),
 
       // Render component to HTML string and return it
-      `return renderToString(${componentCode});`,
+      `return render(${componentCode});`,
     ].join('\n');
   };
 

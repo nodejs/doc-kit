@@ -61,7 +61,7 @@
     "lightningcss": "^1.30.2",
     "mdast-util-slice-markdown": "^2.0.1",
     "piscina": "^5.1.4",
-    "preact": "^10.28.0",
+    "preact": "^11.0.0-beta.0",
     "preact-render-to-string": "^6.6.3",
     "reading-time": "^1.5.0",
     "recma-jsx": "^1.0.1",
