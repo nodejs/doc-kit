@@ -19,7 +19,7 @@ export default () => {
       sidebarItemTogglerAriaLabel="Toggle navigation menu"
       navItems={[]}
     >
-      <SearchBox theme={theme} />
+      <SearchBox />
       <ThemeToggle
         onClick={toggleTheme}
         aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}

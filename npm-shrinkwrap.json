@@ -11,7 +11,7 @@
         "@heroicons/react": "^2.2.0",
         "@minify-html/node": "^0.16.4",
         "@node-core/rehype-shiki": "1.3.0",
-        "@node-core/ui-components": "^1.4.1",
+        "@node-core/ui-components": "1.4.1",
         "@orama/orama": "^3.1.16",
         "@orama/ui": "^1.5.3",
         "@rollup/plugin-virtual": "^3.0.2",
@@ -1177,7 +1177,6 @@
       "resolved": "https://registry.npmjs.org/@orama/orama/-/orama-3.1.16.tgz",
       "integrity": "sha512-scSmQBD8eANlMUOglxHrN1JdSW8tDghsPuS83otqealBiIeMukCQMOf/wc0JJjDXomqwNdEQFLXLGHrU6PGxuA==",
       "license": "Apache-2.0",
-      "peer": true,
       "engines": {
         "node": ">= 20.0.0"
       }
