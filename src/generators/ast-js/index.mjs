@@ -56,7 +56,7 @@ export default {
    * @param {Partial<GeneratorOptions>} options
    * @returns {AsyncGenerator<Output>}
    */
-  async *generate(_, { input = [], ignore, worker }) {
+  async *generate(_, { input = [], ignore = [], worker }) {
     const toIgnore = globSync(ignore);
 
     const files = globSync(input)
