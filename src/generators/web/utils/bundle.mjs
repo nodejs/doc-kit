@@ -84,7 +84,10 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
     resolve: {
       // Alias react imports to preact/compat for smaller bundle sizes.
       // Explicit jsx-runtime aliases are required for the automatic JSX transform.
-      alias: { react: 'preact/compat' },
+      alias: {
+        react: 'preact/compat',
+        'react-dom': 'preact/compat',
+      },
 
       // Tell the bundler where to find node_modules.
       // This ensures packages are found when running doc-kit from external directories
