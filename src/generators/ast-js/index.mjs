@@ -56,12 +56,8 @@ export default {
    * @param {Partial<GeneratorOptions>} options
    * @returns {AsyncGenerator<Output>}
    */
-  async *generate(_, { input = [], ignore = [], worker }) {
-    const toIgnore = globSync(ignore);
-
-    const files = globSync(input)
-      .filter(path => extname(path) === '.js')
-      .filter(path => !toIgnore.includes(path));
+  async *generate(_, { input = [], ignore, worker }) {
+    const files = globSync(input, { ignore }).filter(p => extname(p) === '.js');
 
     // Parse the Javascript sources into ASTs in parallel using worker threads
     // source is both the items list and the fullInput since we use sliceInput
