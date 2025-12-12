@@ -88,8 +88,5 @@ export default () => {
     ].join('\n');
   };
 
-  return {
-    buildClientProgram,
-    buildServerProgram,
-  };
+  return { buildClientProgram, buildServerProgram };
 };

@@ -29,7 +29,7 @@ export default {
    * @param {Partial<GeneratorOptions>} options
    * @returns {Promise<Output>}
    */
-  async generate(input, { output }) {
+  async generate(input, { output, index }) {
     /**
      * The consolidated output object that will contain
      * combined data from all sections in the input.
@@ -49,8 +49,26 @@ export default {
      */
     const propertiesToCopy = Object.keys(generatedValue);
 
+    // Create a map of api name to index position for sorting
+    const indexOrder = new Map(
+      index?.map(({ api }, position) => [`doc/api/${api}.md`, position]) ?? []
+    );
+
+    // Sort input by index order (documents not in index go to the end)
+    const sortedInput = input.toSorted((a, b) => {
+      const aOrder = indexOrder.get(a.source) ?? Infinity;
+      const bOrder = indexOrder.get(b.source) ?? Infinity;
+
+      return aOrder - bOrder;
+    });
+
     // Aggregate all sections into the output
-    for (const section of input) {
+    for (const section of sortedInput) {
+      // Skip index.json - it has no useful content, just navigation
+      if (section.api === 'index') {
+        continue;
+      }
+
       for (const property of propertiesToCopy) {
         const items = section[property];
 

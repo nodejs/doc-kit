@@ -37,6 +37,9 @@ declare global {
     // be a glob when passed to a generator.
     input: string | string[];
 
+    // The path or glob patterns used to ignore files from the input source files.
+    ignore?: string | string[];
+
     // The path used to output generated files, this is to be considered
     // the base path that any generator will use for generating files
     // This parameter accepts globs but when passed to generators will contain

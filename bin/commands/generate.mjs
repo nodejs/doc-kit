@@ -148,6 +148,7 @@ export default {
     await runGenerators({
       generators: opts.target,
       input: opts.input,
+      ignore: opts.ignore,
       output: opts.output && resolve(opts.output),
       version: coerce(opts.version),
       releases: await parseChangelog(opts.changelog),
