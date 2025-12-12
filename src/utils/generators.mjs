@@ -89,7 +89,7 @@ export const getCompatibleVersions = (introduced, releases) => {
  */
 export const sortChanges = (changes, key = 'version') => {
   // Sorts the updates and changes by the first version on a given entry
-  return changes.sort((a, b) => {
+  return changes.toSorted((a, b) => {
     const aVersion = Array.isArray(a[key]) ? a[key][0] : a[key];
     const bVersion = Array.isArray(b[key]) ? b[key][0] : b[key];
 

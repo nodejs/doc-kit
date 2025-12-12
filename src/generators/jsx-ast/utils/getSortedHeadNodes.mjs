@@ -33,4 +33,4 @@ const headingSortFn = (a, b) => {
  * @returns {Array<ApiDocMetadataEntry>}
  */
 export const getSortedHeadNodes = entries =>
-  entries.filter(node => node.heading.depth === 1).sort(headingSortFn);
+  entries.filter(node => node.heading.depth === 1).toSorted(headingSortFn);

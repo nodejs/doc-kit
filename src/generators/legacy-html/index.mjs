@@ -113,7 +113,9 @@ export default {
 
     const headNodes = input
       .filter(node => node.heading.depth === 1)
-      .sort((a, b) => a.heading.data.name.localeCompare(b.heading.data.name));
+      .toSorted((a, b) =>
+        a.heading.data.name.localeCompare(b.heading.data.name)
+      );
 
     const indexOfFiles = index
       ? index.map(({ api, section }) => ({ api, heading: getHeading(section) }))

@@ -55,7 +55,7 @@ export default {
     );
 
     // Sort input by index order (documents not in index go to the end)
-    const sortedInput = [...input].sort((a, b) => {
+    const sortedInput = input.toSorted((a, b) => {
       const aOrder = indexOrder.get(a.source) ?? Infinity;
       const bOrder = indexOrder.get(b.source) ?? Infinity;
 
