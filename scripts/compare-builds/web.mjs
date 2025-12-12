@@ -24,7 +24,7 @@ const formatBytes = bytes => {
  * Formats the difference between base and head sizes
  * @param {number} base - Base file size in bytes
  * @param {number} head - Head file size in bytes
- * @returns {string} Formatted diff string (e.g., "+1.50 KB (+10. 00%)")
+ * @returns {string} Formatted diff string (e.g., "+1.50 KB (+10.00%)")
  */
 const formatDiff = (base, head) => {
   const diff = head - base;
