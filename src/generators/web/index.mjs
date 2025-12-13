@@ -37,7 +37,7 @@ export default {
    * @param {Partial<GeneratorOptions>} options - Generator options.
    * @returns {Promise<Output>} Processed HTML/CSS/JS content.
    */
-  async generate(input, { output, version }) {
+  async generate(input, { output, version, overrides } = {}) {
     const template = await readFile(
       new URL('template.html', import.meta.url),
       'utf-8'
@@ -50,12 +50,14 @@ export default {
     const requireFn = createRequire(import.meta.url);
 
     // Process all entries: convert JSX to HTML/CSS/JS
-    const { results, css, chunks } = await processJSXEntries(
+    const processFn = overrides?.processJSXEntries || processJSXEntries;
+
+    const { results, css, chunks } = await processFn(
       input,
       template,
       astBuilders,
       requireFn,
-      { version }
+      { version, overrides }
     );
 
     // Process all entries together (required for code-split bundles)
