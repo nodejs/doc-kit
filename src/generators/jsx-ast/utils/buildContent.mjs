@@ -187,24 +187,26 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
       undefined,
       { textHandling: { boundaries: 'preserve' } }
     ).node.children;
+    // Helper to recursively extract all text from a node and its children
+    /**
+     *
+     * @param node
+     */
+    function extractText(node) {
+      if (!node) {
+        return '';
+      }
+      if (typeof node.value === 'string') {
+        return node.value;
+      }
+      if (Array.isArray(node.children)) {
+        return node.children.map(extractText).join('');
+      }
+      return '';
+    }
 
     // Derive plain text for type matching
-    const typeText = sliced
-      .map(n => {
-        if (n.type === 'text') {
-          return n.value;
-        }
-        if (n.type === 'inlineCode') {
-          return n.value;
-        }
-        if (n.type === 'link' && Array.isArray(n.children)) {
-          return n.children.map(c => c.value || '').join('');
-        }
-        return '';
-      })
-      .join('')
-      .trim()
-      .toLowerCase();
+    const typeText = sliced.map(extractText).join('').trim().toLowerCase();
 
     // Map user-facing deprecation types to AlertBox levels
     // documentation / compilation -> blue (`info`)
@@ -212,11 +214,20 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
     // fallback -> danger (red)
     let level = 'danger';
 
-    if (typeText.includes('documentation') || typeText.includes('compil')) {
+    // Use stricter matching to avoid false positives (e.g., "compilation" inside "End-of-Life")
+    const normalizedTypeText = typeText
+      .replace(/[.,]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (
+      normalizedTypeText.includes('documentation') ||
+      normalizedTypeText.includes('compilation')
+    ) {
       level = 'info';
     } else if (
-      typeText.includes('runtime') ||
-      typeText.includes('application')
+      normalizedTypeText.includes('runtime') ||
+      normalizedTypeText.includes('application')
     ) {
       level = 'warning';
     }
