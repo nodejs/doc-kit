@@ -180,16 +180,50 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
 
   if (entry.api === 'deprecations' && node.depth === 3) {
     // On the 'deprecations.md' page, "Type: <XYZ>" turns into an AlertBox
-    parent.children[index + 1] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
-      children: slice(
-        parent.children[index + 1],
-        TYPE_PREFIX_LENGTH,
-        undefined,
-        {
-          textHandling: { boundaries: 'preserve' },
+    // Extract the nodes representing the type text
+    const sliced = slice(
+      parent.children[index + 1],
+      TYPE_PREFIX_LENGTH,
+      undefined,
+      { textHandling: { boundaries: 'preserve' } }
+    ).node.children;
+
+    // Derive plain text for type matching
+    const typeText = sliced
+      .map(n => {
+        if (n.type === 'text') {
+          return n.value;
         }
-      ).node.children,
-      level: 'danger',
+        if (n.type === 'inlineCode') {
+          return n.value;
+        }
+        if (n.type === 'link' && Array.isArray(n.children)) {
+          return n.children.map(c => c.value || '').join('');
+        }
+        return '';
+      })
+      .join('')
+      .trim()
+      .toLowerCase();
+
+    // Map user-facing deprecation types to AlertBox levels
+    // documentation / compilation -> blue (`info`)
+    // runtime / application -> orange (`warning`)
+    // fallback -> danger (red)
+    let level = 'danger';
+
+    if (typeText.includes('documentation') || typeText.includes('compil')) {
+      level = 'info';
+    } else if (
+      typeText.includes('runtime') ||
+      typeText.includes('application')
+    ) {
+      level = 'warning';
+    }
+
+    parent.children[index + 1] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
+      children: sliced,
+      level,
       title: 'Type',
     });
   }
