@@ -1,49 +1,100 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it, mock } from 'node:test';
 
-import rehypeShikiji from '../highlighter.mjs';
+const codeToHast = mock.fn((code, { lang }) => ({
+  children: [
+    {
+      type: 'element',
+      tagName: 'pre',
+      properties: { class: 'shiki', style: `lang:${lang}` },
+      children: [
+        {
+          type: 'element',
+          tagName: 'code',
+          properties: { class: 'code' },
+          children: [{ type: 'text', value: code }],
+        },
+      ],
+    },
+  ],
+}));
 
-describe('utils - highlighter', () => {
-  it('handles pre elements with missing code child gracefully', () => {
+mock.module('@node-core/rehype-shiki', {
+  defaultExport: async () => ({ shiki: { codeToHast } }),
+});
+
+const rehypeShikiji = (await import('../highlighter.mjs')).default;
+
+describe('utils/highlighter rehypeShikiji', () => {
+  it('highlights <pre><code className=[language-*]>', () => {
     const tree = {
       type: 'root',
       children: [
         {
           type: 'element',
           tagName: 'pre',
-          children: [{ type: 'text', value: 'no code' }],
+          properties: {},
+          children: [
+            {
+              type: 'element',
+              tagName: 'code',
+              properties: { className: ['language-js'] },
+              children: [{ type: 'text', value: 'const a = 1' }],
+            },
+          ],
+        },
+        // ignored: missing className
+        {
+          type: 'element',
+          tagName: 'pre',
+          properties: {},
+          children: [
+            {
+              type: 'element',
+              tagName: 'code',
+              properties: {},
+              children: [{ type: 'text', value: 'noop' }],
+            },
+          ],
         },
       ],
     };
 
-    const plugin = rehypeShikiji();
-    // should not throw
-    plugin(tree);
+    rehypeShikiji()(tree);
+
+    assert.equal(codeToHast.mock.callCount(), 1);
+
+    const highlighted = tree.children[0];
+    assert.equal(highlighted.tagName, 'pre');
+    assert.match(highlighted.properties.class, /language-js/);
+
+    // Copy button added
+    const copyButton = highlighted.children[highlighted.children.length - 1];
+    assert.equal(copyButton.tagName, 'button');
   });
 
   it('creates switchable code tab for two code blocks', () => {
-    const code1 = { type: 'element', tagName: 'code', properties: {} };
-    const pre1 = {
+    const makePre = language => ({
       type: 'element',
       tagName: 'pre',
-      children: [code1],
-      properties: { class: 'language-cjs', style: 's1' },
+      properties: { class: `language-${language}`, style: 's' },
+      children: [
+        {
+          type: 'element',
+          tagName: 'code',
+          properties: {},
+          children: [{ type: 'text', value: `// ${language}` }],
+        },
+      ],
+    });
+
+    const tree = {
+      type: 'root',
+      children: [makePre('cjs'), makePre('mjs')],
     };
 
-    const code2 = { type: 'element', tagName: 'code', properties: {} };
-    const pre2 = {
-      type: 'element',
-      tagName: 'pre',
-      children: [code2],
-      properties: { class: 'language-mjs', style: 's2' },
-    };
+    rehypeShikiji()(tree);
 
-    const tree = { type: 'root', children: [pre1, pre2] };
-
-    const plugin = rehypeShikiji();
-    plugin(tree);
-
-    // first child should be replaced with a pre element (switchable container)
     const first = tree.children[0];
     assert.equal(first.tagName, 'pre');
     const hasShikiClass =
@@ -54,5 +105,7 @@ describe('utils - highlighter', () => {
         Array.isArray(first.properties.className) &&
         first.properties.className.includes('shiki'));
     assert.ok(hasShikiClass);
+    assert.equal(first.children.filter(n => n.tagName === 'code').length, 2);
+    assert.equal(first.children[first.children.length - 1].tagName, 'button');
   });
 });

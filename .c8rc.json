@@ -2,7 +2,6 @@
   "all": true,
   "exclude": [
     "eslint.config.mjs",
-    "**/legacy-html/**",
     "**/*.test.mjs",
     "**/fixtures",
     "src/generators/legacy-html/assets",
