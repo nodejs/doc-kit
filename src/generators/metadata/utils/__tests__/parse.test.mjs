@@ -1,12 +1,12 @@
-import { strictEqual, deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { u } from 'unist-builder';
 import { VFile } from 'vfile';
 
-import { parseApiDoc } from '../utils/parse.mjs';
+import { parseApiDoc } from '../parse.mjs';
 
-describe('generators/metadata/utils/parse', () => {
+describe('parseApiDoc', () => {
   it('parses heading, stability, YAML and converts markdown links', () => {
     const tree = u('root', [
       u('heading', { depth: 1 }, [u('text', 'My API')]),
