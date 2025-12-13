@@ -16,6 +16,8 @@ import {
   LIFECYCLE_LABELS,
   INTERNATIONALIZABLE,
   STABILITY_PREFIX_LENGTH,
+  DEPRECATION_TYPE_PATTERNS,
+  ALERT_LEVELS,
   TYPES_WITH_METHOD_SIGNATURES,
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
@@ -164,6 +166,18 @@ export const transformStabilityNode = (node, index, parent) => {
 };
 
 /**
+ * Maps deprecation type text to AlertBox level
+ *
+ * @param {string} typeText - The deprecation type text
+ * @returns {string} The corresponding AlertBox level
+ */
+const getLevelFromDeprecationType = typeText => {
+  const match = DEPRECATION_TYPE_PATTERNS.find(p => p.pattern.test(typeText));
+
+  return match ? match.level : ALERT_LEVELS.DANGER;
+};
+
+/**
  * Transforms a heading node by injecting metadata, source links, and signatures.
  * @param {ApiDocMetadataEntry} entry - The API metadata entry
  * @param {import('unified').Processor} remark - The remark processor
@@ -180,16 +194,21 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
 
   if (entry.api === 'deprecations' && node.depth === 3) {
     // On the 'deprecations.md' page, "Type: <XYZ>" turns into an AlertBox
+    // Extract the nodes representing the type text
+    const { node } = slice(
+      parent.children[index + 1],
+      TYPE_PREFIX_LENGTH,
+      undefined,
+      { textHandling: { boundaries: 'preserve' } }
+    );
+
+    // Then retrieve its children to be the AlertBox content
+    const { children: sliced } = node;
+
     parent.children[index + 1] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
-      children: slice(
-        parent.children[index + 1],
-        TYPE_PREFIX_LENGTH,
-        undefined,
-        {
-          textHandling: { boundaries: 'preserve' },
-        }
-      ).node.children,
-      level: 'danger',
+      children: sliced,
+      // we assume sliced[0] is a text node here that contains the type text
+      level: getLevelFromDeprecationType(sliced[0].value),
       title: 'Type',
     });
   }
