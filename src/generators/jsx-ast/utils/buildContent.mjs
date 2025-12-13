@@ -180,16 +180,61 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
 
   if (entry.api === 'deprecations' && node.depth === 3) {
     // On the 'deprecations.md' page, "Type: <XYZ>" turns into an AlertBox
+    // Extract the nodes representing the type text
+    const sliced = slice(
+      parent.children[index + 1],
+      TYPE_PREFIX_LENGTH,
+      undefined,
+      { textHandling: { boundaries: 'preserve' } }
+    ).node.children;
+    // Helper to recursively extract all text from a node and its children
+    /**
+     *
+     * @param node
+     */
+    function extractText(node) {
+      if (!node) {
+        return '';
+      }
+      if (typeof node.value === 'string') {
+        return node.value;
+      }
+      if (Array.isArray(node.children)) {
+        return node.children.map(extractText).join('');
+      }
+      return '';
+    }
+
+    // Derive plain text for type matching
+    const typeText = sliced.map(extractText).join('').trim().toLowerCase();
+
+    // Map user-facing deprecation types to AlertBox levels
+    // documentation / compilation -> blue (`info`)
+    // runtime / application -> orange (`warning`)
+    // fallback -> danger (red)
+    let level = 'danger';
+
+    // Use stricter matching to avoid false positives (e.g., "compilation" inside "End-of-Life")
+    const normalizedTypeText = typeText
+      .replace(/[.,]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (
+      normalizedTypeText.includes('documentation') ||
+      normalizedTypeText.includes('compilation')
+    ) {
+      level = 'info';
+    } else if (
+      normalizedTypeText.includes('runtime') ||
+      normalizedTypeText.includes('application')
+    ) {
+      level = 'warning';
+    }
+
     parent.children[index + 1] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
-      children: slice(
-        parent.children[index + 1],
-        TYPE_PREFIX_LENGTH,
-        undefined,
-        {
-          textHandling: { boundaries: 'preserve' },
-        }
-      ).node.children,
-      level: 'danger',
+      children: sliced,
+      level,
       title: 'Type',
     });
   }
