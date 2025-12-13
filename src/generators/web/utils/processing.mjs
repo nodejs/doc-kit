@@ -107,7 +107,6 @@ export async function processJSXEntries(
   ]);
 
   const titleSuffix = `Node.js v${version.version} Documentation`;
-  const speculationRulesString = JSON.stringify(SPECULATION_RULES, null, 2);
 
   // Step 3: Create final HTML (could be parallelized in workers)
   const results = entries.map(({ data: { api, heading } }) => {
@@ -119,7 +118,7 @@ export async function processJSXEntries(
       .replace('{{dehydrated}}', serverBundle.pages.get(fileName) ?? '')
       .replace('{{importMap}}', clientBundle.importMap ?? '')
       .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
-      .replace('{{speculationRules}}', speculationRulesString);
+      .replace('{{speculationRules}}', SPECULATION_RULES);
 
     // Minify HTML (input must be a Buffer)
     const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
