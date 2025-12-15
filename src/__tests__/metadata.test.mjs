@@ -1,4 +1,4 @@
-import { strictEqual, deepStrictEqual } from 'node:assert';
+import { strictEqual, deepStrictEqual } from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import GitHubSlugger from 'github-slugger';

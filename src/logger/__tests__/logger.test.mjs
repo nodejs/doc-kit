@@ -1,7 +1,8 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../constants.mjs';
+import logger, { Logger } from '../index.mjs';
 import { createLogger } from '../logger.mjs';
 
 /**
@@ -379,5 +380,19 @@ describe('createLogger', () => {
       logger.debug('Debug message');
       strictEqual(transport.mock.callCount(), 1); // Debug should be filtered
     });
+  });
+});
+
+describe('logger (smoke)', () => {
+  it('exports a default logger instance', () => {
+    strictEqual(typeof logger.info, 'function');
+    strictEqual(typeof logger.error, 'function');
+    strictEqual(typeof logger.setLogLevel, 'function');
+  });
+
+  it('can create a console logger via Logger()', () => {
+    const consoleLogger = Logger('console');
+    strictEqual(typeof consoleLogger.info, 'function');
+    strictEqual(typeof consoleLogger.setLogLevel, 'function');
   });
 });
