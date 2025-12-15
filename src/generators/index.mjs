@@ -14,6 +14,7 @@ import llmsTxt from './llms-txt/index.mjs';
 import manPage from './man-page/index.mjs';
 import metadata from './metadata/index.mjs';
 import oramaDb from './orama-db/index.mjs';
+import sitemap from './sitemap/index.mjs';
 import web from './web/index.mjs';
 
 export const publicGenerators = {
@@ -27,6 +28,7 @@ export const publicGenerators = {
   'api-links': apiLinks,
   'orama-db': oramaDb,
   'llms-txt': llmsTxt,
+  sitemap,
   web,
 };
 
