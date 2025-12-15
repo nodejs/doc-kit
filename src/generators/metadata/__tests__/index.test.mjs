@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import generator from '../index.mjs';
@@ -24,8 +24,8 @@ describe('generators/metadata/index', () => {
       results.push(chunk);
     }
 
-    strictEqual(results.length, 2);
-    deepStrictEqual(results[0], [1, 2, 3]);
-    deepStrictEqual(results[1], [4]);
+    assert.strictEqual(results.length, 2);
+    assert.deepStrictEqual(results[0], [1, 2, 3]);
+    assert.deepStrictEqual(results[1], [4]);
   });
 });

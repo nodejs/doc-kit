@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { u } from 'unist-builder';
@@ -22,17 +22,17 @@ describe('parseApiDoc', () => {
 
     const results = parseApiDoc({ file, tree }, {});
 
-    strictEqual(results.length, 1);
+    assert.strictEqual(results.length, 1);
     const [entry] = results;
 
-    strictEqual(entry.source_link, 'https://example.com');
-    strictEqual(entry.stability.children.length, 1);
-    strictEqual(entry.stability.children[0].data.index, '2');
+    assert.strictEqual(entry.source_link, 'https://example.com');
+    assert.strictEqual(entry.stability.children.length, 1);
+    assert.strictEqual(entry.stability.children[0].data.index, '2');
 
     // Find a paragraph child that contains a link and assert transformed URL
     const paragraph = entry.content.children.find(n => n.type === 'paragraph');
     const link = paragraph.children.find(c => c.type === 'link');
-    strictEqual(link.url, 'other.html#foo');
+    assert.strictEqual(link.url, 'other.html#foo');
   });
 
   it('inserts a fake heading when none exist', () => {
@@ -41,11 +41,11 @@ describe('parseApiDoc', () => {
 
     const results = parseApiDoc({ file, tree }, {});
 
-    strictEqual(results.length, 1);
+    assert.strictEqual(results.length, 1);
     const [entry] = results;
 
     // Fake heading has empty text
-    deepStrictEqual(entry.heading.data.text, '');
+    assert.deepStrictEqual(entry.heading.data.text, '');
   });
 
   it('converts link references using definitions and removes definitions', () => {
@@ -71,12 +71,12 @@ describe('parseApiDoc', () => {
 
     const results = parseApiDoc({ file, tree }, {});
 
-    strictEqual(results.length, 1);
+    assert.strictEqual(results.length, 1);
     const [entry] = results;
 
     const paragraph = entry.content.children.find(n => n.type === 'paragraph');
     const link = paragraph.children.find(c => c.type === 'link');
-    strictEqual(link.url, 'https://def.example/');
+    assert.strictEqual(link.url, 'https://def.example/');
   });
 
   it('converts type references to links using provided typeMap', () => {
@@ -89,12 +89,12 @@ describe('parseApiDoc', () => {
 
     const results = parseApiDoc({ file, tree }, { Foo: 'foo.html' });
 
-    strictEqual(results.length, 1);
+    assert.strictEqual(results.length, 1);
     const [entry] = results;
 
     const paragraph = entry.content.children.find(n => n.type === 'paragraph');
     const link = paragraph.children.find(c => c.type === 'link');
-    strictEqual(link.url, 'foo.html');
+    assert.strictEqual(link.url, 'foo.html');
   });
 
   it('converts unix manual references to man7 links', () => {
@@ -107,12 +107,12 @@ describe('parseApiDoc', () => {
 
     const results = parseApiDoc({ file, tree }, {});
 
-    strictEqual(results.length, 1);
+    assert.strictEqual(results.length, 1);
     const [entry] = results;
 
     const paragraph = entry.content.children.find(n => n.type === 'paragraph');
     const link = paragraph.children.find(c => c.type === 'link');
     // should point to man7 man page for ls in section 1
-    strictEqual(link.url.includes('man-pages/man1/ls.1.html'), true);
+    assert.strictEqual(link.url.includes('man-pages/man1/ls.1.html'), true);
   });
 });

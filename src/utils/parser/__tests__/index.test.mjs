@@ -1,4 +1,4 @@
-import { strictEqual, deepStrictEqual } from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
@@ -10,21 +10,21 @@ import {
 
 describe('transformTypeToReferenceLink', () => {
   it('should transform a JavaScript primitive type into a Markdown link', () => {
-    strictEqual(
+    assert.strictEqual(
       transformTypeToReferenceLink('string'),
       '[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type)'
     );
   });
 
   it('should transform a JavaScript global type into a Markdown link', () => {
-    strictEqual(
+    assert.strictEqual(
       transformTypeToReferenceLink('Array'),
       '[`<Array>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)'
     );
   });
 
   it('should transform a type into a Markdown link', () => {
-    strictEqual(
+    assert.strictEqual(
       transformTypeToReferenceLink('SomeOtherType', {
         SomeOtherType: 'fromTypeMap',
       }),
@@ -43,7 +43,7 @@ llm_description=This is a test module`;
 
     const normalizedYaml = normalizeYamlSyntax(input);
 
-    strictEqual(
+    assert.strictEqual(
       normalizedYaml,
       `introduced_in: v0.1.21
 source_link: lib/test.js
@@ -58,7 +58,7 @@ llm_description: This is a test module`
 
     const normalizedYaml = normalizeYamlSyntax(input);
 
-    strictEqual(normalizedYaml, 'introduced_in: v0.1.21');
+    assert.strictEqual(normalizedYaml, 'introduced_in: v0.1.21');
   });
 });
 
@@ -70,7 +70,7 @@ describe('parseYAMLIntoMetadata', () => {
       type: 'module',
       introduced_in: 'v1.0.0',
     };
-    deepStrictEqual(parseYAMLIntoMetadata(input), expectedOutput);
+    assert.deepStrictEqual(parseYAMLIntoMetadata(input), expectedOutput);
   });
 
   it('should parse a YAML string with multiple versions into a JavaScript object', () => {
@@ -80,7 +80,7 @@ describe('parseYAMLIntoMetadata', () => {
       type: 'module',
       introduced_in: ['v1.0.0', 'v1.1.0'],
     };
-    deepStrictEqual(parseYAMLIntoMetadata(input), expectedOutput);
+    assert.deepStrictEqual(parseYAMLIntoMetadata(input), expectedOutput);
   });
 
   it('should parse a YAML string with source_link into a JavaScript object', () => {
@@ -92,7 +92,7 @@ describe('parseYAMLIntoMetadata', () => {
       introduced_in: 'v1.0.0',
       source_link: 'https://github.com/nodejs/node',
     };
-    deepStrictEqual(parseYAMLIntoMetadata(input), expectedOutput);
+    assert.deepStrictEqual(parseYAMLIntoMetadata(input), expectedOutput);
   });
 
   it('should parse a raw Heading string into Heading metadata', () => {
@@ -102,6 +102,6 @@ describe('parseYAMLIntoMetadata', () => {
       name: '## test',
       depth: 2,
     };
-    deepStrictEqual(parseHeadingIntoMetadata(input, 2), expectedOutput);
+    assert.deepStrictEqual(parseHeadingIntoMetadata(input, 2), expectedOutput);
   });
 });

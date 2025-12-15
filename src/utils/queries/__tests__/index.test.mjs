@@ -1,4 +1,4 @@
-import { strictEqual, deepStrictEqual } from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import typeMap from '../../parser/typeMap.json' with { type: 'json' };
@@ -11,7 +11,7 @@ describe('createQueries', () => {
     const node = { value: 'type: test\nname: test\n' };
     const apiEntryMetadata = {
       updateProperties: properties => {
-        deepStrictEqual(properties, { type: 'test', name: 'test' });
+        assert.deepStrictEqual(properties, { type: 'test', name: 'test' });
       },
     };
     queries.addYAMLMetadata(node, apiEntryMetadata);
@@ -25,7 +25,7 @@ describe('createQueries', () => {
     };
     const parent = { children: [node] };
     queries.updateTypeReference(node, parent);
-    deepStrictEqual(
+    assert.deepStrictEqual(
       parent.children.map(c => c.value),
       [
         'This is a ',
@@ -42,8 +42,8 @@ describe('createQueries', () => {
     };
     const parent = { children: [node] };
     queries.updateTypeReference(node, parent);
-    strictEqual(parent.children[0].type, 'text');
-    strictEqual(parent.children[0].value, 'This is a {test} type.');
+    assert.strictEqual(parent.children[0].type, 'text');
+    assert.strictEqual(parent.children[0].value, 'This is a {test} type.');
   });
 
   it('should add heading metadata correctly', () => {
@@ -53,7 +53,7 @@ describe('createQueries', () => {
     };
     const apiEntryMetadata = {
       setHeading: heading => {
-        deepStrictEqual(heading, {
+        assert.deepStrictEqual(heading, {
           children: [
             {
               type: 'text',
@@ -75,15 +75,15 @@ describe('createQueries', () => {
   it('should update markdown link correctly', () => {
     const node = { type: 'link', url: 'test.md#heading' };
     queries.updateMarkdownLink(node);
-    strictEqual(node.url, 'test.html#heading');
+    assert.strictEqual(node.url, 'test.html#heading');
   });
 
   it('should update link reference correctly', () => {
     const node = { type: 'linkReference', identifier: 'test' };
     const definitions = [{ identifier: 'test', url: 'test.html#test' }];
     queries.updateLinkReference(node, definitions);
-    strictEqual(node.type, 'link');
-    strictEqual(node.url, 'test.html#test');
+    assert.strictEqual(node.type, 'link');
+    assert.strictEqual(node.url, 'test.html#test');
   });
 
   it('should add stability index metadata correctly', () => {
@@ -98,7 +98,7 @@ describe('createQueries', () => {
     };
     const apiEntryMetadata = {
       addStability: stability => {
-        deepStrictEqual(stability.data, {
+        assert.deepStrictEqual(stability.data, {
           index: '1.0',
           description: 'Frozen',
         });
@@ -110,14 +110,14 @@ describe('createQueries', () => {
   describe('UNIST', () => {
     describe('isTypedList', () => {
       it('returns false for non-list nodes', () => {
-        strictEqual(
+        assert.strictEqual(
           createQueries.UNIST.isTypedList({ type: 'paragraph', children: [] }),
           false
         );
       });
 
       it('returns false for empty lists', () => {
-        strictEqual(
+        assert.strictEqual(
           createQueries.UNIST.isTypedList({ type: 'list', children: [] }),
           false
         );
@@ -211,7 +211,7 @@ describe('createQueries', () => {
 
       cases.forEach(({ name, node, expected }) => {
         it(`returns ${expected} for ${name}`, () => {
-          strictEqual(createQueries.UNIST.isTypedList(node), expected);
+          assert.strictEqual(createQueries.UNIST.isTypedList(node), expected);
         });
       });
     });

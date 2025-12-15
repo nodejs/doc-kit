@@ -1,4 +1,4 @@
-import { strictEqual } from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { u } from 'unist-builder';
@@ -20,7 +20,7 @@ const createMockElement = (headingText, description) => ({
 
 const runTests = (cases, conversionFunc) => {
   cases.forEach(({ input, expected }) => {
-    strictEqual(conversionFunc(input), expected);
+    assert.strictEqual(conversionFunc(input), expected);
   });
 };
 
@@ -31,7 +31,7 @@ describe('Mandoc Conversion', () => {
         u('heading', { depth: 1 }, [textNode('Main Title')]),
         u('paragraph', [textNode('Introductory text.')]),
       ]);
-      strictEqual(
+      assert.strictEqual(
         convertNodeToMandoc(node),
         '.Sh Main Title\nIntroductory text.'
       );
@@ -111,7 +111,7 @@ describe('Mandoc Conversion', () => {
         '`-a`, `-b=value`',
         'Description of the options.'
       );
-      strictEqual(
+      assert.strictEqual(
         convertOptionToMandoc(mockElement),
         `.It Fl a , Fl b Ns = Ns Ar value\nDescription of the options.\n.\n`
       );
@@ -122,7 +122,7 @@ describe('Mandoc Conversion', () => {
         '`-a`',
         'Description of the option without a value.'
       );
-      strictEqual(
+      assert.strictEqual(
         convertOptionToMandoc(mockElement),
         `.It Fl a\nDescription of the option without a value.\n.\n`
       );
@@ -133,7 +133,7 @@ describe('Mandoc Conversion', () => {
         '`-x`, `-y`, `-z=value`',
         'Description of multiple options.'
       );
-      strictEqual(
+      assert.strictEqual(
         convertOptionToMandoc(mockElement),
         `.It Fl x , Fl y , Fl z Ns = Ns Ar value\nDescription of multiple options.\n.\n`
       );
@@ -144,7 +144,7 @@ describe('Mandoc Conversion', () => {
         '`-d`, `--option=value with spaces`',
         'Description of special options.'
       );
-      strictEqual(
+      assert.strictEqual(
         convertOptionToMandoc(mockElement),
         `.It Fl d , Fl -option Ns = Ns Ar value with spaces\nDescription of special options.\n.\n`
       );
@@ -157,7 +157,7 @@ describe('Mandoc Conversion', () => {
         '`MY_VAR=some_value`',
         'Description of the environment variable.'
       );
-      strictEqual(
+      assert.strictEqual(
         convertEnvVarToMandoc(mockElement),
         `.It Ev MY_VAR Ar some_value\nDescription of the environment variable.\n.\n`
       );
@@ -168,7 +168,7 @@ describe('Mandoc Conversion', () => {
         '`MY_VAR=`',
         'Description of the environment variable without a value.'
       );
-      strictEqual(
+      assert.strictEqual(
         convertEnvVarToMandoc(mockElement),
         `.It Ev MY_VAR\nDescription of the environment variable without a value.\n.\n`
       );
@@ -179,7 +179,7 @@ describe('Mandoc Conversion', () => {
         '`SPECIAL_VAR=special value!`',
         'Description of special environment variable.'
       );
-      strictEqual(
+      assert.strictEqual(
         convertEnvVarToMandoc(mockElement),
         `.It Ev SPECIAL_VAR Ar special value!\nDescription of special environment variable.\n.\n`
       );

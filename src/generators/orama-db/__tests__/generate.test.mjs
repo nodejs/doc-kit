@@ -1,4 +1,4 @@
-import { strictEqual, rejects, ok } from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -8,10 +8,12 @@ import generator from '../index.mjs';
 
 describe('orama-db generate', () => {
   it('throws when input is missing or empty', async () => {
-    await rejects(async () =>
+    await assert.rejects(async () =>
       generator.generate(undefined, { output: './tmp' })
     );
-    await rejects(async () => generator.generate([], { output: './tmp' }));
+    await assert.rejects(async () =>
+      generator.generate([], { output: './tmp' })
+    );
   });
 
   it('throws when output path is missing', async () => {
@@ -23,7 +25,7 @@ describe('orama-db generate', () => {
         content: { children: [] },
       },
     ];
-    await rejects(async () =>
+    await assert.rejects(async () =>
       generator.generate(fakeInput, { output: undefined })
     );
   });
@@ -69,14 +71,14 @@ describe('orama-db generate', () => {
       const parsed = JSON.parse(file);
 
       // Basic sanity checks on saved DB structure
-      ok(parsed, 'saved DB should be JSON');
+      assert.ok(parsed, 'saved DB should be JSON');
       // Expect some representation of documents to exist
       // The exact schema is internal to orama; ensure serialized contains our slugs/titles
       const serialized = JSON.stringify(parsed);
-      strictEqual(serialized.includes('mymod.html#one'), true);
-      strictEqual(serialized.includes('mymod.html#two'), true);
-      strictEqual(serialized.includes('Module'), true);
-      strictEqual(serialized.includes('Child'), true);
+      assert.strictEqual(serialized.includes('mymod.html#one'), true);
+      assert.strictEqual(serialized.includes('mymod.html#two'), true);
+      assert.strictEqual(serialized.includes('Module'), true);
+      assert.strictEqual(serialized.includes('Child'), true);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

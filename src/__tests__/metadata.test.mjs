@@ -1,4 +1,4 @@
-import { strictEqual, deepStrictEqual } from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import GitHubSlugger from 'github-slugger';
@@ -21,7 +21,10 @@ describe('createMetadata', () => {
       },
     });
     metadata.setHeading(heading);
-    strictEqual(metadata.create(new VFile(), {}).heading.data, heading.data);
+    assert.strictEqual(
+      metadata.create(new VFile(), {}).heading.data,
+      heading.data
+    );
   });
 
   it('should set the stability correctly', () => {
@@ -34,7 +37,7 @@ describe('createMetadata', () => {
     };
     metadata.addStability(stability);
     const actual = metadata.create(new VFile(), {}).stability;
-    deepStrictEqual(actual, {
+    assert.deepStrictEqual(actual, {
       children: [stability],
       type: 'root',
     });
@@ -83,7 +86,7 @@ describe('createMetadata', () => {
       yaml_position: {},
     };
     const actual = metadata.create(apiDoc, section);
-    deepStrictEqual(actual, expected);
+    assert.deepStrictEqual(actual, expected);
   });
 
   it('should be serializable', () => {
@@ -92,6 +95,6 @@ describe('createMetadata', () => {
       type: 'root',
       children: [],
     });
-    deepStrictEqual(structuredClone(actual), actual);
+    assert.deepStrictEqual(structuredClone(actual), actual);
   });
 });
