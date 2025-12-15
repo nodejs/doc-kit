@@ -164,6 +164,58 @@ export const transformStabilityNode = (node, index, parent) => {
 };
 
 /**
+ * Maps deprecation type text to AlertBox level
+ *
+ * @param {string} typeText - The deprecation type text
+ * @returns {string} The corresponding AlertBox level
+ */
+const getLevelFromDeprecationType = typeText => {
+  const normalized = String(typeText || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[.,]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (
+    normalized.includes('documentation') ||
+    normalized.includes('compilation')
+  ) {
+    return 'info';
+  } else if (
+    normalized.includes('runtime') ||
+    normalized.includes('application')
+  ) {
+    return 'warning';
+  } else {
+    return 'danger';
+  }
+};
+
+/**
+ *
+ * @param nodes
+ */
+const getTextValue = nodes =>
+  (nodes || [])
+    .map(node => {
+      if (!node) {
+        return '';
+      }
+      if (typeof node.value === 'string') {
+        return node.value;
+      }
+      if (typeof node.alt === 'string') {
+        return node.alt;
+      }
+      if (Array.isArray(node.children)) {
+        return getTextValue(node.children);
+      }
+      return '';
+    })
+    .join('');
+
+/**
  * Transforms a heading node by injecting metadata, source links, and signatures.
  * @param {ApiDocMetadataEntry} entry - The API metadata entry
  * @param {import('unified').Processor} remark - The remark processor
@@ -187,54 +239,12 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
       undefined,
       { textHandling: { boundaries: 'preserve' } }
     ).node.children;
-    // Helper to recursively extract all text from a node and its children
-    /**
-     *
-     * @param node
-     */
-    function extractText(node) {
-      if (!node) {
-        return '';
-      }
-      if (typeof node.value === 'string') {
-        return node.value;
-      }
-      if (Array.isArray(node.children)) {
-        return node.children.map(extractText).join('');
-      }
-      return '';
-    }
 
-    // Derive plain text for type matching
-    const typeText = sliced.map(extractText).join('').trim().toLowerCase();
-
-    // Map user-facing deprecation types to AlertBox levels
-    // documentation / compilation -> blue (`info`)
-    // runtime / application -> orange (`warning`)
-    // fallback -> danger (red)
-    let level = 'danger';
-
-    // Use stricter matching to avoid false positives (e.g., "compilation" inside "End-of-Life")
-    const normalizedTypeText = typeText
-      .replace(/[.,]/g, ' ')
-      .split(/\s+/)
-      .filter(Boolean);
-
-    if (
-      normalizedTypeText.includes('documentation') ||
-      normalizedTypeText.includes('compilation')
-    ) {
-      level = 'info';
-    } else if (
-      normalizedTypeText.includes('runtime') ||
-      normalizedTypeText.includes('application')
-    ) {
-      level = 'warning';
-    }
+    const typeText = getTextValue(sliced);
 
     parent.children[index + 1] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
       children: sliced,
-      level,
+      level: getLevelFromDeprecationType(typeText),
       title: 'Type',
     });
   }
