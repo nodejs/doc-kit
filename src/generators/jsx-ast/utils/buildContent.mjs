@@ -20,6 +20,7 @@ import {
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
 import insertSignature, { getFullName } from './buildSignature.mjs';
+import { transformNodesToString } from '../../../utils/unist.mjs';
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
@@ -170,50 +171,20 @@ export const transformStabilityNode = (node, index, parent) => {
  * @returns {string} The corresponding AlertBox level
  */
 const getLevelFromDeprecationType = typeText => {
-  const normalized = String(typeText || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[.,]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean);
-
   if (
-    normalized.includes('documentation') ||
-    normalized.includes('compilation')
+    typeText.startsWith('Documentation') ||
+    typeText.startsWith('Compilation')
   ) {
     return 'info';
   } else if (
-    normalized.includes('runtime') ||
-    normalized.includes('application')
+    typeText.startsWith('Runtime') ||
+    typeText.startsWith('Application')
   ) {
     return 'warning';
   } else {
     return 'danger';
   }
 };
-
-/**
- *
- * @param nodes
- */
-const getTextValue = nodes =>
-  (nodes || [])
-    .map(node => {
-      if (!node) {
-        return '';
-      }
-      if (typeof node.value === 'string') {
-        return node.value;
-      }
-      if (typeof node.alt === 'string') {
-        return node.alt;
-      }
-      if (Array.isArray(node.children)) {
-        return getTextValue(node.children);
-      }
-      return '';
-    })
-    .join('');
 
 /**
  * Transforms a heading node by injecting metadata, source links, and signatures.
@@ -240,7 +211,7 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
       { textHandling: { boundaries: 'preserve' } }
     ).node.children;
 
-    const typeText = getTextValue(sliced);
+    const typeText = transformNodesToString(sliced);
 
     parent.children[index + 1] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
       children: sliced,
