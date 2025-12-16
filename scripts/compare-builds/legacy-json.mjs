@@ -26,6 +26,6 @@ const results = await Promise.all(
 const filteredResults = results.filter(Boolean);
 
 if (filteredResults.length) {
-  console.log('## `legacy-html` generator');
+  console.log('## `legacy-json` generator');
   filteredResults.forEach(o => console.log(o));
 }

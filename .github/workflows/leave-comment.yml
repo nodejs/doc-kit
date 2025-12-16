@@ -1,8 +1,8 @@
-name: Compare Build Outputs
+name: Leave a comment
 
 on:
   workflow_run:
-    workflows: ['Generate Docs']
+    workflows: ['Generate and Compare Docs']
     types: [completed]
 
 permissions:
