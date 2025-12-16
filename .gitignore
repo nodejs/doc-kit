@@ -2,8 +2,9 @@
 node_modules
 npm-debug.log
 
-# Default Output Directory
+# Default Output and Comparison Directories
 out
+base
 
 # Tests
 coverage

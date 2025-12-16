@@ -1,0 +1,50 @@
+name: Compare Build Outputs
+
+on:
+  workflow_run:
+    workflows: ['Generate Docs']
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  aggregate:
+    name: Aggregate Comparison Results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
+      - name: Download all comparison artifacts
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: results
+
+      - name: Combine results
+        id: combine
+        run: |
+          shopt -s nullglob
+          result_files=(results/*/comparison.txt)
+
+          if ((${#result_files[@]})); then
+            {
+              echo "combined<<EOF"
+              cat "${result_files[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Add Comment to PR
+        if: steps.combine.outputs.combined
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
+        with:
+          comment-tag: compared
+          message: ${{ steps.combine.outputs.combined }}
+          pr-number: ${{ github.event.workflow_run.pull_requests[0].number }}

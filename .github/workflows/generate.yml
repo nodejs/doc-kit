@@ -1,4 +1,4 @@
-name: Generate Docs
+name: Generate and Compare Docs
 
 on:
   push:
@@ -15,8 +15,62 @@ permissions:
   contents: read
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.push.outputs.sha || steps.pr.outputs.sha }}
+      base-run: ${{ steps.main.outputs.run_id }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
+      # If we are running from the main branch (a non-pull_request event), we
+      # want the latest SHA from nodejs/node
+      - id: push
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          SHA=$(git ls-remote https://github.com/nodejs/node.git HEAD | awk '{print $1}')
+          echo "$SHA" > commit
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Upload metadata artifact
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: commit
+          path: commit
+
+      # If we are running from a PR (a pull_request event), we
+      # want the SHA used by the most recent `push` run
+      - name: Get latest `main` run
+        if: ${{ github.event_name == 'pull_request' }}
+        id: main
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ID=$(gh run list --repo $GITHUB_REPOSITORY -c $BASE_SHA -w 174604400 -L 1 --json databaseId --jq ".[].databaseId")
+          echo "run_id=$ID" >> $GITHUB_OUTPUT
+
+      - name: Download metadata artifact
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: commit
+          run-id: ${{ steps.main.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: pr
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          SHA=$(cat commit)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
   generate:
     runs-on: ubuntu-latest
+    needs: prepare
     strategy:
       matrix:
         include:
@@ -32,10 +86,12 @@ jobs:
             input: './node/doc/api/*.md'
           - target: legacy-json
             input: './node/doc/api/*.md'
+            compare: true
           - target: legacy-html
             input: './node/doc/api/*.md'
           - target: web
             input: './node/doc/api/*.md'
+            compare: true
           - target: llms-txt
             input: './node/doc/api/*.md'
       fail-fast: false
@@ -56,6 +112,7 @@ jobs:
         with:
           persist-credentials: false
           repository: nodejs/node
+          ref: ${{ needs.prepare.outputs.sha }}
           sparse-checkout: |
             doc/api
             lib
@@ -79,13 +136,27 @@ jobs:
           node bin/cli.mjs generate \
             -t ${{ matrix.target }} \
             -i "${{ matrix.input }}" \
-            -o "out/${{ matrix.target }}" \
+            -o out \
             -c ./node/CHANGELOG.md \
             --index ./node/doc/api/index.md \
             --log-level debug
+
+      - name: Download base branch artifact
+        if: ${{ matrix.compare && needs.prepare.outputs.base-run }}
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: ${{ matrix.target }}
+          path: base
+          run-id: ${{ needs.prepare.outputs.base-run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compare to base branch
+        if: ${{ matrix.compare && needs.prepare.outputs.base-run }}
+        run: |
+          node scripts/compare-builds/${{ matrix.target }}.mjs > out/comparison.txt
 
       - name: Upload ${{ matrix.target }} artifacts
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: ${{ matrix.target }}
-          path: out/${{ matrix.target }}
+          path: out
