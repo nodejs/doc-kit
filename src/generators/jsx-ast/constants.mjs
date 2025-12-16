@@ -150,3 +150,10 @@ export const TYPES_WITH_METHOD_SIGNATURES = [
   'method',
   'classMethod',
 ];
+
+// Patterns to map deprecation "Type" text to AlertBox levels.
+// Order matters: first match wins.
+export const DEPRECATION_TYPE_PATTERNS = [
+  { pattern: /^(Documentation|Compilation)/i, level: 'info' },
+  { pattern: /^(Runtime|Application)/i, level: 'warning' },
+];
