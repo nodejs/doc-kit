@@ -16,6 +16,7 @@ import {
   LIFECYCLE_LABELS,
   INTERNATIONALIZABLE,
   STABILITY_PREFIX_LENGTH,
+  DEPRECATION_TYPE_PATTERNS,
   TYPES_WITH_METHOD_SIGNATURES,
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
@@ -170,19 +171,9 @@ export const transformStabilityNode = (node, index, parent) => {
  * @returns {string} The corresponding AlertBox level
  */
 const getLevelFromDeprecationType = typeText => {
-  if (
-    typeText.startsWith('Documentation') ||
-    typeText.startsWith('Compilation')
-  ) {
-    return 'info';
-  } else if (
-    typeText.startsWith('Runtime') ||
-    typeText.startsWith('Application')
-  ) {
-    return 'warning';
-  } else {
-    return 'danger';
-  }
+  const match = DEPRECATION_TYPE_PATTERNS.find(p => p.pattern.test(typeText));
+
+  return match ? match.level : 'danger';
 };
 
 /**
