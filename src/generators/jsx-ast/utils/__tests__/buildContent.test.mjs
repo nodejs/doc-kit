@@ -3,24 +3,24 @@ import { describe, it } from 'node:test';
 
 import { transformHeadingNode } from '../buildContent.mjs';
 
+const heading = {
+  type: 'heading',
+  depth: 3,
+  data: { type: 'misc', slug: 's', text: 'Heading' },
+  children: [{ type: 'text', value: 'Heading' }],
+};
+
+const makeParent = typeText => ({
+  children: [
+    heading,
+    {
+      type: 'paragraph',
+      children: [{ type: 'text', value: `Type: ${typeText}` }],
+    },
+  ],
+});
+
 describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
-  const makeHeading = () => ({
-    type: 'heading',
-    depth: 3,
-    data: { type: 'misc', slug: 's', text: 'Heading' },
-    children: [{ type: 'text', value: 'Heading' }],
-  });
-
-  const makeParent = typeText => ({
-    children: [
-      makeHeading(),
-      {
-        type: 'paragraph',
-        children: [{ type: 'text', value: `Type: ${typeText}` }],
-      },
-    ],
-  });
-
   it('maps documentation/compilation to info', () => {
     const entry = { api: 'deprecations' };
     const parent = makeParent('Documentation');
@@ -57,9 +57,9 @@ describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
     transformHeadingNode(entry, {}, node, 0, parent);
 
     const alert = parent.children[1];
-    assert.equal(alert.name, 'AlertBox');
     const levelAttr = alert.attributes.find(a => a.name === 'level');
-    assert.ok(levelAttr);
+
+    assert.equal(alert.name, 'AlertBox');
     assert.equal(levelAttr.value, 'danger');
   });
 });

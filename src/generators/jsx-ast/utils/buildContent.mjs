@@ -20,7 +20,6 @@ import {
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
 import insertSignature, { getFullName } from './buildSignature.mjs';
-import { transformNodesToString } from '../../../utils/unist.mjs';
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
@@ -211,7 +210,7 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
       { textHandling: { boundaries: 'preserve' } }
     ).node.children;
 
-    const typeText = transformNodesToString(sliced);
+    const typeText = sliced[0].value;
 
     parent.children[index + 1] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
       children: sliced,
