@@ -201,11 +201,10 @@ export const transformHeadingNode = (entry, remark, node, index, parent) => {
       { textHandling: { boundaries: 'preserve' } }
     ).node.children;
 
-    const typeText = sliced[0].value;
-
     parent.children[index + 1] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
       children: sliced,
-      level: getLevelFromDeprecationType(typeText),
+      // we assume sliced[0] is a text node here that contains the type text
+      level: getLevelFromDeprecationType(sliced[0].value),
       title: 'Type',
     });
   }
