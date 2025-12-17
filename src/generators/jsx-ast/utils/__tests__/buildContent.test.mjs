@@ -29,9 +29,9 @@ describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
     transformHeadingNode(entry, {}, node, 0, parent);
 
     const alert = parent.children[1];
-    assert.equal(alert.name, 'AlertBox');
     const levelAttr = alert.attributes.find(a => a.name === 'level');
-    assert.ok(levelAttr);
+
+    assert.equal(alert.name, 'AlertBox');
     assert.equal(levelAttr.value, 'info');
   });
 
@@ -43,9 +43,9 @@ describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
     transformHeadingNode(entry, {}, node, 0, parent);
 
     const alert = parent.children[1];
-    assert.equal(alert.name, 'AlertBox');
     const levelAttr = alert.attributes.find(a => a.name === 'level');
-    assert.ok(levelAttr);
+
+    assert.equal(alert.name, 'AlertBox');
     assert.equal(levelAttr.value, 'warning');
   });
 
