@@ -6,26 +6,29 @@ import { BASE, HEAD } from './utils.mjs';
 
 const files = await readdir(BASE);
 
-const results = await Promise.all(
-  files.map(async file => {
-    const basePath = join(BASE, file);
-    const headPath = join(HEAD, file);
+export const details = (summary, diff) =>
+  `<details>\n<summary>${summary}</summary>\n\n\`\`\`diff\n${diff}\n\`\`\`\n\n</details>`;
 
-    const baseContent = JSON.parse(await readFile(basePath, 'utf-8'));
-    const headContent = JSON.parse(await readFile(headPath, 'utf-8'));
+const getFileDiff = async file => {
+  const basePath = join(BASE, file);
+  const headPath = join(HEAD, file);
 
-    try {
-      assert.deepStrictEqual(baseContent, headContent);
-      return null;
-    } catch ({ message }) {
-      return `<details>\n<summary>${file}</summary>\n\n\`\`\`diff\n${message}\n\`\`\`\n\n</details>`;
-    }
-  })
-);
+  const baseContent = JSON.parse(await readFile(basePath, 'utf-8'));
+  const headContent = JSON.parse(await readFile(headPath, 'utf-8'));
+
+  try {
+    assert.deepStrictEqual(baseContent, headContent);
+    return null;
+  } catch ({ message }) {
+    return details(file, message);
+  }
+};
+
+const results = await Promise.all(files.map(getFileDiff));
 
 const filteredResults = results.filter(Boolean);
 
 if (filteredResults.length) {
   console.log('## `legacy-json` generator');
-  filteredResults.forEach(o => console.log(o));
+  console.log(filteredResults.join('\n'));
 }

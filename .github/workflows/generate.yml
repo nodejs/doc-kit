@@ -51,6 +51,8 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          # `174604400` refers to `generate.yml`'s workflow ID, available at https://api.github.com/repos/nodejs/doc-kit/actions/workflows/generate.yml
+          # The `databaseId` is a given runs run ID (Ref: https://docs.github.com/en/enterprise-cloud@latest/graphql/reference/objects#workflowrun)
           ID=$(gh run list --repo $GITHUB_REPOSITORY -c $BASE_SHA -w 174604400 -L 1 --json databaseId --jq ".[].databaseId")
           echo "run_id=$ID" >> $GITHUB_OUTPUT
 

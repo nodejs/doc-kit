@@ -36,21 +36,21 @@ const getStats = async dir => {
 // Fetch stats for both directories in parallel
 const [baseStats, headStats] = await Promise.all([BASE, HEAD].map(getStats));
 
+const didChange = f =>
+  baseStats.has(f) && headStats.has(f) && baseStats.get(f) !== headStats.get(f);
+
+const toDiffObject = f => ({
+  file: f,
+  base: baseStats.get(f),
+  head: headStats.get(f),
+  diff: headStats.get(f) - baseStats.get(f),
+});
+
 // Find files that exist in both directories but have different sizes,
 // then sort by absolute diff (largest changes first)
 const changed = [...new Set([...baseStats.keys(), ...headStats.keys()])]
-  .filter(
-    f =>
-      baseStats.has(f) &&
-      headStats.has(f) &&
-      baseStats.get(f) !== headStats.get(f)
-  )
-  .map(f => ({
-    file: f,
-    base: baseStats.get(f),
-    head: headStats.get(f),
-    diff: headStats.get(f) - baseStats.get(f),
-  }))
+  .filter(didChange)
+  .map(toDiffObject)
   .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
 
 // Output markdown table if there are changes

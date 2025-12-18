@@ -29,17 +29,14 @@ jobs:
 
       - name: Combine results
         id: combine
+        # Even if the cat fails (no files found), we don't want to fail the workflow
+        continue-on-error: true
         run: |
-          shopt -s nullglob
-          result_files=(results/*/comparison.txt)
-
-          if ((${#result_files[@]})); then
-            {
-              echo "combined<<EOF"
-              cat "${result_files[@]}"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-          fi
+          {
+            echo "combined<<EOF"
+            cat results/*/comparison.txt
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Add Comment to PR
         if: steps.combine.outputs.combined
