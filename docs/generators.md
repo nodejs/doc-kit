@@ -105,11 +105,7 @@ export default {
 
     // Write to file if output directory specified
     if (output) {
-      await writeFile(
-        join(output, 'documentation.myformat'),
-        result,
-        'utf-8'
-      );
+      await writeFile(join(output, 'documentation.myformat'), result, 'utf-8');
     }
 
     return result;
@@ -140,7 +136,7 @@ import myFormat from './my-format/index.mjs';
 
 export const publicGenerators = {
   'json-simple': jsonSimple,
-  'my-format': myFormat,  // Add this
+  'my-format': myFormat, // Add this
   // ... other generators
 };
 
@@ -306,7 +302,7 @@ Use non-streaming when:
 ```javascript
 export default {
   name: 'my-generator',
-  dependsOn: 'metadata',  // This generator requires metadata output
+  dependsOn: 'metadata', // This generator requires metadata output
 
   async generate(input, options) {
     // input contains the output from 'metadata' generator

@@ -58,12 +58,12 @@ Add your command to the exports in `bin/commands/index.mjs`:
 ```javascript
 import generate from './generate.mjs';
 import interactive from './interactive.mjs';
-import myCommand from './my-command.mjs';  // Add this
+import myCommand from './my-command.mjs'; // Add this
 
 export default [
   generate,
   interactive,
-  myCommand,  // Add this
+  myCommand, // Add this
 ];
 ```
 
@@ -77,9 +77,9 @@ Options define the flags and parameters your command accepts. Each option has:
 
 ```typescript
 interface Option {
-  flags: string[];           // CLI flags (e.g., ['-i', '--input <value>'])
-  desc: string;             // Description for help text
-  prompt?: PromptConfig;    // Interactive mode configuration
+  flags: string[]; // CLI flags (e.g., ['-i', '--input <value>'])
+  desc: string; // Description for help text
+  prompt?: PromptConfig; // Interactive mode configuration
 }
 ```
 
@@ -133,6 +133,7 @@ options: {
 ### Option Types
 
 #### `text`
+
 Single-line text input.
 
 ```javascript
@@ -145,6 +146,7 @@ prompt: {
 ```
 
 #### `confirm`
+
 Yes/no confirmation.
 
 ```javascript
@@ -156,6 +158,7 @@ prompt: {
 ```
 
 #### `select`
+
 Single choice from a list.
 
 ```javascript
@@ -170,6 +173,7 @@ prompt: {
 ```
 
 #### `multiselect`
+
 Multiple choices from a list.
 
 ```javascript
