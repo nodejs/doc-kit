@@ -1,9 +1,8 @@
+import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
-import { globSync } from 'glob';
-import { read } from 'to-vfile';
-
-import { parseJsSource } from '../../parsers/javascript.mjs';
+import { parse } from 'acorn';
+import { globSync } from 'tinyglobby';
 
 /**
  * This generator parses Javascript sources passed into the generator's input
@@ -39,11 +38,17 @@ export default {
     const results = [];
 
     for (const path of filePaths) {
-      const vfile = await read(path, 'utf-8');
+      const value = await readFile(path, 'utf-8');
 
-      const parsedJS = await parseJsSource(vfile);
+      const parsed = parse(value, {
+        allowReturnOutsideFunction: true,
+        ecmaVersion: 'latest',
+        locations: true,
+      });
 
-      results.push(parsedJS);
+      parsed.path = path;
+
+      results.push(parsed);
     }
 
     return results;

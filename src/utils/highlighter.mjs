@@ -1,7 +1,6 @@
 'use strict';
 
 import createHighlighter from '@node-core/rehype-shiki';
-import { toString } from 'hast-util-to-string';
 import { h as createElement } from 'hastscript';
 import { SKIP, visit } from 'unist-util-visit';
 
@@ -84,18 +83,18 @@ export default function rehypeShikiji() {
         return;
       }
 
-      // Retrieve the whole <pre> contents as a parsed DOM string
-      const preElementContents = toString(preElement);
-
       // Grabs the relevant alias/name of the language
       const languageId = codeLanguage.slice(languagePrefix.length);
 
       // Parses the <pre> contents and returns a HAST tree with the highlighted code
-      const { children } = highlighter.shiki.codeToHast(preElementContents, {
-        lang: languageId,
-        // Allows support for dual themes (light, dark) for Shiki
-        themes: { light: shikiConfig.themes[0], dark: shikiConfig.themes[1] },
-      });
+      const { children } = highlighter.shiki.codeToHast(
+        preElement.children[0].value,
+        {
+          lang: languageId,
+          // Allows support for dual themes (light, dark) for Shiki
+          themes: { light: shikiConfig.themes[0], dark: shikiConfig.themes[1] },
+        }
+      );
 
       // Adds the original language back to the <pre> element
       children[0].properties.class = `${children[0].properties.class} ${codeLanguage}`;

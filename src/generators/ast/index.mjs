@@ -1,9 +1,10 @@
 'use strict';
 
+import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
-import { globSync } from 'glob';
-import { read } from 'to-vfile';
+import { globSync } from 'tinyglobby';
+import { VFile } from 'vfile';
 
 import createQueries from '../../utils/queries/index.mjs';
 import { getRemark } from '../../utils/remark.mjs';
@@ -41,7 +42,7 @@ export default {
     const results = [];
 
     for (const path of filePaths) {
-      const vfile = await read(path, 'utf-8');
+      const vfile = new VFile({ path, value: await readFile(path, 'utf-8') });
 
       updateStabilityPrefixToLink(vfile);
 
