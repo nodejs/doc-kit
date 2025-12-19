@@ -109,10 +109,7 @@ export function parseList(section, nodes) {
     case 'property':
       // For properties, update type and other details if values exist
       if (values.length) {
-        const { type, ...rest } = values[0];
-        section.type = type;
-        leftHandAssign(section, rest);
-        section.textRaw = `\`${section.name}\` ${section.textRaw}`;
+        leftHandAssign(section, values[0]);
       }
       break;
 
