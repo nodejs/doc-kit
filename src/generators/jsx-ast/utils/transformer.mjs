@@ -29,6 +29,8 @@ const transformer = tree => {
       const thead = node.children.find(el => el.tagName === 'thead');
 
       if (thead) {
+        // TODO(@avivkeller): These are only strings afaict, so a `toString` dependency
+        // might not actually be needed.
         const headers = thead.children[0].children.map(toString);
         const tbody = node.children.find(el => el.tagName === 'tbody');
 
