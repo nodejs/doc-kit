@@ -17,7 +17,7 @@ const getFileDiff = async file => {
   const headContent = JSON.parse(await readFile(headPath, 'utf-8'));
 
   try {
-    assert.deepStrictEqual(baseContent, headContent);
+    assert.deepStrictEqual(headContent, baseContent);
     return null;
   } catch ({ message }) {
     return details(file, message);
