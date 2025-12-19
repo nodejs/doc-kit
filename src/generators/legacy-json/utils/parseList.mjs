@@ -94,7 +94,14 @@ export function parseList(section, nodes) {
 
   // Update the section based on its type and parsed values
   switch (section.type) {
-    case 'ctor':
+    case 'ctor': {
+      const signature = parseSignature(section.textRaw, values);
+
+      Object.keys(signature).forEach(key => (section[key] ??= signature[key]));
+
+      break;
+    }
+
     case 'classMethod':
     case 'method':
       // For methods and constructors, parse and attach signatures
