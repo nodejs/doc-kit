@@ -1,9 +1,8 @@
 import { stat, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const BASE = fileURLToPath(import.meta.resolve('../../out/base'));
-const HEAD = fileURLToPath(import.meta.resolve('../../out/head'));
+import { BASE, HEAD } from './utils.mjs';
+
 const UNITS = ['B', 'KB', 'MB', 'GB'];
 
 /**
@@ -21,131 +20,51 @@ const formatBytes = bytes => {
 };
 
 /**
- * Formats the difference between base and head sizes
- * @param {number} base - Base file size in bytes
- * @param {number} head - Head file size in bytes
- * @returns {string} Formatted diff string (e.g., "+1.50 KB (+10.00%)")
+ * Gets all files in a directory with their sizes
+ * @param {string} dir - Directory path to scan
+ * @returns {Promise<Map<string, number>>} Map of filename to size in bytes
  */
-const formatDiff = (base, head) => {
-  const diff = head - base;
-  const sign = diff > 0 ? '+' : '';
-  const percent = base ? `${sign}${((diff / base) * 100).toFixed(2)}%` : 'N/A';
-  return `${sign}${formatBytes(diff)} (${percent})`;
-};
-
-/**
- * Gets all files in a directory with their stats
- * @param {string} dir - Directory path to search
- * @returns {Promise<Map<string, number>>} Map of filename to size
- */
-const getDirectoryStats = async dir => {
+const getStats = async dir => {
   const files = await readdir(dir);
-  const entries = await Promise.all(
-    files.map(async file => [file, (await stat(path.join(dir, file))).size])
+  return new Map(
+    await Promise.all(
+      files.map(async f => [f, (await stat(path.join(dir, f))).size])
+    )
   );
-  return new Map(entries);
 };
 
-/**
- * Generates a table row for a file
- * @param {string} file - Filename
- * @param {number} baseSize - Base size in bytes
- * @param {number} headSize - Head size in bytes
- * @returns {string} Markdown table row
- */
-const generateRow = (file, baseSize, headSize) => {
-  const baseCol = formatBytes(baseSize);
-  const headCol = formatBytes(headSize);
-  const diffCol = formatDiff(baseSize, headSize);
+// Fetch stats for both directories in parallel
+const [baseStats, headStats] = await Promise.all([BASE, HEAD].map(getStats));
 
-  return `| \`${file}\` | ${baseCol} | ${headCol} | ${diffCol} |`;
-};
+const didChange = f =>
+  baseStats.has(f) && headStats.has(f) && baseStats.get(f) !== headStats.get(f);
 
-/**
- * Generates a markdown table
- * @param {string[]} files - List of files
- * @param {Map<string, number>} baseStats - Base stats map
- * @param {Map<string, number>} headStats - Head stats map
- * @returns {string} Markdown table
- */
-const generateTable = (files, baseStats, headStats) => {
-  const header = '| File | Base | Head | Diff |\n|------|------|------|------|';
-  const rows = files.map(f =>
-    generateRow(f, baseStats.get(f), headStats.get(f))
-  );
-  return `${header}\n${rows.join('\n')}`;
-};
+const toDiffObject = f => ({
+  file: f,
+  base: baseStats.get(f),
+  head: headStats.get(f),
+  diff: headStats.get(f) - baseStats.get(f),
+});
 
-/**
- * Wraps content in a details/summary element
- * @param {string} summary - Summary text
- * @param {string} content - Content to wrap
- * @returns {string} Markdown details element
- */
-const details = (summary, content) =>
-  `<details>\n<summary>${summary}</summary>\n\n${content}\n\n</details>`;
+// Find files that exist in both directories but have different sizes,
+// then sort by absolute diff (largest changes first)
+const changed = [...new Set([...baseStats.keys(), ...headStats.keys()])]
+  .filter(didChange)
+  .map(toDiffObject)
+  .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
 
-const [baseStats, headStats] = await Promise.all(
-  [BASE, HEAD].map(getDirectoryStats)
-);
+// Output markdown table if there are changes
+if (changed.length) {
+  const rows = changed.map(({ file, base, head, diff }) => {
+    const sign = diff > 0 ? '+' : '';
+    const percent = `${sign}${((diff / base) * 100).toFixed(2)}%`;
+    const diffFormatted = `${sign}${formatBytes(diff)} (${percent})`;
 
-const allFiles = Array.from(
-  new Set([...baseStats.keys(), ...headStats.keys()])
-);
+    return `| \`${file}\` | ${formatBytes(base)} | ${formatBytes(head)} | ${diffFormatted} |`;
+  });
 
-// Filter to only changed files (exist in both and have different sizes)
-const changedFiles = allFiles.filter(
-  f =>
-    baseStats.has(f) &&
-    headStats.has(f) &&
-    baseStats.get(f) !== headStats.get(f)
-);
-
-if (changedFiles.length) {
-  // Separate HTML files and their matching JS files from other files
-  const pages = [];
-  const other = [];
-
-  // Get all HTML base names
-  const htmlBaseNames = new Set(
-    changedFiles
-      .filter(f => path.extname(f) === '.html')
-      .map(f => path.basename(f, '.html'))
-  );
-
-  for (const file of changedFiles) {
-    const ext = path.extname(file);
-    const basename = path.basename(file, ext);
-
-    // All HTML files go to pages
-    if (ext === '.html') {
-      pages.push(file);
-    }
-    // JS files go to pages only if they have a matching HTML file
-    else if (ext === '.js' && htmlBaseNames.has(basename)) {
-      pages.push(file);
-    }
-    // Everything else goes to other
-    else {
-      other.push(file);
-    }
-  }
-
-  pages.sort();
-  other.sort();
-
-  console.log('## Web Generator\n');
-
-  if (other.length) {
-    console.log(generateTable(other, baseStats, headStats));
-  }
-
-  if (pages.length) {
-    console.log(
-      details(
-        `Pages (${pages.filter(f => path.extname(f) === '.html').length})`,
-        generateTable(pages, baseStats, headStats)
-      )
-    );
-  }
+  console.log('## Web Generator');
+  console.log('| File | Base | Head | Diff |');
+  console.log('|-|-|-|-|');
+  console.log(rows.join('\n'));
 }
