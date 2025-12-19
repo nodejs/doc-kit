@@ -96,3 +96,16 @@ export const sortChanges = (changes, key = 'version') => {
     return compare(coerceSemVer(aVersion), coerceSemVer(bVersion));
   });
 };
+
+/**
+ * Assigns properties from one or more source objects to the target object
+ * **without overwriting existing keys** in the target.
+ *
+ * Similar to `Object.assign`, but preserves the target's existing keys.
+ * The target object is mutated in place.
+ *
+ * @param {Object} target - The object to assign properties to.
+ * @param {Object} source - The source object
+ */
+export const leftHandAssign = (target, source) =>
+  Object.keys(source).forEach(k => k in target || (target[k] = source[k]));

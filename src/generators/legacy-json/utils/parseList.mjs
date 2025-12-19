@@ -5,6 +5,7 @@ import {
   TYPE_EXPRESSION,
 } from '../constants.mjs';
 import parseSignature from './parseSignature.mjs';
+import { leftHandAssign } from '../../../utils/generators.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 
@@ -96,7 +97,7 @@ export function parseList(section, nodes) {
   switch (section.type) {
     case 'ctor':
       // Constructors are their own signatures
-      Object.assign(section, parseSignature(section.textRaw, values));
+      leftHandAssign(section, parseSignature(section.textRaw, values));
       break;
 
     case 'classMethod':
@@ -110,7 +111,7 @@ export function parseList(section, nodes) {
       if (values.length) {
         const { type, ...rest } = values[0];
         section.type = type;
-        Object.assign(section, rest);
+        leftHandAssign(section, rest);
         section.textRaw = `\`${section.name}\` ${section.textRaw}`;
       }
       break;
