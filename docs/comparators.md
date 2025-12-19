@@ -20,23 +20,23 @@ Comparators are scripts that:
 
 ## Comparator Structure
 
-Comparators are standalone ESM scripts located in `scripts/compare-builds/`:
+Comparators are standalone ESM scripts located in `scripts/comparators/`:
 
 ```
-scripts/compare-builds/
-├── utils.mjs           # Shared utilities (BASE, HEAD paths)
-├── legacy-json.mjs     # Compare legacy JSON output
-├── web.mjs             # Compare web bundle sizes
-└── your-comparator.mjs # Your new comparator
+scripts/comparators/
+├── constants.mjs        # Shared constants (BASE, HEAD, TITLE paths)
+├── file-size.mjs        # Compare file sizes between builds
+├── object-assertion.mjs # Deep equality assertion for JSON objects
+└── your-comparator.mjs  # Your new comparator
 ```
 
 ### Naming Convention
 
-**Each comparator must have the same name as the generator it compares.** For example:
+Comparators can be reused across multiple generators. You specify which comparator to use in the workflow file using the `compare` field. For example:
 
-- `web.mjs` compares output from the `web` generator
-- `legacy-json.mjs` compares output from the `legacy-json` generator
-- `my-format.mjs` would compare output from a `my-format` generator
+- `file-size.mjs` can compare output from `web`, `legacy-html`, or any generator
+- `object-assertion.mjs` can compare JSON output from `legacy-json`, `json-simple`, etc.
+- `my-comparator.mjs` would be a custom comparator for specific needs
 
 ## Creating a Comparator
 
@@ -48,7 +48,7 @@ Create a new file in `scripts/compare-builds/` with the same name as your genera
 // scripts/compare-builds/my-format.mjs
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { BASE, HEAD } from './utils.mjs';
+import { BASE, HEAD, TITLE } from './utils.mjs';
 
 // Fetch files from both directories
 const [baseFiles, headFiles] = await Promise.all([BASE, HEAD].map(() => await readdir(dir)));
@@ -105,7 +105,7 @@ const differences = results.filter(Boolean);
 
 // Output markdown results
 if (differences.length > 0) {
-  console.log('## `my-format` Generator');
+  console.log(TITLE);
   console.log('');
   console.log(`Found ${differences.length} difference(s):`);
   console.log('');
@@ -161,5 +161,4 @@ node scripts/compare-builds/my-format.mjs
 
 The comparator will automatically run in GitHub Actions when:
 
-1. Your generator is configured with `compare: true` in the workflow
-2. The comparator filename matches the generator name
+1. Your generator is configured with `compare: <my-comparator>` in the workflow, which tells the system which comparator script to run

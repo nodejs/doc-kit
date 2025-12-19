@@ -74,30 +74,42 @@ jobs:
     runs-on: ubuntu-latest
     needs: prepare
     strategy:
+      fail-fast: false
       matrix:
         include:
           - target: man-page
             input: './node/doc/api/cli.md'
+
           - target: addon-verify
             input: './node/doc/api/addons.md'
+
           - target: api-links
             input: './node/lib/*.js'
+            compare: object-assertion
+
           - target: orama-db
             input: './node/doc/api/*.md'
+            compare: file-size
+
           - target: json-simple
             input: './node/doc/api/*.md'
+            compare: object-assertion
+
           - target: legacy-json
             input: './node/doc/api/*.md'
-            compare: true
+            compare: object-assertion
+
           - target: legacy-html
             input: './node/doc/api/*.md'
+            compare: file-size
+
           - target: web
             input: './node/doc/api/*.md'
-            compare: true
+            compare: file-size
+
           - target: llms-txt
             input: './node/doc/api/*.md'
-      fail-fast: false
-
+            compare: file-size
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
@@ -154,8 +166,10 @@ jobs:
 
       - name: Compare to base branch
         if: ${{ matrix.compare && needs.prepare.outputs.base-run }}
+        env:
+          GENERATOR: ${{ matrix.target }}
         run: |
-          node scripts/compare-builds/${{ matrix.target }}.mjs > out/comparison.txt
+          node scripts/comparators/${{ matrix.compare }}.mjs > out/comparison.txt
 
       - name: Upload ${{ matrix.target }} artifacts
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0

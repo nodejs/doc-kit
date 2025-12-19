@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BASE, HEAD } from './utils.mjs';
+import { BASE, HEAD, TITLE } from './constants.mjs';
 
 const files = await readdir(BASE);
 
@@ -29,6 +29,6 @@ const results = await Promise.all(files.map(getFileDiff));
 const filteredResults = results.filter(Boolean);
 
 if (filteredResults.length) {
-  console.log('## `legacy-json` generator');
-  console.log(filteredResults.join('\n'));
+  console.log(TITLE);
+  console.log(filteredResults.join('\n') + '\n');
 }

@@ -14,17 +14,10 @@
     <link rel="canonical" href="https://nodejs.org/api/__FILENAME__.html" />
     <script async defer src="assets/api.js" type="text/javascript"></script>
     <script>
-      const storedTheme = localStorage.getItem('theme');
-
-      // Follow operating system theme preference
-      if (storedTheme === null && window.matchMedia) {
-        const mq = window.matchMedia('(prefers-color-scheme: dark)');
-        if (mq.matches) {
-          document.documentElement.classList.add('dark-mode');
-        }
-      } else if (storedTheme === 'dark') {
+      (localStorage.getItem('theme') === 'dark' ||
+        (localStorage.getItem('theme') === null &&
+          window.matchMedia?.('(prefers-color-scheme: dark)').matches)) &&
         document.documentElement.classList.add('dark-mode');
-      }
     </script>
   </head>
   <body class="alt apidoc" id="api-section-__FILENAME__">
