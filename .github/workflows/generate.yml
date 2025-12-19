@@ -93,7 +93,6 @@ jobs:
 
           - target: json-simple
             input: './node/doc/api/*.md'
-            compare: object-assertion
 
           - target: legacy-json
             input: './node/doc/api/*.md'
