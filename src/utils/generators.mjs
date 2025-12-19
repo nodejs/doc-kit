@@ -93,6 +93,6 @@ export const sortChanges = (changes, key = 'version') => {
     const aVersion = Array.isArray(a[key]) ? a[key][0] : a[key];
     const bVersion = Array.isArray(b[key]) ? b[key][0] : b[key];
 
-    return compare(coerceSemVer(aVersion), coerceSemVer(bVersion));
+    return compare(coerceSemVer(bVersion), coerceSemVer(aVersion));
   });
 };

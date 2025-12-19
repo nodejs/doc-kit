@@ -58,7 +58,7 @@ export const createChangeElement = (entry, remark) => {
   }
 
   // Sort changes by versions and reverse for newest first
-  const sortedChanges = sortChanges(changeEntries, 'versions').reverse();
+  const sortedChanges = sortChanges(changeEntries, 'versions');
 
   return createJSXElement(JSX_IMPORTS.ChangeHistory.name, {
     changes: sortedChanges,
