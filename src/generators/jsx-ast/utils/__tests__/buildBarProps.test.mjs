@@ -13,6 +13,7 @@ mock.module('../../../../utils/generators.mjs', {
       { version: '18.0.0', isLts: true, isCurrent: false },
       { version: '19.0.0', isLts: false, isCurrent: true },
     ],
+    leftHandAssign: Object.assign,
     getVersionFromSemVer: version => version.split('.')[0],
     getVersionURL: (version, api) => `/api/${version}/${api}`,
   },

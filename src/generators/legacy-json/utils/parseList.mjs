@@ -5,6 +5,7 @@ import {
   TYPE_EXPRESSION,
 } from '../constants.mjs';
 import parseSignature from './parseSignature.mjs';
+import { leftHandAssign } from '../../../utils/generators.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 
@@ -95,6 +96,10 @@ export function parseList(section, nodes) {
   // Update the section based on its type and parsed values
   switch (section.type) {
     case 'ctor':
+      // Constructors are their own signatures
+      leftHandAssign(section, parseSignature(section.textRaw, values));
+      break;
+
     case 'classMethod':
     case 'method':
       // For methods and constructors, parse and attach signatures
@@ -104,10 +109,7 @@ export function parseList(section, nodes) {
     case 'property':
       // For properties, update type and other details if values exist
       if (values.length) {
-        const { type, ...rest } = values[0];
-        section.type = type;
-        Object.assign(section, rest);
-        section.textRaw = `\`${section.name}\` ${section.textRaw}`;
+        leftHandAssign(section, values[0]);
       }
       break;
 
