@@ -1,7 +1,7 @@
 import { stat, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { BASE, HEAD } from './utils.mjs';
+import { BASE, HEAD, TITLE } from './constants.mjs';
 
 const UNITS = ['B', 'KB', 'MB', 'GB'];
 
@@ -63,8 +63,8 @@ if (changed.length) {
     return `| \`${file}\` | ${formatBytes(base)} | ${formatBytes(head)} | ${diffFormatted} |`;
   });
 
-  console.log('## Web Generator');
+  console.log(TITLE);
   console.log('| File | Base | Head | Diff |');
   console.log('|-|-|-|-|');
-  console.log(rows.join('\n'));
+  console.log(rows.join('\n') + '\n');
 }
