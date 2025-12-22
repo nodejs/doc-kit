@@ -8,6 +8,16 @@ import {
   parseList,
 } from '../parseList.mjs';
 
+const validTypedList = [
+  { type: 'inlineCode', value: 'option' }, // inline code
+  { type: 'text', value: ' ' }, // space
+  {
+    type: 'link',
+    children: [{ type: 'text', value: '<boolean>' }], // link with < value
+  },
+  { type: 'text', value: ' option description' },
+];
+
 describe('transformTypeReferences', () => {
   it('replaces template syntax with curly braces', () => {
     const result = transformTypeReferences('`<string>`');
@@ -90,7 +100,7 @@ describe('parseList', () => {
             children: [
               {
                 type: 'paragraph',
-                children: [{ type: 'text', value: '{string} description' }],
+                children: validTypedList,
               },
             ],
           },
@@ -134,9 +144,7 @@ describe('parseList', () => {
             children: [
               {
                 type: 'paragraph',
-                children: [
-                  { type: 'text', value: 'param1 {string} first parameter' },
-                ],
+                children: validTypedList,
               },
               // This is a nested typed list
               {
@@ -146,15 +154,7 @@ describe('parseList', () => {
                     children: [
                       {
                         type: 'paragraph',
-                        children: [
-                          { type: 'inlineCode', value: 'option' }, // inline code
-                          { type: 'text', value: ' ' }, // space
-                          {
-                            type: 'link',
-                            children: [{ type: 'text', value: '<boolean>' }], // link with < value
-                          },
-                          { type: 'text', value: ' option description' },
-                        ],
+                        children: validTypedList,
                       },
                     ],
                   },
@@ -167,6 +167,9 @@ describe('parseList', () => {
     ];
 
     parseList(section, nodes);
+
+    console.log(section);
+
     assert.equal(section.params[0].options.length, 1);
   });
 });

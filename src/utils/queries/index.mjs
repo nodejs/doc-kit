@@ -3,10 +3,7 @@
 import { u as createTree } from 'unist-builder';
 import { SKIP } from 'unist-util-visit';
 
-import {
-  DOC_API_STABILITY_SECTION_REF_URL,
-  VALID_JAVASCRIPT_PROPERTY,
-} from './constants.mjs';
+import { DOC_API_STABILITY_SECTION_REF_URL } from './constants.mjs';
 import {
   extractYamlContent,
   parseHeadingIntoMetadata,
@@ -16,6 +13,7 @@ import {
 } from '../parser/index.mjs';
 import { getRemark } from '../remark.mjs';
 import { transformNodesToString } from '../unist.mjs';
+import { isTypedList } from './utils.mjs';
 
 /**
  * Creates an instance of the Query Manager, which allows to do multiple sort
@@ -272,46 +270,28 @@ createQueries.UNIST = {
    * @param {import('@types/mdast').List} list
    * @returns {boolean}
    */
-  isTypedList: list => {
-    // Exit early if not a list node
-    if (list.type !== 'list') {
-      return false;
+  isLooselyTypedList: list => Boolean(isTypedList(list)),
+
+  /**
+   * @param {import('@types/mdast').List} list
+   * @returns {boolean}
+   */
+  isStronglyTypedList: list => {
+    const confidence = isTypedList(list);
+
+    if (confidence === 1) {
+      // This is a loosely typed list, but we can still check if it is strongly typed.
+      const [, secondNode, thirdNode] =
+        list.children?.[0]?.children?.[0]?.children ?? [];
+
+      return (
+        secondNode?.value?.trim() === '' &&
+        thirdNode?.type === 'link' &&
+        thirdNode?.children?.[0]?.value?.[0] === '<'
+      );
     }
 
-    // Get the content nodes of the first list item's paragraph
-    const [node, ...contentNodes] =
-      list?.children?.[0]?.children?.[0]?.children ?? [];
-
-    // Exit if no node
-    if (!node) {
-      return false;
-    }
-
-    const possibleProperty = node?.value?.trimStart();
-
-    // Check for other starters
-    if (possibleProperty?.match(createQueries.QUERIES.typedListStarters)) {
-      return true;
-    }
-
-    // Check for direct type link pattern (starts with '<')
-    if (node.type === 'link' && node.children?.[0]?.value?.[0] === '<') {
-      return true;
-    }
-
-    // Check for inline code + space + type link pattern
-    if (
-      node.type === 'inlineCode' &&
-      possibleProperty?.match(VALID_JAVASCRIPT_PROPERTY) &&
-      contentNodes[0]?.value?.trim() === '' &&
-      contentNodes[1]?.type === 'link' &&
-      contentNodes[1]?.children?.[0]?.value?.[0] === '<'
-    ) {
-      return true;
-    }
-
-    // Not a typed list
-    return false;
+    return Boolean(confidence);
   },
 };
 

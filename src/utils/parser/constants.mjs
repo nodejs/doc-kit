@@ -37,7 +37,7 @@ const FUNCTION_CALL = '\\([^)]*\\)';
 // Matches "bar":
 // Group 1: foo[bar]
 // Group 2: foo.bar
-const PROPERTY = `${CAMEL_CASE}(?:(\\[${CAMEL_CASE}\\])|\\.(\\w+))`;
+const PROPERTY = `${CAMEL_CASE}(?:(\\[[^\\]]+\\])|\\.(\\w+))`;
 
 // An array of objects defining the different types of API doc headings we want to
 // capture and their respective regex to match against the heading text.
@@ -45,9 +45,12 @@ const PROPERTY = `${CAMEL_CASE}(?:(\\[${CAMEL_CASE}\\])|\\.(\\w+))`;
 export const DOC_API_HEADING_TYPES = [
   {
     type: 'method',
-    regex: new RegExp(`^\`${PROPERTY}${FUNCTION_CALL}\`$`, 'i'),
+    regex: new RegExp(
+      `^\`(?:${PROPERTY}|(${CAMEL_CASE}))${FUNCTION_CALL}\`$`,
+      'i'
+    ),
   },
-  { type: 'event', regex: /^Event: +`'?([^']+)'`$/i },
+  { type: 'event', regex: /^Event: +`'?([^`]*?)'?`$/i },
   {
     type: 'class',
     regex: new RegExp(

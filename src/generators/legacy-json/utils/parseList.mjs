@@ -47,7 +47,7 @@ export const extractPattern = (text, pattern, key, current) => {
 export function parseListItem(child) {
   const current = {};
 
-  const subList = child.children.find(createQueries.UNIST.isTypedList);
+  const subList = child.children.find(createQueries.UNIST.isLooselyTypedList);
 
   // Extract and clean raw text from the node, excluding nested lists
   current.textRaw = transformTypeReferences(
@@ -89,9 +89,12 @@ export function parseListItem(child) {
  * @param {import('@types/mdast').RootContent[]} nodes
  */
 export function parseList(section, nodes) {
-  const list = nodes[0]?.type === 'list' ? nodes.shift() : null;
+  const listIdx = nodes.findIndex(createQueries.UNIST.isStronglyTypedList);
+  const list = nodes[listIdx];
 
   const values = list ? list.children.map(parseListItem) : [];
+
+  let removeList = true;
 
   // Update the section based on its type and parsed values
   switch (section.type) {
@@ -109,7 +112,12 @@ export function parseList(section, nodes) {
     case 'property':
       // For properties, update type and other details if values exist
       if (values.length) {
-        leftHandAssign(section, values[0]);
+        delete values[0].name;
+
+        Object.assign(section, values[0]);
+
+        // TODO(@avivkeller): There is probably a better way to do this.
+        section.__promote = 'property';
       }
       break;
 
@@ -119,9 +127,10 @@ export function parseList(section, nodes) {
       break;
 
     default:
-      // If no specific handling, re-add the list for further processing
-      if (list) {
-        nodes.unshift(list);
-      }
+      removeList = false;
+  }
+
+  if (removeList && list) {
+    nodes.splice(listIdx, 1);
   }
 }

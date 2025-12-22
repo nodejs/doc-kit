@@ -12,7 +12,7 @@ export const DEFAULT_EXPRESSION = /\s*\*\*Default:\*\*\s*([^]+)$/i;
 
 // Grabs the parameters from a method's signature
 //  ex/ 'new buffer.Blob([sources[, options]])'.match(PARAM_EXPRESSION) === ['([sources[, options]])', '[sources[, options]]']
-export const PARAM_EXPRESSION = /\((.+)\);?$/;
+export const PARAM_EXPRESSION = /\(([^)]+)\);?$/;
 
 // The plurals associated with each section type.
 export const SECTION_TYPE_PLURALS = {

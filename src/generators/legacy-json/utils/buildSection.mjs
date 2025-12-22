@@ -53,7 +53,7 @@ export const createSectionBuilder = () => {
 
     meta.changes = changes;
 
-    if (n_api_version?.length) {
+    if (typeof n_api_version === 'number' || n_api_version?.length) {
       meta.napiVersion = enforceArray(n_api_version);
     }
 
@@ -102,13 +102,17 @@ export const createSectionBuilder = () => {
    * @param {Array} nodes - The remaining AST nodes.
    * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry providing stability information.
    */
-  const parseStability = (section, nodes, { stability }) => {
-    const stabilityInfo = stability.children.map(node => node.data)?.[0];
+  const parseStability = (section, nodes, { stability, content }) => {
+    const stabilityNode = stability.children[0];
 
-    if (stabilityInfo) {
-      section.stability = Number(stabilityInfo.index);
-      section.stabilityText = stabilityInfo.description;
-      nodes.shift(); // Remove stability node from processing
+    if (stabilityNode) {
+      section.stability = Number(stabilityNode.data.index);
+      section.stabilityText = stabilityNode.data.description;
+
+      const nodeToRemove = content.children.findIndex(
+        ({ data }) => data === stabilityNode.data
+      );
+      nodes.splice(nodeToRemove - 1, 1);
     }
   };
 
@@ -153,7 +157,10 @@ export const createSectionBuilder = () => {
    * @param {import('../types.d.ts').Section} parent - The parent section.
    */
   const addToParent = (section, parent) => {
-    const key = SECTION_TYPE_PLURALS[section.type] || 'miscs';
+    const key =
+      SECTION_TYPE_PLURALS[section.__promote ?? section.type] || 'miscs';
+
+    delete section.__promote;
 
     parent[key] ??= [];
     parent[key].push(section);

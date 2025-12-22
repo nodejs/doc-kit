@@ -229,7 +229,7 @@ export const processEntry = (entry, remark) => {
   // Transform typed lists into property tables
   visit(
     content,
-    createQueries.UNIST.isTypedList,
+    createQueries.UNIST.isStronglyTypedList,
     (node, idx, parent) => (parent.children[idx] = createPropertyTable(node))
   );
 

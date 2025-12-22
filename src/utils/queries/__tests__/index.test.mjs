@@ -108,17 +108,23 @@ describe('createQueries', () => {
   });
 
   describe('UNIST', () => {
-    describe('isTypedList', () => {
+    describe('isStronglyTypedList', () => {
       it('returns false for non-list nodes', () => {
         strictEqual(
-          createQueries.UNIST.isTypedList({ type: 'paragraph', children: [] }),
+          createQueries.UNIST.isStronglyTypedList({
+            type: 'paragraph',
+            children: [],
+          }),
           false
         );
       });
 
       it('returns false for empty lists', () => {
         strictEqual(
-          createQueries.UNIST.isTypedList({ type: 'list', children: [] }),
+          createQueries.UNIST.isStronglyTypedList({
+            type: 'list',
+            children: [],
+          }),
           false
         );
       });
@@ -211,7 +217,7 @@ describe('createQueries', () => {
 
       cases.forEach(({ name, node, expected }) => {
         it(`returns ${expected} for ${name}`, () => {
-          strictEqual(createQueries.UNIST.isTypedList(node), expected);
+          strictEqual(createQueries.UNIST.isStronglyTypedList(node), expected);
         });
       });
     });

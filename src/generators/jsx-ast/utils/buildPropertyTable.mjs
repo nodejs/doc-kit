@@ -124,7 +124,7 @@ export const parseListIntoProperties = node => {
 
     // Clean up leading whitespace in remaining description
     if (children[0]?.type === 'text') {
-      children[0].value = children[0].value.trimStart();
+      children[0].value = children[0].value.replace(/^[\s:]+/, '');
     }
 
     properties.push({
@@ -133,7 +133,7 @@ export const parseListIntoProperties = node => {
       // The remaining children are the description
       desc: children,
       // Is there a list within this list?
-      sublist: sublists.find(createQueries.UNIST.isTypedList),
+      sublist: sublists.find(createQueries.UNIST.isLooselyTypedList),
     });
   }
 
