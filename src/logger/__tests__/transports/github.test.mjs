@@ -1,4 +1,4 @@
-import { strictEqual } from 'assert';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../../constants.mjs';
@@ -25,8 +25,8 @@ describe('github', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
+    assert.strictEqual(process.stdout.write.mock.callCount(), 1);
+    assert.strictEqual(
       callsArgs[0].trim(),
       '::debug::[00:00:00.000] \x1B[34mDEBUG\x1B[39m: Test message'
     );
@@ -51,8 +51,8 @@ describe('github', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
+    assert.strictEqual(process.stdout.write.mock.callCount(), 1);
+    assert.strictEqual(
       callsArgs[0].trim(),
       '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message'
     );
@@ -78,8 +78,8 @@ describe('github', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
+    assert.strictEqual(process.stdout.write.mock.callCount(), 1);
+    assert.strictEqual(
       callsArgs[0].trim(),
       '::error ::[00:00:00.000] \x1B[35mERROR\x1B[39m: Test message'
     );
@@ -105,8 +105,8 @@ describe('github', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
+    assert.strictEqual(process.stdout.write.mock.callCount(), 1);
+    assert.strictEqual(
       callsArgs[0].trim(),
       '::error ::[00:00:00.000] \x1B[31mFATAL\x1B[39m: Test message'
     );
@@ -141,8 +141,8 @@ describe('github', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
+    assert.strictEqual(process.stdout.write.mock.callCount(), 1);
+    assert.strictEqual(
       callsArgs[0].trim(),
       '::notice file=test.md,line=1,endLine=1::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message'
     );
@@ -168,8 +168,8 @@ describe('github', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
+    assert.strictEqual(process.stdout.write.mock.callCount(), 1);
+    assert.strictEqual(
       callsArgs[0].trim(),
       '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m (child1): Test message'
     );
@@ -195,8 +195,8 @@ describe('github', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
+    assert.strictEqual(process.stdout.write.mock.callCount(), 1);
+    assert.strictEqual(
       callsArgs[0].trim(),
       '::notice ::[00:00:00.000] INFO: Test message'
     );

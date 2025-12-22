@@ -1,7 +1,5 @@
-'use strict';
-
 import assert from 'node:assert/strict';
-import { describe, test } from 'node:test';
+import { describe, it } from 'node:test';
 
 import { UNPROMOTED_KEYS } from '../../constants.mjs';
 import { promoteMiscChildren } from '../buildSection.mjs';
@@ -22,7 +20,7 @@ describe('promoteMiscChildren', () => {
     });
   }
 
-  test('ignores non-misc section', () => {
+  it('ignores non-misc section', () => {
     const section = buildReadOnlySection({
       type: 'text',
     });
@@ -37,7 +35,7 @@ describe('promoteMiscChildren', () => {
     promoteMiscChildren(section, parent);
   });
 
-  test('ignores misc parent', () => {
+  it('ignores misc parent', () => {
     const section = buildReadOnlySection({
       type: 'misc',
     });
@@ -52,7 +50,7 @@ describe('promoteMiscChildren', () => {
     promoteMiscChildren(section, parent);
   });
 
-  test('ignores keys in UNPROMOTED_KEYS', () => {
+  it('ignores keys in UNPROMOTED_KEYS', () => {
     const sectionRaw = {
       type: 'misc',
       promotableKey: 'this should be promoted',
@@ -88,7 +86,7 @@ describe('promoteMiscChildren', () => {
   });
 
   describe('merges properties correctly', () => {
-    test('pushes child property if parent is an array', () => {
+    it('pushes child property if parent is an array', () => {
       const section = buildReadOnlySection({
         type: 'misc',
         someValue: 'bar',
@@ -104,7 +102,7 @@ describe('promoteMiscChildren', () => {
       assert.deepStrictEqual(parent.someValue, ['foo', 'bar']);
     });
 
-    test('ignores child property if parent has a value that is not an array', () => {
+    it('ignores child property if parent has a value that is not an array', () => {
       const section = buildReadOnlySection({
         type: 'misc',
         someValue: 'bar',
@@ -120,7 +118,7 @@ describe('promoteMiscChildren', () => {
       assert.strictEqual(parent.someValue, 'foo');
     });
 
-    test('promotes child property if parent does not have the property', () => {
+    it('promotes child property if parent does not have the property', () => {
       const section = buildReadOnlySection({
         type: 'misc',
         someValue: 'bar',

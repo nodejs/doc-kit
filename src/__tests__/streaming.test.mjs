@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual } from 'node:assert';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
@@ -16,7 +16,7 @@ describe('streaming utilities', () => {
 
       const gen = asyncGen();
 
-      strictEqual(isAsyncGenerator(gen), true);
+      assert.strictEqual(isAsyncGenerator(gen), true);
     });
 
     it('should return false for regular generators', () => {
@@ -26,24 +26,24 @@ describe('streaming utilities', () => {
 
       const gen = syncGen();
 
-      strictEqual(isAsyncGenerator(gen), false);
+      assert.strictEqual(isAsyncGenerator(gen), false);
     });
 
     it('should return false for plain objects', () => {
-      strictEqual(isAsyncGenerator({}), false);
-      strictEqual(isAsyncGenerator([]), false);
-      strictEqual(isAsyncGenerator({ async: true }), false);
+      assert.strictEqual(isAsyncGenerator({}), false);
+      assert.strictEqual(isAsyncGenerator([]), false);
+      assert.strictEqual(isAsyncGenerator({ async: true }), false);
     });
 
     it('should return false for null and undefined', () => {
-      strictEqual(isAsyncGenerator(null), false);
-      strictEqual(isAsyncGenerator(undefined), false);
+      assert.strictEqual(isAsyncGenerator(null), false);
+      assert.strictEqual(isAsyncGenerator(undefined), false);
     });
 
     it('should return false for primitives', () => {
-      strictEqual(isAsyncGenerator(42), false);
-      strictEqual(isAsyncGenerator('string'), false);
-      strictEqual(isAsyncGenerator(true), false);
+      assert.strictEqual(isAsyncGenerator(42), false);
+      assert.strictEqual(isAsyncGenerator('string'), false);
+      assert.strictEqual(isAsyncGenerator(true), false);
     });
 
     it('should return true for objects with Symbol.asyncIterator', () => {
@@ -55,7 +55,7 @@ describe('streaming utilities', () => {
         },
       };
 
-      strictEqual(isAsyncGenerator(asyncIterable), true);
+      assert.strictEqual(isAsyncGenerator(asyncIterable), true);
     });
   });
 
@@ -69,7 +69,7 @@ describe('streaming utilities', () => {
 
       const result = await collectAsyncGenerator(gen());
 
-      deepStrictEqual(result, [1, 2, 3, 4, 5]);
+      assert.deepStrictEqual(result, [1, 2, 3, 4, 5]);
     });
 
     it('should return empty array for empty generator', async () => {
@@ -79,7 +79,7 @@ describe('streaming utilities', () => {
 
       const result = await collectAsyncGenerator(gen());
 
-      deepStrictEqual(result, []);
+      assert.deepStrictEqual(result, []);
     });
 
     it('should handle single chunk', async () => {
@@ -89,7 +89,7 @@ describe('streaming utilities', () => {
 
       const result = await collectAsyncGenerator(gen());
 
-      deepStrictEqual(result, [1, 2, 3]);
+      assert.deepStrictEqual(result, [1, 2, 3]);
     });
 
     it('should handle empty chunks', async () => {
@@ -102,7 +102,7 @@ describe('streaming utilities', () => {
 
       const result = await collectAsyncGenerator(gen());
 
-      deepStrictEqual(result, [1, 2, 3]);
+      assert.deepStrictEqual(result, [1, 2, 3]);
     });
 
     it('should handle objects in chunks', async () => {
@@ -113,7 +113,7 @@ describe('streaming utilities', () => {
 
       const result = await collectAsyncGenerator(gen());
 
-      deepStrictEqual(result, [{ a: 1 }, { b: 2 }, { c: 3 }]);
+      assert.deepStrictEqual(result, [{ a: 1 }, { b: 2 }, { c: 3 }]);
     });
   });
 
@@ -121,8 +121,8 @@ describe('streaming utilities', () => {
     it('should create a cache with required methods', () => {
       const cache = createStreamingCache();
 
-      ok(cache);
-      strictEqual(typeof cache.getOrCollect, 'function');
+      assert.ok(cache);
+      assert.strictEqual(typeof cache.getOrCollect, 'function');
     });
 
     it('should return same promise for same key', async () => {
@@ -145,8 +145,8 @@ describe('streaming utilities', () => {
       const result1 = await promise1;
       const result2 = await promise2;
 
-      deepStrictEqual(result1, [1, 2, 3]);
-      strictEqual(result1, result2);
+      assert.deepStrictEqual(result1, [1, 2, 3]);
+      assert.strictEqual(result1, result2);
     });
 
     it('should return different results for different keys', async () => {
@@ -163,8 +163,8 @@ describe('streaming utilities', () => {
       const result1 = await cache.getOrCollect('key1', gen1());
       const result2 = await cache.getOrCollect('key2', gen2());
 
-      deepStrictEqual(result1, [1, 2]);
-      deepStrictEqual(result2, [3, 4]);
+      assert.deepStrictEqual(result1, [1, 2]);
+      assert.deepStrictEqual(result2, [3, 4]);
     });
   });
 });

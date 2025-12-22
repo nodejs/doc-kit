@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'assert';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../../constants.mjs';
@@ -25,8 +25,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 4);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 4);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[34mDEBUG\x1B[39m',
       ': Test message',
@@ -53,8 +53,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 4);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 4);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[32mINFO\x1B[39m',
       ': Test message',
@@ -82,8 +82,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 4);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 4);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[35mERROR\x1B[39m',
       ': Test message',
@@ -111,8 +111,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 4);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 4);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[31mFATAL\x1B[39m',
       ': Test message',
@@ -149,8 +149,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 6);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 6);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[32mINFO\x1B[39m',
       ': Test message',
@@ -181,8 +181,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 5);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 5);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[32mINFO\x1B[39m',
       ' (child1)',
@@ -211,8 +211,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 4);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 4);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' INFO',
       ': Test message',
@@ -243,8 +243,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 5);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 5);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[32mINFO\x1B[39m',
       ': Test message',
@@ -280,8 +280,8 @@ describe('console', () => {
 
     // Should have: timestamp, level, message, file path, newline, stack
     // But NOT a metadata JSON block (since only file/stack are present)
-    strictEqual(process.stdout.write.mock.callCount(), 6);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 6);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[32mINFO\x1B[39m',
       ': Test message',
@@ -321,8 +321,8 @@ describe('console', () => {
       call => call.arguments[0]
     );
 
-    strictEqual(process.stdout.write.mock.callCount(), 7);
-    deepStrictEqual(callsArgs, [
+    assert.strictEqual(process.stdout.write.mock.callCount(), 7);
+    assert.deepStrictEqual(callsArgs, [
       '[00:00:00.000]',
       ' \x1B[34mDEBUG\x1B[39m',
       ': Processing chunk',

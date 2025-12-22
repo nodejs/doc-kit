@@ -14,6 +14,16 @@ import { DEFAULT_TYPE_MAP } from '../../src/utils/parser/constants.mjs';
 const availableGenerators = Object.keys(publicGenerators);
 
 /**
+ *
+ * @param value
+ * @param min
+ */
+const parseMinInt = (value, min = 1) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? Math.max(parsed, min) : min;
+};
+
+/**
  * @type {import('./types').Command}
  */
 export default {
@@ -153,8 +163,8 @@ export default {
       version: coerce(opts.version),
       releases: await parseChangelog(opts.changelog),
       gitRef: opts.gitRef,
-      threads: Math.max(parseInt(opts.threads, 10), 1),
-      chunkSize: Math.max(parseInt(opts.chunkSize, 10), 1),
+      threads: parseMinInt(opts.threads, 1),
+      chunkSize: parseMinInt(opts.chunkSize, 1),
       index: await parseIndex(opts.index),
       typeMap: await parseTypeMap(opts.typeMap),
     });

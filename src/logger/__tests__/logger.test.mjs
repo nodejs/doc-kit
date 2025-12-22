@@ -1,7 +1,8 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../constants.mjs';
+import logger, { Logger } from '../index.mjs';
 import { createLogger } from '../logger.mjs';
 
 /**
@@ -28,10 +29,10 @@ describe('createLogger', () => {
 
       logger.debug('Hello, World!', metadata);
 
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
 
       const call = transport.mock.calls[0];
-      deepStrictEqual(call.arguments, [
+      assert.deepStrictEqual(call.arguments, [
         {
           level: LogLevel.debug,
           message: 'Hello, World!',
@@ -51,7 +52,7 @@ describe('createLogger', () => {
 
           logger.debug('Hello, World!');
 
-          strictEqual(transport.mock.callCount(), 0);
+          assert.strictEqual(transport.mock.callCount(), 0);
         }
       );
     });
@@ -67,10 +68,10 @@ describe('createLogger', () => {
 
         logger.info('Hello, World!', metadata);
 
-        strictEqual(transport.mock.callCount(), 1);
+        assert.strictEqual(transport.mock.callCount(), 1);
 
         const call = transport.mock.calls[0];
-        deepStrictEqual(call.arguments, [
+        assert.deepStrictEqual(call.arguments, [
           {
             level: LogLevel.info,
             message: 'Hello, World!',
@@ -90,7 +91,7 @@ describe('createLogger', () => {
 
         logger.info('Hello, World!');
 
-        strictEqual(transport.mock.callCount(), 0);
+        assert.strictEqual(transport.mock.callCount(), 0);
       });
     });
   });
@@ -106,10 +107,10 @@ describe('createLogger', () => {
 
         logger.warn('Hello, World!', metadata);
 
-        strictEqual(transport.mock.callCount(), 1);
+        assert.strictEqual(transport.mock.callCount(), 1);
 
         const call = transport.mock.calls[0];
-        deepStrictEqual(call.arguments, [
+        assert.deepStrictEqual(call.arguments, [
           {
             level: LogLevel.warn,
             message: 'Hello, World!',
@@ -129,7 +130,7 @@ describe('createLogger', () => {
 
         logger.warn('Hello, World!');
 
-        strictEqual(transport.mock.callCount(), 0);
+        assert.strictEqual(transport.mock.callCount(), 0);
       });
     });
   });
@@ -146,10 +147,10 @@ describe('createLogger', () => {
 
           logger.error('Hello, World!', metadata);
 
-          strictEqual(transport.mock.callCount(), 1);
+          assert.strictEqual(transport.mock.callCount(), 1);
 
           const call = transport.mock.calls[0];
-          deepStrictEqual(call.arguments, [
+          assert.deepStrictEqual(call.arguments, [
             {
               level: LogLevel.error,
               message: 'Hello, World!',
@@ -169,7 +170,7 @@ describe('createLogger', () => {
 
       logger.warn('Hello, World!');
 
-      strictEqual(transport.mock.callCount(), 0);
+      assert.strictEqual(transport.mock.callCount(), 0);
     });
   });
 
@@ -183,7 +184,7 @@ describe('createLogger', () => {
       logger[level]('Hello, World!');
     });
 
-    strictEqual(transport.mock.callCount(), 0);
+    assert.strictEqual(transport.mock.callCount(), 0);
   });
 
   it('should log all messages if message is a string array', t => {
@@ -193,7 +194,7 @@ describe('createLogger', () => {
 
     logger.info(['Hello, 1!', 'Hello, 2!', 'Hello, 3!']);
 
-    strictEqual(transport.mock.callCount(), 3);
+    assert.strictEqual(transport.mock.callCount(), 3);
   });
 
   it('should log error message', t => {
@@ -206,10 +207,10 @@ describe('createLogger', () => {
     const error = new Error('Hello, World!');
     logger.error(error);
 
-    strictEqual(transport.mock.callCount(), 1);
+    assert.strictEqual(transport.mock.callCount(), 1);
 
     const call = transport.mock.calls[0];
-    deepStrictEqual(call.arguments, [
+    assert.deepStrictEqual(call.arguments, [
       {
         level: LogLevel.error,
         message: 'Hello, World!',
@@ -230,18 +231,18 @@ describe('createLogger', () => {
 
       // Should log at info level
       logger.info('Info message');
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
 
       // Change to error level
       logger.setLogLevel(LogLevel.error);
 
       // Should not log info anymore
       logger.info('Another info message');
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
 
       // Should log error
       logger.error('Error message');
-      strictEqual(transport.mock.callCount(), 2);
+      assert.strictEqual(transport.mock.callCount(), 2);
     });
 
     it('should change log level at runtime using string', t => {
@@ -251,14 +252,14 @@ describe('createLogger', () => {
 
       // Should not log at info level initially
       logger.info('Info message');
-      strictEqual(transport.mock.callCount(), 0);
+      assert.strictEqual(transport.mock.callCount(), 0);
 
       // Change to debug level using string
       logger.setLogLevel('debug');
 
       // Should now log info
       logger.info('Another info message');
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
     });
 
     it('should handle case-insensitive level names', t => {
@@ -268,11 +269,11 @@ describe('createLogger', () => {
 
       logger.setLogLevel('DEBUG');
       logger.debug('Debug message');
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
 
       logger.setLogLevel('Info');
       logger.debug('Debug message 2');
-      strictEqual(transport.mock.callCount(), 1); // Should not log debug at info level
+      assert.strictEqual(transport.mock.callCount(), 1); // Should not log debug at info level
     });
 
     it('should propagate to child loggers', t => {
@@ -283,28 +284,28 @@ describe('createLogger', () => {
 
       // Child should initially respect parent's info level
       child.debug('Debug message');
-      strictEqual(transport.mock.callCount(), 0);
+      assert.strictEqual(transport.mock.callCount(), 0);
 
       child.info('Info message');
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
 
       // Change parent to debug level
       logger.setLogLevel(LogLevel.debug);
 
       // Child should now log debug messages
       child.debug('Debug message after level change');
-      strictEqual(transport.mock.callCount(), 2);
+      assert.strictEqual(transport.mock.callCount(), 2);
 
       // Change parent to error level
       logger.setLogLevel(LogLevel.error);
 
       // Child should not log info anymore
       child.info('Info message after error level');
-      strictEqual(transport.mock.callCount(), 2);
+      assert.strictEqual(transport.mock.callCount(), 2);
 
       // Child should log error
       child.error('Error message');
-      strictEqual(transport.mock.callCount(), 3);
+      assert.strictEqual(transport.mock.callCount(), 3);
     });
 
     it('should propagate to nested child loggers', t => {
@@ -320,20 +321,20 @@ describe('createLogger', () => {
       child1.debug('child1 debug');
       child2.debug('child2 debug');
       child3.debug('child3 debug');
-      strictEqual(transport.mock.callCount(), 0);
+      assert.strictEqual(transport.mock.callCount(), 0);
 
       // Change root to debug level
       logger.setLogLevel(LogLevel.debug);
 
       // All should now log debug
       child1.debug('child1 debug after');
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
 
       child2.debug('child2 debug after');
-      strictEqual(transport.mock.callCount(), 2);
+      assert.strictEqual(transport.mock.callCount(), 2);
 
       child3.debug('child3 debug after');
-      strictEqual(transport.mock.callCount(), 3);
+      assert.strictEqual(transport.mock.callCount(), 3);
     });
 
     it('should propagate to multiple children at same level', t => {
@@ -348,20 +349,20 @@ describe('createLogger', () => {
       childA.info('A info');
       childB.info('B info');
       childC.info('C info');
-      strictEqual(transport.mock.callCount(), 0);
+      assert.strictEqual(transport.mock.callCount(), 0);
 
       // Change root to info
       logger.setLogLevel(LogLevel.info);
 
       // All children should now log info
       childA.info('A info after');
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
 
       childB.info('B info after');
-      strictEqual(transport.mock.callCount(), 2);
+      assert.strictEqual(transport.mock.callCount(), 2);
 
       childC.info('C info after');
-      strictEqual(transport.mock.callCount(), 3);
+      assert.strictEqual(transport.mock.callCount(), 3);
     });
 
     it('should ignore invalid string level names', t => {
@@ -374,10 +375,24 @@ describe('createLogger', () => {
 
       // Should still log at info level
       logger.info('Info message');
-      strictEqual(transport.mock.callCount(), 1);
+      assert.strictEqual(transport.mock.callCount(), 1);
 
       logger.debug('Debug message');
-      strictEqual(transport.mock.callCount(), 1); // Debug should be filtered
+      assert.strictEqual(transport.mock.callCount(), 1); // Debug should be filtered
     });
+  });
+});
+
+describe('logger (smoke)', () => {
+  it('exports a default logger instance', () => {
+    assert.strictEqual(typeof logger.info, 'function');
+    assert.strictEqual(typeof logger.error, 'function');
+    assert.strictEqual(typeof logger.setLogLevel, 'function');
+  });
+
+  it('can create a console logger via Logger()', () => {
+    const consoleLogger = Logger('console');
+    assert.strictEqual(typeof consoleLogger.info, 'function');
+    assert.strictEqual(typeof consoleLogger.setLogLevel, 'function');
   });
 });

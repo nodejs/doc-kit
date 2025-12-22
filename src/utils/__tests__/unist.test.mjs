@@ -1,4 +1,4 @@
-import { strictEqual } from 'node:assert';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { transformNodesToString, callIfBefore } from '../unist.mjs';
@@ -25,7 +25,7 @@ describe('transformNodesToString', () => {
         ],
       },
     ];
-    strictEqual(transformNodesToString(nodes), 'Hello, **World**');
+    assert.strictEqual(transformNodesToString(nodes), 'Hello, **World**');
   });
 });
 
@@ -46,7 +46,10 @@ describe('callIfBefore', () => {
       },
     };
     callIfBefore(nodeA, nodeB, (nodeA, nodeB) => {
-      strictEqual(nodeA.position.start.line < nodeB.position.start.line, true);
+      assert.strictEqual(
+        nodeA.position.start.line < nodeB.position.start.line,
+        true
+      );
     });
   });
 
@@ -66,7 +69,10 @@ describe('callIfBefore', () => {
       },
     };
     callIfBefore(nodeA, nodeB, (nodeA, nodeB) => {
-      strictEqual(nodeA.position.start.line < nodeB.position.start.line, true);
+      assert.strictEqual(
+        nodeA.position.start.line < nodeB.position.start.line,
+        true
+      );
     });
   });
 });

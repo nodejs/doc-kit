@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual } from 'node:assert';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import createWorkerPool from '../index.mjs';
@@ -43,8 +43,8 @@ describe('createParallelWorker', () => {
     const pool = createWorkerPool(2);
     const worker = createParallelWorker('metadata', pool, { threads: 2 });
 
-    ok(worker);
-    strictEqual(typeof worker.stream, 'function');
+    assert.ok(worker);
+    assert.strictEqual(typeof worker.stream, 'function');
 
     await pool.destroy();
   });
@@ -58,7 +58,7 @@ describe('createParallelWorker', () => {
 
     const results = await collectStream(worker.stream([], [], {}));
 
-    deepStrictEqual(results, []);
+    assert.deepStrictEqual(results, []);
 
     await pool.destroy();
   });
@@ -93,10 +93,10 @@ describe('createParallelWorker', () => {
       worker.stream(mockInput, mockInput, { typeMap: {} })
     );
 
-    strictEqual(chunks.length, 4);
+    assert.strictEqual(chunks.length, 4);
 
     for (const chunk of chunks) {
-      ok(Array.isArray(chunk));
+      assert.ok(Array.isArray(chunk));
     }
 
     await pool.destroy();
@@ -124,7 +124,7 @@ describe('createParallelWorker', () => {
       worker.stream(mockInput, mockInput, { typeMap: {} })
     );
 
-    strictEqual(chunks.length, 2);
+    assert.strictEqual(chunks.length, 2);
 
     await pool.destroy();
   });
@@ -147,8 +147,8 @@ describe('createParallelWorker', () => {
       worker.stream(mockInput, mockInput, { typeMap: {} })
     );
 
-    strictEqual(chunks.length, 1);
-    ok(Array.isArray(chunks[0]));
+    assert.strictEqual(chunks.length, 1);
+    assert.ok(Array.isArray(chunks[0]));
 
     await pool.destroy();
   });
@@ -175,7 +175,7 @@ describe('createParallelWorker', () => {
       worker.stream(mockInput, mockInput, { typeMap: {} })
     );
 
-    strictEqual(chunks.length, 2);
+    assert.strictEqual(chunks.length, 2);
 
     await pool.destroy();
   });

@@ -1,6 +1,4 @@
-'use strict';
-
-import assert from 'node:assert';
+import assert from 'node:assert/strict';
 import { mkdir, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';

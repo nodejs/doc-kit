@@ -1,4 +1,4 @@
-import { ok, strictEqual } from 'node:assert';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import createGenerator from '../generators.mjs';
@@ -21,8 +21,8 @@ describe('createGenerator', () => {
   it('should create a generator orchestrator with runGenerators method', () => {
     const { runGenerators } = createGenerator();
 
-    ok(runGenerators);
-    strictEqual(typeof runGenerators, 'function');
+    assert.ok(runGenerators);
+    assert.strictEqual(typeof runGenerators, 'function');
   });
 
   it('should return the ast input directly when generators list is empty', async () => {
@@ -34,9 +34,9 @@ describe('createGenerator', () => {
     });
 
     // Returns array of results, first element is the 'ast' result
-    ok(Array.isArray(results));
-    strictEqual(results.length, 1);
-    ok(results[0]);
+    assert.ok(Array.isArray(results));
+    assert.strictEqual(results.length, 1);
+    assert.ok(results[0]);
   });
 
   it('should run metadata generator', async () => {
@@ -48,9 +48,9 @@ describe('createGenerator', () => {
     });
 
     // Returns array with one element - the collected metadata array
-    ok(Array.isArray(results));
-    strictEqual(results.length, 1);
-    ok(Array.isArray(results[0]));
+    assert.ok(Array.isArray(results));
+    assert.strictEqual(results.length, 1);
+    assert.ok(Array.isArray(results[0]));
   });
 
   it('should handle generator with dependency', async () => {
@@ -63,8 +63,8 @@ describe('createGenerator', () => {
     });
 
     // Should complete without error - returns array of results
-    ok(Array.isArray(results));
-    strictEqual(results.length, 1);
+    assert.ok(Array.isArray(results));
+    assert.strictEqual(results.length, 1);
   });
 
   it('should skip already scheduled generators', async () => {
@@ -77,8 +77,8 @@ describe('createGenerator', () => {
     });
 
     // Returns array with two elements (same result cached for both)
-    ok(Array.isArray(results));
-    strictEqual(results.length, 2);
+    assert.ok(Array.isArray(results));
+    assert.strictEqual(results.length, 2);
   });
 
   it('should handle multiple generators in sequence', async () => {
@@ -91,8 +91,8 @@ describe('createGenerator', () => {
     });
 
     // Returns array of results
-    ok(Array.isArray(results));
-    strictEqual(results.length, 1);
+    assert.ok(Array.isArray(results));
+    assert.strictEqual(results.length, 1);
   });
 
   it('should collect async generator results for dependents', async () => {
@@ -104,8 +104,8 @@ describe('createGenerator', () => {
       generators: ['legacy-json'],
     });
 
-    ok(Array.isArray(results));
-    strictEqual(results.length, 1);
+    assert.ok(Array.isArray(results));
+    assert.strictEqual(results.length, 1);
   });
 
   it('should use multiple threads when specified', async () => {
@@ -118,9 +118,9 @@ describe('createGenerator', () => {
     });
 
     // Returns array of results
-    ok(Array.isArray(results));
-    strictEqual(results.length, 1);
-    ok(Array.isArray(results[0]));
+    assert.ok(Array.isArray(results));
+    assert.strictEqual(results.length, 1);
+    assert.ok(Array.isArray(results[0]));
   });
 
   it('should pass options to generators', async () => {
@@ -135,8 +135,8 @@ describe('createGenerator', () => {
     });
 
     // Returns array of results
-    ok(Array.isArray(results));
-    strictEqual(results.length, 1);
-    ok(Array.isArray(results[0]));
+    assert.ok(Array.isArray(results));
+    assert.strictEqual(results.length, 1);
+    assert.ok(Array.isArray(results[0]));
   });
 });
