@@ -167,9 +167,6 @@ describe('parseList', () => {
     ];
 
     parseList(section, nodes);
-
-    console.log(section);
-
     assert.equal(section.params[0].options.length, 1);
   });
 });
