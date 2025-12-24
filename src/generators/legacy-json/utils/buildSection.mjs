@@ -109,10 +109,11 @@ export const createSectionBuilder = () => {
       section.stability = Number(stabilityNode.data.index);
       section.stabilityText = stabilityNode.data.description;
 
-      const nodeToRemove = content.children.findIndex(
-        ({ data }) => data === stabilityNode.data
-      );
-      nodes.splice(nodeToRemove - 1, 1);
+      const stabilityIdx = content.children.indexOf(stability.children[0]);
+
+      if (stabilityIdx) {
+        nodes.splice(stabilityIdx - 1, 1);
+      }
     }
   };
 

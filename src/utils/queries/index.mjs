@@ -1,6 +1,5 @@
 'use strict';
 
-import { u as createTree } from 'unist-builder';
 import { SKIP } from 'unist-util-visit';
 
 import { DOC_API_STABILITY_SECTION_REF_URL } from './constants.mjs';
@@ -142,15 +141,8 @@ const createQueries = typeMap => {
         description: matches[2].replace(/\n/g, ' ').trim(),
       };
 
-      // Creates a new Tree node containing the Stability Index metadata
-      const stabilityIndexNode = createTree(
-        'root',
-        { data: node.data },
-        node.children
-      );
-
       // Adds the Stability Index metadata to the current Metadata entry
-      apiEntryMetadata?.addStability(stabilityIndexNode);
+      apiEntryMetadata?.addStability(node);
     }
 
     return [SKIP];
