@@ -214,7 +214,7 @@ function setupSidebarScroll() {
     return;
   }
 
-  link.scrollIntoView({ block: 'center' });
+  link.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // Initialize either on DOMContentLoaded or immediately if already loaded
