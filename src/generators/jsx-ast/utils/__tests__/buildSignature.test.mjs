@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { generateSignature } from '../buildSignature.mjs';
 
-describe('generateSignature - return type spacing', () => {
+describe('generateSignature', () => {
   it('formats union return types without spaces as spaced ("|" surrounded)', () => {
     const sig = generateSignature(
       'foo',
