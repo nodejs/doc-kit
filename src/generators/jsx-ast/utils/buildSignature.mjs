@@ -23,7 +23,11 @@ export const generateSignature = (
   }
 
   // Function or method
-  const returnStr = returnType ? `: ${returnType.type}` : '';
+  const returnStr = (returnType ? `: ${returnType.type}` : '')
+    .split('|')
+    .map(part => part.trim())
+    .filter(Boolean)
+    .join(' | ');
 
   const paramsStr = params
     .map(param => {
