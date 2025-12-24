@@ -115,9 +115,6 @@ export function parseList(section, nodes) {
         delete values[0].name;
 
         Object.assign(section, values[0]);
-
-        // TODO(@avivkeller): There is probably a better way to do this.
-        section.__promote = 'property';
       }
       break;
 

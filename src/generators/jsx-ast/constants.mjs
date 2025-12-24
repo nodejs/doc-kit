@@ -150,3 +150,5 @@ export const TYPES_WITH_METHOD_SIGNATURES = [
   'method',
   'classMethod',
 ];
+
+export const TRIMMABLE_PADDING_REGEX = /^[\s:]+/;

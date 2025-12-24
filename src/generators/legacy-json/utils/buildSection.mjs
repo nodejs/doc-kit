@@ -157,10 +157,7 @@ export const createSectionBuilder = () => {
    * @param {import('../types.d.ts').Section} parent - The parent section.
    */
   const addToParent = (section, parent) => {
-    const key =
-      SECTION_TYPE_PLURALS[section.__promote ?? section.type] || 'miscs';
-
-    delete section.__promote;
+    const key = SECTION_TYPE_PLURALS[section.type] || 'properties';
 
     parent[key] ??= [];
     parent[key].push(section);

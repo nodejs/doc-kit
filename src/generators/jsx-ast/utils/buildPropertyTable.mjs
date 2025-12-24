@@ -1,6 +1,7 @@
 import { h as createElement } from 'hastscript';
 
 import createQueries from '../../../utils/queries/index.mjs';
+import { TRIMMABLE_PADDING_REGEX } from '../constants.mjs';
 
 /**
  * Determines if a node looks like part of a type annotation.
@@ -124,7 +125,10 @@ export const parseListIntoProperties = node => {
 
     // Clean up leading whitespace in remaining description
     if (children[0]?.type === 'text') {
-      children[0].value = children[0].value.replace(/^[\s:]+/, '');
+      children[0].value = children[0].value.replace(
+        TRIMMABLE_PADDING_REGEX,
+        ''
+      );
     }
 
     properties.push({
