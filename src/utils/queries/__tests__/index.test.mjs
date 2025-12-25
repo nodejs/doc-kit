@@ -1,6 +1,8 @@
 import { strictEqual, deepStrictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
+import { u as createTree } from 'unist-builder';
+
 import typeMap from '../../parser/typeMap.json' with { type: 'json' };
 import createQueries from '../index.mjs';
 
@@ -8,23 +10,26 @@ describe('createQueries', () => {
   const queries = createQueries(typeMap);
 
   it('should add YAML metadata correctly', () => {
-    const node = { value: 'type: test\nname: test\n' };
+    const node = createTree('text', 'type: test\nname: test\n');
     const apiEntryMetadata = {
       updateProperties: properties => {
         deepStrictEqual(properties, { type: 'test', name: 'test' });
       },
     };
+
     queries.addYAMLMetadata(node, apiEntryMetadata);
   });
 
-  // valid type
   it('should update type to reference correctly', () => {
-    const node = {
-      value: 'This is a {string} type.',
-      position: { start: 0, end: 0 },
-    };
-    const parent = { children: [node] };
+    const node = createTree(
+      'text',
+      { start: 0, end: 0 },
+      'This is a {string} type.'
+    );
+    const parent = createTree('paragraph', [node]);
+
     queries.updateTypeReference(node, parent);
+
     deepStrictEqual(
       parent.children.map(c => c.value),
       [
@@ -35,67 +40,67 @@ describe('createQueries', () => {
     );
   });
 
-  it('should update type to reference not correctly if no match', () => {
-    const node = {
-      value: 'This is a {test} type.',
-      position: { start: 0, end: 0 },
-    };
-    const parent = { children: [node] };
+  it('should not update type reference if no match', () => {
+    const node = createTree(
+      'text',
+      { start: 0, end: 0 },
+      'This is a {test} type.'
+    );
+
+    const parent = createTree('paragraph', [node]);
+
     queries.updateTypeReference(node, parent);
+
     strictEqual(parent.children[0].type, 'text');
     strictEqual(parent.children[0].value, 'This is a {test} type.');
   });
 
   it('should add heading metadata correctly', () => {
-    const node = {
-      depth: 2,
-      children: [{ type: 'text', value: 'Test Heading' }],
-    };
+    const node = createTree('heading', { depth: 2 }, [
+      createTree('text', 'Test Heading'),
+    ]);
+
     const apiEntryMetadata = {
-      setHeading: heading => {
-        deepStrictEqual(heading, {
-          children: [
-            {
-              type: 'text',
-              value: 'Test Heading',
-            },
-          ],
-          data: {
-            depth: 2,
-            name: 'Test Heading',
-            text: 'Test Heading',
-          },
+      setHeading: heading =>
+        deepStrictEqual(heading.data, {
           depth: 2,
-        });
-      },
+          name: 'Test Heading',
+          text: 'Test Heading',
+        }),
     };
+
     queries.setHeadingMetadata(node, apiEntryMetadata);
   });
 
   it('should update markdown link correctly', () => {
-    const node = { type: 'link', url: 'test.md#heading' };
+    const node = createTree('link', { url: 'test.md#heading' }, []);
+
     queries.updateMarkdownLink(node);
     strictEqual(node.url, 'test.html#heading');
   });
 
   it('should update link reference correctly', () => {
-    const node = { type: 'linkReference', identifier: 'test' };
-    const definitions = [{ identifier: 'test', url: 'test.html#test' }];
+    const node = createTree('linkReference', { identifier: 'test' });
+
+    const definitions = [
+      {
+        ...node,
+        url: 'test.html#test',
+      },
+    ];
+
+    console.log(node, definitions);
     queries.updateLinkReference(node, definitions);
+
     strictEqual(node.type, 'link');
     strictEqual(node.url, 'test.html#test');
   });
 
   it('should add stability index metadata correctly', () => {
-    const node = {
-      type: 'blockquote',
-      children: [
-        {
-          type: 'paragraph',
-          children: [{ type: 'text', value: 'Stability: 1.0 - Frozen' }],
-        },
-      ],
-    };
+    const node = createTree('blockquote', [
+      createTree('paragraph', [createTree('text', 'Stability: 1.0 - Frozen')]),
+    ]);
+
     const apiEntryMetadata = {
       addStability: stability => {
         deepStrictEqual(stability.data, {
@@ -104,6 +109,7 @@ describe('createQueries', () => {
         });
       },
     };
+
     queries.addStabilityMetadata(node, apiEntryMetadata);
   });
 
@@ -111,20 +117,14 @@ describe('createQueries', () => {
     describe('isStronglyTypedList', () => {
       it('returns false for non-list nodes', () => {
         strictEqual(
-          createQueries.UNIST.isStronglyTypedList({
-            type: 'paragraph',
-            children: [],
-          }),
+          createQueries.UNIST.isStronglyTypedList(createTree('paragraph', [])),
           false
         );
       });
 
       it('returns false for empty lists', () => {
         strictEqual(
-          createQueries.UNIST.isStronglyTypedList({
-            type: 'list',
-            children: [],
-          }),
+          createQueries.UNIST.isStronglyTypedList(createTree('list', [])),
           false
         );
       });
@@ -132,85 +132,48 @@ describe('createQueries', () => {
       const cases = [
         {
           name: 'typedListStarters pattern match',
-          node: {
-            type: 'list',
-            children: [
-              {
-                children: [
-                  {
-                    children: [{ type: 'text', value: 'Returns: foo' }],
-                  },
-                ],
-              },
-            ],
-          },
+          node: createTree('list', [
+            createTree('listItem', [
+              createTree('paragraph', [createTree('text', 'Returns: foo')]),
+            ]),
+          ]),
           expected: true,
         },
         {
           name: 'direct type link pattern',
-          node: {
-            type: 'list',
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      {
-                        type: 'link',
-                        children: [{ type: 'inlineCode', value: '<Type>' }],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
+          node: createTree('list', [
+            createTree('listItem', [
+              createTree('paragraph', [
+                createTree('link', [createTree('inlineCode', '<Type>')]),
+              ]),
+            ]),
+          ]),
           expected: true,
         },
         {
           name: 'inlineCode + space + type link pattern',
-          node: {
-            type: 'list',
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      { type: 'inlineCode', value: 'foo' },
-                      { type: 'text', value: ' ' },
-                      {
-                        type: 'link',
-                        children: [{ type: 'text', value: '<Bar>' }],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
+          node: createTree('list', [
+            createTree('listItem', [
+              createTree('paragraph', [
+                createTree('inlineCode', 'foo'),
+                createTree('text', ' '),
+                createTree('link', [createTree('text', '<Bar>')]),
+              ]),
+            ]),
+          ]),
           expected: true,
         },
         {
           name: 'non-matching content',
-          node: {
-            type: 'list',
-            children: [
-              {
-                children: [
-                  {
-                    children: [
-                      { type: 'inlineCode', value: 'not a valid prop' },
-                      { type: 'text', value: ' ' },
-                      {
-                        type: 'link',
-                        children: [{ type: 'text', value: '<Bar>' }],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
+          node: createTree('list', [
+            createTree('listItem', [
+              createTree('paragraph', [
+                createTree('inlineCode', 'not a valid prop'),
+                createTree('text', ' '),
+                createTree('link', [createTree('text', '<Bar>')]),
+              ]),
+            ]),
+          ]),
           expected: false,
         },
       ];
@@ -218,6 +181,76 @@ describe('createQueries', () => {
       cases.forEach(({ name, node, expected }) => {
         it(`returns ${expected} for ${name}`, () => {
           strictEqual(createQueries.UNIST.isStronglyTypedList(node), expected);
+        });
+      });
+    });
+
+    describe('isLooselyTypedList', () => {
+      it('returns false for non-list nodes', () => {
+        strictEqual(
+          createQueries.UNIST.isStronglyTypedList(createTree('paragraph', [])),
+          false
+        );
+      });
+
+      it('returns false for empty lists', () => {
+        strictEqual(
+          createQueries.UNIST.isStronglyTypedList(createTree('list', [])),
+          false
+        );
+      });
+
+      const cases = [
+        {
+          name: 'typedListStarters pattern match',
+          node: createTree('list', [
+            createTree('listItem', [
+              createTree('paragraph', [createTree('text', 'Returns: foo')]),
+            ]),
+          ]),
+          expected: true,
+        },
+        {
+          name: 'direct type link pattern',
+          node: createTree('list', [
+            createTree('listItem', [
+              createTree('paragraph', [
+                createTree('link', [createTree('inlineCode', '<Type>')]),
+              ]),
+            ]),
+          ]),
+          expected: true,
+        },
+        {
+          name: 'inlineCode + text pattern',
+          node: createTree('list', [
+            createTree('listItem', [
+              createTree('paragraph', [
+                createTree('inlineCode', 'foo'),
+                createTree('text', ' bar'),
+              ]),
+            ]),
+          ]),
+          expected: true,
+        },
+        {
+          name: 'non-matching content',
+          node: createTree('list', [
+            createTree('listItem', [
+              createTree('paragraph', [
+                createTree('inlineCode', 'not a valid prop'),
+                createTree('text', ' '),
+                createTree('link', [createTree('text', '<Bar>')]),
+              ]),
+            ]),
+          ]),
+          expected: false,
+        },
+      ];
+
+      cases.forEach(({ name, node, expected }) => {
+        it(`returns ${expected} for ${name}`, () => {
+          strictEqual(createQueries.UNIST.isLooselyTypedList(node), expected);
         });
       });
     });
