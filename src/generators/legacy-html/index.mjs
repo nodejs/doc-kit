@@ -159,7 +159,7 @@ export default {
         for (const template of chunkResult) {
           const result = replaceTemplateValues(apiTemplate, template, releases);
 
-          const minified = await minify(result);
+          const { code: minified } = await minify(result);
 
           await writeFile(join(output, `${template.api}.html`), minified);
         }
