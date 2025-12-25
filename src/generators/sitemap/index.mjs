@@ -45,23 +45,19 @@ export default {
         };
       });
 
-    const mainPages = [
-      {
-        loc: new URL('/docs/latest/api/', BASE_URL).href,
-        lastmod,
-        changefreq: 'daily',
-        priority: '1.0',
-      },
-    ];
-
-    const allPages = [...mainPages, ...apiPages];
+    apiPages.push({
+      loc: new URL('/docs/latest/api/', BASE_URL).href,
+      lastmod,
+      changefreq: 'daily',
+      priority: '1.0',
+    });
 
     const template = await readFile(
       join(import.meta.dirname, 'template.xml'),
       'utf-8'
     );
 
-    const urlset = allPages
+    const urlset = apiPages
       .map(
         page => dedent`
         <url>
