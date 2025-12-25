@@ -44,7 +44,7 @@
     "@heroicons/react": "^2.2.0",
     "@minify-html/node": "^0.16.4",
     "@node-core/rehype-shiki": "1.3.0",
-    "@node-core/ui-components": "1.4.1",
+    "@node-core/ui-components": "1.4.2",
     "@orama/orama": "^3.1.16",
     "@orama/ui": "^1.5.3",
     "@rollup/plugin-virtual": "^3.0.2",
