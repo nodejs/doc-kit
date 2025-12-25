@@ -47,11 +47,8 @@ const createMetadata = slugger => {
      *
      * @param {StabilityIndexParent} stability The stability index node to be added
      */
-    addStability: stability => {
-      // We clone the stability to ensure that we don't accidentally override it
-      // with later mutations below on the `.create` method
-      internalMetadata.stability.children.push({ ...stability });
-    },
+    addStability: stability =>
+      internalMetadata.stability.children.push(stability),
     /**
      * Set the Metadata (from YAML if exists) properties to the current Metadata entry
      * it also allows for extra data (such as Stability Index) and miscellaneous data to be set

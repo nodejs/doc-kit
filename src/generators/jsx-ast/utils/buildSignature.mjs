@@ -93,7 +93,7 @@ export const getFullName = ({ name, text }, fallback = name) => {
  */
 export default ({ children }, { data }, idx) => {
   // Try to locate the parameter list immediately following the heading
-  const listIdx = children.findIndex(createQueries.UNIST.isTypedList);
+  const listIdx = children.findIndex(createQueries.UNIST.isStronglyTypedList);
 
   // Parse parameters from the list, if found
   const params =
