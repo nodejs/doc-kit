@@ -3,7 +3,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import HTMLMinifier from '@minify-html/node';
+import { minify } from '@swc/html';
 
 import { getRemarkRehype } from '../../utils/remark.mjs';
 import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValues.mjs';
@@ -89,7 +89,7 @@ export default {
     );
 
     // We minify the html result to reduce the file size and keep it "clean"
-    const minified = HTMLMinifier.minify(Buffer.from(result), {});
+    const minified = await minify(Buffer.from(result));
 
     if (output) {
       await writeFile(join(output, 'all.html'), minified);

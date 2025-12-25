@@ -3,7 +3,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import HTMLMinifier from '@minify-html/node';
+import { minify } from '@swc/html';
 
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
@@ -159,7 +159,7 @@ export default {
         for (const template of chunkResult) {
           const result = replaceTemplateValues(apiTemplate, template, releases);
 
-          const minified = HTMLMinifier.minify(Buffer.from(result), {});
+          const minified = await minify(Buffer.from(result));
 
           await writeFile(join(output, `${template.api}.html`), minified);
         }

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import HTMLMinifier from '@minify-html/node';
+import { minifySync } from '@swc/html';
 import { jsx, toJs } from 'estree-util-to-js';
 import { transform } from 'lightningcss';
 
@@ -121,7 +121,7 @@ export async function processJSXEntries(
       .replace('{{speculationRules}}', SPECULATION_RULES);
 
     // Minify HTML (input must be a Buffer)
-    const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
+    const finalHTMLBuffer = minifySync(Buffer.from(renderedHtml));
 
     return { html: finalHTMLBuffer, api };
   });
