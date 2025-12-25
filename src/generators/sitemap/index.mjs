@@ -1,5 +1,7 @@
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+
+import dedent from 'dedent';
 
 import { BASE_URL } from '../../constants.mjs';
 
@@ -27,6 +29,8 @@ export default {
    * @returns {Promise<string>}
    */
   async generate(entries, { output }) {
+    const lastmod = new Date().toISOString().split('T')[0];
+
     const apiPages = entries
       .filter(entry => entry.heading.depth === 1)
       .map(entry => {
@@ -35,7 +39,7 @@ export default {
 
         return {
           loc: url,
-          lastmod: new Date().toISOString().split('T')[0],
+          lastmod,
           changefreq: 'weekly',
           priority: '0.8',
         };
@@ -44,7 +48,7 @@ export default {
     const mainPages = [
       {
         loc: new URL('/docs/latest/api/', BASE_URL).href,
-        lastmod: new Date().toISOString().split('T')[0],
+        lastmod,
         changefreq: 'daily',
         priority: '1.0',
       },
@@ -52,19 +56,25 @@ export default {
 
     const allPages = [...mainPages, ...apiPages];
 
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allPages
-  .map(
-    page => `  <url>
-    <loc>${page.loc}</loc>
-    <lastmod>${page.lastmod}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`
-  )
-  .join('\n')}
-</urlset>`;
+    const template = await readFile(
+      join(import.meta.dirname, 'template.xml'),
+      'utf-8'
+    );
+
+    const urlset = allPages
+      .map(
+        page => dedent`
+        <url>
+          <loc>${page.loc}</loc>
+          <lastmod>${page.lastmod}</lastmod>
+          <changefreq>${page.changefreq}</changefreq>
+          <priority>${page.priority}</priority>
+        </url>
+      `
+      )
+      .join('\n');
+
+    const sitemap = template.replace('__URLSET__', urlset);
 
     if (output) {
       await writeFile(join(output, 'sitemap.xml'), sitemap, 'utf-8');
