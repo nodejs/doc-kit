@@ -89,7 +89,7 @@ export default {
     );
 
     // We minify the html result to reduce the file size and keep it "clean"
-    const minified = await minify(Buffer.from(result));
+    const minified = await minify(result);
 
     if (output) {
       await writeFile(join(output, 'all.html'), minified);

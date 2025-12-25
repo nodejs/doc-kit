@@ -121,7 +121,7 @@ export async function processJSXEntries(
       .replace('{{speculationRules}}', SPECULATION_RULES);
 
     // Minify HTML (input must be a Buffer)
-    const finalHTMLBuffer = minifySync(Buffer.from(renderedHtml));
+    const finalHTMLBuffer = minifySync(renderedHtml);
 
     return { html: finalHTMLBuffer, api };
   });
