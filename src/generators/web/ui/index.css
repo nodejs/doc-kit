@@ -20,6 +20,9 @@ main {
   .overflow-container {
     overflow-x: auto;
     width: 100%;
+    table td a + a {
+      margin-right: 0;
+    }
   }
 
   table {
