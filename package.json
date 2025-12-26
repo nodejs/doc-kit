@@ -50,7 +50,7 @@
     "@swc/html": "^1.15.7",
     "acorn": "^8.15.0",
     "commander": "^14.0.2",
-    "dedent": "^1.7.0",
+    "dedent": "^1.7.1",
     "estree-util-to-js": "^2.0.0",
     "estree-util-visit": "^2.0.0",
     "github-slugger": "^2.0.0",
