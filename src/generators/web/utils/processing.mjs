@@ -111,14 +111,16 @@ export async function processJSXEntries(
   // Step 3: Create final HTML (could be parallelized in workers)
   const results = entries.map(({ data: { api, heading } }) => {
     const fileName = `${api}.js`;
+    const title = `${heading.data.name} | ${titleSuffix}`;
 
     // Replace template placeholders with actual content
     const renderedHtml = template
-      .replace('{{title}}', `${heading.data.name} | ${titleSuffix}`)
+      .replace('{{title}}', title)
       .replace('{{dehydrated}}', serverBundle.pages.get(fileName) ?? '')
       .replace('{{importMap}}', clientBundle.importMap ?? '')
       .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
-      .replace('{{speculationRules}}', SPECULATION_RULES);
+      .replace('{{speculationRules}}', SPECULATION_RULES)
+      .replace('{{ogTitle}}', encodeURIComponent(title));
 
     // Minify HTML (input must be a Buffer)
     const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
