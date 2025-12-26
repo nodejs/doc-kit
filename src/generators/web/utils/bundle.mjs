@@ -41,9 +41,6 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       // Minify output only for browser builds to optimize file size.
       // Server builds are usually not minified to preserve stack traces and debuggability.
       minify: !server,
-
-      // Within server builds we want to ensure dynamic imports get inlined whenever possible.
-      inlineDynamicImports: server,
     },
 
     // Platform informs Rolldown of the environment-specific code behavior:
