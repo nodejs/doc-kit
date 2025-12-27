@@ -5,9 +5,9 @@ import { buildApiDocURL } from '../../../utils/url.mjs';
  *
  * @param {ApiDocMetadataEntry} entry
  * @param {string} lastmod
- * @returns {import('../types').SitemapUrl}
+ * @returns {import('../types').SitemapEntry}
  */
-export const buildApiDocUrl = (entry, lastmod) => {
+export const createPageSitemapEntry = (entry, lastmod) => {
   const { href } = buildApiDocURL(entry, true);
 
   return { loc: href, lastmod, changefreq: 'weekly', priority: '0.8' };

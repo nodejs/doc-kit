@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import dedent from 'dedent';
 
 import { BASE_URL } from '../../constants.mjs';
-import { buildApiDocUrl } from './utils/buildApiDocUrl.mjs';
+import { createPageSitemapEntry } from './utils/createPageSitemapEntry.mjs';
 
 /**
  * This generator generates a sitemap.xml file for search engine optimization
@@ -34,14 +34,19 @@ export default {
 
     const apiPages = entries
       .filter(entry => entry.heading.depth === 1)
-      .map(entry => buildApiDocUrl(entry, lastmod));
+      .map(entry => createPageSitemapEntry(entry, lastmod));
 
-    apiPages.push({
+    /**
+     * @typedef {import('./types').SitemapEntry}
+     */
+    const mainPage = {
       loc: new URL('/docs/latest/api/', BASE_URL).href,
       lastmod,
       changefreq: 'daily',
       priority: '1.0',
-    });
+    };
+
+    apiPages.push(mainPage);
 
     const template = await readFile(
       join(import.meta.dirname, 'template.xml'),

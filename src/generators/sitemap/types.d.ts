@@ -1,4 +1,4 @@
-export interface SitemapUrl {
+export interface SitemapEntry {
   loc: string;
   lastmod?: string;
   changefreq?:
