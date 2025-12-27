@@ -11,9 +11,8 @@ export const buildApiDocURL = (entry, useHtml = false) => {
   const path = entry.api_doc_source.replace(/^doc\//, '/docs/latest/');
 
   if (useHtml) {
-    const htmlPath = path.replace(/\.md$/, '.html');
-    return new URL(htmlPath, BASE_URL);
+    return URL.parse(path.replace(/\.md$/, '.html'), BASE_URL);
   }
 
-  return new URL(path, BASE_URL);
+  return URL.parse(path, BASE_URL);
 };

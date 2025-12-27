@@ -1,8 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import dedent from 'dedent';
-
 import { BASE_URL } from '../../constants.mjs';
 import { createPageSitemapEntry } from './utils/createPageSitemapEntry.mjs';
 
@@ -30,17 +28,29 @@ export default {
    * @returns {Promise<string>}
    */
   async generate(entries, { output }) {
+    const template = await readFile(
+      join(import.meta.dirname, 'template.xml'),
+      'utf-8'
+    );
+
+    const entryTemplate = await readFile(
+      join(import.meta.dirname, 'entry-template.xml'),
+      'utf-8'
+    );
+
     const lastmod = new Date().toISOString().split('T')[0];
 
     const apiPages = entries
       .filter(entry => entry.heading.depth === 1)
       .map(entry => createPageSitemapEntry(entry, lastmod));
 
+    const { href: loc } = new URL('/docs/latest/api/', BASE_URL);
+
     /**
      * @typedef {import('./types').SitemapEntry}
      */
     const mainPage = {
-      loc: new URL('/docs/latest/api/', BASE_URL).href,
+      loc,
       lastmod,
       changefreq: 'daily',
       priority: '1.0',
@@ -48,23 +58,15 @@ export default {
 
     apiPages.push(mainPage);
 
-    const template = await readFile(
-      join(import.meta.dirname, 'template.xml'),
-      'utf-8'
-    );
-
     const urlset = apiPages
-      .map(
-        page => dedent`
-        <url>
-          <loc>${page.loc}</loc>
-          <lastmod>${page.lastmod}</lastmod>
-          <changefreq>${page.changefreq}</changefreq>
-          <priority>${page.priority}</priority>
-        </url>
-      `
+      .map(page =>
+        entryTemplate
+          .replace('__LOC__', page.loc)
+          .replace('__LASTMOD__', page.lastmod)
+          .replace('__CHANGEFREQ__', page.changefreq)
+          .replace('__PRIORITY__', page.priority)
       )
-      .join('\n');
+      .join('');
 
     const sitemap = template.replace('__URLSET__', urlset);
 
