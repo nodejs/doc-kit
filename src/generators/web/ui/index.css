@@ -86,10 +86,7 @@ main {
   }
 }
 
-.navItems:empty {
-  display: none;
-}
-
+/* Removes extra padding from Navigation Bar */
 div[class$="_navItems"]:empty {
   display: none;
 }
