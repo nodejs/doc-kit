@@ -71,13 +71,27 @@ main {
   }
 }
 
+/* Navigation Bar */
+nav [class*='navItems']:empty {
+  display: none !important;
+}
+
+@media (min-width: 64rem) {
+  nav [class*='actionsWrapper'] {
+    margin-left: auto;
+  }
+}
+
 #modalContent li > div > a {
   max-width: 42rem;
+
   > svg {
     flex-shrink: 0;
   }
+
   > div {
     min-width: 0;
+
     > p {
       overflow: hidden;
       text-overflow: ellipsis;

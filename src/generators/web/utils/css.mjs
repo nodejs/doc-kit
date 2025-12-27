@@ -1,6 +1,10 @@
 import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { resolve, dirname } from 'node:path';
 
 import { bundleAsync } from 'lightningcss';
+
+const requireFn = createRequire(import.meta.url);
 
 // Since we use rolldown to bundle multiple times,
 // we re-use a lot of CSS files, so there is no
@@ -26,19 +30,21 @@ export default () => {
 
     // Hook into the module loading phase of Rolldown
     load: {
-      // Match only files ending with `.module.css`
+      // Match only files ending with `.css`
       filter: {
         id: {
-          include: /\.module\.css$/,
+          include: /\.css$/,
         },
       },
 
       /**
-       * Load handler to process matched `.module.css` files
+       * Load handler to process matched `.css` files
        *
        * @param {string} id - Absolute file path to the CSS file
        */
       async handler(id) {
+        const isModule = /\.module\.css$/.test(id);
+
         // Return from cache if already processed
         if (fileCache.has(id)) {
           const cached = fileCache.get(id);
@@ -47,19 +53,39 @@ export default () => {
           cssChunks.add(cached.code);
 
           return {
-            code: `export default ${JSON.stringify(cached.exports)};`,
+            code: isModule
+              ? `export default ${JSON.stringify(cached.exports)};`
+              : '',
             moduleType: 'js',
+            moduleSideEffects: 'no-treeshake',
           };
         }
 
         // Read the raw CSS file from disk
         const source = await readFile(id, 'utf8');
 
-        // Use Lightning CSS to compile the file with CSS Modules enabled
+        // Use Lightning CSS to compile the file
         const { code, exports } = await bundleAsync({
           filename: id,
           code: Buffer.from(source),
-          cssModules: true,
+          cssModules: isModule,
+          resolver: {
+            /**
+             * @param {string} specifier
+             * @param {string} from
+             */
+            resolve(specifier, from) {
+              if (specifier.startsWith('./') || specifier.startsWith('../')) {
+                return resolve(dirname(from), specifier);
+              }
+
+              try {
+                return requireFn.resolve(specifier, { paths: [dirname(from)] });
+              } catch {
+                return specifier;
+              }
+            },
+          },
         });
 
         const css = code.toString();
@@ -67,19 +93,24 @@ export default () => {
         // Add the compiled CSS to our in-memory collection
         cssChunks.add(css);
 
-        // Map exported class names to their scoped identifiers
+        // Map exported class names to their scoped identifiers if it's a module
         // e.g., { button: '_button_abc123' }
-        const mappedExports = Object.fromEntries(
-          Object.entries(exports).map(([key, value]) => [key, value.name])
-        );
+        const mappedExports = isModule
+          ? Object.fromEntries(
+              Object.entries(exports).map(([key, value]) => [key, value.name])
+            )
+          : {};
 
         // Cache result
         fileCache.set(id, { code: css, exports: mappedExports });
 
-        // Return a JS module that exports the scoped class names
+        // Return a JS module that exports the scoped class names (or nothing for global CSS)
         return {
-          code: `export default ${JSON.stringify(mappedExports)};`,
+          code: isModule
+            ? `export default ${JSON.stringify(mappedExports)};`
+            : '',
           moduleType: 'js',
+          moduleSideEffects: 'no-treeshake',
         };
       },
     },
