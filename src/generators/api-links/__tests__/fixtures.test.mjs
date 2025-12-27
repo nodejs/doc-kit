@@ -39,7 +39,7 @@ describe('api links', () => {
         const astJsResults = [];
 
         for await (const chunk of astJs.generate(undefined, {
-          input: [sourceFile],
+          input: [sourceFile.replaceAll('\\', '/')],
           worker,
         })) {
           astJsResults.push(...chunk);
