@@ -1,5 +1,5 @@
-import { BASE_URL } from '../../../constants.mjs';
 import { transformNodeToString } from '../../../utils/unist.mjs';
+import { buildApiDocURL } from '../../../utils/url.mjs';
 
 /**
  * Retrieves the description of a given API doc entry. It first checks whether
@@ -38,8 +38,7 @@ export const getEntryDescription = entry => {
 export const buildApiDocLink = entry => {
   const title = entry.heading.data.name;
 
-  const path = entry.api_doc_source.replace(/^doc\//, '/docs/latest/');
-  const url = new URL(path, BASE_URL);
+  const url = buildApiDocURL(entry);
 
   const link = `[${title}](${url})`;
 
