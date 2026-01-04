@@ -112,6 +112,7 @@ export async function processJSXEntries(
   const results = entries.map(({ data: { api, heading } }) => {
     const fileName = `${api}.js`;
     const title = `${heading.data.name} | ${titleSuffix}`;
+    const description = `Documentation for ${heading.data.name} in Node.js v${version.version}`;
 
     // Replace template placeholders with actual content
     const renderedHtml = template
@@ -120,7 +121,8 @@ export async function processJSXEntries(
       .replace('{{importMap}}', clientBundle.importMap ?? '')
       .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
       .replace('{{speculationRules}}', SPECULATION_RULES)
-      .replace('{{ogTitle}}', encodeURIComponent(title));
+      .replace('{{ogTitle}}', title)
+      .replace('{{ogDescription}}', description);
 
     // Minify HTML (input must be a Buffer)
     const finalHTMLBuffer = HTMLMinifier.minify(Buffer.from(renderedHtml), {});
