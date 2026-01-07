@@ -24,6 +24,9 @@ const STABILITY_CLASS_MAP = [
   undefined,
   styles.legacy,
 ];
+
+const STABILITY_TITLE_MAP = ['Deprecated', 'Experimental', undefined, 'Legacy'];
+
 /**
  * MetaBar component that displays table of contents and page metadata
  * @param {MetaBarProps} props - Component props
@@ -40,7 +43,17 @@ export default ({
     headings={{
       items: headings.map(({ slug, value, stability, ...heading }) => ({
         ...heading,
-        value: <span className={STABILITY_CLASS_MAP[stability]}>{value}</span>,
+        value:
+          stability === 2 ? (
+            value
+          ) : (
+            <span
+              className={STABILITY_CLASS_MAP[stability]}
+              title={STABILITY_TITLE_MAP[stability]}
+            >
+              {value}
+            </span>
+          ),
         data: { id: slug },
       })),
     }}
