@@ -74,11 +74,6 @@ export const JSX_IMPORTS = {
     name: 'ArrowUpRightIcon',
     source: '@heroicons/react/24/solid/ArrowUpRightIcon',
   },
-  NotificationProvider: {
-    name: 'NotificationProvider',
-    isDefaultExport: false,
-    source: '@node-core/ui-components/Providers/NotificationProvider',
-  },
 };
 
 /**
