@@ -250,21 +250,17 @@ export const createDocumentLayout = (
   remark
 ) =>
   createTree('root', [
-    createJSXElement(JSX_IMPORTS.NotificationProvider.name, {
+    createJSXElement(JSX_IMPORTS.NavBar.name),
+    createJSXElement(JSX_IMPORTS.Article.name, {
       children: [
-        createJSXElement(JSX_IMPORTS.NavBar.name),
-        createJSXElement(JSX_IMPORTS.Article.name, {
-          children: [
-            createJSXElement(JSX_IMPORTS.SideBar.name, sideBarProps),
-            createElement('div', [
-              createElement(
-                'main',
-                entries.map(entry => processEntry(entry, remark))
-              ),
-              createJSXElement(JSX_IMPORTS.MetaBar.name, metaBarProps),
-            ]),
-          ],
-        }),
+        createJSXElement(JSX_IMPORTS.SideBar.name, sideBarProps),
+        createElement('div', [
+          createElement(
+            'main',
+            entries.map(entry => processEntry(entry, remark))
+          ),
+          createJSXElement(JSX_IMPORTS.MetaBar.name, metaBarProps),
+        ]),
       ],
     }),
   ]);

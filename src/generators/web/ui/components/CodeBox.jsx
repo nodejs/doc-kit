@@ -1,7 +1,4 @@
-import { CodeBracketIcon } from '@heroicons/react/24/outline';
 import BaseCodeBox from '@node-core/ui-components/Common/BaseCodeBox';
-import styles from '@node-core/ui-components/Common/BaseCodeBox/index.module.css';
-import { useNotification } from '@node-core/ui-components/Providers/NotificationProvider';
 
 import { STATIC_DATA } from '../constants.mjs';
 
@@ -25,28 +22,13 @@ export default ({ className, ...props }) => {
 
   const language = matches?.groups?.language ?? '';
 
-  const notify = useNotification();
-
-  const onCopy = async text => {
-    await navigator.clipboard.writeText(text);
-
-    notify({
-      duration: 3000,
-      message: (
-        <div className="flex items-center gap-3">
-          <CodeBracketIcon className={styles.icon} />
-          Copied to clipboard
-        </div>
-      ),
-    });
-  };
-
   return (
     <BaseCodeBox
-      onCopy={onCopy}
+      onCopy={navigator.clipboard?.writeText}
       language={getLanguageDisplayName(language)}
       className={className}
-      buttonText="Copy to clipboard"
+      copyButtonLabel="Copy to clipboard"
+      copiedButtonLabel="Copied to clipboard!"
       {...props}
     />
   );
