@@ -22,7 +22,32 @@
   <script>document.documentElement.setAttribute("data-theme",localStorage.getItem("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));</script>
   <script type="importmap">{{importMap}}</script>
   <script type="speculationrules">{{speculationRules}}</script>
-  <script async defer src="./bootstrap.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    {
+      function setupSidebarScroll() {
+        const sidebarLinks = document.querySelectorAll('aside > section > ul > a');
+
+        let link;
+        for (link of sidebarLinks) {
+          if (link.pathname === window.location.pathname) break;
+        }
+
+        if (!link) return;
+
+        link.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      function bootstrap() {
+        setupSidebarScroll();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrap, { once: true });
+      } else {
+        bootstrap();
+      }
+    }
+  </script>
 </head>
 
 <body>
