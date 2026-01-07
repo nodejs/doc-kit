@@ -5,7 +5,29 @@
   margin-right: 0.25rem;
 }
 
-.badge {
-  display: inline-block;
-  margin-left: 0.25rem;
+:has(> .deprecated),
+:has(> .legacy) {
+  text-decoration-line: line-through !important;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 2px;
+
+  > span {
+    opacity: 0.7;
+  }
+}
+
+:has(> .deprecated) {
+  text-decoration-color: var(--color-danger-600);
+}
+
+:has(> .legacy) {
+  text-decoration-color: var(--color-info-600);
+}
+
+:has(> .experimental) {
+  text-decoration-line: underline !important;
+  text-decoration-style: dashed;
+  text-decoration-color: var(--color-warning-600);
+  text-underline-offset: 3px;
+  font-style: italic;
 }
