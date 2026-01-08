@@ -50,8 +50,6 @@ export function addDescriptionAndExamples(section, nodes) {
     section.description += `${transformNodeToString(node)}${node.type === 'paragraph' ? '\n' : ' '}`;
   });
 
-  if (section.description) {
-    section.description = section.description.trim();
   section.description &&= section.description.trim();
 }
 
@@ -67,14 +65,15 @@ export function addStabilityStatus(section, entry) {
     return;
   }
 
-  let value = stability.index;
-  if (typeof value !== 'number') {
-    value = Number(value);
+  let { index, description } = stability;
+
+  if (typeof index !== 'number') {
+    index = Number(index);
   }
 
   section.stability = {
-    value,
-    text: stability.description,
+    index,
+    description,
   };
 }
 

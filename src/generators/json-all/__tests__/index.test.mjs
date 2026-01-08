@@ -7,8 +7,6 @@ import { SemVer } from 'semver';
 
 import { BASE_URL } from '../../../constants.mjs';
 import createGenerator from '../../../generators.mjs';
-import createMarkdownLoader from '../../../loaders/markdown.mjs';
-import createMarkdownParser from '../../../parsers/markdown.mjs';
 import { SCHEMA_FILENAME } from '../constants.mjs';
 import jsonAll from '../index.mjs';
 import { generateJsonSchema } from '../util/generateJsonSchema.mjs';
@@ -20,9 +18,6 @@ const FIXTURES_DIR = join(
   '__tests__',
   'fixtures'
 );
-
-const loader = createMarkdownLoader();
-const parser = createMarkdownParser();
 
 test('generator output complies with json schema', async () => {
   const validator = new Validator();
@@ -38,10 +33,8 @@ test('generator output complies with json schema', async () => {
     join(FIXTURES_DIR, 'text-doc.md'),
     join(FIXTURES_DIR, 'module.md'),
   ];
-  const files = await loader.loadFiles(input);
-  const docs = await parser.parseApiDocs(files);
 
-  const { runGenerators } = createGenerator(docs);
+  const { runGenerators } = createGenerator();
 
   const result = await runGenerators({
     generators: ['json-all'],

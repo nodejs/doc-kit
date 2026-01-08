@@ -153,7 +153,7 @@
             },
           },
           "required": ["type", "@module", "@see"],
-          "additionalProperties": false
+          "additionalProperties": false,
         },
       ],
     },
@@ -189,10 +189,8 @@
               "items": { "$ref": "#/definitions/Event" },
             },
           },
-          "required": [
-            "type",
-          ],
-      "additionalProperties": false
+          "required": ["type"],
+          "additionalProperties": false,
         },
       ],
     },
@@ -214,7 +212,7 @@
             },
           },
           "required": ["type", "signatures"],
-      "additionalProperties": false
+          "additionalProperties": false,
         },
       ],
     },
@@ -231,7 +229,7 @@
         },
       },
       "required": ["parameters", "@returns"],
-      "additionalProperties": false
+      "additionalProperties": false,
     },
 
     "MethodParameter": {
@@ -267,7 +265,7 @@
         },
       },
       "required": ["@name", "@type"],
-      "additionalProperties": false
+      "additionalProperties": false,
     },
 
     "MethodReturnType": {
@@ -294,7 +292,7 @@
         },
       },
       "required": ["@type"],
-      "additionalProperties": false
+      "additionalProperties": false,
     },
 
     "Global": {
@@ -337,7 +335,7 @@
             },
           },
           "required": ["type"],
-      "additionalProperties": false
+          "additionalProperties": false,
         },
       ],
     },
@@ -359,7 +357,7 @@
             },
           },
           "required": ["type", "parameters"],
-      "additionalProperties": false
+          "additionalProperties": false,
         },
       ],
     },
@@ -396,26 +394,26 @@
         },
       },
       "required": ["version", "description"],
-      "additionalProperties": false
+      "additionalProperties": false,
     },
 
     "Stability": {
       "type": "object",
       "description": "Describes the stability of an object.",
       "properties": {
-        "value": {
+        "index": {
           "type": "number",
           "description": "The stability value.",
           "minimum": 0,
           "maximum": 3,
         },
-        "text": {
+        "description": {
           "type": "string",
           "description": "Textual representation of the stability.",
         },
       },
-      "required": ["value", "text"],
-      "additionalProperties": false
+      "required": ["index", "description"],
+      "additionalProperties": false,
     },
   },
 }

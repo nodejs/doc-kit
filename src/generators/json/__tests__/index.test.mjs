@@ -8,15 +8,10 @@ import { Validator } from 'jsonschema';
 import { SemVer } from 'semver';
 
 import createGenerator from '../../../generators.mjs';
-import createMarkdownLoader from '../../../loaders/markdown.mjs';
-import createMarkdownParser from '../../../parsers/markdown.mjs';
 import json from '../index.mjs';
 import { parseSchema } from '../utils/parseSchema.mjs';
 
 const FIXTURES_DIR = join(import.meta.dirname, 'fixtures');
-
-const loader = createMarkdownLoader();
-const parser = createMarkdownParser();
 
 describe('generator output complies with json schema', () => {
   const validator = new Validator();
@@ -34,10 +29,7 @@ describe('generator output complies with json schema', () => {
     const input = join(FIXTURES_DIR, `${fixture}.md`);
 
     test(`${fixture}.md`, async () => {
-      const files = await loader.loadFiles([input]);
-      const docs = await parser.parseApiDocs(files);
-
-      const { runGenerators } = createGenerator(docs);
+      const { runGenerators } = createGenerator();
 
       const result = await runGenerators({
         generators: ['json'],

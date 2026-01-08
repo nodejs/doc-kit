@@ -3,7 +3,7 @@
 import assert from 'node:assert';
 import { test } from 'node:test';
 
-import { BASE_URL, DOC_NODE_VERSION } from '../../../../../constants.mjs';
+import { BASE_URL, NODE_VERSION } from '../../../../../constants.mjs';
 import { SCHEMA_FILENAME } from '../../../constants.mjs';
 import { createSection } from '../index.mjs';
 
@@ -41,11 +41,11 @@ test('empty `module` section', () => {
     yaml_position: {},
   };
 
-  assert.deepStrictEqual(createSection(entry, [entry], DOC_NODE_VERSION), {
-    $schema: `${BASE_URL}docs/${DOC_NODE_VERSION}/api/${SCHEMA_FILENAME}`,
+  assert.deepStrictEqual(createSection(entry, [entry], NODE_VERSION), {
+    $schema: `${BASE_URL}docs/${NODE_VERSION}/api/${SCHEMA_FILENAME}`,
     source: 'doc/api/something.md',
     '@module': 'node:bla',
-    '@see': `${BASE_URL}docs/${DOC_NODE_VERSION}/api/bla.html`,
+    '@see': `${BASE_URL}docs/${NODE_VERSION}/api/bla.html`,
     type: 'module',
     '@name': 'Some title',
     parent: undefined,
@@ -86,8 +86,8 @@ test('empty `text` section', () => {
     yaml_position: {},
   };
 
-  assert.deepStrictEqual(createSection(entry, [entry], DOC_NODE_VERSION), {
-    $schema: `${BASE_URL}docs/${DOC_NODE_VERSION}/api/${SCHEMA_FILENAME}`,
+  assert.deepStrictEqual(createSection(entry, [entry], NODE_VERSION), {
+    $schema: `${BASE_URL}docs/${NODE_VERSION}/api/${SCHEMA_FILENAME}`,
     source: 'doc/api/something.md',
     type: 'text',
     '@name': 'Some title',

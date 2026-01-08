@@ -43,23 +43,13 @@ export default {
       text: [],
     };
 
-    const propertiesToIgnore = ['$schema', 'source'];
-
-    input.forEach(section => {
-      const copiedSection = {};
-
-      Object.keys(section).forEach(key => {
-        if (!propertiesToIgnore.includes(key)) {
-          copiedSection[key] = section[key];
-        }
-      });
-
+    input.forEach(({ $schema: _, source: _2, ...section }) => {
       switch (section.type) {
         case 'module':
-          generatedValue.modules.push(copiedSection);
+          generatedValue.modules.push(section);
           break;
         case 'text':
-          generatedValue.text.push(copiedSection);
+          generatedValue.text.push(section);
           break;
         default:
           throw new TypeError(`unsupported root section type ${section.type}`);

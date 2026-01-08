@@ -88,8 +88,8 @@ function createSectionProperties(entry, parent, version) {
 export function createSection(head, entries, version) {
   const entryHierarchy = buildHierarchy(entries);
 
-  if (entryHierarchy.length != 1) {
-    throw new TypeError(`${head.api_doc_source} has multiple root elements`);
+  if (entryHierarchy.length === 0) {
+    throw new TypeError(`${head.api_doc_source} has no root elements`);
   }
 
   const section = createSectionProperties(
