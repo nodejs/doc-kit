@@ -35,10 +35,10 @@
     "eslint-plugin-jsdoc": "^61.5.0",
     "eslint-plugin-react-x": "^2.4.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
-    "prettier": "3.7.4",
     "json-schema-to-typescript": "^15.0.4",
-    "jsonschema": "^1.5.0"
+    "jsonschema": "^1.5.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "3.7.4"
   },
   "dependencies": {
     "@actions/core": "^2.0.1",
