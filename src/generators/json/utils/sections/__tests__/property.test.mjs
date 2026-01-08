@@ -24,7 +24,7 @@ describe('parseType', () => {
     };
 
     /**
-     * @type {import('../../../generated.d.ts').Property}
+     * @type {import('../../../generated/generated.d.ts').Property}
      */
     const section = {};
 
@@ -77,7 +77,7 @@ describe('parseType', () => {
         };
 
         /**
-         * @type {import('../../../generated.d.ts').Property}
+         * @type {import('../../../generated/generated.d.ts').Property}
          */
         const section = {};
 
@@ -127,7 +127,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -176,7 +176,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -239,7 +239,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -302,7 +302,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -372,7 +372,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -430,7 +430,7 @@ describe('parseType', () => {
         };
 
         /**
-         * @type {import('../../../generated.d.ts').Property}
+         * @type {import('../../../generated/generated.d.ts').Property}
          */
         const section = {};
 
@@ -484,7 +484,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -537,7 +537,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -604,7 +604,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -671,7 +671,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -745,7 +745,7 @@ describe('parseType', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Property}
+       * @type {import('../../../generated/generated.d.ts').Property}
        */
       const section = {};
 
@@ -766,7 +766,7 @@ describe('parseDescription', () => {
     const element = { children: [] };
 
     /**
-     * @type {import('../../../generated.d.ts').Property}
+     * @type {import('../../../generated/generated.d.ts').Property}
      */
     const section = new Proxy(
       {},
@@ -804,7 +804,7 @@ describe('parseDescription', () => {
     };
 
     /**
-     * @type {import('../../../generated.d.ts').Property}
+     * @type {import('../../../generated/generated.d.ts').Property}
      */
     const section = {};
 
@@ -856,7 +856,7 @@ describe('parseDescription', () => {
     };
 
     /**
-     * @type {import('../../../generated.d.ts').Property}
+     * @type {import('../../../generated/generated.d.ts').Property}
      */
     const section = {};
 

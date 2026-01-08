@@ -18,7 +18,7 @@ import { groupNodesByModule } from '../../utils/generators.mjs';
  *
  * @typedef {Array<ApiDocMetadataEntry>} Input
  *
- * @type {GeneratorMetadata<Input, Array<import('./generated.d.ts').NodeJsAPIDocumentationSchema>>}
+ * @type {GeneratorMetadata<Input, Array<import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema>>}
  */
 export default {
   name: 'json',
@@ -37,14 +37,14 @@ export default {
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} param1
-   * @returns {Promise<Array<import('./generated.d.ts').NodeJsAPIDocumentationSchema>>}
+   * @returns {Promise<Array<import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema>>}
    */
   async generate(input, { output, version }) {
     const groupedModules = groupNodesByModule(input);
 
     /**
      * @param {ApiDocMetadataEntry} head
-     * @returns {import('./generated.d.ts').NodeJsAPIDocumentationSchema}
+     * @returns {import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema}
      */
     const processModuleNodes = head => {
       const nodes = groupedModules.get(head.api);
@@ -56,7 +56,7 @@ export default {
     };
 
     /**
-     * @type {Array<import('./generated.d.ts').NodeJsAPIDocumentationSchema>}
+     * @type {Array<import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema>}
      */
     const generatedValues = [];
 

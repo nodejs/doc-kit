@@ -19,7 +19,7 @@ const GENERATOR_DIR = join(
 );
 
 const SCHEMA_PATH = join(GENERATOR_DIR, 'schema.jsonc');
-const TYPES_PATH = join(GENERATOR_DIR, 'generated.d.ts');
+const TYPES_PATH = join(GENERATOR_DIR, 'generated', 'generated.d.ts');
 
 // Read the contents of the JSON schema
 const schemaString = await readFile(SCHEMA_PATH, 'utf8');
@@ -27,7 +27,7 @@ const schemaString = await readFile(SCHEMA_PATH, 'utf8');
 // Parse the JSON schema into an object
 const schema = await parse(schemaString);
 
-// Compile the the JSON schema into TypeScript typedefs
+// Compile the JSON schema into TypeScript typedefs
 const typeDefs = await compile(schema, 'ApiDocSchema');
 
 // Write the types to the expected output path

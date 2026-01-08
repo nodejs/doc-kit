@@ -5,7 +5,7 @@ import type {
   Property,
   SectionBase,
   Text,
-} from './generated.d.ts';
+} from './generated/generated.d.ts';
 
 export type Section = SectionBase &
   (Module | Class | Method | Property | Text) &

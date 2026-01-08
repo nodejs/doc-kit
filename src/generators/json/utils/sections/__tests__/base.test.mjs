@@ -182,7 +182,7 @@ describe('determines the correct type for a section', () => {
 describe('addDescriptionAndExamples', () => {
   test('description with `text`', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -212,7 +212,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('description with `inlineCode`', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -246,7 +246,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('description with `link`', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -289,7 +289,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('description with `emphasis`', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -319,7 +319,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('extracts single code example', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -345,7 +345,7 @@ describe('addDescriptionAndExamples', () => {
 
   test('extracts multiple code examples', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -385,7 +385,7 @@ describe('addDescriptionAndExamples', () => {
 describe('addStabilityStatus', () => {
   test('defined if provided', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -411,7 +411,7 @@ describe('addStabilityStatus', () => {
 
   test('undefined if not provided', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -439,7 +439,7 @@ describe('addStabilityStatus', () => {
 describe('addVersionProperties', () => {
   test('defined in provided', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 
@@ -482,7 +482,7 @@ describe('addVersionProperties', () => {
 
   test('undefined if not provided', () => {
     /**
-     * @type {import('../../../generated.d.ts')}
+     * @type {import('../../../generated/generated.d.ts')}
      */
     const base = {};
 

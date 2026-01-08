@@ -1,7 +1,6 @@
 'use strict';
 
 import { enforceArray } from '../../../../utils/array.mjs';
-import { GeneratorError } from '../../../../utils/generator-error.mjs';
 import { transformNodeToString } from '../../../../utils/unist.mjs';
 import { ENTRY_TO_SECTION_TYPE } from '../../constants.mjs';
 
@@ -28,7 +27,7 @@ function determineType(header) {
 
 /**
  * Adds a description to the section base.
- * @param {import('../../generated.d.ts').SectionBase} section
+ * @param {import('../../generated/generated.d.ts').SectionBase} section
  * @param {Array<import('mdast').RootContent>} nodes
  */
 export function addDescriptionAndExamples(section, nodes) {
@@ -58,7 +57,7 @@ export function addDescriptionAndExamples(section, nodes) {
 
 /**
  * Adds the stability property to the section.
- * @param {import('../../generated.d.ts').SectionBase} section
+ * @param {import('../../generated/generated.d.ts').SectionBase} section
  * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry
  */
 export function addStabilityStatus(section, entry) {
@@ -71,10 +70,6 @@ export function addStabilityStatus(section, entry) {
   let value = stability.index;
   if (typeof value !== 'number') {
     value = Number(value);
-
-    if (isNaN(value)) {
-      throw new GeneratorError(`Stability index ${stability.index} NaN`);
-    }
   }
 
   section.stability = {
@@ -85,7 +80,7 @@ export function addStabilityStatus(section, entry) {
 
 /**
  * Adds the properties relating to versioning to the section.
- * @param {import('../../generated.d.ts').SectionBase} section
+ * @param {import('../../generated/generated.d.ts').SectionBase} section
  * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry
  */
 export function addVersionProperties(section, entry) {
@@ -119,7 +114,7 @@ export function addVersionProperties(section, entry) {
  * section type that we have.
  *
  * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
- * @returns {import('../../generated.d.ts').SectionBase}
+ * @returns {import('../../generated/generated.d.ts').SectionBase}
  */
 export function createSectionBase(entry) {
   const [, ...nodes] = entry.content.children;
@@ -127,7 +122,7 @@ export function createSectionBase(entry) {
   const type = determineType(entry.heading);
 
   /**
-   * @type {import('../../generated.d.ts').SectionBase}
+   * @type {import('../../generated/generated.d.ts').SectionBase}
    */
   const base = {
     type,

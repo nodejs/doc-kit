@@ -3,7 +3,7 @@
 import assert from 'node:assert';
 import { test } from 'node:test';
 
-import { BASE_URL, DOC_NODE_VERSION } from '../../../../../constants.mjs';
+import { BASE_URL, NODE_VERSION } from '../../../../../constants.mjs';
 import { createModuleSection } from '../module.mjs';
 
 test('adds expected properties', () => {
@@ -13,14 +13,14 @@ test('adds expected properties', () => {
   const entry = { api: 'something' };
 
   /**
-   * @type {import('../../../generated.d.ts').Module}
+   * @type {import('../../../generated/generated.d.ts').Module}
    */
   const section = {};
-  createModuleSection(entry, section, DOC_NODE_VERSION);
+  createModuleSection(entry, section, NODE_VERSION);
 
   assert.deepStrictEqual(
     section['@see'],
-    `${BASE_URL}docs/${DOC_NODE_VERSION}/api/${entry.api}.html`
+    `${BASE_URL}docs/${NODE_VERSION}/api/${entry.api}.html`
   );
   assert.deepStrictEqual(section['@module'], `node:${entry.api}`);
 });

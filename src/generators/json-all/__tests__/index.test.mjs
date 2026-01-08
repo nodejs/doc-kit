@@ -61,7 +61,7 @@ test('combines json correctly', async () => {
   const version = 'v1.2.3';
 
   /**
-   * @type {Array<import('../../json/generated.d.ts').NodeJsAPIDocumentationSchema>}
+   * @type {Array<import('../../json/generated/generated.d.ts').NodeJsAPIDocumentationSchema>}
    */
   const jsonOutput = [
     {

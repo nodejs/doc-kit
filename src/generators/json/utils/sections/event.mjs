@@ -1,6 +1,5 @@
 'use strict';
 
-import { GeneratorError } from '../../../../utils/generator-error.mjs';
 import { transformNodesToString } from '../../../../utils/unist.mjs';
 import { EVENT_TYPE_DESCRIPTION_EXTRACTOR } from '../../constants.mjs';
 import { findParentSection } from '../findParentSection.mjs';
@@ -9,7 +8,7 @@ import { parseTypeList } from '../parseTypeList.mjs';
 /**
  * Parse the parameters for the event's callback method
  * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
- * @param {import('../../generated.d.ts').Event} section The event section
+ * @param {import('../../generated/generated.d.ts').Event} section The event section
  */
 export function parseParameters(entry, section) {
   const [, ...nodes] = entry.content.children;
@@ -33,7 +32,7 @@ export function parseParameters(entry, section) {
     }
 
     /**
-     * @type {import('../../generated.d.ts').MethodParameter}
+     * @type {import('../../generated/generated.d.ts').MethodParameter}
      */
     const parameter = {};
 
@@ -45,7 +44,7 @@ export function parseParameters(entry, section) {
       case 'inlineCode': {
         // First format
         if (parameterAst.children.length === 0) {
-          throw new GeneratorError(
+          throw new TypeError(
             `expected min 1 child, got ${parameterAst.children.length}`
           );
         }
@@ -54,7 +53,7 @@ export function parseParameters(entry, section) {
 
         const delimiter = parameterAst.children[1];
         if (delimiter && delimiter.type !== 'text') {
-          throw new GeneratorError(
+          throw new TypeError(
             `expected delimiter child type in list node to be 'text', got ${delimiter.type} (@name=${parameter['@name']})`
           );
         }
@@ -86,7 +85,7 @@ export function parseParameters(entry, section) {
               delimiter.value
             );
             if (value === null) {
-              throw new GeneratorError(
+              throw new TypeError(
                 `failed extracting type & description from '${delimiter.value}'`
               );
             }
@@ -145,7 +144,7 @@ export function parseParameters(entry, section) {
         break;
       }
       default: {
-        throw new GeneratorError(
+        throw new TypeError(
           `unexpected list node type: ${parameterAst.children[0].type}`
         );
       }
@@ -165,7 +164,7 @@ export function parseParameters(entry, section) {
 /**
  * Adds the properties expected in an event section to an object.
  * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
- * @param {import('../../generated.d.ts').Event} section The event section
+ * @param {import('../../generated/generated.d.ts').Event} section The event section
  */
 export function createEventSection(entry, section) {
   parseParameters(entry, section);

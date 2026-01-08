@@ -16,7 +16,7 @@ export const METHOD_TYPE_EXTRACTOR = /^{(.*)}( .*)?$/;
 // Returns: {string}
 // Returns {string}
 // Returns: {string} bla bla bla
-export const METHOD_RETURN_TYPE_EXTRACTOR = /^(?:R|r)eturns(:?) {(.*)}( .*)?$/;
+export const METHOD_RETURN_TYPE_EXTRACTOR = /^Returns(:?) {(.*)}( .*)?$/i;
 
 // Grabs the parameters from a method's signature
 // ex/ 'new buffer.Blob([sources[, options]])'.match(PARAM_EXPRESSION) === ['([sources[, options]])', '[sources[, options]]']

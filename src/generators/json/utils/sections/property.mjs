@@ -11,7 +11,7 @@ import { parseTypeList } from '../parseTypeList.mjs';
 /**
  * Parse the type of the property from the AST
  * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
- * @param {import('../../generated.d.ts').Property} section The method section
+ * @param {import('../../generated/generated.d.ts').Property} section The method section
  * @returns {import('mdast').Paragraph | undefined} The list element that contains the property's type information
  */
 export function parseType(entry, section) {
@@ -98,7 +98,7 @@ export function parseType(entry, section) {
  * where it is normally defined. If that's the case, let's append it to the
  * section's description.
  * @param {import('mdast').Paragraph} listElement The AST entry
- * @param {import('../../generated.d.ts').Property} section The method section
+ * @param {import('../../generated/generated.d.ts').Property} section The method section
  */
 export function parseDescription(listElement, section) {
   if (listElement.children.length === 0) {
@@ -135,7 +135,7 @@ export function parseDescription(listElement, section) {
 /**
  * Adds the properties expected in a method section to an object.
  * @param {import('../../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry The AST entry
- * @param {import('../../generated.d.ts').Property} section The method section
+ * @param {import('../../generated/generated.d.ts').Property} section The method section
  */
 export function createPropertySection(entry, section) {
   const listElement = parseType(entry, section);

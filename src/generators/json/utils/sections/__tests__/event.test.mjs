@@ -23,7 +23,7 @@ describe('parseParameters', () => {
     };
 
     /**
-     * @type {import('../../../generated.d.ts').Event}
+     * @type {import('../../../generated/generated.d.ts').Event}
      */
     const section = new Proxy(
       {},
@@ -70,7 +70,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -130,7 +130,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -204,7 +204,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -268,7 +268,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -319,7 +319,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -369,7 +369,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -428,7 +428,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -498,7 +498,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -558,7 +558,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -613,7 +613,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -679,7 +679,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 
@@ -735,7 +735,7 @@ describe('parseParameters', () => {
       };
 
       /**
-       * @type {import('../../../generated.d.ts').Event}
+       * @type {import('../../../generated/generated.d.ts').Event}
        */
       const section = {};
 

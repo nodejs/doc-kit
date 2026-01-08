@@ -4,7 +4,7 @@ import { findParentSection } from '../findParentSection.mjs';
 
 /**
  * Adds the properties expected in a class section to an object.
- * @param {import('../../generated.d.ts').Class} section The class section
+ * @param {import('../../generated/generated.d.ts').Class} section The class section
  */
 export function createClassSection(section) {
   const parent = findParentSection(section, 'module');

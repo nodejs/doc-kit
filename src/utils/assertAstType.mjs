@@ -1,7 +1,6 @@
 'use strict';
 
 import { enforceArray } from './array.mjs';
-import { GeneratorError } from './generator-error.mjs';
 
 /**
  * @typedef {import('mdast').BlockContentMap} BlockContentMap
@@ -25,15 +24,13 @@ import { GeneratorError } from './generator-error.mjs';
  */
 export function assertAstType(node, type) {
   if (node?.type === undefined) {
-    throw new GeneratorError(`expected node.type to be defined`);
+    throw new TypeError(`expected node.type to be defined`);
   }
 
   type = enforceArray(type);
 
   if (!type.includes(node.type)) {
-    throw new GeneratorError(
-      `expected node to have type ${type}, got ${node.type}`
-    );
+    throw new TypeError(`expected node to have type ${type}, got ${node.type}`);
   }
 
   return node;

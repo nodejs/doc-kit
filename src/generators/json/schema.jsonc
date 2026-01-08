@@ -6,7 +6,7 @@
    *  - Run `scripts/generate-json-types.mjs` and ensure there aren't type errors
    */
 
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "$id": "nodejs-api-doc@v2.0.0", // This should be kept in sync with the generator version
   "title": "Node.js API Documentation Schema",
   "readOnly": true,

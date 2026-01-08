@@ -8,7 +8,6 @@ import { createModuleSection } from './module.mjs';
 import { createPropertySection } from './property.mjs';
 import { BASE_URL } from '../../../../constants.mjs';
 import { buildHierarchy } from '../../../../utils/buildHierarchy.mjs';
-import { GeneratorError } from '../../../../utils/generator-error.mjs';
 import { SCHEMA_FILENAME } from '../../constants.mjs';
 
 /**
@@ -31,7 +30,7 @@ function createSectionProperties(entry, parent, version) {
    */
   let section;
   try {
-    section = createSectionBase(entry, parent?.type);
+    section = createSectionBase(entry);
 
     // Temporarily add the parent section to the section so we have access to
     //  it and can easily traverse through them when we need to
@@ -61,10 +60,10 @@ function createSectionProperties(entry, parent, version) {
 
         break;
       default:
-        throw new GeneratorError(`unhandled section type ${section.type}`);
+        throw new TypeError(`unhandled section type ${section.type}`);
     }
   } catch (err) {
-    if (err instanceof GeneratorError) {
+    if (err instanceof TypeError) {
       err.entry ??= entry;
     }
 
@@ -84,7 +83,7 @@ function createSectionProperties(entry, parent, version) {
  * @param {ApiDocMetadataEntry} head The head metadata entry
  * @param {Array<ApiDocMetadataEntry>} entries The list of metadata entries
  * @param {string} version The version of Node.js we're targetting
- * @returns {import('../../generated.d.ts').NodeJsAPIDocumentationSchema}
+ * @returns {import('../../generated/generated.d.ts').NodeJsAPIDocumentationSchema}
  */
 export function createSection(head, entries, version) {
   const entryHierarchy = buildHierarchy(entries);
@@ -100,7 +99,7 @@ export function createSection(head, entries, version) {
   );
 
   if (section.type !== 'module' && section.type !== 'text') {
-    throw new GeneratorError(
+    throw new TypeError(
       `expected root section to be a module or text, got ${section.type}`,
       { entry: head }
     );
