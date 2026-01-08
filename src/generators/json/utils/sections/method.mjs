@@ -80,12 +80,13 @@ export function parseParameterListNode({ children }) {
     }
     case 'text': {
       // paragraph is something like: "Returns: {integer}""
-
       const returnRegex = METHOD_RETURN_TYPE_EXTRACTOR.exec(firstChild.value);
+
       if (returnRegex) {
         const [, , type, description] = returnRegex;
         parameter['@type'] = type.split('|').map(type => type.trim());
         parameter.description = description?.trim();
+        parameter.returnType = true;
 
         // Any nodes after this one should be part of the description
         descriptionIndex = 1;
@@ -119,7 +120,7 @@ export function parseParameterListNode({ children }) {
           if (types.length === 0) {
             parameter['@type'] = 'any';
           } else {
-            parameter['@type'] = types.length === 1 ? types[0] : types;
+            parameter['@type'] = types;
           }
 
           descriptionIndex = endingIndex + 1;
@@ -138,6 +139,10 @@ export function parseParameterListNode({ children }) {
     default: {
       throw new TypeError(`unexpected type ${firstChild.type}`);
     }
+  }
+
+  if (Array.isArray(parameter['@type']) && parameter['@type'].length === 1) {
+    parameter['@type'] = parameter['@type'][0];
   }
 
   if (descriptionIndex && descriptionIndex < paragraph.children.length) {

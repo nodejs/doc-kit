@@ -124,6 +124,153 @@ describe('parseSignatures', () => {
     });
   });
 
+  test('`something.regexExtractedReturnType()`', () => {
+    /**
+     * ### `something.regexExtractedReturnType()`
+     *
+     * * this line should be ignored
+     * * Returns: {integer} something something something
+     */
+
+    /**
+     * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+     */
+    const entry = {
+      heading: {
+        data: {
+          type: 'classMethod',
+          text: '`something.regexExtractedReturnType()`',
+        },
+      },
+      content: {
+        type: 'root',
+        children: [
+          undefined, // this should be ignore
+          {
+            type: 'list',
+            children: [
+              {
+                type: 'listItem',
+                children: [
+                  {
+                    type: 'paragraph',
+                    children: [
+                      {
+                        type: 'text',
+                        value: 'this line should be ignored',
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'listItem',
+                children: [
+                  {
+                    type: 'paragraph',
+                    children: [
+                      {
+                        type: 'text',
+                        value:
+                          'Returns: {integer} something something something',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    /**
+     * @type {import('../../../generated/generated.d.ts').Method}
+     */
+    const section = {};
+
+    parseSignatures(entry, section);
+
+    assert.deepStrictEqual(section, {
+      signatures: [
+        {
+          '@returns': {
+            '@type': 'integer',
+            description: 'something something something',
+          },
+          parameters: undefined,
+        },
+      ],
+    });
+  });
+
+  test('`something.doThingWithUndefinedReturnType()`', () => {
+    /**
+     * ### `something.doThingWithReturnType()`
+     *
+     * * Returns: `undefined`
+     */
+
+    /**
+     * @type {import('../../../../../utils/buildHierarchy.mjs').HierarchizedEntry}
+     */
+    const entry = {
+      heading: {
+        data: {
+          type: 'classMethod',
+          text: '`something.doThingWithUndefinedReturnType()`',
+        },
+      },
+      content: {
+        type: 'root',
+        children: [
+          undefined, // this should be ignore
+          {
+            type: 'list',
+            children: [
+              {
+                type: 'listItem',
+                children: [
+                  {
+                    type: 'paragraph',
+                    children: [
+                      {
+                        type: 'text',
+                        value: 'Returns: ',
+                      },
+                      {
+                        type: 'inlineCode',
+                        value: 'undefined',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    /**
+     * @type {import('../../../generated/generated.d.ts').Method}
+     */
+    const section = {};
+
+    parseSignatures(entry, section);
+
+    assert.deepStrictEqual(section, {
+      signatures: [
+        {
+          '@returns': {
+            '@type': 'undefined',
+          },
+          parameters: undefined,
+        },
+      ],
+    });
+  });
+
   test('`something.doThingWithoutParameterList(parameter)`', () => {
     /**
      * ### `something.doThingWithoutParameterList()`
