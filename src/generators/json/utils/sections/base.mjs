@@ -52,7 +52,7 @@ export function addDescriptionAndExamples(section, nodes) {
 
   if (section.description) {
     section.description = section.description.trim();
-  }
+  section.description &&= section.description.trim();
 }
 
 /**

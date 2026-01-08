@@ -8,10 +8,8 @@ import { enforceArray } from '../../../utils/array.mjs';
  * @param {import('../generated/generated.d.ts').SectionBase['type'] | Array<import('../generated/generated.d.ts').SectionBase['type']>} type
  * @returns {import('../types.d.ts').Section | undefined}
  */
-export function findParentSection(section, type) {
+export function findParentSection({ parent }, type) {
   type = enforceArray(type);
-
-  let parent = section.parent;
 
   while (parent) {
     if (type.includes(parent.type)) {

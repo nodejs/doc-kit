@@ -35,7 +35,7 @@ export default {
    * @returns {Promise<object>}
    */
   async generate(input, { version, output }) {
-    const versionString = `v${version.toString()}`;
+    const versionString = `v${version.raw}`;
 
     const generatedValue = {
       $schema: `${BASE_URL}docs/${versionString}/api/${SCHEMA_FILENAME}`,
