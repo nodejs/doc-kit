@@ -188,8 +188,10 @@ export function parseParameterList(entry) {
     const parameter = parseParameterListNode(listItem);
 
     if (parameter.returnType) {
-      // Return type
-      returns = { ...parameter, returnType: undefined };
+      // Return type, remove the returnType property
+      const { returnType: _, ...rest } = parameter;
+
+      returns = rest;
     } else {
       parameters[parameter['@name']] = parameter;
     }
@@ -234,7 +236,7 @@ export function createSignatures(
       // Check for default value here
       const equalSignPos = parameterName.indexOf('=');
       if (equalSignPos !== -1) {
-        defaultValue = parameterName.substring(equalSignPos).trim();
+        defaultValue = parameterName.substring(equalSignPos + 1).trim();
 
         parameterName = parameterName.substring(0, equalSignPos);
       }
@@ -260,7 +262,7 @@ export function createSignatures(
 
     section.signatures[signatureIndex] = {
       '@returns': baseSignature['@returns'],
-      parameters: signatureParameters,
+      parameters: signatureParameters.length ? signatureParameters : undefined,
     };
 
     signatureIndex++;
@@ -303,7 +305,7 @@ export function parseSignatures(entry, section) {
     entry.heading.data.text
       .substring(1, entry.heading.data.text.length - 1)
       .match(METHOD_PARAM_EXPRESSION) || [];
-  if (!parametersNames || !parameterList.parameters) {
+  if (!parametersNames && !parameterList.parameters) {
     // Method doesn't have any parameters, return early
     section.signatures.push(baseSignature);
     return;
@@ -312,13 +314,13 @@ export function parseSignatures(entry, section) {
   /**
    * @example ['[sources[', 'options]]']`
    */
-  parametersNames = parametersNames.split(',');
+  parametersNames = parametersNames?.split(',');
 
   createSignatures(
     section,
     baseSignature,
-    parametersNames,
-    parameterList.parameters
+    parametersNames ?? [],
+    parameterList.parameters ?? []
   );
 }
 

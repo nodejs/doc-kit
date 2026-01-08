@@ -35,10 +35,8 @@ export default {
    * @returns {Promise<object>}
    */
   async generate(input, { version, output }) {
-    const versionString = `v${version.raw}`;
-
     const generatedValue = {
-      $schema: `${BASE_URL}docs/${versionString}/api/${SCHEMA_FILENAME}`,
+      $schema: `${BASE_URL}docs/${version.raw}/api/${SCHEMA_FILENAME}`,
       modules: [],
       text: [],
     };
@@ -57,7 +55,7 @@ export default {
     });
 
     if (output) {
-      const schema = generateJsonSchema(versionString);
+      const schema = generateJsonSchema(version.raw);
 
       // Write the parsed JSON schema to the output directory
       await writeFile(join(output, SCHEMA_FILENAME), JSON.stringify(schema));

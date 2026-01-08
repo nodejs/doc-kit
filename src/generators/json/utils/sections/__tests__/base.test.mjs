@@ -404,8 +404,8 @@ describe('addStabilityStatus', () => {
     });
 
     assert.deepStrictEqual(base.stability, {
-      value: 0,
-      text: 'description',
+      index: 0,
+      description: 'description',
     });
   });
 
@@ -430,8 +430,8 @@ describe('addStabilityStatus', () => {
     });
 
     assert.deepStrictEqual(base.stability, {
-      value: 0,
-      text: 'description',
+      index: 0,
+      description: 'description',
     });
   });
 });

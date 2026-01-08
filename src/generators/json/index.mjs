@@ -52,7 +52,7 @@ export default {
         throw new TypeError(`no grouped nodes found for ${head.api}`);
       }
 
-      return createSection(head, nodes, `v${version.toString()}`);
+      return createSection(head, nodes, version.raw);
     };
 
     /**
