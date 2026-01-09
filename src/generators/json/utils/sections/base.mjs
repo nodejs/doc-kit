@@ -41,7 +41,8 @@ export function addDescriptionAndExamples(section, nodes) {
       } else {
         section['@example'] = node.value;
       }
-
+      const examples = [...enforceArray(section['@example']), node.value];
+      section['@example'] = examples.length === 1 ? examples[0] : examples;
       return;
     }
 
