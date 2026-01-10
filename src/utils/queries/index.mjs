@@ -205,6 +205,8 @@ createQueries.QUERIES = {
   unixManualPage: /\b([a-z.]+)\((\d)([a-z]?)\)/g,
   // ReGeX for determing a typed list's non-property names
   typedListStarters: /^(Returns|Extends|Type):?\s*/,
+  // ReGeX for determining if a node gives a property's default value
+  defaultExpression: /^(?:D|d)efault(?:s|):$/,
 };
 
 createQueries.UNIST = {

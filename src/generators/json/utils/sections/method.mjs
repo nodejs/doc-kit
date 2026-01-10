@@ -1,163 +1,9 @@
 'use strict';
 
-import {
-  assertAstType,
-  assertAstTypeOptional,
-} from '../../../../utils/assertAstType.mjs';
-import { transformNodesToString } from '../../../../utils/unist.mjs';
-import {
-  METHOD_PARAM_EXPRESSION,
-  METHOD_RETURN_TYPE_EXTRACTOR,
-  METHOD_TYPE_EXTRACTOR,
-} from '../../constants.mjs';
+import { parseParameterList } from '../../../../utils/parseParameterList.mjs';
+import { METHOD_PARAM_EXPRESSION } from '../../constants.mjs';
 import { createParameterGroupings } from '../createParameterGroupings.mjs';
 import { findParentSection } from '../findParentSection.mjs';
-import { parseTypeList } from '../parseTypeList.mjs';
-
-/**
- * Handles each node in a parameter list
- * @param {import('mdast').ListItem} param0
- * @returns {import('../../generated/generated.d.ts').MethodParameter | (import('../../generated/generated.d.ts').MethodReturnType & { returnType: true })}
- */
-export function parseParameterListNode({ children }) {
-  /**
-   * A parameter's type declaration (ex/ "`asd` {string} Description of asd")
-   * or the method's return value (ex/ "Returns: {integer}").
-   */
-  const paragraph = assertAstType(children[0], 'paragraph');
-
-  // TODO: if the type of the parameter is `object`, sometimes it's followed
-  // by a `list` node that contains the properties expected on that object.
-  // I'd really like those to be included in the json output, but for now
-  // they're not going to be for simplicitly's sakes (they still should be in
-  // the description of the method though).
-
-  /**
-   * @type {import('../../generated/generated.d.ts').MethodParameter | import('../../generated/generated.d.ts').MethodReturnType}
-   */
-  const parameter = {};
-
-  let descriptionIndex;
-
-  const firstChild = paragraph.children[0];
-  switch (firstChild.type) {
-    case 'inlineCode': {
-      // paragraph is something like "`asd` {string} Description of asd"
-      parameter['@name'] = firstChild.value;
-
-      const spacer = assertAstTypeOptional(paragraph.children[1], 'text');
-      if (!spacer) {
-        break;
-      }
-
-      const trimmedSpacer = spacer.value.trim().replaceAll('\n', '');
-
-      const match = METHOD_TYPE_EXTRACTOR.exec(trimmedSpacer);
-      if (match) {
-        parameter['@type'] = match[1].split('|').map(type => type.trim());
-        parameter.description = match[2].trim();
-
-        // Any nodes after this one should be part of the description
-        descriptionIndex = 1;
-
-        break;
-      }
-
-      // Spacer is just a spacer, either literally just ' ' or like ': ',
-      // let's ignore it and try getting type + description from nodes after
-      // it
-      const { types, endingIndex } = parseTypeList(paragraph.children, 2);
-
-      if (types.length === 0) {
-        parameter['@type'] = 'any';
-      } else {
-        parameter['@type'] = types.length === 1 ? types[0] : types;
-      }
-
-      descriptionIndex = endingIndex + 1;
-
-      break;
-    }
-    case 'text': {
-      // paragraph is something like: "Returns: {integer}""
-      const returnRegex = METHOD_RETURN_TYPE_EXTRACTOR.exec(firstChild.value);
-
-      if (returnRegex) {
-        const [, , type, description] = returnRegex;
-        parameter['@type'] = type.split('|').map(type => type.trim());
-        parameter.description = description?.trim();
-        parameter.returnType = true;
-
-        // Any nodes after this one should be part of the description
-        descriptionIndex = 1;
-
-        break;
-      }
-
-      if (firstChild.value !== 'Returns: ') {
-        // Not relevant to us
-        break;
-      }
-
-      parameter.returnType = true;
-
-      if (paragraph.children.length < 2) {
-        throw new TypeError(
-          `expected at least 2 children in a method's return type`
-        );
-      }
-
-      switch (paragraph.children[1].type) {
-        case 'inlineCode': {
-          // Returns: undefined
-          parameter['@type'] = paragraph.children[1].value;
-          descriptionIndex = 2;
-
-          break;
-        }
-        case 'link': {
-          const { types, endingIndex } = parseTypeList(paragraph.children, 1);
-          if (types.length === 0) {
-            parameter['@type'] = 'any';
-          } else {
-            parameter['@type'] = types;
-          }
-
-          descriptionIndex = endingIndex + 1;
-
-          break;
-        }
-        default: {
-          throw new TypeError(
-            `unexpected child type ${paragraph.children[1].type}`
-          );
-        }
-      }
-
-      break;
-    }
-    default: {
-      throw new TypeError(`unexpected type ${firstChild.type}`);
-    }
-  }
-
-  if (Array.isArray(parameter['@type']) && parameter['@type'].length === 1) {
-    parameter['@type'] = parameter['@type'][0];
-  }
-
-  if (descriptionIndex && descriptionIndex < paragraph.children.length) {
-    parameter.description ??= '';
-    parameter.description += transformNodesToString(
-      paragraph.children.slice(descriptionIndex)
-    );
-  }
-
-  if (parameter.description) {
-    parameter.description = parameter.description.trim();
-  }
-
-  return parameter;
-}
 
 /**
  * Parses the parameters that the method accepts
@@ -168,7 +14,7 @@ export function parseParameterListNode({ children }) {
  * returns?: import('../../generated/generated.d.ts').MethodReturnType
  * } | undefined}
  */
-export function parseParameterList(entry) {
+export function parseParameters(entry) {
   // Ignore header
   const [, ...nodes] = entry.content.children;
 
@@ -189,18 +35,29 @@ export function parseParameterList(entry) {
    */
   let returns = { '@type': 'any' };
 
-  listNode.children.forEach(listItem => {
-    const parameter = parseParameterListNode(listItem);
+  parseParameterList(listNode).forEach(
+    ({ name, type, description, isReturnType }) => {
+      if (!name) {
+        // Parameter doesn't have a name so we can't use it
+        return;
+      }
 
-    if (parameter.returnType) {
-      // Return type, remove the returnType property
-      const { returnType: _, ...rest } = parameter;
+      /**
+       * @type {import('../../generated/generated.d.ts').MethodParameter}
+       */
+      const parameter = {
+        '@name': name,
+        '@type': type.length === 1 ? type[0] : type,
+        description,
+      };
 
-      returns = rest;
-    } else {
-      parameters[parameter['@name']] = parameter;
+      if (isReturnType) {
+        returns = parameter;
+      } else {
+        parameters[name] = parameter;
+      }
     }
-  });
+  );
 
   return {
     parameters,
@@ -292,7 +149,7 @@ export function parseSignatures(entry, section) {
 
   // Parse the parameters defined in the parameter list and grab the return
   // type (if the list actually exists and those are present in it)
-  const parameterList = parseParameterList(entry) ?? {};
+  const parameterList = parseParameters(entry) ?? {};
 
   if (parameterList.returns) {
     // Return type was defined in the parameter list, let's update the base
