@@ -5,6 +5,7 @@
     "**/fixtures",
     "src/generators/legacy-html/assets",
     "src/generators/web/ui",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "scripts/"
   ]
 }

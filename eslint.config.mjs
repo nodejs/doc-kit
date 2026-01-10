@@ -63,6 +63,14 @@ export default defineConfig([
       globals: { ...globals.nodeBuiltin },
     },
     rules: {
+      'no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
       'jsdoc/check-alignment': 'error',
       'jsdoc/check-indentation': 'error',
       'jsdoc/require-jsdoc': [

@@ -1,17 +1,6 @@
 import { ListItem } from '@types/mdast';
 
 /**
- * Represents an entry in a hierarchical structure, extending from ApiDocMetadataEntry.
- * It includes children entries organized in a hierarchy.
- */
-export interface HierarchizedEntry extends ApiDocMetadataEntry {
-  /**
-   * List of child entries that are part of this entry's hierarchy.
-   */
-  hierarchyChildren: ApiDocMetadataEntry[];
-}
-
-/**
  * Contains metadata related to changes, additions, removals, and deprecated statuses of an entry.
  */
 export interface Meta {

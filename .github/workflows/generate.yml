@@ -106,6 +106,9 @@ jobs:
             input: './node/doc/api/*.md'
             compare: file-size
 
+          - target: json
+            input: './node/doc/api/*.md'
+
           - target: llms-txt
             input: './node/doc/api/*.md'
             compare: file-size
