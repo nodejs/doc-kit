@@ -39,10 +39,15 @@ describe('generator output complies with json schema', () => {
         releases: [],
         gitRef: 'a'.repeat(40),
         threads: 1,
+        chunkSize: 20,
         typeMap: {},
       });
 
-      assert.ok(validator.validate(result[0], schema).valid);
+      const validatorResult = validator.validate(result[0][0], schema);
+      if (!validatorResult.valid) {
+        console.log(validatorResult.errors);
+        assert.fail('does not conform to json schema');
+      }
     });
   }
 });

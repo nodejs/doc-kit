@@ -17,8 +17,9 @@ import { groupNodesByModule } from '../../utils/generators.mjs';
  * config.
  *
  * @typedef {Array<ApiDocMetadataEntry>} Input
+ * @typedef {Array<import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema>} Output
  *
- * @type {GeneratorMetadata<Input, Array<import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema>>}
+ * @type {GeneratorMetadata<Input, Output>}
  */
 export default {
   name: 'json',
@@ -33,64 +34,71 @@ export default {
   dependsOn: 'metadata',
 
   /**
-   * Generates a JSON file.
+   * Process a chunk of items in a worker thread.
+   * Builds JSON sections - FS operations happen in generate().
+   *
+   * Each item is pre-grouped {head, nodes} - no need to
+   * recompute groupNodesByModule for every chunk.
+   *
+   * @param slicedInput
+   * @param itemIndices
+   * @param root0
+   * @param root0.version
+   * @returns {Promise<Output>} JSON sections for each processed module
+   */
+  async processChunk(slicedInput, itemIndices, { version }) {
+    /**
+     * @type {Output}
+     */
+    const results = new Array(itemIndices.length);
+
+    for (let i = 0; i < itemIndices.length; i++) {
+      const { head, nodes } = slicedInput[itemIndices[i]];
+
+      results[i] = createSection(head, nodes, version.raw);
+    }
+
+    return results;
+  },
+
+  /**
+   * Generates a JSON file
    *
    * @param {Input} input
    * @param {Partial<GeneratorOptions>} param1
-   * @returns {Promise<Array<import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema>>}
    */
-  async generate(input, { output, version }) {
+  async *generate(input, { output, version, worker }) {
     const groupedModules = groupNodesByModule(input);
 
-    /**
-     * @param {ApiDocMetadataEntry} head
-     * @returns {import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema}
-     */
-    const processModuleNodes = head => {
-      const nodes = groupedModules.get(head.api);
-      if (!nodes) {
-        throw new TypeError(`no grouped nodes found for ${head.api}`);
-      }
-
-      return createSection(head, nodes, version.raw);
-    };
-
-    /**
-     * @type {Array<import('./generated/generated.d.ts').NodeJsAPIDocumentationSchema>}
-     */
-    const generatedValues = [];
-
-    // Gets the first nodes of each module, which is considered the "head"
     const headNodes = input.filter(node => node.heading.depth === 1);
 
-    const writeFilePromises = output ? new Array(headNodes.length) : [];
+    // Create sliced input: each item contains head + its module's entries
+    const entries = headNodes.map(head => ({
+      head,
+      nodes: groupedModules.get(head.api),
+    }));
 
-    for (let i = 0; i < headNodes.length; i++) {
-      const node = headNodes[i];
-
-      // Get the json for the node's section
-      const section = processModuleNodes(node);
-
-      generatedValues.push(section);
-
+    for await (const chunkResult of worker.stream(entries, entries, {
+      version,
+    })) {
       if (output) {
-        writeFilePromises[i] = writeFile(
-          join(output, `${node.api}.json`),
-          JSON.stringify(section)
-        );
+        for (const section of chunkResult) {
+          await writeFile(
+            join(output, `${section.api}.json`),
+            JSON.stringify(section)
+          );
+        }
       }
+
+      yield chunkResult;
     }
 
     if (output) {
-      await Promise.all(writeFilePromises);
-
       // Parse the JSON schema into an object
       const schema = await parseSchema();
 
       // Write the parsed JSON schema to the output directory
       await writeFile(join(output, SCHEMA_FILENAME), JSON.stringify(schema));
     }
-
-    return generatedValues;
   },
 };
