@@ -14,6 +14,15 @@ main {
   code {
     font-size: inherit;
     font-weight: inherit;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  @media (min-width: 768px) {
+    code {
+      overflow-wrap: normal;
+      word-break: normal;
+    }
   }
 
   /* Don't overflow the parent */
@@ -35,8 +44,9 @@ main {
   /* Change history positioning */
   div:has(> h1, > h2, > h3, > h4, > h5, > h6) {
     display: flex;
-    align-items: center;
+    align-items: start;
     gap: 8px;
+    flex-direction: column;
 
     > h1,
     > h2,
@@ -45,13 +55,49 @@ main {
     > h5,
     > h6 {
       flex: 1;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
+      font-size: 24px;
+      line-height: 32px;
+      margin-bottom: 8px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .change-history {
-      margin-left: auto;
+      margin-left: none;
+
+      div[role="menu"] {
+        left: 0;
+      }
+    }
+  }
+
+  @media (min-width: 768px) {
+    div:has(> h1, > h2, > h3, > h4, > h5, > h6) {
+      flex-direction: row;
+      align-items: center;
+
+      > h1,
+      > h2,
+      > h3,
+      > h4,
+      > h5,
+      > h6 {
+        margin-bottom: none;
+        overflow-wrap: normal;
+        word-break: normal;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+
+      .change-history {
+        margin-left: auto;
+
+        div[role="menu"] {
+          left: initial;
+        }
+      }
     }
   }
 
