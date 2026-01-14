@@ -55,10 +55,7 @@ main {
     > h5,
     > h6 {
       flex: 1;
-      font-size: 24px;
-      line-height: 32px;
       margin-bottom: 8px;
-      font-weight: 500;
       overflow-wrap: anywhere;
       word-break: break-word;
     }
