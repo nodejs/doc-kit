@@ -63,7 +63,7 @@ main {
     .change-history {
       margin-left: 0;
 
-      div[role="menu"] {
+      div[role='menu'] {
         left: 0;
       }
     }
@@ -91,7 +91,7 @@ main {
       .change-history {
         margin-left: auto;
 
-        div[role="menu"] {
+        div[role='menu'] {
           left: initial;
         }
       }
