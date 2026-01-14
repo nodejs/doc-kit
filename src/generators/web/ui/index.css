@@ -61,7 +61,7 @@ main {
     }
 
     .change-history {
-      margin-left: none;
+      margin-left: 0;
 
       div[role="menu"] {
         left: 0;
@@ -80,7 +80,7 @@ main {
       > h4,
       > h5,
       > h6 {
-        margin-bottom: none;
+        margin-bottom: 0;
         overflow-wrap: normal;
         word-break: normal;
         white-space: nowrap;
