@@ -32,6 +32,7 @@ export default ({ versions, pathname, currentVersion, docPages }) => (
     ]}
     onSelect={redirect}
     as={props => <a {...props} rel="prefetch" />}
+    title="Navigation"
   >
     <div>
       <Select
