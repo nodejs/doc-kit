@@ -5,11 +5,21 @@ import { JSX_IMPORTS } from '../web/constants.mjs';
  *
  * @see https://nodejs.org/api/documentation.html#stability-index
  */
+
+// Alert level constants — prefer importing from UI library if available
+// but not available for now
+export const ALERT_LEVELS = {
+  DANGER: 'danger',
+  WARNING: 'warning',
+  INFO: 'info',
+  SUCCESS: 'success',
+};
+
 export const STABILITY_LEVELS = [
-  'danger', // (0) Deprecated
-  'warning', // (1) Experimental
-  'success', // (2) Stable
-  'info', // (3) Legacy
+  ALERT_LEVELS.DANGER, // (0) Deprecated
+  ALERT_LEVELS.WARNING, // (1) Experimental
+  ALERT_LEVELS.SUCCESS, // (2) Stable
+  ALERT_LEVELS.INFO, // (3) Legacy
 ];
 
 // How deep should the Table of Contents go?
@@ -151,4 +161,12 @@ export const TYPES_WITH_METHOD_SIGNATURES = [
   'classMethod',
 ];
 
+// Regex to trim leading whitespace and colons from strings
 export const TRIMMABLE_PADDING_REGEX = /^[\s:]+/;
+
+// Patterns to map deprecation "Type" text to AlertBox levels.
+// Order matters: first match wins.
+export const DEPRECATION_TYPE_PATTERNS = [
+  { pattern: /^(Documentation|Compilation)/i, level: ALERT_LEVELS.INFO },
+  { pattern: /^(Runtime|Application)/i, level: ALERT_LEVELS.WARNING },
+];
