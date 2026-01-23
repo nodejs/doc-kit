@@ -258,7 +258,7 @@ export const processEntry = (entry, remark) => {
 /**
  * Builds the overall document layout tree
  * @param {Array<ApiDocMetadataEntry>} entries - API documentation metadata entries
- * @param {ReturnType<import('./buildJSXProps.mjs').buildSideBarProps>} sideBarProps - Props for the sidebar component
+ * @param {ReturnType<import('./buildBarProps.mjs').buildSideBarProps>} sideBarProps - Props for the sidebar component
  * @param {ReturnType<buildMetaBarProps>} metaBarProps - Props for the meta bar component
  * @param {import('unified').Processor} remark - The remark processor
  */
