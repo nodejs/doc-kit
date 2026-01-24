@@ -1,6 +1,6 @@
-import { buildHierarchy } from './buildHierarchy.mjs';
 import { parseList } from './parseList.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
+import { buildHierarchy } from '../../../utils/buildHierarchy.mjs';
 import { getRemarkRehype } from '../../../utils/remark.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import { SECTION_TYPE_PLURALS, UNPROMOTED_KEYS } from '../constants.mjs';
@@ -35,7 +35,7 @@ export const createSectionBuilder = () => {
 
   /**
    * Creates metadata from a hierarchized entry.
-   * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry to create metadata from.
+   * @param {import('../../../utils/buildHierarchy.mjs').HierarchizedEntry} entry - The entry to create metadata from.
    * @returns {import('../types.d.ts').Meta | undefined} The created metadata, or undefined if all fields are empty.
    */
   const createMeta = ({

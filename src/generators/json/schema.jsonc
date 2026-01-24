@@ -1,0 +1,419 @@
+{
+  /**
+   * NOTE: if you modify this, please:
+   *  - Bump the version in the $id property
+   *  - Bump the version of the `json` and `json-all` generator.
+   *  - Run `scripts/generate-json-types.mjs` and ensure there aren't type errors
+   */
+
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "nodejs-api-doc@v2.0.0", // This should be kept in sync with the generator version
+  "title": "Node.js API Documentation Schema",
+  "readOnly": true,
+
+  "allOf": [
+    { "$ref": "#/definitions/DocumentRoot" },
+    {
+      "oneOf": [
+        // Top of a document can either be a module (for api declarations) or
+        // text (for general docs on things)
+        { "$ref": "#/definitions/Module" },
+        { "$ref": "#/definitions/Text" },
+      ],
+    },
+  ],
+
+  "definitions": {
+    "DocumentRoot": {
+      "type": "object",
+      "description": "Common properties found at the root of each document.",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "The path to the Markdown source used to generate this document. It is relative to the Node.js repository root.",
+          "examples": ["doc/api/net.md"],
+        },
+      },
+      "required": ["source"],
+    },
+
+    "SectionBase": {
+      "type": "object",
+      "description": "Common properties found in each section of a document.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["module", "class", "method", "property", "event", "text"],
+          "description": "Type of the section",
+        },
+        "@name": {
+          "type": "string",
+          "description": "https://jsdoc.app/tags-name",
+          "examples": ["Buffer", "Addons"],
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the section.",
+        },
+        "@see": {
+          "type": "string",
+          "description": "https://jsdoc.app/tags-see",
+        },
+        "text": {
+          "type": "array",
+          "description": "Sections that just hold further text on this section.",
+          "items": { "$ref": "#/definitions/Text" },
+        },
+        "@example": {
+          "description": "https://jsdoc.app/tags-example",
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+              },
+            },
+          ],
+        },
+        "@deprecated": {
+          "type": "array",
+          "description": "https://jsdoc.app/tags-deprecated",
+          "items": { "$ref": "#/definitions/NodeCoreVersion" },
+        },
+        "stability": { "$ref": "#/definitions/Stability" },
+        "changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Change",
+          },
+          "description": "The changes this API has underwent.",
+        },
+        "@since": {
+          "type": "array",
+          "description": "https://jsdoc.app/tags-since",
+          "items": { "$ref": "#/definitions/NodeCoreVersion" },
+        },
+        "napiVersion": {
+          "type": "array",
+          "items": { "type": "number" },
+        },
+        "removedIn": {
+          "type": "array",
+          "description": "Versions that this was removed in.",
+          "items": { "$ref": "#/definitions/NodeCoreVersion" },
+        },
+      },
+      "required": ["type", "@name"],
+    },
+
+    "Module": {
+      "description": "A JavaScript module.",
+      "allOf": [
+        { "$ref": "#/definitions/SectionBase" },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["module"],
+            },
+            "@module": {
+              "type": "string",
+              "description": "https://jsdoc.app/tags-module",
+              "examples": ["node:buffer"],
+            },
+            "classes": {
+              "type": "array",
+              "description": "Classes exported from this module.",
+              "items": { "$ref": "#/definitions/Class" },
+            },
+            "methods": {
+              "type": "array",
+              "description": "Methods exported from this module.",
+              "items": { "$ref": "#/definitions/Method" },
+            },
+            "globals": {
+              "type": "array",
+              "description": "APIs that are available globally.",
+              "items": {
+                "oneOf": [
+                  { "$ref": "#/definitions/Class" },
+                  { "$ref": "#/definitions/Method" },
+                ],
+              },
+            },
+            "properties": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Property" },
+            },
+            "events": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Event" },
+            },
+          },
+          "required": ["type", "@module", "@see"],
+          "additionalProperties": false,
+        },
+      ],
+    },
+
+    "Class": {
+      "allOf": [
+        { "$ref": "#/definitions/SectionBase" },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["class"],
+            },
+            "@constructor": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/MethodSignature" },
+            },
+            "methods": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Method" },
+            },
+            "staticMethods": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Method" },
+            },
+            "properties": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Property" },
+            },
+            "events": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Event" },
+            },
+          },
+          "required": ["type"],
+          "additionalProperties": false,
+        },
+      ],
+    },
+
+    "Method": {
+      "description": "A JavaScript function.",
+      "allOf": [
+        { "$ref": "#/definitions/SectionBase" },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["method"],
+            },
+            "signatures": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/MethodSignature" },
+            },
+          },
+          "required": ["type", "signatures"],
+          "additionalProperties": false,
+        },
+      ],
+    },
+
+    "MethodSignature": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/MethodParameter" },
+        },
+        "@returns": {
+          "$ref": "#/definitions/MethodReturnType",
+        },
+      },
+      "required": ["@returns"],
+      "additionalProperties": false,
+    },
+
+    "MethodParameter": {
+      "type": "object",
+      "properties": {
+        "@name": {
+          "type": "string",
+          "description": "Name of the parameter.",
+        },
+        "@type": {
+          "description": "Type of the parameter",
+          "oneOf": [
+            {
+              "type": "string",
+              "examples": ["string"],
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+              },
+              "minItems": 1,
+            },
+          ],
+        },
+        "description": {
+          "type": "string",
+        },
+        "@default": {
+          "type": "string",
+          "description": "The parameter's default value",
+          "examples": ["foo"],
+        },
+      },
+      "required": ["@name", "@type"],
+      "additionalProperties": false,
+    },
+
+    "MethodReturnType": {
+      "type": "object",
+      "description": "A method signature's return type.",
+      "properties": {
+        "description": {
+          "type": "string",
+        },
+        "@type": {
+          "description": "The method signature's return type.",
+          "oneOf": [
+            {
+              "type": "string",
+              "examples": ["string"],
+            },
+            {
+              "type": "array",
+              "items": { "type": "string" },
+              "examples": [["string", "Promise<string>"]],
+              "minItems": 1,
+            },
+          ],
+        },
+      },
+      "required": ["@type"],
+      "additionalProperties": false,
+    },
+
+    "Global": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+    },
+
+    "Property": {
+      "description": "A property on a JavaScript object or class.",
+      "allOf": [
+        { "$ref": "#/definitions/SectionBase" },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["property"],
+            },
+            "@type": {
+              "description": "JavaScript type of the property.",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "examples": ["string"],
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                  },
+                  "minItems": 1,
+                },
+              ],
+            },
+            "mutable": {
+              "type": "boolean",
+              "description": "Is this property modifiable by user code?",
+              "default": false,
+            },
+          },
+          "required": ["type"],
+          "additionalProperties": false,
+        },
+      ],
+    },
+
+    "Event": {
+      "description": "An event that can be emitted by the parent object or class.",
+      "allOf": [
+        { "$ref": "#/definitions/SectionBase" },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["event"],
+            },
+            "parameters": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/MethodParameter" },
+            },
+          },
+          "required": ["type", "parameters"],
+          "additionalProperties": false,
+        },
+      ],
+    },
+
+    "Text": {
+      "allOf": [{ "$ref": "#/definitions/SectionBase" }],
+    },
+
+    "NodeCoreVersion": {
+      "type": "string",
+      "description": "Node.js version number",
+      // Taken from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+      // and slightly modified to support the `v` in front
+      "pattern": "^v(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "examples": ["v24.0.0"],
+    },
+
+    "Change": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NodeCoreVersion",
+          },
+        },
+        "prUrl": {
+          "type": "string",
+          "description": "URL to the PR that introduced this change.",
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the change.",
+        },
+      },
+      "required": ["version", "description"],
+      "additionalProperties": false,
+    },
+
+    "Stability": {
+      "type": "object",
+      "description": "Describes the stability of an object.",
+      "properties": {
+        "index": {
+          "type": "number",
+          "description": "The stability value.",
+          "minimum": 0,
+          "maximum": 3,
+        },
+        "description": {
+          "type": "string",
+          "description": "Textual representation of the stability.",
+        },
+      },
+      "required": ["index", "description"],
+      "additionalProperties": false,
+    },
+  },
+}
