@@ -11,7 +11,6 @@ export const ROOT = dirname(fileURLToPath(import.meta.url));
  */
 
 /**
- * @type {Record<string, JSXImportConfig>}
  * An object containing mappings for various JSX components to their import paths.
  */
 export const JSX_IMPORTS = {
@@ -49,6 +48,10 @@ export const JSX_IMPORTS = {
     name: 'MDXTooltipTrigger',
     isDefaultExport: false,
     source: '@node-core/ui-components/MDX/Tooltip',
+  },
+  TableOfContents: {
+    name: 'TableOfContents',
+    source: '@node-core/ui-components/Common/TableOfContents',
   },
   ChangeHistory: {
     name: 'ChangeHistory',

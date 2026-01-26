@@ -258,8 +258,8 @@ export const processEntry = (entry, remark) => {
 /**
  * Builds the overall document layout tree
  * @param {Array<ApiDocMetadataEntry>} entries - API documentation metadata entries
- * @param {Record<string, any>} sideBarProps - Props for the sidebar component
- * @param {Record<string, any>} metaBarProps - Props for the meta bar component
+ * @param {ReturnType<import('./buildBarProps.mjs').buildSideBarProps>} sideBarProps - Props for the sidebar component
+ * @param {ReturnType<buildMetaBarProps>} metaBarProps - Props for the meta bar component
  * @param {import('unified').Processor} remark - The remark processor
  */
 export const createDocumentLayout = (
@@ -274,10 +274,17 @@ export const createDocumentLayout = (
       children: [
         createJSXElement(JSX_IMPORTS.SideBar.name, sideBarProps),
         createElement('div', [
-          createElement(
-            'main',
-            entries.map(entry => processEntry(entry, remark))
-          ),
+          createElement('div', [
+            createJSXElement(JSX_IMPORTS.TableOfContents.name, {
+              headings: metaBarProps.headings,
+              summaryTitle: 'On this page',
+            }),
+            createElement('br'),
+            createElement(
+              'main',
+              entries.map(entry => processEntry(entry, remark))
+            ),
+          ]),
           createJSXElement(JSX_IMPORTS.MetaBar.name, metaBarProps),
         ]),
       ],

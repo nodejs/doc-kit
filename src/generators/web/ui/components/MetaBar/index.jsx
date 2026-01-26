@@ -36,7 +36,7 @@ export default ({
   <MetaBar
     heading="Table of Contents"
     headings={{
-      items: headings.map(({ slug, value, stability, ...heading }) => ({
+      items: headings.map(({ value, stability, ...heading }) => ({
         ...heading,
         value:
           stability !== 2 ? (
@@ -53,7 +53,6 @@ export default ({
           ) : (
             value
           ),
-        data: { id: slug },
       })),
     }}
     items={{
