@@ -78,10 +78,7 @@ export default {
         for (const section of chunkResult) {
           const out = join(output, `${section.api}.json`);
 
-          // eslint-disable-next-line no-unused-vars
-          const { api, ...content } = section;
-
-          await writeFile(out, JSON.stringify(content, null, 2));
+          await writeFile(out, JSON.stringify(section, null, 2));
         }
       }
 
