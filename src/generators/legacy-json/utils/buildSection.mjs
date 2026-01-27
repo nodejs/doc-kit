@@ -199,6 +199,7 @@ export const createSectionBuilder = () => {
   return (head, entries) => {
     const rootModule = {
       type: 'module',
+      api: head.api,
       source: head.api_doc_source,
     };
 
