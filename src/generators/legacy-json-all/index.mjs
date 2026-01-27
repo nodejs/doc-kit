@@ -83,7 +83,10 @@ export default {
     }
 
     if (output) {
-      await writeFile(join(output, 'all.json'), JSON.stringify(generatedValue));
+      await writeFile(
+        join(output, 'all.json'),
+        JSON.stringify(generatedValue, null, 2)
+      );
     }
 
     return generatedValue;
