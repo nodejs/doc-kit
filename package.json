@@ -81,7 +81,7 @@
     "unist-util-position": "^5.0.0",
     "unist-util-remove": "^4.0.0",
     "unist-util-select": "^5.1.0",
-    "unist-util-visit": "^5.0.0",
+    "unist-util-visit": "^5.1.0",
     "vfile": "^6.0.3",
     "yaml": "^2.8.2"
   }
