@@ -78,7 +78,7 @@ export default {
         for (const section of chunkResult) {
           const out = join(output, `${section.api}.json`);
 
-          await writeFile(out, JSON.stringify(section));
+          await writeFile(out, JSON.stringify(section, null, 2));
         }
       }
 
