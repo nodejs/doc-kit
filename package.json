@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@reporters/github": "^1.11.0",
+    "@reporters/github": "^1.12.0",
     "@types/mdast": "^4.0.4",
     "@types/node": "^24.10.1",
     "c8": "^10.1.3",
