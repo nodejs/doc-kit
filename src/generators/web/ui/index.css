@@ -16,6 +16,17 @@ main {
     word-break: break-word;
   }
 
+  @media (min-width: 1024px) {
+    td {
+      word-break: break-all;
+    }
+
+    td code {
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+  }
+
   /* Don't overflow the parent */
   .overflow-container {
     overflow-x: auto;
