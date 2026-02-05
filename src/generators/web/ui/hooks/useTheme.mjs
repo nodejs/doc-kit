@@ -9,7 +9,6 @@ import { useState, useEffect, useCallback } from 'react';
 const applyTheme = theme => {
   document.documentElement.setAttribute('data-theme', theme);
   document.documentElement.style.colorScheme = theme;
-
   localStorage.setItem('theme', theme);
 };
 
