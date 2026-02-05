@@ -19,7 +19,8 @@
     href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Open+Sans:ital,wght@0,300..800;1,300..800" />
 
   <!-- Apply theme before paint to avoid Flash of Unstyled Content -->
-  <script>document.documentElement.setAttribute("data-theme",localStorage.getItem("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));</script>
+  <script>document.documentElement.setAttribute("data-theme", localStorage.getItem("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));</script>
+  <script>document.documentElement.style.colorScheme = document.documentElement.getAttribute("data-theme");</script>
   <script type="importmap">{{importMap}}</script>
   <script type="speculationrules">{{speculationRules}}</script>
 </head>
