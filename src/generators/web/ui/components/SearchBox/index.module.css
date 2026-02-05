@@ -1,0 +1,76 @@
+.searchResultsContainer {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  padding: 1rem;
+  border-top: 1px solid var(--color-neutral-200);
+  background-color: var(--color-neutral-100);
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .footer {
+  border-top-color: var(--color-neutral-900);
+  background-color: var(--color-neutral-950);
+}
+
+@media (min-width: 1024px) {
+  .footer {
+    justify-content: space-between;
+    border-radius: 0 0 0.75rem 0.75rem;
+  }
+}
+
+.shortcutWrapper {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+  .shortcutWrapper {
+    display: flex;
+  }
+}
+
+.shortcutItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-neutral-800);
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .shortcutItem {
+  color: var(--color-neutral-600);
+}
+
+.shortcutKey {
+  font-family: var(--font-ibm-plex-mono);
+  border-radius: 0.375rem;
+  background-color: var(--color-neutral-200);
+  padding: 0.25rem;
+  font-size: 0.75rem;
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .shortcutKey {
+  background-color: var(--color-neutral-900);
+}
+
+.shortcutKey svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.shortcutLabel {
+  color: var(--color-neutral-800);
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .shortcutLabel {
+  color: var(--color-neutral-600);
+}
