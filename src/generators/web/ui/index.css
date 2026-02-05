@@ -16,17 +16,6 @@ main {
     word-break: break-word;
   }
 
-  @media (min-width: 1024px) {
-    td {
-      word-break: break-all;
-    }
-
-    td code {
-      overflow-wrap: normal;
-      word-break: normal;
-    }
-  }
-
   /* Don't overflow the parent */
   .overflow-container {
     overflow-x: auto;
@@ -37,9 +26,20 @@ main {
   }
 
   table {
+    td {
+      word-break: break-all;
+    }
+
     /* In tables, don't pad `a` elements */
     a {
       padding-right: unset;
+    }
+
+    @media (min-width: 1024px) {
+      td code {
+        overflow-wrap: normal;
+        word-break: normal;
+      }
     }
   }
 
