@@ -10,7 +10,7 @@
         "@clack/prompts": "^1.0.0",
         "@heroicons/react": "^2.2.0",
         "@node-core/rehype-shiki": "1.3.0",
-        "@node-core/ui-components": "1.5.8",
+        "@node-core/ui-components": "^1.5.9",
         "@orama/orama": "^3.1.18",
         "@orama/ui": "^1.5.4",
         "@rollup/plugin-virtual": "^3.0.2",
@@ -1039,9 +1039,9 @@
       }
     },
     "node_modules/@node-core/ui-components": {
-      "version": "1.5.8",
-      "resolved": "https://registry.npmjs.org/@node-core/ui-components/-/ui-components-1.5.8.tgz",
-      "integrity": "sha512-RaoGO3x4ECbYpVzH1UFV5fnoqLGSaMJU3LEM39VG4RlDFBuDaOMq6pHAha/h2K1duMf8RVjQJck28WMMZk0RVA==",
+      "version": "1.5.9",
+      "resolved": "https://registry.npmjs.org/@node-core/ui-components/-/ui-components-1.5.9.tgz",
+      "integrity": "sha512-CsffapNuvGHSADSQb1JZ2h1U+uRlkTwEA0i0RBi+JpBDcve3U6uqgmFD6phkWsOynXutfRcSNPex+OEF1Ll86w==",
       "dependencies": {
         "@heroicons/react": "^2.2.0",
         "@orama/ui": "^1.5.4",
