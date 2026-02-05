@@ -9,4 +9,6 @@ node bin/cli.mjs generate \
   --index "./node/doc/api/index.md" \
   --log-level debug
 
+cp "./node/doc/api/*.md" "./out"
+
 rm -rf node/
