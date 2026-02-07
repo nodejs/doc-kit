@@ -10,7 +10,7 @@ import { DOC_API_BASE_URL_VERSION } from '../constants.mjs';
  *
  * @param {Array<ApiDocMetadataEntry>} nodes The API metadata Nodes to be grouped
  */
-export const groupNodesByModule = (nodes) => {
+export const groupNodesByModule = nodes => {
   /** @type {Map<string, Array<ApiDocMetadataEntry>>} */
   const groupedNodes = new Map();
 
@@ -30,7 +30,7 @@ export const groupNodesByModule = (nodes) => {
  *
  * @param {import('semver').SemVer} version The version to be parsed
  */
-export const getVersionFromSemVer = (version) =>
+export const getVersionFromSemVer = version =>
   version.minor === 0
     ? `${version.major}.x`
     : `${version.major}.${version.minor}.x`;
@@ -54,7 +54,7 @@ export const getVersionURL = (version, api) =>
  * @param {string|import('semver').SemVer} version SemVer compatible version (maybe)
  * @returns {import('semver').SemVer} SemVer compatible version
  */
-export const coerceSemVer = (version) => {
+export const coerceSemVer = version => {
   const coercedVersion = coerce(version);
 
   if (coercedVersion === null) {
@@ -77,7 +77,7 @@ export const getCompatibleVersions = (introduced, releases) => {
   const coercedMajor = major(coerceSemVer(introduced));
   // All Node.js versions that support the current API; If there's no "introduced_at" field,
   // we simply show all versions, as we cannot pinpoint the exact version
-  return releases.filter((release) => release.version.major >= coercedMajor);
+  return releases.filter(release => release.version.major >= coercedMajor);
 };
 
 /**
@@ -108,14 +108,14 @@ export const sortChanges = (changes, key = 'version') => {
  * @param {Object} source - The source object
  */
 export const leftHandAssign = (target, source) =>
-  Object.keys(source).forEach((k) => k in target || (target[k] = source[k]));
+  Object.keys(source).forEach(k => k in target || (target[k] = source[k]));
 
 /**
  * Transforms an object to JSON output consistent with the JSON version.
  * @param {Object} section - The source object
  * @returns {string} - The JSON output
  */
-export const legacyToJSON = (section) =>
+export const legacyToJSON = section =>
   JSON.stringify(
     section,
     [

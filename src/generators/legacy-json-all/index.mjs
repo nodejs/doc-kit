@@ -85,10 +85,7 @@ export default {
     }
 
     if (output) {
-      await writeFile(
-        join(output, 'all.json'),
-        legacyToJSON(generatedValue)
-      );
+      await writeFile(join(output, 'all.json'), legacyToJSON(generatedValue));
     }
 
     return generatedValue;
