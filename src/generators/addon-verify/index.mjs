@@ -12,15 +12,14 @@ import {
   isBuildableSection,
   normalizeSectionName,
 } from './utils/section.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
 
 /**
  * This generator generates a file list from code blocks extracted from
  * `doc/api/addons.md` to facilitate C++ compilation and JavaScript runtime
  * validations.
  *
- * @typedef {Array<ApiDocMetadataEntry>} Input
- *
- * @type {GeneratorMetadata<Input, string>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'addon-verify',
@@ -34,11 +33,10 @@ export default {
 
   /**
    * Generates a file list from code blocks.
-   *
-   * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
    */
-  async generate(input, { output }) {
+  async generate(input) {
+    const config = getConfig('addon-verify');
+
     const sectionsCodeBlocks = input.reduce((addons, node) => {
       const sectionName = node.heading.data.name;
 
@@ -72,7 +70,7 @@ export default {
         .flatMap(async ([sectionName, codeBlocks], index) => {
           const files = generateFileList(codeBlocks);
 
-          if (output) {
+          if (config.output) {
             const normalizedSectionName = normalizeSectionName(sectionName);
 
             const folderName = generateSectionFolderName(
@@ -80,11 +78,11 @@ export default {
               index
             );
 
-            await mkdir(join(output, folderName), { recursive: true });
+            await mkdir(join(config.output, folderName), { recursive: true });
 
             for (const file of files) {
               await writeFile(
-                join(output, folderName, file.name),
+                join(config.output, folderName, file.name),
                 file.content
               );
             }

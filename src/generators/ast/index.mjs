@@ -6,6 +6,7 @@ import { extname } from 'node:path';
 import { globSync } from 'tinyglobby';
 import { VFile } from 'vfile';
 
+import getConfig from '../../utils/configuration/index.mjs';
 import createQueries from '../../utils/queries/index.mjs';
 import { getRemark } from '../../utils/remark.mjs';
 
@@ -16,10 +17,7 @@ const remarkProcessor = getRemark();
  * This generator parses Markdown API doc files into AST trees.
  * It parallelizes the parsing across worker threads for better performance.
  *
- * @typedef {undefined} Input
- * @typedef {Array<ParserOutput<import('mdast').Root>>} Output
- *
- * @type {GeneratorMetadata<Input, Output>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'ast',
@@ -31,10 +29,6 @@ export default {
   /**
    * Process a chunk of markdown files in a worker thread.
    * Loads and parses markdown files into AST representations.
-   *
-   * @param {string[]} inputSlice - Sliced input paths for this chunk
-   * @param {number[]} itemIndices - Indices into the sliced array
-   * @returns {Promise<Output>}
    */
   async processChunk(inputSlice, itemIndices) {
     const filePaths = itemIndices.map(idx => inputSlice[idx]);
@@ -57,13 +51,13 @@ export default {
 
   /**
    * Generates AST trees from markdown input files.
-   *
-   * @param {Input} _ - Unused (top-level generator)
-   * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<Output>}
    */
-  async *generate(_, { input = [], ignore, worker }) {
-    const files = globSync(input, { ignore }).filter(p => extname(p) === '.md');
+  async *generate(_, worker) {
+    const { ast: config } = getConfig();
+
+    const files = globSync(config.input, { ignore: config.ignore }).filter(
+      p => extname(p) === '.md'
+    );
 
     // Parse markdown files in parallel using worker threads
     for await (const chunkResult of worker.stream(files, files)) {

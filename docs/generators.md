@@ -28,29 +28,7 @@ Each generator declares its dependency using the `dependsOn` field, allowing aut
 
 ## Generator Structure
 
-A generator is defined as a module exporting an object conforming to the `GeneratorMetadata` interface:
-
-```typescript
-interface GeneratorMetadata<Input, Output> {
-  name: string;
-  version: string;
-  description: string;
-  dependsOn?: string;
-
-  // Core generation function
-  generate(
-    input: Input,
-    options: Partial<GeneratorOptions>
-  ): Promise<Output> | AsyncGenerator<Output>;
-
-  // Optional: for parallel processing
-  processChunk?(
-    fullInput: any,
-    itemIndices: number[],
-    deps: any
-  ): Promise<Output>;
-}
-```
+A generator is defined as a module exporting an object conforming to the `GeneratorMetadata` interface.
 
 ## Creating a Basic Generator
 
@@ -60,14 +38,35 @@ Create a new directory in `src/generators/`:
 
 ```
 src/generators/my-format/
-├── index.mjs         # Main generator file
+├── index.mjs         # Main generator file (required)
 ├── constants.mjs     # Constants (optional)
-├── types.d.ts        # TypeScript types (optional)
+├── types.d.ts        # TypeScript types (required)
 └── utils/            # Utility functions (optional)
     └── formatter.mjs
 ```
 
-### Step 2: Implement the Generator
+### Step 2: Define Types
+
+Create a `types.d.ts` file containing a `Generator` export. Use this when typing your generator.
+
+```ts
+export type Generator = GeneratorMetadata<
+  {
+    // If your generator supports a custom configuration,
+    // define it here
+    myCustomOption: string;
+  },
+  Generate<InputToMyGenerator, Promise<OutputOfMyGenerator>>,
+  // If your generator supports parallel processing:
+  ProcessChunk<
+    InputToMyParallelProcessor,
+    OutputOfMyParallelProcessor,
+    DependenciesOfMyParallelProcessor
+  >
+>;
+```
+
+### Step 3: Implement the Generator
 
 ```javascript
 // src/generators/my-format/index.mjs
@@ -91,6 +90,15 @@ export default {
 
   // This generator depends on the metadata generator
   dependsOn: 'metadata',
+
+  defaultConfiguration: {
+    // If your generator supports a custom configuration, define the defaults here
+    myCustomOption: 'myDefaultValue'
+
+    // All generators support options in the GlobalConfiguration object
+    // To override the defaults, they can be specified here
+    ref: 'overriddenRef'
+  }
 
   /**
    * Main generation function
@@ -126,7 +134,7 @@ function transformToMyFormat(entries, version) {
 }
 ```
 
-### Step 3: Register the Generator
+### Step 4: Register the Generator
 
 Add your generator to the exports in `src/generators/index.mjs`:
 
@@ -187,12 +195,15 @@ export default {
    * Main generation function that orchestrates worker threads
    *
    * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
+   * @param {ParallelWorker} options
    */
-  async *generate(input, { worker, output }) {
+  async *generate(input, worker) {
+    // Configuration for this generator is based on it's name
+    const config = getConfig('parallel-generator');
+
     // Prepare serializable dependencies
     const deps = {
-      version: options.version,
+      version: config.version,
       ...someConfig,
     };
 
@@ -245,9 +256,7 @@ export default {
   /**
    * Generator function that yields results incrementally
    */
-  async *generate(input, options) {
-    const { worker } = options;
-
+  async *generate(input, worker) {
     // Stream results as workers complete chunks
     for await (const chunkResult of worker.stream(input, input, {})) {
       // Yield immediately - downstream can start processing
@@ -277,7 +286,7 @@ export default {
   /**
    * Non-streaming - returns Promise instead of AsyncGenerator
    */
-  async generate(input, options) {
+  async generate(input, worker) {
     // Collect all input (if dependency is streaming, this waits for completion)
     const allData = await collectAll(input);
 
@@ -304,7 +313,7 @@ export default {
   name: 'my-generator',
   dependsOn: 'metadata', // This generator requires metadata output
 
-  async generate(input, options) {
+  async generate(input, worker) {
     // input contains the output from 'metadata' generator
   },
 };
@@ -352,60 +361,46 @@ The framework ensures `metadata` runs once and its output is cached for all cons
 ### Writing Output Files
 
 ```javascript
-import { writeFile, mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
+const config = getConfig('my-generator');
 
-async generate(input, options) {
-  const { output } = options;
-
-  if (!output) {
-    // Return data without writing
-    return result;
-  }
-
-  // Ensure directory exists
-  await mkdir(output, { recursive: true });
-
-  // Write single file
-  await writeFile(
-    join(output, 'output.txt'),
-    content,
-    'utf-8'
-  );
-
-  // Write multiple files
-  for (const item of items) {
-    await writeFile(
-      join(output, `${item.name}.txt`),
-      item.content,
-      'utf-8'
-    );
-  }
-
+if (!config.output) {
+  // Return data without writing
   return result;
 }
+
+// Ensure directory exists
+await mkdir(config.output, { recursive: true });
+
+// Write single file
+await writeFile(join(config.output, 'output.txt'), content, 'utf-8');
+
+// Write multiple files
+for (const item of items) {
+  await writeFile(
+    join(config.output, `${item.name}.txt`),
+    item.content,
+    'utf-8'
+  );
+}
+
+return result;
 ```
 
 ### Copying Assets
 
 ```javascript
-import { cp } from 'node:fs/promises';
-import { join } from 'node:path';
+const config = getConfig('my-generator');
 
-async generate(input, options) {
-  const { output } = options;
-
-  if (output) {
-    // Copy asset directory
-    await cp(
-      new URL('./assets', import.meta.url),
-      join(output, 'assets'),
-      { recursive: true }
-    );
-  }
-
-  return result;
+if (config.output) {
+  // Copy asset directory
+  await cp(
+    new URL('./assets', import.meta.url),
+    join(config.output, 'assets'),
+    { recursive: true }
+  );
 }
+
+return result;
 ```
 
 ### Output Structure

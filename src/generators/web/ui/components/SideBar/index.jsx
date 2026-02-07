@@ -2,6 +2,7 @@ import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
+import { STATIC_DATA } from '../../constants.mjs';
 
 /**
  * @typedef {Object} SideBarProps
@@ -36,7 +37,7 @@ export default ({ versions, pathname, currentVersion, docPages }) => (
   >
     <div>
       <Select
-        label="Node.js version"
+        label={`${STATIC_DATA.title} version`}
         values={versions}
         inline={true}
         className={styles.select}

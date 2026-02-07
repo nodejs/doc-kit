@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import createASTBuilder from './utils/generate.mjs';
 import { processJSXEntries } from './utils/processing.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
 
 /**
  * Web generator - transforms JSX AST entries into complete web bundles.
@@ -16,10 +17,7 @@ import { processJSXEntries } from './utils/processing.mjs';
  * Note: This generator does NOT support streaming/chunked processing because
  * processJSXEntries needs all entries together to generate code-split bundles.
  *
- * @typedef {Array<import('../jsx-ast/utils/buildContent.mjs').JSXContent>} Input
- * @typedef {Array<{ html: string, css: string }>} Output
- *
- * @type {GeneratorMetadata<Input, Output>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'web',
@@ -30,18 +28,21 @@ export default {
 
   dependsOn: 'jsx-ast',
 
+  defaultConfiguration: {
+    templatePath: join(import.meta.dirname, 'template.html'),
+    title: 'Node.js',
+    imports: {
+      '#config/Logo': '@node-core/ui-components/Common/NodejsLogo',
+    },
+  },
+
   /**
    * Main generation function that processes JSX AST entries into web bundles.
-   *
-   * @param {Input} input - JSX AST entries to process.
-   * @param {Partial<GeneratorOptions>} options - Generator options.
-   * @returns {Promise<Output>} Processed HTML/CSS/JS content.
    */
-  async generate(input, { output, version }) {
-    const template = await readFile(
-      new URL('template.html', import.meta.url),
-      'utf-8'
-    );
+  async generate(input) {
+    const config = getConfig('web');
+
+    const template = await readFile(config.templatePath, 'utf-8');
 
     // Create AST builders for server and client programs
     const astBuilders = createASTBuilder();
@@ -55,23 +56,27 @@ export default {
       template,
       astBuilders,
       requireFn,
-      { version }
+      config
     );
 
     // Process all entries together (required for code-split bundles)
-    if (output) {
+    if (config.output) {
       // Write HTML files
       for (const { html, api } of results) {
-        await writeFile(join(output, `${api}.html`), html, 'utf-8');
+        await writeFile(join(config.output, `${api}.html`), html, 'utf-8');
       }
 
       // Write code-split JavaScript chunks
       for (const chunk of chunks) {
-        await writeFile(join(output, chunk.fileName), chunk.code, 'utf-8');
+        await writeFile(
+          join(config.output, chunk.fileName),
+          chunk.code,
+          'utf-8'
+        );
       }
 
       // Write CSS bundle
-      await writeFile(join(output, 'styles.css'), css, 'utf-8');
+      await writeFile(join(config.output, 'styles.css'), css, 'utf-8');
     }
 
     return results.map(({ html }) => ({ html: html.toString(), css }));

@@ -6,6 +6,11 @@ import { basename, join } from 'node:path';
 import { checkIndirectReferences } from './utils/checkIndirectReferences.mjs';
 import { extractExports } from './utils/extractExports.mjs';
 import { findDefinitions } from './utils/findDefinitions.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
+import {
+  GITHUB_BLOB_URL,
+  populate,
+} from '../../utils/configuration/templates.mjs';
 
 /**
  * This generator is responsible for mapping publicly accessible functions in
@@ -15,9 +20,7 @@ import { findDefinitions } from './utils/findDefinitions.mjs';
  * source files. It outputs a `apilinks.json` file into the specified output
  * directory.
  *
- * @typedef {Array<JsProgram>} Input
- *
- * @type {GeneratorMetadata<Input, Record<string, string>>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'api-links',
@@ -33,11 +36,9 @@ export default {
 
   /**
    * Generates the `apilinks.json` file.
-   *
-   * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
    */
-  async generate(input, { output, gitRef }) {
+  async generate(input) {
+    const config = getConfig('api-links');
     /**
      * @type Record<string, string>
      */
@@ -61,7 +62,7 @@ export default {
 
       checkIndirectReferences(program, exports, nameToLineNumberMap);
 
-      const fullGitUrl = `${gitRef}/lib/${baseName}.js`;
+      const fullGitUrl = `${populate(GITHUB_BLOB_URL, config)}lib/${baseName}.js`;
 
       // Add the exports we found in this program to our output
       Object.keys(nameToLineNumberMap).forEach(key => {
@@ -71,10 +72,15 @@ export default {
       });
     });
 
-    if (output) {
-      const out = join(output, 'apilinks.json');
+    if (config.output) {
+      const out = join(config.output, 'apilinks.json');
 
-      await writeFile(out, JSON.stringify(definitions));
+      await writeFile(
+        out,
+        config.minify
+          ? JSON.stringify(definitions)
+          : JSON.stringify(definitions, null, 2)
+      );
     }
 
     return definitions;

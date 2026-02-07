@@ -3,16 +3,14 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import getConfig from '../../utils/configuration/index.mjs';
 import { legacyToJSON } from '../../utils/generators.mjs';
 
 /**
  * This generator consolidates data from the `legacy-json` generator into a single
  * JSON file (`all.json`).
  *
- * @typedef {Array<import('../legacy-json/types.d.ts').Section>} Input
- * @typedef {import('./types.d.ts').Output} Output
- *
- * @type {GeneratorMetadata<Input, Output>}
+ * @type {import('./types.d.ts').Generator}
  */
 export default {
   name: 'legacy-json-all',
@@ -24,14 +22,16 @@ export default {
 
   dependsOn: 'legacy-json',
 
+  defaultConfiguration: {
+    minify: false,
+  },
+
   /**
    * Generates the legacy JSON `all.json` file.
-   *
-   * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
-   * @returns {Promise<Output>}
    */
-  async generate(input, { output, index }) {
+  async generate(input) {
+    const config = getConfig('legacy-json-all');
+
     /**
      * The consolidated output object that will contain
      * combined data from all sections in the input.
@@ -53,7 +53,10 @@ export default {
 
     // Create a map of api name to index position for sorting
     const indexOrder = new Map(
-      index?.map(({ api }, position) => [`doc/api/${api}.md`, position]) ?? []
+      config.index?.map(({ api }, position) => [
+        `doc/api/${api}.md`,
+        position,
+      ]) ?? []
     );
 
     // Sort input by index order (documents not in index go to the end)
@@ -84,8 +87,13 @@ export default {
       }
     }
 
-    if (output) {
-      await writeFile(join(output, 'all.json'), legacyToJSON(generatedValue));
+    if (config.output) {
+      await writeFile(
+        join(config.output, 'all.json'),
+        config.minify
+          ? legacyToJSON(generatedValue)
+          : legacyToJSON(generatedValue, null, 2)
+      );
     }
 
     return generatedValue;

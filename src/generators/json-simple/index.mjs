@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 import { remove } from 'unist-util-remove';
 
+import getConfig from '../../utils/configuration/index.mjs';
 import createQueries from '../../utils/queries/index.mjs';
 
 /**
@@ -14,9 +15,7 @@ import createQueries from '../../utils/queries/index.mjs';
  * This generator is a top-level generator, and it takes the raw AST tree of the API doc files
  * and returns a stringified JSON version of the API docs.
  *
- * @typedef {Array<ApiDocMetadataEntry>} Input
- *
- * @type {GeneratorMetadata<Input, string>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'json-simple',
@@ -30,10 +29,10 @@ export default {
 
   /**
    * Generates the simplified JSON version of the API docs
-   * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
    */
-  async generate(input, options) {
+  async generate(input) {
+    const config = getConfig('json-simple');
+
     // Iterates the input (ApiDocMetadataEntry) and performs a few changes
     const mappedInput = input.map(node => {
       // Deep clones the content nodes to avoid affecting upstream nodes
@@ -49,15 +48,14 @@ export default {
       return { ...node, content };
     });
 
-    // This simply grabs all the different files and stringifies them
-    const stringifiedContent = JSON.stringify(mappedInput);
-
-    if (options.output) {
+    if (config.output) {
       // Writes all the API docs stringified content into one file
       // Note: The full JSON generator in the future will create one JSON file per top-level API doc file
       await writeFile(
-        join(options.output, 'api-docs.json'),
-        stringifiedContent
+        join(config.output, 'api-docs.json'),
+        config.minify
+          ? JSON.stringify(mappedInput)
+          : JSON.stringify(mappedInput, null, 2)
       );
     }
 

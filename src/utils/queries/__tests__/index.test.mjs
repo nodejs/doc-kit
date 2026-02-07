@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { u as createTree } from 'unist-builder';
 
-import typeMap from '../../parser/typeMap.json' with { type: 'json' };
+import typeMap from '../../../generators/metadata/typeMap.json' with { type: 'json' };
 import createQueries from '../index.mjs';
 
 describe('createQueries', () => {

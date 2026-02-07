@@ -1,4 +1,3 @@
-import type { SemVer } from 'semver';
 import type { publicGenerators, allGenerators } from './index.mjs';
 
 declare global {
@@ -30,67 +29,41 @@ declare global {
     ): AsyncGenerator<R[], void, unknown>;
   }
 
-  // This is the runtime config passed to the API doc generators
-  export interface GeneratorOptions {
-    // The path to the input source files. This parameter accepts globs and can
-    // be a glob when passed to a generator.
-    input: string | string[];
-
-    // The path or glob patterns used to ignore files from the input source files.
-    ignore?: string | string[];
-
-    // The path used to output generated files, this is to be considered
-    // the base path that any generator will use for generating files
-    // This parameter accepts globs but when passed to generators will contain
-    // the already resolved absolute path to the output folder
-    output: string;
-
-    // A list of generators to be used in the API doc generation process;
-    // This is considered a "sorted" list of generators, in the sense that
-    // if the last entry of this list contains a generated value, we will return
-    // the value of the last generator in the list, if any.
-    generators: Array<keyof AvailableGenerators>;
-
-    // Target Node.js version for the generation of the API docs
-    version: SemVer;
-
-    // A list of all Node.js major versions and their respective release information
-    releases: Array<ApiDocReleaseEntry>;
-
-    // A list of all the titles of all the documentation files
-    index: Array<{ section: string; api: string }>;
-
-    // An URL containing a git ref URL pointing to the commit or ref that was used
-    // to generate the API docs. This is used to link to the source code of the
-    // i.e. https://github.com/nodejs/node/tree/2cb1d07e0f6d9456438016bab7db4688ab354fd2
-    // i.e. https://gitlab.com/someone/node/tree/HEAD
-    gitRef: string;
-
-    // The number of threads the process is allowed to use
-    threads: number;
-
-    // Number of items to process per worker thread
-    chunkSize: number;
-
-    // The type map
-    typeMap: Record<string, string>;
-
-    // Parallel worker instance for generators to parallelize work on individual items
-    worker: ParallelWorker;
-  }
-
-  export type ParallelGeneratorOptions = Partial<
-    Omit<GeneratorOptions, 'worker'>
-  >;
-
   export interface ParallelTaskOptions {
     generatorName: keyof AllGenerators;
     input: unknown[];
     itemIndices: number[];
-    options: ParallelGeneratorOptions & Record<string, unknown>;
   }
 
-  export interface GeneratorMetadata<I extends any, O extends any> {
+  /**
+   * Type for the generate function of a generator
+   * @template I - Input type
+   * @template O - Output type (can be AsyncGenerator or Promise)
+   */
+  export type Generate<I, O> = (
+    input: I,
+    worker: ParallelWorker
+  ) => O extends AsyncGenerator ? O : Promise<O>;
+
+  /**
+   * Type for the optional processChunk function of a generator
+   * @template I - Input type
+   * @template O - Output type
+   * @template D - Dependencies type
+   */
+  export type ProcessChunk<I, O, D = {}> = (
+    slicedInput: I[],
+    itemIndices: number[],
+    dependencies: D
+  ) => Promise<O>;
+
+  export type GeneratorMetadata<
+    C extends any,
+    G extends Generate<any, any>,
+    P extends ProcessChunk<any, any, any> | undefined = undefined,
+  > = {
+    readonly defaultConfiguration: C;
+
     // The name of the Generator. Must match the Key in AllGenerators
     name: keyof AllGenerators;
 
@@ -131,7 +104,7 @@ declare global {
      *
      * Hence you can combine different generators to achieve different outputs.
      */
-    generate: (input: I, options: Partial<GeneratorOptions>) => Promise<O>;
+    generate: G;
 
     /**
      * Optional method for chunk-level parallelization using real worker threads.
@@ -146,13 +119,9 @@ declare global {
      *
      * @param slicedInput - Sliced input containing only items for this chunk
      * @param itemIndices - Array of 0-based indices into slicedInput
-     * @param options - Generator options (without worker, which isn't serializable)
+     * @param dependencies - Generator options (without worker, which isn't serializable)
      * @returns Array of results for the processed items
      */
-    processChunk?: (
-      slicedInput: I,
-      itemIndices: number[],
-      options: Partial<Omit<GeneratorOptions, 'worker'>>
-    ) => Promise<unknown[]>;
-  }
+    processChunk?: P;
+  };
 }

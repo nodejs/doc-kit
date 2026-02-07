@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { setConfig } from '../../../../utils/configuration/index.mjs';
 import { transformHeadingNode } from '../buildContent.mjs';
 
 const heading = {
@@ -19,6 +20,8 @@ const makeParent = typeText => ({
     },
   ],
 });
+
+await setConfig({});
 
 describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
   it('maps documentation/compilation to info', () => {

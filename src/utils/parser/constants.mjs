@@ -1,8 +1,5 @@
 import globals from 'globals';
 
-// The default type map path
-export const DEFAULT_TYPE_MAP = import.meta.resolve('./typeMap.json');
-
 // These are string replacements specific to Node.js API docs for anchor IDs
 export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /node.js/i, to: 'nodejs' }, // Replace Node.js

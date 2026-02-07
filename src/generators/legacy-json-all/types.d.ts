@@ -12,3 +12,8 @@ export interface Output {
   globals: Array<ModuleSection | { type: 'global' }>;
   methods: Array<SignatureSection>;
 }
+
+export type Generator = GeneratorMetadata<
+  {},
+  Generate<Array<Section>, Promise<Output>>
+>;

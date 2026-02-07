@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
 
-import semver from 'semver';
+import { SemVer } from 'semver';
+
+import { setConfig } from '../../../../utils/configuration/index.mjs';
+import * as generatorsExports from '../../../../utils/generators.mjs';
 
 mock.module('reading-time', {
   defaultExport: () => ({ text: '5 min read' }),
@@ -9,6 +12,7 @@ mock.module('reading-time', {
 
 mock.module('../../../../utils/generators.mjs', {
   namedExports: {
+    ...generatorsExports,
     getCompatibleVersions: () => [
       { version: '18.0.0', isLts: true, isCurrent: false },
       { version: '19.0.0', isLts: false, isCurrent: true },
@@ -25,6 +29,14 @@ const {
   formatVersionOptions,
   buildSideBarProps,
 } = await import('../buildBarProps.mjs');
+
+await setConfig({
+  version: 'v17.0.0',
+  changelog: [
+    { version: new SemVer('16.0.0'), isLts: true, isCurrent: false },
+    { version: new SemVer('17.0.0'), isLts: false, isCurrent: true },
+  ],
+});
 
 describe('extractTextContent', () => {
   it('combines text and code node values from entries', () => {
@@ -82,7 +94,7 @@ describe('buildMetaBarProps', () => {
     const result = buildMetaBarProps(head, entries);
 
     assert.equal(result.addedIn, 'v1.0.0');
-    assert.equal(result.readingTime, '5 min read');
+    assert.equal(result.readingTime, '1 min read');
     assert.deepEqual(result.viewAs, [
       ['JSON', 'fs.json'],
       ['MD', 'fs.md'],
@@ -110,30 +122,29 @@ describe('buildMetaBarProps', () => {
 describe('formatVersionOptions', () => {
   it('formats version options with proper labels', () => {
     const versions = [
-      { version: '16.0.0', isLts: true, isCurrent: false },
-      { version: '17.0.0', isLts: false, isCurrent: true },
-      { version: '18.0.0', isLts: false, isCurrent: false },
+      { version: new SemVer('16.0.0'), isLts: true, isCurrent: false },
+      { version: new SemVer('17.0.0'), isLts: false, isCurrent: true },
+      { version: new SemVer('18.0.0'), isLts: false, isCurrent: false },
     ];
 
     const api = 'http';
 
     const result = formatVersionOptions(versions, api);
 
-    assert.equal(result.length, 3);
-    assert.deepEqual(result[0], {
-      value: '/api/16/http',
-      label: 'v16 (LTS)',
-    });
-
-    assert.deepEqual(result[1], {
-      value: '/api/17/http',
-      label: 'v17 (Current)',
-    });
-
-    assert.deepEqual(result[2], {
-      value: '/api/18/http',
-      label: 'v18',
-    });
+    assert.deepStrictEqual(result, [
+      {
+        label: 'v16.x (LTS)',
+        value: 'https://nodejs.org/docs/latest-v16.x/api/http.html',
+      },
+      {
+        label: 'v17.x (Current)',
+        value: 'https://nodejs.org/docs/latest-v17.x/api/http.html',
+      },
+      {
+        label: 'v18.x',
+        value: 'https://nodejs.org/docs/latest-v18.x/api/http.html',
+      },
+    ]);
   });
 });
 
@@ -144,25 +155,15 @@ describe('buildSideBarProps', () => {
       introduced_in: 'v0.10.0',
     };
 
-    const releases = [
-      { version: '16.0.0', isLts: true, isCurrent: false },
-      { version: '17.0.0', isLts: false, isCurrent: true },
-    ];
-
-    const version = new semver.SemVer('17.0.0');
-
     const docPages = [
       ['HTTP', 'http.html'],
       ['HTTPS', 'https.html'],
     ];
 
-    const result = buildSideBarProps(entry, releases, version, docPages);
+    const result = buildSideBarProps(entry, docPages);
 
     assert.equal(result.currentVersion, 'v17.0.0');
     assert.equal(result.pathname, 'http.html');
     assert.deepEqual(result.docPages, docPages);
-    assert.equal(result.versions.length, 2);
-    assert.equal(result.versions[0].label, 'v18 (LTS)');
-    assert.equal(result.versions[1].label, 'v19 (Current)');
   });
 });

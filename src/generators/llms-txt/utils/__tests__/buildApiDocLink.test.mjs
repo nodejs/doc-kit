@@ -69,7 +69,7 @@ describe('buildApiDocLink', () => {
       llm_description: 'Test description',
     };
 
-    const result = buildApiDocLink(entry);
+    const result = buildApiDocLink(entry, 'https://example.com');
     assert.ok(result.includes('[Test API]'));
     assert.ok(result.includes('/docs/latest/api/test.md'));
     assert.ok(result.includes('Test description'));
@@ -82,7 +82,7 @@ describe('buildApiDocLink', () => {
       content: { children: [] },
     };
 
-    const result = buildApiDocLink(entry);
+    const result = buildApiDocLink(entry, 'https://example.com');
     assert.ok(result.includes('/docs/latest/some/path.md'));
   });
 });

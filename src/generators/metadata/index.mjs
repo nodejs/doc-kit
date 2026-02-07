@@ -1,14 +1,13 @@
 'use strict';
 
 import { parseApiDoc } from './utils/parse.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
+import { importFromURL } from '../../utils/url.mjs';
 
 /**
  * This generator generates a flattened list of metadata entries from a API doc
  *
- * @typedef {Array<ParserOutput<import('mdast').Root>>} Input
- * @typedef {Array<ApiDocMetadataEntry>} Output
- *
- * @type {GeneratorMetadata<Input, Output>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'metadata',
@@ -19,16 +18,15 @@ export default {
 
   dependsOn: 'ast',
 
+  defaultConfiguration: {
+    typeMap: import.meta.resolve('./typeMap.json'),
+  },
+
   /**
    * Process a chunk of API doc files in a worker thread.
    * Called by chunk-worker.mjs for parallel processing.
-   *
-   * @param {Input} fullInput - Full input array (parsed API doc files)
-   * @param {number[]} itemIndices - Indices of files to process
-   * @param {Partial<GeneratorOptions>} deps - Dependencies passed from generate()
-   * @returns {Promise<Output>} Metadata entries for processed files
    */
-  async processChunk(fullInput, itemIndices, { typeMap }) {
+  async processChunk(fullInput, itemIndices, typeMap) {
     const results = [];
 
     for (const idx of itemIndices) {
@@ -39,16 +37,15 @@ export default {
   },
 
   /**
-   * @param {Input} inputs
-   * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<Output>}
    */
-  async *generate(inputs, { typeMap, worker }) {
-    const deps = { typeMap };
+  async *generate(inputs, worker) {
+    const { metadata: config } = getConfig();
+
+    const typeMap = await importFromURL(config.typeMap);
 
     // Stream chunks as they complete - allows dependent generators
     // to start collecting/preparing while we're still processing
-    for await (const chunkResult of worker.stream(inputs, inputs, deps)) {
+    for await (const chunkResult of worker.stream(inputs, inputs, typeMap)) {
       yield chunkResult.flat();
     }
   },

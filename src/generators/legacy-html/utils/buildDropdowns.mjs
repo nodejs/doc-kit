@@ -1,6 +1,6 @@
 'use strict';
 
-import { DOC_API_BLOB_EDIT_BASE_URL } from '../../../constants.mjs';
+import getConfig from '../../../utils/configuration/index.mjs';
 import {
   getCompatibleVersions,
   getVersionFromSemVer,
@@ -53,6 +53,8 @@ export const buildNavigation = navigationContents =>
  * @param {Array<ApiDocReleaseEntry>} versions All available Node.js releases
  */
 export const buildVersions = (api, added, versions) => {
+  const config = getConfig('legacy-html');
+
   const compatibleVersions = getCompatibleVersions(added, versions);
 
   // Parses the SemVer version into something we use for URLs and to display the Node.js version
@@ -62,7 +64,7 @@ export const buildVersions = (api, added, versions) => {
 
     const ltsLabel = isLts ? '<b>LTS</b>' : '';
 
-    return `<li><a href="${getVersionURL(parsedVersion, api)}">${parsedVersion} ${ltsLabel}</a></li>`;
+    return `<li><a href="${getVersionURL(parsedVersion, api, config.baseURL)}">${parsedVersion} ${ltsLabel}</a></li>`;
   });
 
   return (
@@ -78,9 +80,9 @@ export const buildVersions = (api, added, versions) => {
  * Note.: We use plain strings here instead of HAST, since these are just
  * templates and not actual content that needs to be transformed.
  *
- * @param {string} api The current API node name
+ * @param {string} url
  */
-export const buildGitHub = api =>
+export const buildGitHub = url =>
   `<li class="edit_on_github">` +
-  `<a href="${DOC_API_BLOB_EDIT_BASE_URL}${api}.md">` +
+  `<a href="${url}">` +
   `Edit on GitHub</a></li>`;

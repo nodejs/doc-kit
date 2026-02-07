@@ -4,6 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createSectionBuilder } from './utils/buildSection.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
 import { groupNodesByModule, legacyToJSON } from '../../utils/generators.mjs';
 
 const buildSection = createSectionBuilder();
@@ -17,10 +18,7 @@ const buildSection = createSectionBuilder();
  * It generates JSON files to the specified output directory given by the
  * config.
  *
- * @typedef {Array<ApiDocMetadataEntry>} Input
- * @typedef {Array<import('./types.d.ts').Section>} Output
- *
- * @type {GeneratorMetadata<Input, Output>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'legacy-json',
@@ -31,16 +29,17 @@ export default {
 
   dependsOn: 'metadata',
 
+  defaultConfiguration: {
+    ref: 'main',
+    minify: false,
+  },
+
   /**
    * Process a chunk of items in a worker thread.
    * Builds JSON sections - FS operations happen in generate().
    *
    * Each item is pre-grouped {head, nodes} - no need to
    * recompute groupNodesByModule for every chunk.
-   *
-   * @param {Array<{ head: ApiDocMetadataEntry, nodes: Array<ApiDocMetadataEntry> }>} slicedInput - Pre-sliced module data
-   * @param {number[]} itemIndices - Indices into the sliced array
-   * @returns {Promise<Output>} JSON sections for each processed module
    */
   async processChunk(slicedInput, itemIndices) {
     const results = [];
@@ -56,12 +55,10 @@ export default {
 
   /**
    * Generates a legacy JSON file.
-   *
-   * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<Output>}
    */
-  async *generate(input, { output, worker }) {
+  async *generate(input, worker) {
+    const config = getConfig('legacy-json');
+
     const groupedModules = groupNodesByModule(input);
 
     const headNodes = input.filter(node => node.heading.depth === 1);
@@ -74,11 +71,16 @@ export default {
     }));
 
     for await (const chunkResult of worker.stream(entries, entries)) {
-      if (output) {
+      if (config.output) {
         for (const section of chunkResult) {
-          const out = join(output, `${section.api}.json`);
+          const out = join(config.output, `${section.api}.json`);
 
-          await writeFile(out, legacyToJSON(section));
+          await writeFile(
+            out,
+            config.minify
+              ? legacyToJSON(section)
+              : legacyToJSON(section, null, 2)
+          );
         }
       }
 

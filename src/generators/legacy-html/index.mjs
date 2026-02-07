@@ -1,7 +1,7 @@
 'use strict';
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import { minify } from '@swc/html';
 
@@ -9,6 +9,7 @@ import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
 import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
 
@@ -29,10 +30,7 @@ const remarkRehypeProcessor = getRemarkRehypeWithShiki();
  * This generator is a top-level generator, and it takes the raw AST tree of the API doc files
  * and generates the HTML files to the specified output directory from the configuration settings
  *
- * @typedef {Array<ApiDocMetadataEntry>} Input
- * @typedef {Array<import('./types').TemplateValues>} Output
- *
- * @type {GeneratorMetadata<Input, Output>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'legacy-html',
@@ -44,41 +42,40 @@ export default {
 
   dependsOn: 'metadata',
 
+  defaultConfiguration: {
+    templatePath: join(import.meta.dirname, 'template.html'),
+    additionalPathsToCopy: [join(import.meta.dirname, 'assets')],
+    ref: 'main',
+  },
+
   /**
    * Process a chunk of items in a worker thread.
    * Builds HTML template objects - FS operations happen in generate().
    *
    * Each item is pre-grouped {head, nodes, headNodes} - no need to
    * recompute groupNodesByModule for every chunk.
-   *
-   * @param {Array<{ head: ApiDocMetadataEntry, nodes: Array<ApiDocMetadataEntry>, headNodes: Array<ApiDocMetadataEntry> }> } slicedInput - Pre-sliced module data
-   * @param {number[]} itemIndices - Indices into the sliced array
-   * @param {{ version: SemVer, parsedSideNav: string }} deps - Dependencies passed from generate()
-   * @returns {Promise<Output>} Template objects for each processed module
    */
-  async processChunk(slicedInput, itemIndices, { version, parsedSideNav }) {
+  async processChunk(slicedInput, itemIndices, navigation) {
     const results = [];
 
     for (const idx of itemIndices) {
       const { head, nodes, headNodes } = slicedInput[idx];
 
-      const activeSideNav = String(parsedSideNav).replace(
+      const nav = navigation.replace(
         `class="nav-${head.api}`,
         `class="nav-${head.api} active`
       );
 
-      const parsedToC = remarkRehypeProcessor.processSync(
-        tableOfContents(nodes, {
-          maxDepth: 4,
-          parser: tableOfContents.parseToCNode,
-        })
+      const toc = String(
+        remarkRehypeProcessor.processSync(
+          tableOfContents(nodes, {
+            maxDepth: 4,
+            parser: tableOfContents.parseToCNode,
+          })
+        )
       );
 
-      const parsedContent = buildContent(
-        headNodes,
-        nodes,
-        remarkRehypeProcessor
-      );
+      const content = buildContent(headNodes, nodes, remarkRehypeProcessor);
 
       const apiAsHeading = head.api.charAt(0).toUpperCase() + head.api.slice(1);
 
@@ -86,10 +83,9 @@ export default {
         api: head.api,
         added: head.introduced_in ?? '',
         section: head.heading.data.name || apiAsHeading,
-        version: `v${version.version}`,
-        toc: String(parsedToC),
-        nav: String(activeSideNav),
-        content: parsedContent,
+        toc,
+        nav,
+        content,
       };
 
       results.push(template);
@@ -100,14 +96,11 @@ export default {
 
   /**
    * Generates the legacy version of the API docs in HTML
-   * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
-   * @returns {AsyncGenerator<Output>}
    */
-  async *generate(input, { index, releases, version, output, worker }) {
-    const baseDir = import.meta.dirname;
+  async *generate(input, worker) {
+    const config = getConfig('legacy-html');
 
-    const apiTemplate = await readFile(join(baseDir, 'template.html'), 'utf-8');
+    const apiTemplate = await readFile(config.templatePath, 'utf-8');
 
     const groupedModules = groupNodesByModule(input);
 
@@ -117,29 +110,33 @@ export default {
         a.heading.data.name.localeCompare(b.heading.data.name)
       );
 
-    const indexOfFiles = index
-      ? index.map(({ api, section }) => ({ api, heading: getHeading(section) }))
+    const indexOfFiles = config.index
+      ? config.index.map(({ api, section }) => ({
+          api,
+          heading: getHeading(section),
+        }))
       : headNodes;
 
-    const parsedSideNav = remarkRehypeProcessor.processSync(
-      tableOfContents(indexOfFiles, {
-        maxDepth: 1,
-        parser: tableOfContents.parseNavigationNode,
-      })
+    const navigation = String(
+      remarkRehypeProcessor.processSync(
+        tableOfContents(indexOfFiles, {
+          maxDepth: 1,
+          parser: tableOfContents.parseNavigationNode,
+        })
+      )
     );
 
-    if (output) {
-      // Define the source folder for API docs assets
-      const srcAssets = join(baseDir, 'assets');
+    if (config.output) {
+      for (const path of config.additionalPathsToCopy) {
+        // Define the output folder for API docs assets
+        const assetsFolder = join(config.output, basename(path));
 
-      // Define the output folder for API docs assets
-      const assetsFolder = join(output, 'assets');
+        // Creates the assets folder if it does not exist
+        await mkdir(assetsFolder, { recursive: true });
 
-      // Creates the assets folder if it does not exist
-      await mkdir(assetsFolder, { recursive: true });
-
-      // Copy all files from assets folder to output, skipping unchanged files
-      await safeCopy(srcAssets, assetsFolder);
+        // Copy all files from assets folder to output, skipping unchanged files
+        await safeCopy(path, assetsFolder);
+      }
     }
 
     // Create sliced input: each item contains head + its module's entries + headNodes reference
@@ -150,18 +147,22 @@ export default {
       headNodes,
     }));
 
-    const deps = { version, parsedSideNav: String(parsedSideNav) };
-
     // Stream chunks as they complete - HTML files are written immediately
-    for await (const chunkResult of worker.stream(entries, entries, deps)) {
+    for await (const chunkResult of worker.stream(
+      entries,
+      entries,
+      navigation
+    )) {
       // Write files for this chunk in the generate method (main thread)
-      if (output) {
+      if (config.output) {
         for (const template of chunkResult) {
-          const result = replaceTemplateValues(apiTemplate, template, releases);
+          let result = replaceTemplateValues(apiTemplate, template, config);
 
-          const { code: minified } = await minify(result);
+          if (config.minify) {
+            ({ code: result } = await minify(result));
+          }
 
-          await writeFile(join(output, `${template.api}.html`), minified);
+          await writeFile(join(config.output, `${template.api}.html`), result);
         }
       }
 
