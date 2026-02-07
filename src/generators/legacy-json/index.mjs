@@ -79,6 +79,7 @@ export default {
           const out = join(output, `${section.api}.json`);
 
           await writeFile(out, JSON.stringify(section, [
+            // TODO: remove this array once all the additional keys have been introduced downstream
             'added',
             'changes',
             'classes',
