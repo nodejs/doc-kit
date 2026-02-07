@@ -110,6 +110,11 @@ export const sortChanges = (changes, key = 'version') => {
 export const leftHandAssign = (target, source) =>
   Object.keys(source).forEach((k) => k in target || (target[k] = source[k]));
 
+/**
+ * Transforms an object to JSON output consistent with the JSON version.
+ * @param {Object} section - The source object
+ * @returns {string} - The JSON output
+ */
 export const legacyToJSON = (section) =>
   JSON.stringify(
     section,

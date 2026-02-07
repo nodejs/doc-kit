@@ -4,7 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createSectionBuilder } from './utils/buildSection.mjs';
-import { groupNodesByModule } from '../../utils/generators.mjs';
+import { groupNodesByModule, legacyToJSON } from '../../utils/generators.mjs';
 
 const buildSection = createSectionBuilder();
 
