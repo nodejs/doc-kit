@@ -85,7 +85,47 @@ export default {
     if (output) {
       await writeFile(
         join(output, 'all.json'),
-        JSON.stringify(generatedValue, null, 2)
+        JSON.stringify(
+          section,
+          [
+            // TODO: remove this array once all the additional keys have been introduced downstream
+            'added',
+            'changes',
+            'classes',
+            'classMethods',
+            'commit',
+            'ctors',
+            'default',
+            'deprecated',
+            'desc',
+            'description',
+            'displayName',
+            'events',
+            'examples',
+            'globals',
+            'introduced_in',
+            'meta',
+            'methods',
+            'miscs',
+            'name',
+            'napiVersion',
+            'options',
+            'params',
+            'pr-url',
+            'properties',
+            'removed',
+            'return',
+            'shortDesc',
+            'signatures',
+            'source',
+            'stability',
+            'stabilityText',
+            'textRaw',
+            'type',
+            'version',
+          ],
+          2,
+        ));
       );
     }
 
