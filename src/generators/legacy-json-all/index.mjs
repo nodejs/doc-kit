@@ -86,7 +86,7 @@ export default {
       await writeFile(
         join(output, 'all.json'),
         JSON.stringify(
-          section,
+          generatedValue,
           [
             // TODO: remove this array once all the additional keys have been introduced downstream
             'added',
