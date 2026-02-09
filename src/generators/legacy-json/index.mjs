@@ -4,7 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createSectionBuilder } from './utils/buildSection.mjs';
-import { groupNodesByModule } from '../../utils/generators.mjs';
+import { groupNodesByModule, legacyToJSON } from '../../utils/generators.mjs';
 
 const buildSection = createSectionBuilder();
 
@@ -78,7 +78,7 @@ export default {
         for (const section of chunkResult) {
           const out = join(output, `${section.api}.json`);
 
-          await writeFile(out, JSON.stringify(section, null, 2));
+          await writeFile(out, legacyToJSON(section));
         }
       }
 

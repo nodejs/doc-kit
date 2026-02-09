@@ -3,6 +3,8 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { legacyToJSON } from '../../utils/generators.mjs';
+
 /**
  * This generator consolidates data from the `legacy-json` generator into a single
  * JSON file (`all.json`).
@@ -83,10 +85,7 @@ export default {
     }
 
     if (output) {
-      await writeFile(
-        join(output, 'all.json'),
-        JSON.stringify(generatedValue, null, 2)
-      );
+      await writeFile(join(output, 'all.json'), legacyToJSON(generatedValue));
     }
 
     return generatedValue;

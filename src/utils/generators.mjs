@@ -109,3 +109,63 @@ export const sortChanges = (changes, key = 'version') => {
  */
 export const leftHandAssign = (target, source) =>
   Object.keys(source).forEach(k => k in target || (target[k] = source[k]));
+
+/**
+ * Transforms an object to JSON output consistent with the JSON version.
+ * @param {Object} section - The source object
+ * @param section.api
+ * @param section.type
+ * @param section.source
+ * @param section.introduced_in
+ * @param section.meta
+ * @param section.stability
+ * @param section.stabilityText
+ * @param section.classes
+ * @param section.methods
+ * @param section.properties
+ * @param section.miscs
+ * @param section.modules
+ * @param section.globals
+ * @returns {string} - The JSON output
+ */
+export const legacyToJSON = ({
+  api,
+  type,
+  source,
+  introduced_in,
+  meta,
+  stability,
+  stabilityText,
+  classes,
+  methods,
+  properties,
+  miscs,
+  modules,
+  globals,
+}) =>
+  JSON.stringify(
+    {
+      type,
+      source,
+      introduced_in,
+      ...(api === 'report'
+        ? {
+            stability,
+            stabilityText,
+            meta,
+          }
+        : {
+            meta,
+            stability,
+            stabilityText,
+          }),
+      classes,
+      methods,
+      properties,
+      miscs,
+      ...(api === 'index' ? undefined : { modules }),
+      globals,
+    },
+    null,
+    2
+  );
