@@ -144,28 +144,30 @@ export const legacyToJSON = ({
   globals,
 }) =>
   JSON.stringify(
-    {
-      type,
-      source,
-      introduced_in,
-      ...(api === 'report'
-        ? {
-            stability,
-            stabilityText,
-            meta,
-          }
-        : {
-            meta,
-            stability,
-            stabilityText,
-          }),
-      classes,
-      methods,
-      properties,
-      miscs,
-      ...(api === 'index' ? undefined : { modules }),
-      globals,
-    },
+    api == null
+      ? {
+          // all.json special order
+          miscs,
+          modules,
+          classes,
+          globals,
+          methods,
+        }
+      : {
+          type,
+          source,
+          introduced_in,
+          meta,
+          stability,
+          stabilityText,
+          classes,
+          methods,
+          properties,
+          miscs,
+          // index.json shouldn't have a `modules` key:
+          ...(api === 'index' ? undefined : { modules }),
+          globals,
+        },
     null,
     2
   );
