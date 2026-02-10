@@ -2,8 +2,6 @@
 
 import { u as createTree } from 'unist-builder';
 
-import { sortChanges } from './utils/generators.mjs';
-
 /**
  * This method allows us to handle creation of Metadata entries
  * within the current scope of API docs being parsed
@@ -131,7 +129,7 @@ const createMetadata = slugger => {
         removed_in: removed,
         n_api_version: napiVersion,
         updates,
-        changes: sortChanges(changes),
+        changes,
         heading: internalMetadata.heading,
         stability: internalMetadata.stability,
         content: section,

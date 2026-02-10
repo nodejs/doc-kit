@@ -81,23 +81,6 @@ export const getCompatibleVersions = (introduced, releases) => {
 };
 
 /**
- * Maps `updates` into `changes` format, merges them and sorts them by version
- * ç
- * @param {Array<ApiDocMetadataChange>} changes Changes to be merged into updates
- * @param {[string='version']} key The key where versions are stored
- * @returns {Array<ApiDocMetadataChange>} Mapped, merged and sorted changes
- */
-export const sortChanges = (changes, key = 'version') => {
-  // Sorts the updates and changes by the first version on a given entry
-  return changes.toSorted((a, b) => {
-    const aVersion = Array.isArray(a[key]) ? a[key][0] : a[key];
-    const bVersion = Array.isArray(b[key]) ? b[key][0] : b[key];
-
-    return compare(coerceSemVer(bVersion), coerceSemVer(aVersion));
-  });
-};
-
-/**
  * Assigns properties from one or more source objects to the target object
  * **without overwriting existing keys** in the target.
  *

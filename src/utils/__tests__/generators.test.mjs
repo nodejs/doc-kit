@@ -6,7 +6,6 @@ import {
   getVersionFromSemVer,
   coerceSemVer,
   getCompatibleVersions,
-  sortChanges,
 } from '../generators.mjs';
 
 describe('groupNodesByModule', () => {
@@ -78,39 +77,5 @@ describe('getCompatibleVersions', () => {
 
     const result = getCompatibleVersions('14.0.0', releases);
     assert.equal(result.length, 2);
-  });
-});
-
-describe('sortChanges', () => {
-  it('sorts changes by version', () => {
-    const changes = [
-      { version: '18.5.0' },
-      { version: '16.2.0' },
-      { version: '20.1.0' },
-    ];
-
-    const result = sortChanges(changes);
-    assert.equal(result[0].version, '20.1.0');
-    assert.equal(result[1].version, '18.5.0');
-    assert.equal(result[2].version, '16.2.0');
-  });
-
-  it('handles array versions', () => {
-    const changes = [
-      { version: ['18.5.0', '18.4.0'] },
-      { version: ['16.2.0'] },
-    ];
-
-    const result = sortChanges(changes);
-    assert.equal(result[0].version[0], '18.5.0');
-    assert.equal(result[1].version[0], '16.2.0');
-  });
-
-  it('sorts by custom key', () => {
-    const changes = [{ customVersion: '18.0.0' }, { customVersion: '16.0.0' }];
-
-    const result = sortChanges(changes, 'customVersion');
-    assert.equal(result[0].customVersion, '18.0.0');
-    assert.equal(result[1].customVersion, '16.0.0');
   });
 });
