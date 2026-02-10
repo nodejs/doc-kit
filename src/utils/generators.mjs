@@ -1,6 +1,6 @@
 'use strict';
 
-import { coerce, compare, major } from 'semver';
+import { coerce, major } from 'semver';
 
 import { DOC_API_BASE_URL_VERSION } from '../constants.mjs';
 
