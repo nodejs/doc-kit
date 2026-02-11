@@ -123,9 +123,15 @@ export const createHeadingElement = (content, changeElement) => {
 
   // Build heading with anchor link
   const headingWrapper = createElement('div', [
-    createElement(`h${depth}`, [
-      createElement(`a#${slug}`, { href: `#${slug}` }, headingContent),
-    ]),
+    createElement(
+      `h${depth}`,
+      { id: slug },
+      createElement(
+        'a',
+        { href: `#${slug}`, className: ['anchor'] },
+        headingContent
+      )
+    ),
   ]);
 
   // Prepend type icon if not 'misc' and type exists

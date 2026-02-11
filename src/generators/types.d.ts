@@ -1,5 +1,4 @@
 import type { SemVer } from 'semver';
-import type { ApiDocReleaseEntry } from '../types';
 import type { publicGenerators, allGenerators } from './index.mjs';
 
 declare global {

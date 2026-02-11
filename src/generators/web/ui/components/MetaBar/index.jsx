@@ -21,6 +21,38 @@ const iconMap = {
 
 const STABILITY_KINDS = ['error', 'warning', null, 'info'];
 const STABILITY_LABELS = ['D', 'E', null, 'L'];
+const STABILITY_TOOLTIPS = ['Deprecated', 'Experimental', null, 'Legacy'];
+
+/**
+ * Renders a heading value with an optional stability badge
+ * @param {{ value: string, stability: number }} props
+ */
+const HeadingValue = ({ value, stability }) => {
+  if (stability === 2) {
+    return value;
+  }
+
+  const ariaLabel = STABILITY_TOOLTIPS[stability]
+    ? `Stability: ${STABILITY_TOOLTIPS[stability]}`
+    : undefined;
+
+  return (
+    <>
+      {value}
+
+      <Badge
+        size="small"
+        className={styles.badge}
+        kind={STABILITY_KINDS[stability]}
+        data-tooltip={STABILITY_TOOLTIPS[stability]}
+        aria-label={ariaLabel}
+        tabIndex={0}
+      >
+        {STABILITY_LABELS[stability]}
+      </Badge>
+    </>
+  );
+};
 
 /**
  * MetaBar component that displays table of contents and page metadata
@@ -38,21 +70,7 @@ export default ({
     headings={{
       items: headings.map(({ value, stability, ...heading }) => ({
         ...heading,
-        value:
-          stability !== 2 ? (
-            <>
-              {value}
-              <Badge
-                size="small"
-                className={styles.badge}
-                kind={STABILITY_KINDS[stability]}
-              >
-                {STABILITY_LABELS[stability]}
-              </Badge>
-            </>
-          ) : (
-            value
-          ),
+        value: <HeadingValue value={value} stability={stability} />,
       })),
     }}
     items={{
@@ -62,10 +80,12 @@ export default ({
         <ol>
           {viewAs.map(([title, path]) => {
             const Icon = iconMap[title];
+
             return (
               <li key={title}>
                 <a href={path}>
                   {Icon && <Icon className={styles.icon} />}
+
                   {title}
                 </a>
               </li>
@@ -76,6 +96,7 @@ export default ({
       Contribute: (
         <>
           <GitHubIcon className="fill-neutral-700 dark:fill-neutral-100" />
+
           <a href={editThisPage}>Edit this page</a>
         </>
       ),
