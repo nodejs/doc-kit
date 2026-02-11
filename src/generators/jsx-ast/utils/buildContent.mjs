@@ -8,7 +8,6 @@ import { buildMetaBarProps } from './buildBarProps.mjs';
 import createPropertyTable from './buildPropertyTable.mjs';
 import { DOC_NODE_BLOB_BASE_URL } from '../../../constants.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
-import { sortChanges } from '../../../utils/generators.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 import {
@@ -53,17 +52,14 @@ export const gatherChangeEntries = (entry, remark) => {
  * @param {import('unified').Processor} remark - The remark processor
  */
 export const createChangeElement = (entry, remark) => {
-  const changeEntries = gatherChangeEntries(entry, remark);
+  const changes = gatherChangeEntries(entry, remark);
 
-  if (!changeEntries.length) {
+  if (!changes.length) {
     return null;
   }
 
-  // Sort changes by versions and reverse for newest first
-  const sortedChanges = sortChanges(changeEntries, 'versions');
-
   return createJSXElement(JSX_IMPORTS.ChangeHistory.name, {
-    changes: sortedChanges,
+    changes,
     className: 'change-history',
   });
 };
