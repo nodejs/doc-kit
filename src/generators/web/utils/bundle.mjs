@@ -31,6 +31,11 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       chunkImportMap: !server,
     },
 
+    checks: {
+      // Disable plugin timing logs for cleaner output. This can be re-enabled for debugging performance issues.
+      pluginTimings: false,
+    },
+
     // Output configuration
     output: {
       // Output module format:
@@ -79,6 +84,9 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
 
     // Module resolution configuration.
     resolve: {
+      // exports condition to use
+      conditionNames: ['rolldown'],
+
       // Alias react imports to preact/compat for smaller bundle sizes.
       // Explicit jsx-runtime aliases are required for the automatic JSX transform.
       alias: {
