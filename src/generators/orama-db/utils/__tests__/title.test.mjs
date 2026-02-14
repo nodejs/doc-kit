@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { buildHierarchicalTitle } from '../index.mjs';
+import { buildHierarchicalTitle } from '../title.mjs';
 
 describe('buildHierarchicalTitle', () => {
   const mockHeadings = [

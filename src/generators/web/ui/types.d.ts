@@ -1,4 +1,4 @@
-import { createStaticData } from '../build/data.mjs';
+import type { createStaticData } from '../utils/data.mjs';
 
 declare global {
   const __STATIC_DATA__: ReturnType<typeof createStaticData>;

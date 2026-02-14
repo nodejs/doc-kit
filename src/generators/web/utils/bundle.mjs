@@ -4,7 +4,8 @@ import virtual from '@rollup/plugin-virtual';
 import { build } from 'rolldown';
 
 import cssLoader from './css.mjs';
-import staticData from './data.mjs';
+import getStaticData from './data.mjs';
+import getConfig from '../../../utils/configuration/index.mjs';
 
 // Resolve node_modules relative to this package (doc-kit), not cwd.
 // This ensures modules are found when running from external directories.
@@ -22,6 +23,8 @@ const DOC_KIT_NODE_MODULES = join(
  * @param {boolean} [options.server=false] - Whether this is a server-side build.
  */
 export default async function bundleCode(codeMap, { server = false } = {}) {
+  const config = getConfig('web');
+
   const result = await build({
     // Entry points: array of virtual module names that the virtual plugin provides
     input: Array.from(codeMap.keys()),
@@ -66,7 +69,7 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       // Be sure to update type declarations (`types.d.ts`) if these change.
       define: {
         // Static data injected directly into the bundle (as a literal or serialized JSON).
-        __STATIC_DATA__: staticData,
+        __STATIC_DATA__: getStaticData(),
 
         // Boolean flags used for conditional logic in source code:
         // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
@@ -92,6 +95,7 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       alias: {
         react: 'preact/compat',
         'react-dom': 'preact/compat',
+        ...config.imports,
       },
 
       // Tell the bundler where to find node_modules.

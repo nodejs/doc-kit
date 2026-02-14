@@ -1,15 +1,13 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BASE_URL } from '../../constants.mjs';
 import { createPageSitemapEntry } from './utils/createPageSitemapEntry.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
 
 /**
  * This generator generates a sitemap.xml file for search engine optimization
  *
- * @typedef {Array<ApiDocMetadataEntry>} Input
- *
- * @type {GeneratorMetadata<Input, string>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'sitemap',
@@ -22,12 +20,10 @@ export default {
 
   /**
    * Generates a sitemap.xml file
-   *
-   * @param {Input} entries
-   * @param {Partial<GeneratorOptions>} options
-   * @returns {Promise<string>}
    */
-  async generate(entries, { output }) {
+  async generate(entries) {
+    const { sitemap: config } = getConfig();
+
     const template = await readFile(
       join(import.meta.dirname, 'template.xml'),
       'utf-8'
@@ -42,9 +38,9 @@ export default {
 
     const apiPages = entries
       .filter(entry => entry.heading.depth === 1)
-      .map(entry => createPageSitemapEntry(entry, lastmod));
+      .map(entry => createPageSitemapEntry(entry, config.baseURL, lastmod));
 
-    const { href: loc } = new URL('/docs/latest/api/', BASE_URL);
+    const { href: loc } = new URL('latest/api/', config.baseURL);
 
     /**
      * @typedef {import('./types').SitemapEntry}
@@ -70,8 +66,8 @@ export default {
 
     const sitemap = template.replace('__URLSET__', urlset);
 
-    if (output) {
-      await writeFile(join(output, 'sitemap.xml'), sitemap, 'utf-8');
+    if (config.output) {
+      await writeFile(join(config.output, 'sitemap.xml'), sitemap, 'utf-8');
     }
 
     return sitemap;

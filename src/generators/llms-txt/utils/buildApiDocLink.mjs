@@ -1,5 +1,5 @@
+import { buildApiDocURL } from '../../../utils/generators.mjs';
 import { transformNodeToString } from '../../../utils/unist.mjs';
-import { buildApiDocURL } from '../../../utils/url.mjs';
 
 /**
  * Retrieves the description of a given API doc entry. It first checks whether
@@ -33,12 +33,13 @@ export const getEntryDescription = entry => {
  * Builds a markdown link for an API doc entry
  *
  * @param {ApiDocMetadataEntry} entry
+ * @param {string} baseURL
  * @returns {string}
  */
-export const buildApiDocLink = entry => {
+export const buildApiDocLink = (entry, baseURL) => {
   const title = entry.heading.data.name;
 
-  const url = buildApiDocURL(entry);
+  const url = buildApiDocURL(entry, baseURL);
 
   const link = `[${title}](${url})`;
 

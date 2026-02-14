@@ -77,7 +77,6 @@ export default defineConfig([
           },
         },
       ],
-      'jsdoc/require-param': 'error',
     },
   },
   // Override rules for test files to disable JSDoc rules

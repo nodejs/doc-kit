@@ -6,7 +6,6 @@ import { SKIP, visit } from 'unist-util-visit';
 import { createJSXElement } from './ast.mjs';
 import { buildMetaBarProps } from './buildBarProps.mjs';
 import createPropertyTable from './buildPropertyTable.mjs';
-import { DOC_NODE_BLOB_BASE_URL } from '../../../constants.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
@@ -21,6 +20,11 @@ import {
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
 import insertSignature, { getFullName } from './buildSignature.mjs';
+import getConfig from '../../../utils/configuration/index.mjs';
+import {
+  GITHUB_BLOB_URL,
+  populate,
+} from '../../../utils/configuration/templates.mjs';
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
@@ -68,13 +72,18 @@ export const createChangeElement = (entry, remark) => {
  * Creates a span element with a link to the source code, or null if no source.
  * @param {string|undefined} sourceLink - The source link path
  */
-export const createSourceLink = sourceLink =>
-  sourceLink
+export const createSourceLink = sourceLink => {
+  const config = getConfig('jsx-ast');
+
+  return sourceLink
     ? createElement('span', [
         INTERNATIONALIZABLE.sourceCode,
         createElement(
           'a',
-          { href: `${DOC_NODE_BLOB_BASE_URL}${sourceLink}`, target: '_blank' },
+          {
+            href: `${populate(GITHUB_BLOB_URL, config)}${sourceLink}`,
+            target: '_blank',
+          },
           [
             sourceLink,
             createJSXElement(JSX_IMPORTS.ArrowUpRightIcon.name, {
@@ -85,6 +94,7 @@ export const createSourceLink = sourceLink =>
         ),
       ])
     : null;
+};
 
 /**
  * Extracts heading content text with fallback and formats it.
@@ -187,7 +197,13 @@ const getLevelFromDeprecationType = typeText => {
  * @param {number} index - The index of the node in its parent's children array
  * @param {import('unist').Parent} parent - The parent node containing the heading
  */
-export const transformHeadingNode = (entry, remark, node, index, parent) => {
+export const transformHeadingNode = async (
+  entry,
+  remark,
+  node,
+  index,
+  parent
+) => {
   // Replace heading node with our enhanced heading element
   parent.children[index] = createHeadingElement(
     node,

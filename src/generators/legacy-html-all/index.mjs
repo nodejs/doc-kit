@@ -1,11 +1,13 @@
 'use strict';
 
 import { readFile, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 
 import { minify } from '@swc/html';
 
+import getConfig from '../../utils/configuration/index.mjs';
 import { getRemarkRehype } from '../../utils/remark.mjs';
+import legacyHtml from '../legacy-html/index.mjs';
 import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValues.mjs';
 import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
 
@@ -16,9 +18,7 @@ import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
  * This generator is a top-level generator, and it takes the raw AST tree of the API doc files
  * and generates the HTML files to the specified output directory from the configuration settings
  *
- * @typedef {Array<import('../legacy-html/types').TemplateValues>} Input
- *
- * @type {GeneratorMetadata<Input, string>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'legacy-html-all',
@@ -30,22 +30,21 @@ export default {
 
   dependsOn: 'legacy-html',
 
+  defaultConfiguration: {
+    templatePath: legacyHtml.defaultConfiguration.templatePath,
+  },
+
   /**
    * Generates the `all.html` file from the `legacy-html` generator
-   * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
-   * @returns {Promise<string>}
    */
-  async generate(input, { version, releases, output }) {
+  async generate(input) {
+    const config = getConfig('legacy-html-all');
+
     // Gets a Remark Processor that parses Markdown to minified HTML
     const remarkWithRehype = getRemarkRehype();
 
-    // Current directory path relative to the `index.mjs` file
-    // from the `legacy-html` generator, as all the assets are there
-    const baseDir = resolve(import.meta.dirname, '..', 'legacy-html');
-
     // Reads the API template.html file to be used as a base for the HTML files
-    const apiTemplate = await readFile(join(baseDir, 'template.html'), 'utf-8');
+    const apiTemplate = await readFile(config.templatePath, 'utf-8');
 
     // Filter out index entries and extract needed properties
     const entries = input.filter(entry => entry.api !== 'index');
@@ -75,26 +74,25 @@ export default {
       api: 'all',
       added: '',
       section: 'All',
-      version: `v${version.version}`,
+      version: `v${config.version.version}`,
       toc: aggregatedToC,
       nav: String(parsedSideNav),
       content: aggregatedContent,
     };
 
-    const result = replaceTemplateValues(
-      apiTemplate,
-      templateValues,
-      releases,
-      { skipGitHub: true, skipGtocPicker: true }
-    );
+    let result = replaceTemplateValues(apiTemplate, templateValues, config, {
+      skipGitHub: true,
+      skipGtocPicker: true,
+    });
 
-    // We minify the html result to reduce the file size and keep it "clean"
-    const { code: minified } = await minify(result);
-
-    if (output) {
-      await writeFile(join(output, 'all.html'), minified);
+    if (config.minify) {
+      ({ code: result } = await minify(result));
     }
 
-    return minified;
+    if (config.output) {
+      await writeFile(join(config.output, 'all.html'), result);
+    }
+
+    return result;
   },
 };

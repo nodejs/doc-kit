@@ -29,38 +29,46 @@ const createChunks = (count, size) => {
  *
  * @param {unknown[]} fullInput - Full input array
  * @param {number[]} indices - Indices to process
- * @param {object} options - Serialized options
+ * @param {Object} extra - Stuff to pass to the worker
+ * @param {import('../utils/configuration/types').Configuration} configuration - Serialized options
  * @param {string} generatorName - Name of the generator
  * @returns {ParallelTaskOptions} Task data for Piscina
  */
-const createTask = (fullInput, indices, options, generatorName) => ({
-  generatorName,
-  // Only send the items needed for this chunk (reduces serialization overhead)
-  input: indices.map(i => fullInput[i]),
-  // Remap indices to 0-based for the sliced array
-  itemIndices: indices.map((_, i) => i),
-  options,
-});
+const createTask = (
+  fullInput,
+  indices,
+  extra,
+  configuration,
+  generatorName
+) => {
+  return {
+    generatorName,
+    // Only send the items needed for this chunk (reduces serialization overhead)
+    input: indices.map(i => fullInput[i]),
+    // Remap indices to 0-based for the sliced array
+    itemIndices: indices.map((_, i) => i),
+    extra,
+    // Only pass the needed configuration to this generator
+    configuration: {
+      [generatorName]: configuration[generatorName],
+    },
+  };
+};
 
 /**
  * Creates a parallel worker that distributes work across a Piscina thread pool.
  *
  * @param {keyof AllGenerators} generatorName - Generator name
  * @param {import('piscina').Piscina} pool - Piscina instance
- * @param {Partial<GeneratorOptions>} options - Generator options
+ * @param {import('../utils/configuration/types').Configuration} configuration - Generator options
  * @returns {ParallelWorker}
  */
-export default function createParallelWorker(generatorName, pool, options) {
-  const { threads, chunkSize } = options;
-
-  /** @param {object} extra */
-  const serializeOptions = extra => {
-    const opts = { ...options, ...extra };
-
-    delete opts.worker;
-
-    return opts;
-  };
+export default function createParallelWorker(
+  generatorName,
+  pool,
+  configuration
+) {
+  const { threads, chunkSize } = configuration;
 
   const generator = allGenerators[generatorName];
 
@@ -79,8 +87,6 @@ export default function createParallelWorker(generatorName, pool, options) {
         return;
       }
 
-      const opts = serializeOptions(extra);
-
       const chunks = createChunks(items.length, chunkSize);
 
       parallelLogger.debug(
@@ -95,14 +101,22 @@ export default function createParallelWorker(generatorName, pool, options) {
         chunks.map(indices => {
           if (runInOneGo) {
             const promise = generator
-              .processChunk(fullInput, indices, opts)
+              .processChunk(fullInput, indices, extra)
               .then(result => ({ promise, result }));
 
             return promise;
           }
 
           const promise = pool
-            .run(createTask(fullInput, indices, opts, generatorName))
+            .run(
+              createTask(
+                fullInput,
+                indices,
+                extra,
+                configuration,
+                generatorName
+              )
+            )
             .then(result => ({ promise, result }));
 
           return promise;

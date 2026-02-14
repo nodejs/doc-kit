@@ -2,7 +2,11 @@ import readingTime from 'reading-time';
 import { visit } from 'unist-util-visit';
 
 import { getFullName } from './buildSignature.mjs';
-import { DOC_API_BLOB_EDIT_BASE_URL } from '../../../constants.mjs';
+import getConfig from '../../../utils/configuration/index.mjs';
+import {
+  GITHUB_EDIT_URL,
+  populate,
+} from '../../../utils/configuration/templates.mjs';
 import {
   getCompatibleVersions,
   getVersionFromSemVer,
@@ -87,6 +91,8 @@ export const extractHeadings = entries =>
  * @param {Array<ApiDocMetadataEntry>} entries - All documentation entries for a given API item
  */
 export const buildMetaBarProps = (head, entries) => {
+  const config = getConfig('jsx-ast');
+
   return {
     headings: extractHeadings(entries),
     addedIn: head.introduced_in || head.added_in || '',
@@ -95,7 +101,7 @@ export const buildMetaBarProps = (head, entries) => {
       ['JSON', `${head.api}.json`],
       ['MD', `${head.api}.md`],
     ],
-    editThisPage: `${DOC_API_BLOB_EDIT_BASE_URL}${head.api}.md`,
+    editThisPage: `${populate(GITHUB_EDIT_URL, config)}${head.api}.md`,
   };
 };
 
@@ -106,9 +112,11 @@ export const buildMetaBarProps = (head, entries) => {
  * @param {string} api - API identifier (used in link)
  */
 export const formatVersionOptions = (compatibleVersions, api) => {
+  const config = getConfig('jsx-ast');
+
   return compatibleVersions.map(({ version, isLts, isCurrent }) => {
     const parsed = getVersionFromSemVer(version);
-    const value = getVersionURL(parsed, api);
+    const value = getVersionURL(parsed, api, config.baseURL);
 
     let label = `v${parsed}`;
 
@@ -131,20 +139,20 @@ export const formatVersionOptions = (compatibleVersions, api) => {
  * Builds metadata for the sidebar (left panel).
  *
  * @param {ApiDocMetadataEntry} entry - Current documentation entry
- * @param {Array<ApiDocReleaseEntry>} releases - Available API releases
- * @param {import('semver').SemVer} version - Current SemVer version
  * @param {Array<[string, string]>} docPages - Available doc pages for sidebar navigation
  */
-export const buildSideBarProps = (entry, releases, version, docPages) => {
+export const buildSideBarProps = (entry, docPages) => {
+  const config = getConfig('jsx-ast');
+
   const compatibleVersions = getCompatibleVersions(
     entry.introduced_in,
-    releases,
+    config.changelog,
     true
   );
 
   return {
     versions: formatVersionOptions(compatibleVersions, entry.api),
-    currentVersion: `v${version.version}`,
+    currentVersion: `v${config.version.version}`,
     pathname: `${entry.api}.html`,
     docPages,
   };

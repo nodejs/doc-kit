@@ -1,25 +1,19 @@
 'use strict';
 
-import { writeFile, readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import {
-  DOC_SLUG_ENVIRONMENT,
-  DOC_SLUG_OPTIONS,
-  OUTPUT_FILENAME,
-} from './constants.mjs';
 import {
   convertOptionToMandoc,
   convertEnvVarToMandoc,
 } from './utils/converter.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
 
 /**
  * This generator generates a man page version of the CLI.md file.
  * See https://man.openbsd.org/mdoc.7 for the formatting.
  *
- * @typedef {Array<ApiDocMetadataEntry>} Input
- *
- * @type {GeneratorMetadata<Input, string>}
+ * @type {import('./types').Generator}
  */
 export default {
   name: 'man-page',
@@ -30,13 +24,19 @@ export default {
 
   dependsOn: 'metadata',
 
+  defaultConfiguration: {
+    fileName: 'node.1',
+    cliOptionsHeaderSlug: 'options',
+    envVarsHeaderSlug: 'environment-variables-1',
+    templatePath: join(import.meta.dirname, 'template.1'),
+  },
+
   /**
    * Generates the Node.js man-page
-   *
-   * @param {Input} input
-   * @param {Partial<GeneratorOptions>} options
    */
-  async generate(input, options) {
+  async generate(input) {
+    const config = getConfig('man-page');
+
     // Filter to only 'cli'.
     const components = input.filter(({ api }) => api === 'cli');
 
@@ -46,11 +46,11 @@ export default {
 
     // Find the appropriate headers
     const optionsStart = components.findIndex(
-      ({ slug }) => slug === DOC_SLUG_OPTIONS
+      ({ slug }) => slug === config.cliOptionsHeaderSlug
     );
 
     const environmentStart = components.findIndex(
-      ({ slug }) => slug === DOC_SLUG_ENVIRONMENT
+      ({ slug }) => slug === config.envVarsHeaderSlug
     );
 
     // The first header that is <3 in depth after environmentStart
@@ -75,17 +75,14 @@ export default {
       ),
     };
 
-    const template = await readFile(
-      join(import.meta.dirname, 'template.1'),
-      'utf-8'
-    );
+    const template = await readFile(config.templatePath, 'utf-8');
 
     const filledTemplate = template
       .replace('__OPTIONS__', output.options)
       .replace('__ENVIRONMENT__', output.env);
 
-    if (options.output) {
-      await writeFile(join(options.output, OUTPUT_FILENAME), filledTemplate);
+    if (config.output) {
+      await writeFile(join(config.output, config.fileName), filledTemplate);
     }
 
     return filledTemplate;

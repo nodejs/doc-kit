@@ -2,8 +2,6 @@
 
 import { coerce, major } from 'semver';
 
-import { DOC_API_BASE_URL_VERSION } from '../constants.mjs';
-
 /**
  * Groups all the API metadata nodes by module (`api` property) so that we can process each different file
  * based on the module it belongs to.
@@ -40,9 +38,10 @@ export const getVersionFromSemVer = version =>
  *
  * @param {string} version The version to be parsed
  * @param {string} api The document
+ * @param {string} baseURL
  */
-export const getVersionURL = (version, api) =>
-  `${DOC_API_BASE_URL_VERSION}${version}/api/${api}.html`;
+export const getVersionURL = (version, api, baseURL) =>
+  `${baseURL}/latest-v${version}/api/${api}.html`;
 
 /**
  * @TODO: This should not be necessary, and indicates errors within the API docs
@@ -95,37 +94,28 @@ export const leftHandAssign = (target, source) =>
 
 /**
  * Transforms an object to JSON output consistent with the JSON version.
- * @param {Object} section - The source object
- * @param section.api
- * @param section.type
- * @param section.source
- * @param section.introduced_in
- * @param section.meta
- * @param section.stability
- * @param section.stabilityText
- * @param section.classes
- * @param section.methods
- * @param section.properties
- * @param section.miscs
- * @param section.modules
- * @param section.globals
+ * @param {import('../generators/legacy-json/types').Section} section - The source object
+ * @param {any[]} args
  * @returns {string} - The JSON output
  */
-export const legacyToJSON = ({
-  api,
-  type,
-  source,
-  introduced_in,
-  meta,
-  stability,
-  stabilityText,
-  classes,
-  methods,
-  properties,
-  miscs,
-  modules,
-  globals,
-}) =>
+export const legacyToJSON = (
+  {
+    api,
+    type,
+    source,
+    introduced_in,
+    meta,
+    stability,
+    stabilityText,
+    classes,
+    methods,
+    properties,
+    miscs,
+    modules,
+    globals,
+  },
+  ...args
+) =>
   JSON.stringify(
     api == null
       ? {
@@ -151,6 +141,23 @@ export const legacyToJSON = ({
           ...(api === 'index' ? undefined : { modules }),
           globals,
         },
-    null,
-    2
+    ...args
   );
+
+/**
+ * Builds the url of a api doc entry.
+ *
+ * @param {ApiDocMetadataEntry} entry
+ * @param {string} baseURL
+ * @param {boolean} [useHtml]
+ * @returns {URL}
+ */
+export const buildApiDocURL = (entry, baseURL, useHtml = false) => {
+  const path = entry.api_doc_source.replace(/^doc\//, '/docs/latest/');
+
+  if (useHtml) {
+    return URL.parse(path.replace(/\.md$/, '.html'), baseURL);
+  }
+
+  return URL.parse(path, baseURL);
+};

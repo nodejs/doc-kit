@@ -12,8 +12,6 @@ const generatorsLogger = logger.child('generators');
  * Creates a generator orchestration system that manages the execution of
  * documentation generators in dependency order, with support for parallel
  * processing and streaming results.
- *
- * @returns {{ runGenerators: (options: GeneratorOptions) => Promise<unknown[]> }}
  */
 const createGenerator = () => {
   /** @type {{ [key: string]: Promise<unknown> | AsyncGenerator }} */
@@ -48,9 +46,9 @@ const createGenerator = () => {
    * Schedules a generator and its dependencies for execution.
    *
    * @param {string} generatorName - Generator to schedule
-   * @param {GeneratorOptions} options - Runtime options
+   * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
    */
-  const scheduleGenerator = (generatorName, options) => {
+  const scheduleGenerator = (generatorName, configuration) => {
     if (generatorName in cachedGenerators) {
       return;
     }
@@ -59,7 +57,7 @@ const createGenerator = () => {
 
     // Schedule dependency first
     if (dependsOn && !(dependsOn in cachedGenerators)) {
-      scheduleGenerator(dependsOn, options);
+      scheduleGenerator(dependsOn, configuration);
     }
 
     generatorsLogger.debug(`Scheduling "${generatorName}"`, {
@@ -75,10 +73,10 @@ const createGenerator = () => {
 
       // Create parallel worker for streaming generators
       const worker = processChunk
-        ? createParallelWorker(generatorName, pool, options)
+        ? createParallelWorker(generatorName, pool, configuration)
         : null;
 
-      const result = await generate(dependencyInput, { ...options, worker });
+      const result = await generate(dependencyInput, worker);
 
       // For streaming generators, "Completed" is logged when collection finishes
       // (in streamingCache.getOrCollect), not here when the generator returns
@@ -93,11 +91,11 @@ const createGenerator = () => {
   /**
    * Runs all requested generators with their dependencies.
    *
-   * @param {GeneratorOptions} options - Runtime options
+   * @param {import('./utils/configuration/types').Configuration} options - Runtime options
    * @returns {Promise<unknown[]>} Results of all requested generators
    */
-  const runGenerators = async options => {
-    const { generators, threads } = options;
+  const runGenerators = async configuration => {
+    const { target: generators, threads } = configuration;
 
     generatorsLogger.debug(`Starting pipeline`, {
       generators: generators.join(', '),
@@ -109,7 +107,7 @@ const createGenerator = () => {
 
     // Schedule all generators
     for (const name of generators) {
-      scheduleGenerator(name, options);
+      scheduleGenerator(name, configuration);
     }
 
     // Start all collections in parallel (don't await sequentially)

@@ -1,5 +1,8 @@
 import { LANGS } from '@node-core/rehype-shiki';
 
+import getConfig from '../../../utils/configuration/index.mjs';
+import { lazy } from '../../../utils/misc.mjs';
+
 /**
  * Constructs a set of static, minimal data to send from server to client.
  *
@@ -11,6 +14,8 @@ import { LANGS } from '@node-core/rehype-shiki';
  * This data is serializable and efficient to send to the browser.
  */
 export const createStaticData = () => {
+  const config = getConfig('web');
+
   // Create a display name map with aliases from Shiki's loaded languages
   const shikiDisplayNameMap = [
     ...new Map(
@@ -25,10 +30,9 @@ export const createStaticData = () => {
   return {
     /** @type {Array<[Array<string>, string]>} */
     shikiDisplayNameMap,
+    title: config.title,
+    repository: config.repository,
   };
 };
 
-// Export the JSON-encoded version as the module default.
-// This makes it easier to inject into other parts of the build (e.g. via `define` in a bundler),
-// allowing it to be inlined at compile time as a literal object.
-export default JSON.stringify(createStaticData());
+export default lazy(() => JSON.stringify(createStaticData()));
