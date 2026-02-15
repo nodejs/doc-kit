@@ -3,14 +3,13 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
-import { minify } from '@swc/html';
-
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
 import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
+import { minifyHTML } from '../../utils/html-minifier.mjs';
 import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
 
 /**
@@ -159,7 +158,7 @@ export default {
           let result = replaceTemplateValues(apiTemplate, template, config);
 
           if (config.minify) {
-            ({ code: result } = await minify(result));
+            result = Buffer.from(await minifyHTML(result));
           }
 
           await writeFile(join(config.output, `${template.api}.html`), result);

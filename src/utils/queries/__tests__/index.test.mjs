@@ -89,7 +89,6 @@ describe('createQueries', () => {
       },
     ];
 
-    console.log(node, definitions);
     queries.updateLinkReference(node, definitions);
 
     strictEqual(node.type, 'link');

@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
-import { minifySync } from '@swc/html';
 import { jsx, toJs } from 'estree-util-to-js';
 import { transform } from 'lightningcss';
 
-import { SPECULATION_RULES } from '../constants.mjs';
 import bundleCode from './bundle.mjs';
 import { createChunkedRequire } from './chunks.mjs';
+import { minifyHTML } from '../../../utils/html-minifier.mjs';
+import { SPECULATION_RULES } from '../constants.mjs';
 
 /**
  * Converts JSX AST entries to server and client JavaScript code.
@@ -109,24 +109,26 @@ export async function processJSXEntries(
   const titleSuffix = `Node.js v${version.version} Documentation`;
 
   // Step 3: Create final HTML (could be parallelized in workers)
-  const results = entries.map(({ data: { api, heading } }) => {
-    const fileName = `${api}.js`;
-    const title = `${heading.data.name} | ${titleSuffix}`;
+  const results = await Promise.all(
+    entries.map(async ({ data: { api, heading } }) => {
+      const fileName = `${api}.js`;
+      const title = `${heading.data.name} | ${titleSuffix}`;
 
-    // Replace template placeholders with actual content
-    const renderedHtml = template
-      .replace('{{title}}', title)
-      .replace('{{dehydrated}}', serverBundle.pages.get(fileName) ?? '')
-      .replace('{{importMap}}', clientBundle.importMap ?? '')
-      .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
-      .replace('{{speculationRules}}', SPECULATION_RULES)
-      .replace('{{ogTitle}}', title);
+      // Replace template placeholders with actual content
+      const renderedHtml = template
+        .replace('{{title}}', title)
+        .replace('{{dehydrated}}', serverBundle.pages.get(fileName) ?? '')
+        .replace('{{importMap}}', clientBundle.importMap ?? '')
+        .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
+        .replace('{{speculationRules}}', SPECULATION_RULES)
+        .replace('{{ogTitle}}', title);
 
-    // Minify HTML (input must be a Buffer)
-    const { code: html } = minifySync(renderedHtml);
+      const minifiedHtml = await minifyHTML(renderedHtml);
+      const html = Buffer.from(minifiedHtml);
 
-    return { html, api };
-  });
+      return { html, api };
+    })
+  );
 
   const { code: minifiedCSS } = transform({
     code: Buffer.from(`${serverBundle.css}\n${clientBundle.css}`),
