@@ -3,9 +3,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import minifyHtml from '@minify-html/node';
-
 import getConfig from '../../utils/configuration/index.mjs';
+import { minifyHTML } from '../../utils/html-minifier.mjs';
 import { getRemarkRehype } from '../../utils/remark.mjs';
 import legacyHtml from '../legacy-html/index.mjs';
 import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValues.mjs';
@@ -86,7 +85,7 @@ export default {
     });
 
     if (config.minify) {
-      result = Buffer.from(minifyHtml.minify(Buffer.from(result), {}));
+      result = Buffer.from(await minifyHTML(result));
     }
 
     if (config.output) {
