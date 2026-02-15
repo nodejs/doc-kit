@@ -18,7 +18,7 @@ mock.module('../../../../utils/generators.mjs', {
       { version: '19.0.0', isLts: false, isCurrent: true },
     ],
     leftHandAssign: Object.assign,
-    getVersionFromSemVer: version => version.split('.')[0],
+    getVersionFromSemVer: version => `${version.major}.x`,
     getVersionURL: (version, api) => `/api/${version}/${api}`,
   },
 });
@@ -94,7 +94,7 @@ describe('buildMetaBarProps', () => {
     const result = buildMetaBarProps(head, entries);
 
     assert.equal(result.addedIn, 'v1.0.0');
-    assert.equal(result.readingTime, '1 min read');
+    assert.equal(result.readingTime, '5 min read');
     assert.deepEqual(result.viewAs, [
       ['JSON', 'fs.json'],
       ['MD', 'fs.md'],
@@ -134,15 +134,15 @@ describe('formatVersionOptions', () => {
     assert.deepStrictEqual(result, [
       {
         label: 'v16.x (LTS)',
-        value: 'https://nodejs.org/docs/latest-v16.x/api/http.html',
+        value: '/api/16.x/http',
       },
       {
         label: 'v17.x (Current)',
-        value: 'https://nodejs.org/docs/latest-v17.x/api/http.html',
+        value: '/api/17.x/http',
       },
       {
         label: 'v18.x',
-        value: 'https://nodejs.org/docs/latest-v18.x/api/http.html',
+        value: '/api/18.x/http',
       },
     ]);
   });

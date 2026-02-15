@@ -6,11 +6,23 @@ import semver from 'semver';
 import { allGenerators } from '../index.mjs';
 
 const validDependencies = Object.keys(allGenerators);
-const generatorEntries = Object.entries(allGenerators);
+
+/**
+ * Resolves all lazy generator loaders into their actual metadata.
+ * @returns {Promise<[string, import('../types').GeneratorMetadata][]>}
+ */
+const resolveAllGenerators = async () =>
+  Promise.all(
+    Object.entries(allGenerators).map(async ([key, loader]) => [
+      key,
+      await loader(),
+    ])
+  );
 
 describe('All Generators', () => {
-  it('should have keys matching their name property', () => {
-    generatorEntries.forEach(([key, generator]) => {
+  it('should have keys matching their name property', async () => {
+    const entries = await resolveAllGenerators();
+    entries.forEach(([key, generator]) => {
       assert.equal(
         key,
         generator.name,
@@ -19,8 +31,9 @@ describe('All Generators', () => {
     });
   });
 
-  it('should have valid semver versions', () => {
-    generatorEntries.forEach(([key, generator]) => {
+  it('should have valid semver versions', async () => {
+    const entries = await resolveAllGenerators();
+    entries.forEach(([key, generator]) => {
       const isValid = semver.valid(generator.version);
       assert.ok(
         isValid,
@@ -29,8 +42,9 @@ describe('All Generators', () => {
     });
   });
 
-  it('should have valid dependsOn references', () => {
-    generatorEntries.forEach(([key, generator]) => {
+  it('should have valid dependsOn references', async () => {
+    const entries = await resolveAllGenerators();
+    entries.forEach(([key, generator]) => {
       if (generator.dependsOn) {
         assert.ok(
           validDependencies.includes(generator.dependsOn),
@@ -40,10 +54,11 @@ describe('All Generators', () => {
     });
   });
 
-  it('should have ast generator as a top-level generator with no dependencies', () => {
-    assert.ok(allGenerators.ast, 'ast generator should exist');
+  it('should have ast generator as a top-level generator with no dependencies', async () => {
+    const ast = await allGenerators.ast();
+    assert.ok(ast, 'ast generator should exist');
     assert.equal(
-      allGenerators.ast.dependsOn,
+      ast.dependsOn,
       undefined,
       'ast generator should have no dependencies'
     );

@@ -15,9 +15,9 @@ const createMockConfig = (overrides = {}) => ({
 mock.module('../../../generators/index.mjs', {
   namedExports: {
     allGenerators: {
-      json: { defaultConfiguration: { format: 'json' } },
-      html: { defaultConfiguration: { format: 'html' } },
-      markdown: {},
+      json: async () => ({ defaultConfiguration: { format: 'json' } }),
+      html: async () => ({ defaultConfiguration: { format: 'html' } }),
+      markdown: async () => ({}),
     },
   },
 });
