@@ -62,7 +62,7 @@ updates:
           - 'recma-*'
       compiling:
         patterns:
-          - 'html-minifier-terser'
+          - '@minify-html/wasm'
           - '@rollup/*'
           - 'rolldown'
           - 'lightningcss'

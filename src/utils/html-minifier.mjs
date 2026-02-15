@@ -1,21 +1,24 @@
-import { minify } from 'html-minifier-terser';
+import { minify } from '@minify-html/wasm';
 
 const DEFAULT_HTML_MINIFIER_OPTIONS = {
-  collapseWhitespace: true,
-  conservativeCollapse: true,
-  minifyCSS: true,
-  removeComments: true,
-  removeRedundantAttributes: true,
-  removeScriptTypeAttributes: true,
-  removeStyleLinkTypeAttributes: true,
-  useShortDoctype: true,
+  minify_css: true,
+  minify_js: true,
 };
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 
 /**
  * Minifies HTML with project defaults and optional overrides.
  *
  * @param {string} html
- * @param {import('html-minifier-terser').Options} [overrides]
+ * @param {Record<string, boolean | number | string | string[]>} [overrides]
  */
-export const minifyHTML = (html, overrides = {}) =>
-  minify(html, { ...DEFAULT_HTML_MINIFIER_OPTIONS, ...overrides });
+export const minifyHTML = async (html, overrides = {}) => {
+  const minified = minify(textEncoder.encode(html), {
+    ...DEFAULT_HTML_MINIFIER_OPTIONS,
+    ...overrides,
+  });
+
+  return textDecoder.decode(minified);
+};
