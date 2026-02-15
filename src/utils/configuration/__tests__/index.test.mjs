@@ -137,8 +137,6 @@ describe('config.mjs', () => {
         threads: 2,
       });
 
-      console.log(config);
-
       assert.strictEqual(config.global.input, 'custom-src/');
       assert.strictEqual(config.global.output, 'custom-dist/');
       assert.strictEqual(config.threads, 2);

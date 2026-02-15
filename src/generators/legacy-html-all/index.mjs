@@ -3,7 +3,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { minify } from '@swc/html';
+import minifyHtml from '@minify-html/node';
 
 import getConfig from '../../utils/configuration/index.mjs';
 import { getRemarkRehype } from '../../utils/remark.mjs';
@@ -86,7 +86,7 @@ export default {
     });
 
     if (config.minify) {
-      ({ code: result } = await minify(result));
+      result = Buffer.from(minifyHtml.minify(Buffer.from(result), {}));
     }
 
     if (config.output) {

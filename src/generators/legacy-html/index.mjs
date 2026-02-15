@@ -3,7 +3,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
-import { minify } from '@swc/html';
+import minifyHtml from '@minify-html/node';
 
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
@@ -159,7 +159,7 @@ export default {
           let result = replaceTemplateValues(apiTemplate, template, config);
 
           if (config.minify) {
-            ({ code: result } = await minify(result));
+            result = Buffer.from(minifyHtml.minify(Buffer.from(result), {}));
           }
 
           await writeFile(join(config.output, `${template.api}.html`), result);

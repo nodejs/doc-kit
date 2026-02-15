@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { minifySync } from '@swc/html';
+import minifyHtml from '@minify-html/node';
 import { jsx, toJs } from 'estree-util-to-js';
 import { transform } from 'lightningcss';
 
@@ -123,7 +123,7 @@ export async function processJSXEntries(
       .replace('{{ogTitle}}', title);
 
     // Minify HTML (input must be a Buffer)
-    const { code: html } = minifySync(renderedHtml);
+    const html = Buffer.from(minifyHtml.minify(Buffer.from(renderedHtml), {}));
 
     return { html, api };
   });
