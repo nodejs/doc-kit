@@ -7,12 +7,7 @@ import { allGenerators } from '../index.mjs';
 
 const validDependencies = Object.keys(allGenerators);
 
-/**
- * Resolves all lazy generator loaders into their actual metadata.
- * @returns {Promise<[string, import('../types').GeneratorMetadata][]>}
- */
-const resolveAllGenerators = async () =>
-  Promise.all(
+const allGeneratorsReaolved = await Promise.all(
     Object.entries(allGenerators).map(async ([key, loader]) => [
       key,
       await loader(),
