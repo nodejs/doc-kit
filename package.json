@@ -1,5 +1,6 @@
 {
   "name": "@nodejs/doc-kit",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/api-docs-tooling.git"

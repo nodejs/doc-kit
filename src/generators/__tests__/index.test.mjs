@@ -8,16 +8,15 @@ import { allGenerators } from '../index.mjs';
 const validDependencies = Object.keys(allGenerators);
 
 const allGeneratorsReaolved = await Promise.all(
-    Object.entries(allGenerators).map(async ([key, loader]) => [
-      key,
-      await loader(),
-    ])
-  );
+  Object.entries(allGenerators).map(async ([key, loader]) => [
+    key,
+    await loader(),
+  ])
+);
 
 describe('All Generators', () => {
   it('should have keys matching their name property', async () => {
-    const entries = await resolveAllGenerators();
-    entries.forEach(([key, generator]) => {
+    allGeneratorsReaolved.forEach(([key, generator]) => {
       assert.equal(
         key,
         generator.name,
@@ -27,8 +26,7 @@ describe('All Generators', () => {
   });
 
   it('should have valid semver versions', async () => {
-    const entries = await resolveAllGenerators();
-    entries.forEach(([key, generator]) => {
+    allGeneratorsReaolved.forEach(([key, generator]) => {
       const isValid = semver.valid(generator.version);
       assert.ok(
         isValid,
@@ -38,8 +36,7 @@ describe('All Generators', () => {
   });
 
   it('should have valid dependsOn references', async () => {
-    const entries = await resolveAllGenerators();
-    entries.forEach(([key, generator]) => {
+    allGeneratorsReaolved.forEach(([key, generator]) => {
       if (generator.dependsOn) {
         assert.ok(
           validDependencies.includes(generator.dependsOn),
