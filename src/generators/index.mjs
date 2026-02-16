@@ -1,5 +1,7 @@
 'use strict';
 
+import { lazy } from '../utils/misc.mjs';
+
 /**
  * Wraps a dynamic import into a lazy loader that resolves to the default export.
  *
@@ -7,7 +9,7 @@
  * @param {() => Promise<{default: T}>} loader
  * @returns {() => Promise<T>}
  */
-const lazyDefault = loader => () => loader().then(m => m.default);
+const lazyDefault = loader => lazy(() => loader().then(m => m.default));
 
 export const publicGenerators = {
   'json-simple': lazyDefault(() => import('./json-simple/index.mjs')),
