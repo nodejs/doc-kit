@@ -5,7 +5,6 @@ export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /node.js/i, to: 'nodejs' }, // Replace Node.js
   { from: /&/, to: '-and-' }, // Replace &
   { from: /[/_,:;\\ ]/g, to: '-' }, // Replace /_,:;\. and whitespace
-  { from: /--+/g, to: '-' }, // Replace multiple hyphens with single
   { from: /^-(?!$|-)|(?<!^|-)-$/g, to: '' }, // Remove any trailing or leading hyphen
 ];
 
