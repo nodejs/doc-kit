@@ -63,14 +63,14 @@ const createTask = (
  * @param {import('../utils/configuration/types').Configuration} configuration - Generator options
  * @returns {ParallelWorker}
  */
-export default function createParallelWorker(
+export default async function createParallelWorker(
   generatorName,
   pool,
   configuration
 ) {
   const { threads, chunkSize } = configuration;
 
-  const generator = allGenerators[generatorName];
+  const generator = await allGenerators[generatorName]();
 
   return {
     /**

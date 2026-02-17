@@ -48,16 +48,17 @@ const createGenerator = () => {
    * @param {string} generatorName - Generator to schedule
    * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
    */
-  const scheduleGenerator = (generatorName, configuration) => {
+  const scheduleGenerator = async (generatorName, configuration) => {
     if (generatorName in cachedGenerators) {
       return;
     }
 
-    const { dependsOn, generate, processChunk } = allGenerators[generatorName];
+    const { dependsOn, generate, processChunk } =
+      await allGenerators[generatorName]();
 
     // Schedule dependency first
     if (dependsOn && !(dependsOn in cachedGenerators)) {
-      scheduleGenerator(dependsOn, configuration);
+      await scheduleGenerator(dependsOn, configuration);
     }
 
     generatorsLogger.debug(`Scheduling "${generatorName}"`, {
@@ -74,9 +75,9 @@ const createGenerator = () => {
       // Create parallel worker for streaming generators
       const worker = processChunk
         ? createParallelWorker(generatorName, pool, configuration)
-        : null;
+        : Promise.resolve(null);
 
-      const result = await generate(dependencyInput, worker);
+      const result = await generate(dependencyInput, await worker);
 
       // For streaming generators, "Completed" is logged when collection finishes
       // (in streamingCache.getOrCollect), not here when the generator returns
@@ -107,7 +108,7 @@ const createGenerator = () => {
 
     // Schedule all generators
     for (const name of generators) {
-      scheduleGenerator(name, configuration);
+      await scheduleGenerator(name, configuration);
     }
 
     // Start all collections in parallel (don't await sequentially)

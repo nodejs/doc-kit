@@ -35,7 +35,7 @@ describe('api links', () => {
           join(relativePath, 'fixtures', sourceFile).replaceAll(sep, '/'),
         ];
 
-        const worker = createParallelWorker('ast-js', pool, config);
+        const worker = await createParallelWorker('ast-js', pool, config);
 
         // Collect results from the async generator
         const astJsResults = [];
