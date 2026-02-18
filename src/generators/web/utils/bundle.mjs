@@ -1,11 +1,11 @@
 import { join } from 'node:path';
 
 import virtual from '@rollup/plugin-virtual';
-import { build } from 'rolldown';
 
 import cssLoader from './css.mjs';
 import getStaticData from './data.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
+import { lazy } from '../../../utils/misc.mjs';
 
 // Resolve node_modules relative to this package (doc-kit), not cwd.
 // This ensures modules are found when running from external directories.
@@ -13,6 +13,11 @@ const DOC_KIT_NODE_MODULES = join(
   import.meta.dirname,
   '../../../../node_modules'
 );
+
+// TODO(@avivkeller): Untill we can use Rolldown's bindings in node-core,
+// we have to dynamically import it, as to not have it imported in core
+// at all.
+const rolldown = lazy(() => import('rolldown'));
 
 /**
  * Asynchronously bundles JavaScript source code (and its CSS imports),
@@ -24,6 +29,8 @@ const DOC_KIT_NODE_MODULES = join(
  */
 export default async function bundleCode(codeMap, { server = false } = {}) {
   const config = getConfig('web');
+
+  const { build } = await rolldown();
 
   const result = await build({
     // Entry points: array of virtual module names that the virtual plugin provides
