@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 
-import { bundleAsync } from 'lightningcss';
+import { bundleAsync } from 'lightningcss-wasm';
 
 // Since we use rolldown to bundle multiple times,
 // we re-use a lot of CSS files, so there is no

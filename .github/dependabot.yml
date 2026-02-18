@@ -65,7 +65,7 @@ updates:
           - '@minify-html/wasm'
           - '@rollup/*'
           - 'rolldown'
-          - 'lightningcss'
+          - 'lightningcss-wasm'
       react:
         patterns:
           - 'preact'
