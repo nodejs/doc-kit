@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { jsx, toJs } from 'estree-util-to-js';
-import { transform } from 'lightningcss';
+import { transform } from 'lightningcss-wasm';
 
 import bundleCode from './bundle.mjs';
 import { createChunkedRequire } from './chunks.mjs';
