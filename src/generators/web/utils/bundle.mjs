@@ -14,7 +14,7 @@ const DOC_KIT_NODE_MODULES = join(
   '../../../../node_modules'
 );
 
-// TODO(@avivkeller): Untill we can use Rolldown's bindings in node-core,
+// TODO(@avivkeller): Until we can use Rolldown's bindings in node-core,
 // we have to dynamically import it, as to not have it imported in core
 // at all.
 const rolldown = lazy(() => import('rolldown'));
