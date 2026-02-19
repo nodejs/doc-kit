@@ -14,6 +14,14 @@ const DOC_KIT_NODE_MODULES = join(
   '../../../../node_modules'
 );
 
+// Modules expected to be provided at runtime in the server environment, and thus excluded from the bundle.
+const SERVER_MODULES = [
+  'preact',
+  'preact-render-to-string',
+  '@node-core/ui-components',
+  '@node-core/rehype-shiki',
+];
+
 /**
  * Asynchronously bundles JavaScript source code (and its CSS imports),
  * targeting either browser (client) or server (Node.js) environments.
@@ -32,6 +40,8 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
     // Experimental features: import maps for client, none for server
     experimental: {
       chunkImportMap: !server,
+
+      lazyBarrel: true,
     },
 
     checks: {
@@ -59,9 +69,7 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
     // External dependencies to exclude from bundling.
     // These are expected to be available at runtime in the server environment.
     // This reduces bundle size and avoids bundling shared server libs.
-    external: server
-      ? ['preact', 'preact-render-to-string', '@node-core/ui-components']
-      : [],
+    external: server ? SERVER_MODULES : [],
 
     transform: {
       // Inject global compile-time constants that will be replaced in code.

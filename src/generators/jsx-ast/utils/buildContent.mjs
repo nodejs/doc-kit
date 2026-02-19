@@ -1,3 +1,5 @@
+'use strict';
+
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
 import { u as createTree } from 'unist-builder';
@@ -22,7 +24,7 @@ import {
 import insertSignature, { getFullName } from './buildSignature.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
-  GITHUB_BLOB_URL,
+  GH_BLOB_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
 
@@ -81,7 +83,7 @@ export const createSourceLink = sourceLink => {
         createElement(
           'a',
           {
-            href: `${populate(GITHUB_BLOB_URL, config)}${sourceLink}`,
+            href: `${populate(GH_BLOB_URL, config)}${sourceLink}`,
             target: '_blank',
           },
           [

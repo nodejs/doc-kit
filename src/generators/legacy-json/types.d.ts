@@ -279,8 +279,9 @@ export interface ParameterList {
   options?: ParameterList;
 }
 
-export type Generator = GeneratorMetadata<
-  {},
+export type Generator = GeneratorMetadata<{}>;
+
+export type Implementation = GeneratorImpl<
   Generate<Array<ApiDocMetadataEntry>, AsyncGenerator<Section>>,
   ProcessChunk<
     { head: ApiDocMetadataEntry; nodes: Array<ApiDocMetadataEntry> },

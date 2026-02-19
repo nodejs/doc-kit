@@ -53,8 +53,12 @@ const createGenerator = () => {
       return;
     }
 
-    const { dependsOn, generate, processChunk } =
-      await allGenerators[generatorName]();
+    const { dependsOn } = allGenerators[generatorName];
+
+    // Lazy-load the generator implementation
+    const { generate, processChunk } = await import(
+      `./generators/${generatorName}/generate.mjs`
+    );
 
     // Schedule dependency first
     if (dependsOn && !(dependsOn in cachedGenerators)) {

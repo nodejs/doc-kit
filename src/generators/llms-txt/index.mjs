@@ -1,8 +1,6 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+'use strict';
 
-import { buildApiDocLink } from './utils/buildApiDocLink.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
+import { join } from 'node:path';
 
 /**
  * This generator generates a llms.txt file to provide information to LLMs at
@@ -22,27 +20,5 @@ export default {
 
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.txt'),
-  },
-
-  /**
-   * Generates a llms.txt file
-   */
-  async generate(input) {
-    const config = getConfig('llms-txt');
-
-    const template = await readFile(config.templatePath, 'utf-8');
-
-    const apiDocsLinks = input
-      .filter(entry => entry.heading.depth === 1)
-      .map(entry => `- ${buildApiDocLink(entry, config.baseURL)}`)
-      .join('\n');
-
-    const filledTemplate = `${template}${apiDocsLinks}`;
-
-    if (config.output) {
-      await writeFile(join(config.output, 'llms.txt'), filledTemplate);
-    }
-
-    return filledTemplate;
   },
 };

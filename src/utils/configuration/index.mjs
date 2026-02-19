@@ -32,12 +32,9 @@ export const getDefaultConfig = lazy(async () => {
     chunkSize: 10,
   });
 
-  await Promise.all(
-    Object.keys(allGenerators).map(async k => {
-      const generator = await allGenerators[k]();
-      defaults[k] = generator.defaultConfiguration ?? {};
-    })
-  );
+  for (const k of Object.keys(allGenerators)) {
+    defaults[k] = allGenerators[k].defaultConfiguration ?? {};
+  }
 
   return defaults;
 });

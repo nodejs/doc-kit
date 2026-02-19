@@ -1,4 +1,3 @@
-import { allGenerators } from '../generators/index.mjs';
 import { setConfig } from '../utils/configuration/index.mjs';
 
 /**
@@ -17,7 +16,9 @@ export default async ({
 }) => {
   await setConfig(configuration);
 
-  const generator = await allGenerators[generatorName]();
+  const { processChunk } = await import(
+    `../generators/${generatorName}/generate.mjs`
+  );
 
-  return generator.processChunk(input, itemIndices, extra);
+  return processChunk(input, itemIndices, extra);
 };

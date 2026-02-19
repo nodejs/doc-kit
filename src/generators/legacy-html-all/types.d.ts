@@ -8,9 +8,10 @@ export interface TemplateValues {
   content: string;
 }
 
-export type Generator = GeneratorMetadata<
-  {
-    templatePath: string;
-  },
+export type Generator = GeneratorMetadata<{
+  templatePath: string;
+}>;
+
+export type Implementation = GeneratorImpl<
   Generate<Array<string>, Promise<string>>
 >;

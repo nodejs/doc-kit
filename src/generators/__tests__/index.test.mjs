@@ -7,16 +7,11 @@ import { allGenerators } from '../index.mjs';
 
 const validDependencies = Object.keys(allGenerators);
 
-const allGeneratorsReaolved = await Promise.all(
-  Object.entries(allGenerators).map(async ([key, loader]) => [
-    key,
-    await loader(),
-  ])
-);
+const allGeneratorsEntries = Object.entries(allGenerators);
 
 describe('All Generators', () => {
-  it('should have keys matching their name property', async () => {
-    allGeneratorsReaolved.forEach(([key, generator]) => {
+  it('should have keys matching their name property', () => {
+    allGeneratorsEntries.forEach(([key, generator]) => {
       assert.equal(
         key,
         generator.name,
@@ -25,8 +20,8 @@ describe('All Generators', () => {
     });
   });
 
-  it('should have valid semver versions', async () => {
-    allGeneratorsReaolved.forEach(([key, generator]) => {
+  it('should have valid semver versions', () => {
+    allGeneratorsEntries.forEach(([key, generator]) => {
       const isValid = semver.valid(generator.version);
       assert.ok(
         isValid,
@@ -35,8 +30,8 @@ describe('All Generators', () => {
     });
   });
 
-  it('should have valid dependsOn references', async () => {
-    allGeneratorsReaolved.forEach(([key, generator]) => {
+  it('should have valid dependsOn references', () => {
+    allGeneratorsEntries.forEach(([key, generator]) => {
       if (generator.dependsOn) {
         assert.ok(
           validDependencies.includes(generator.dependsOn),
@@ -46,8 +41,8 @@ describe('All Generators', () => {
     });
   });
 
-  it('should have ast generator as a top-level generator with no dependencies', async () => {
-    const ast = await allGenerators.ast();
+  it('should have ast generator as a top-level generator with no dependencies', () => {
+    const ast = allGenerators.ast;
     assert.ok(ast, 'ast generator should exist');
     assert.equal(
       ast.dependsOn,

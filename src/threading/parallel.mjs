@@ -1,6 +1,5 @@
 'use strict';
 
-import { allGenerators } from '../generators/index.mjs';
 import logger from '../logger/index.mjs';
 
 const parallelLogger = logger.child('parallel');
@@ -70,7 +69,9 @@ export default async function createParallelWorker(
 ) {
   const { threads, chunkSize } = configuration;
 
-  const generator = await allGenerators[generatorName]();
+  const { processChunk } = await import(
+    `../generators/${generatorName}/generate.mjs`
+  );
 
   return {
     /**
@@ -100,9 +101,9 @@ export default async function createParallelWorker(
       const pending = new Set(
         chunks.map(indices => {
           if (runInOneGo) {
-            const promise = generator
-              .processChunk(fullInput, indices, extra)
-              .then(result => ({ promise, result }));
+            const promise = processChunk(fullInput, indices, extra).then(
+              result => ({ promise, result })
+            );
 
             return promise;
           }

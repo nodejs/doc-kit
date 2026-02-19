@@ -23,7 +23,8 @@ export interface OramaDbEntry {
  */
 export type OramaDb = Orama<OramaDbEntry>;
 
-export type Generator = GeneratorMetadata<
-  {},
+export type Generator = GeneratorMetadata<{}>;
+
+export type Implementation = GeneratorImpl<
   Generate<Array<ApiDocMetadataEntry>, Promise<RawData>>
 >;

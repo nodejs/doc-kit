@@ -1,22 +1,14 @@
 import type { publicGenerators, allGenerators } from './index.mjs';
 
 declare global {
-  /**
-   * A lazy generator loader that returns a promise resolving to the generator metadata.
-   */
-  export type LazyGenerator<T = GeneratorMetadata<any, any, any>> =
-    () => Promise<T>;
-
   // Public generators exposed to the CLI
   export type AvailableGenerators = typeof publicGenerators;
 
   // All generators including internal ones (metadata, jsx-ast, ast-js)
   export type AllGenerators = typeof allGenerators;
 
-  // The resolved type of a loaded generator
-  export type ResolvedGenerator<K extends keyof AllGenerators> = Awaited<
-    ReturnType<AllGenerators[K]>
-  >;
+  // The resolved type of a generator (now synchronous, not lazy)
+  export type ResolvedGenerator<K extends keyof AllGenerators> = AllGenerators[K];
 
   /**
    * ParallelWorker interface for distributing work across Node.js worker threads.
@@ -68,11 +60,11 @@ declare global {
     dependencies: D
   ) => Promise<O>;
 
-  export type GeneratorMetadata<
-    C extends any,
-    G extends Generate<any, any>,
-    P extends ProcessChunk<any, any, any> | undefined = undefined,
-  > = {
+  /**
+   * Generator metadata - loaded synchronously from each generator's index.mjs.
+   * Contains only descriptive metadata and default configuration.
+   */
+  export type GeneratorMetadata<C extends any = {}> = {
     readonly defaultConfiguration: C;
 
     // The name of the Generator. Must match the Key in AllGenerators
@@ -105,7 +97,16 @@ declare global {
      * passes the ASTs for any JavaScript files given in the input.
      */
     dependsOn: keyof AllGenerators | undefined;
+  };
 
+  /**
+   * Generator implementation - loaded dynamically from each generator's generate.mjs.
+   * Contains the generate function and optional processChunk for parallel processing.
+   */
+  export type GeneratorImpl<
+    G extends Generate<any, any>,
+    P extends ProcessChunk<any, any, any> | undefined = undefined,
+  > = {
     /**
      * Generators are abstract and the different generators have different sort of inputs and outputs.
      * For example, a MDX generator would take the raw AST and output MDX with React Components;
