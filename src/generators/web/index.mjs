@@ -43,5 +43,7 @@ export default createLazyGenerator({
       '#theme/Layout': join(import.meta.dirname, './ui/components/Layout'),
     },
     virtualImports: {},
+    remoteConfig:
+      'https://gist.githubusercontent.com/araujogui/8ea72ffaf574f58fca1482e764e8b5c8/raw/16af51e4efbf37da7b6aff9b7e5dd967d955aacf/api-docs.config.json',
   },
 });
