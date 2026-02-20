@@ -13,7 +13,7 @@ import { transformNodeToString } from '../../utils/unist.mjs';
 /**
  * Generates the Orama database.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('orama-db');

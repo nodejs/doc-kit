@@ -12,8 +12,7 @@ export interface SitemapEntry {
   priority?: string;
 }
 
-export type Generator = GeneratorMetadata<{}>;
-
-export type Implementation = GeneratorImpl<
+export type Generator = GeneratorMetadata<
+  {},
   Generate<Array<ApiDocMetadataEntry>, Promise<string>>
 >;

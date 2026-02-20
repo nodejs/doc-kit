@@ -1,8 +1,7 @@
 import type { JSXContent } from './utils/buildContent.mjs';
 
-export type Generator = GeneratorMetadata<{}>;
-
-export type Implementation = GeneratorImpl<
+export type Generator = GeneratorMetadata<
+  {},
   Generate<Array<ApiDocMetadataEntry>, AsyncGenerator<JSXContent>>,
   ProcessChunk<
     { head: ApiDocMetadataEntry; entries: Array<ApiDocMetadataEntry> },

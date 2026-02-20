@@ -24,7 +24,7 @@ import {
 import insertSignature, { getFullName } from './buildSignature.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
-  GH_BLOB_URL,
+  GITHUB_BLOB_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
 
@@ -83,7 +83,7 @@ export const createSourceLink = sourceLink => {
         createElement(
           'a',
           {
-            href: `${populate(GH_BLOB_URL, config)}${sourceLink}`,
+            href: `${populate(GITHUB_BLOB_URL, config)}${sourceLink}`,
             target: '_blank',
           },
           [

@@ -4,8 +4,7 @@ export interface ProgramExports {
   indirects: Record<string, string>;
 }
 
-export type Generator = GeneratorMetadata<{}>;
-
-export type Implementation = GeneratorImpl<
+export type Generator = GeneratorMetadata<
+  {},
   Generate<undefined, Promise<Record<string, string>>>
 >;

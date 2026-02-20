@@ -6,7 +6,7 @@ import { visit } from 'unist-util-visit';
 import { getFullName } from './buildSignature.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
-  GH_EDIT_URL,
+  GITHUB_EDIT_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
 import {
@@ -103,7 +103,7 @@ export const buildMetaBarProps = (head, entries) => {
       ['JSON', `${head.api}.json`],
       ['MD', `${head.api}.md`],
     ],
-    editThisPage: `${populate(GH_EDIT_URL, config)}${head.api}.md`,
+    editThisPage: `${populate(GITHUB_EDIT_URL, config)}${head.api}.md`,
   };
 };
 

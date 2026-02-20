@@ -7,12 +7,11 @@ export interface TemplateValues {
   content: string;
 }
 
-export type Generator = GeneratorMetadata<{
-  templatePath: string;
-  additionalPathsToCopy: Array<string>;
-}>;
-
-export type Implementation = GeneratorImpl<
+export type Generator = GeneratorMetadata<
+  {
+    templatePath: string;
+    additionalPathsToCopy: Array<string>;
+  },
   Generate<Array<ApiDocMetadataEntry>, AsyncGenerator<TemplateValues>>,
   ProcessChunk<
     {

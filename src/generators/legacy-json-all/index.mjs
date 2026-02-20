@@ -1,12 +1,14 @@
 'use strict';
 
+import { createLazyGenerator } from '../../utils/generators.mjs';
+
 /**
  * This generator consolidates data from the `legacy-json` generator into a single
  * JSON file (`all.json`).
  *
  * @type {import('./types.d.ts').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'legacy-json-all',
 
   version: '1.0.0',
@@ -19,4 +21,4 @@ export default {
   defaultConfiguration: {
     minify: false,
   },
-};
+});

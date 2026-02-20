@@ -1,5 +1,7 @@
 'use strict';
 
+import { createLazyGenerator } from '../../utils/generators.mjs';
+
 /**
  * This generator is responsible for generating the legacy JSON files for the
  * legacy API docs for retro-compatibility. It is to be replaced while we work
@@ -11,7 +13,7 @@
  *
  * @type {import('./types').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'legacy-json',
 
   version: '1.0.0',
@@ -24,4 +26,6 @@ export default {
     ref: 'main',
     minify: false,
   },
-};
+
+  hasParallelProcessor: true,
+});

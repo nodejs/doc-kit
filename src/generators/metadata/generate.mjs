@@ -8,7 +8,7 @@ import { importFromURL } from '../../utils/url.mjs';
  * Process a chunk of API doc files in a worker thread.
  * Called by chunk-worker.mjs for parallel processing.
  *
- * @type {import('./types').Implementation['processChunk']}
+ * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(fullInput, itemIndices, typeMap) {
   const results = [];
@@ -23,7 +23,7 @@ export async function processChunk(fullInput, itemIndices, typeMap) {
 /**
  * Generates a flattened list of metadata entries from API docs.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function* generate(inputs, worker) {
   const { metadata: config } = getConfig();

@@ -7,9 +7,6 @@ declare global {
   // All generators including internal ones (metadata, jsx-ast, ast-js)
   export type AllGenerators = typeof allGenerators;
 
-  // The resolved type of a generator (now synchronous, not lazy)
-  export type ResolvedGenerator<K extends keyof AllGenerators> = AllGenerators[K];
-
   /**
    * ParallelWorker interface for distributing work across Node.js worker threads.
    * Streams results as chunks complete, enabling pipeline parallelism.
@@ -60,11 +57,11 @@ declare global {
     dependencies: D
   ) => Promise<O>;
 
-  /**
-   * Generator metadata - loaded synchronously from each generator's index.mjs.
-   * Contains only descriptive metadata and default configuration.
-   */
-  export type GeneratorMetadata<C extends any = {}> = {
+  export type GeneratorMetadata<
+    C extends any,
+    G extends Generate<any, any>,
+    P extends ProcessChunk<any, any, any> | undefined = undefined,
+  > = {
     readonly defaultConfiguration: C;
 
     // The name of the Generator. Must match the Key in AllGenerators
@@ -73,6 +70,8 @@ declare global {
     version: string;
 
     description: string;
+
+    hasParallelProcessor: boolean;
 
     /**
      * The immediate generator that this generator depends on.
@@ -97,16 +96,7 @@ declare global {
      * passes the ASTs for any JavaScript files given in the input.
      */
     dependsOn: keyof AllGenerators | undefined;
-  };
 
-  /**
-   * Generator implementation - loaded dynamically from each generator's generate.mjs.
-   * Contains the generate function and optional processChunk for parallel processing.
-   */
-  export type GeneratorImpl<
-    G extends Generate<any, any>,
-    P extends ProcessChunk<any, any, any> | undefined = undefined,
-  > = {
     /**
      * Generators are abstract and the different generators have different sort of inputs and outputs.
      * For example, a MDX generator would take the raw AST and output MDX with React Components;

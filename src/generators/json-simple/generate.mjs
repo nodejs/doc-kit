@@ -11,7 +11,7 @@ import createQueries from '../../utils/queries/index.mjs';
 /**
  * Generates the simplified JSON version of the API docs
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('json-simple');

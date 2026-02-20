@@ -12,7 +12,7 @@ import getConfig from '../../utils/configuration/index.mjs';
  * Process a chunk of JavaScript files in a worker thread.
  * Parses JS source files into AST representations.
  *
- * @type {import('./types').Implementation['processChunk']}
+ * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(inputSlice, itemIndices) {
   const filePaths = itemIndices.map(idx => inputSlice[idx]);
@@ -39,7 +39,7 @@ export async function processChunk(inputSlice, itemIndices) {
 /**
  * Generates a JavaScript AST from the input files.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function* generate(_, worker) {
   const config = getConfig('ast-js');

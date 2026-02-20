@@ -11,7 +11,7 @@ import getConfig from '../../utils/configuration/index.mjs';
 /**
  * Main generation function that processes JSX AST entries into web bundles.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('web');

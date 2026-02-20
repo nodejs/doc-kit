@@ -16,7 +16,7 @@ const buildSection = createSectionBuilder();
  * Each item is pre-grouped {head, nodes} - no need to
  * recompute groupNodesByModule for every chunk.
  *
- * @type {import('./types').Implementation['processChunk']}
+ * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(slicedInput, itemIndices) {
   const results = [];
@@ -33,7 +33,7 @@ export async function processChunk(slicedInput, itemIndices) {
 /**
  * Generates a legacy JSON file.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
   const config = getConfig('legacy-json');

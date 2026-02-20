@@ -8,7 +8,7 @@ import {
 } from './buildDropdowns.mjs';
 import tableOfContents from './tableOfContents.mjs';
 import {
-  GH_EDIT_URL,
+  GITHUB_EDIT_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
 
@@ -39,6 +39,8 @@ export const replaceTemplateValues = (
     .replace('__ALTDOCS__', buildVersions(api, added, config.changelog))
     .replace(
       '__EDIT_ON_GITHUB__',
-      skipGitHub ? '' : buildGitHub(`${populate(GH_EDIT_URL, config)}${api}.md`)
+      skipGitHub
+        ? ''
+        : buildGitHub(`${populate(GITHUB_EDIT_URL, config)}${api}.md`)
     );
 };

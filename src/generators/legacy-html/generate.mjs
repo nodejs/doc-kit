@@ -28,7 +28,7 @@ const remarkRehypeProcessor = getRemarkRehypeWithShiki();
  * Each item is pre-grouped {head, nodes, headNodes} - no need to
  * recompute groupNodesByModule for every chunk.
  *
- * @type {import('./types').Implementation['processChunk']}
+ * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(slicedInput, itemIndices, navigation) {
   const results = [];
@@ -72,7 +72,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
 /**
  * Generates the legacy version of the API docs in HTML
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
   const config = getConfig('legacy-html');

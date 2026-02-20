@@ -27,7 +27,7 @@ function extractMandoc(components, start, end, convert) {
 /**
  * Generates the Node.js man-page
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('man-page');

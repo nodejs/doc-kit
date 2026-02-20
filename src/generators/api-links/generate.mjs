@@ -7,12 +7,15 @@ import { checkIndirectReferences } from './utils/checkIndirectReferences.mjs';
 import { extractExports } from './utils/extractExports.mjs';
 import { findDefinitions } from './utils/findDefinitions.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
-import { GH_BLOB_URL, populate } from '../../utils/configuration/templates.mjs';
+import {
+  GITHUB_BLOB_URL,
+  populate,
+} from '../../utils/configuration/templates.mjs';
 
 /**
  * Generates the `apilinks.json` file.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('api-links');
@@ -39,7 +42,7 @@ export async function generate(input) {
 
     checkIndirectReferences(program, exports, nameToLineNumberMap);
 
-    const fullGitUrl = `${populate(GH_BLOB_URL, config)}lib/${baseName}.js`;
+    const fullGitUrl = `${populate(GITHUB_BLOB_URL, config)}lib/${baseName}.js`;
 
     // Add the exports we found in this program to our output
     Object.keys(nameToLineNumberMap).forEach(key => {

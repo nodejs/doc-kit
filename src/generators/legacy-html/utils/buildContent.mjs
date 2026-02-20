@@ -7,7 +7,7 @@ import { SKIP, visit } from 'unist-util-visit';
 import buildExtraContent from './buildExtraContent.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
-  GH_BLOB_URL,
+  GITHUB_BLOB_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
@@ -116,7 +116,7 @@ const buildMetadataElement = (node, remark) => {
   // We use a `span` element to display the source link as a clickable link to the source within Node.js
   if (typeof node.source_link === 'string') {
     // Creates the source link URL with the base URL and the source link
-    const sourceLink = `${populate(GH_BLOB_URL, config)}${node.source_link}`;
+    const sourceLink = `${populate(GITHUB_BLOB_URL, config)}${node.source_link}`;
 
     // Creates the source link element with the source link and the source link text
     const sourceLinkElement = createElement('span', [

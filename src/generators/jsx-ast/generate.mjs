@@ -14,7 +14,7 @@ const remarkRecma = getRemarkRecma();
  * Each item is a SlicedModuleInput containing the head node
  * and all entries for that module - no need to recompute grouping.
  *
- * @type {import('./types').Implementation['processChunk']}
+ * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(slicedInput, itemIndices, docPages) {
   const results = [];
@@ -40,7 +40,7 @@ export async function processChunk(slicedInput, itemIndices, docPages) {
 /**
  * Generates a JSX AST
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
   const config = getConfig('jsx-ast');

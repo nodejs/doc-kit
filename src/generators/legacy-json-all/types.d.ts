@@ -13,8 +13,7 @@ export interface Output {
   methods: Array<SignatureSection>;
 }
 
-export type Generator = GeneratorMetadata<{}>;
-
-export type Implementation = GeneratorImpl<
+export type Generator = GeneratorMetadata<
+  {},
   Generate<Array<Section>, Promise<Output>>
 >;

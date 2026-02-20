@@ -1,6 +1,5 @@
-export type Generator = GeneratorMetadata<{}>;
-
-export type Implementation = GeneratorImpl<
+export type Generator = GeneratorMetadata<
+  {},
   Generate<undefined, AsyncGenerator<JsProgram>>,
   ProcessChunk<string, JsProgram>
 >;

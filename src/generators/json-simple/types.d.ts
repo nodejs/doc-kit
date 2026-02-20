@@ -1,5 +1,4 @@
-export type Generator = GeneratorMetadata<{}>;
-
-export type Implementation = GeneratorImpl<
+export type Generator = GeneratorMetadata<
+  {},
   Generate<Array<ApiDocMetadataEntry>, Promise<Array<ApiDocMetadataEntry>>>
 >;

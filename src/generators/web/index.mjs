@@ -2,6 +2,8 @@
 
 import { join } from 'node:path';
 
+import { createLazyGenerator } from '../../utils/generators.mjs';
+
 /**
  * Web generator - transforms JSX AST entries into complete web bundles.
  *
@@ -15,7 +17,7 @@ import { join } from 'node:path';
  *
  * @type {import('./types').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'web',
 
   version: '1.0.0',
@@ -31,4 +33,4 @@ export default {
       '#config/Logo': '@node-core/ui-components/Common/NodejsLogo',
     },
   },
-};
+});

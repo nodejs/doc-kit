@@ -53,12 +53,8 @@ const createGenerator = () => {
       return;
     }
 
-    const { dependsOn } = allGenerators[generatorName];
-
-    // Lazy-load the generator implementation
-    const { generate, processChunk } = await import(
-      `./generators/${generatorName}/generate.mjs`
-    );
+    const { dependsOn, generate, hasParallelProcessor } =
+      allGenerators[generatorName];
 
     // Schedule dependency first
     if (dependsOn && !(dependsOn in cachedGenerators)) {
@@ -67,7 +63,7 @@ const createGenerator = () => {
 
     generatorsLogger.debug(`Scheduling "${generatorName}"`, {
       dependsOn: dependsOn || 'none',
-      streaming: Boolean(processChunk),
+      streaming: hasParallelProcessor,
     });
 
     // Schedule the generator
@@ -77,7 +73,7 @@ const createGenerator = () => {
       generatorsLogger.debug(`Starting "${generatorName}"`);
 
       // Create parallel worker for streaming generators
-      const worker = processChunk
+      const worker = hasParallelProcessor
         ? createParallelWorker(generatorName, pool, configuration)
         : Promise.resolve(null);
 

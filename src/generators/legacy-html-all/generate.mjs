@@ -12,7 +12,7 @@ import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
 /**
  * Generates the `all.html` file from the `legacy-html` generator
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('legacy-html-all');

@@ -2,13 +2,15 @@
 
 import { join } from 'node:path';
 
+import { createLazyGenerator } from '../../utils/generators.mjs';
+
 /**
  * This generator generates a man page version of the CLI.md file.
  * See https://man.openbsd.org/mdoc.7 for the formatting.
  *
  * @type {import('./types').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'man-page',
 
   version: '1.0.0',
@@ -23,4 +25,4 @@ export default {
     envVarsHeaderSlug: 'environment-variables-1',
     templatePath: join(import.meta.dirname, 'template.1'),
   },
-};
+});

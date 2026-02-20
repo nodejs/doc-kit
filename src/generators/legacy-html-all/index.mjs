@@ -1,5 +1,6 @@
 'use strict';
 
+import { createLazyGenerator } from '../../utils/generators.mjs';
 import legacyHtml from '../legacy-html/index.mjs';
 
 /**
@@ -11,7 +12,7 @@ import legacyHtml from '../legacy-html/index.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'legacy-html-all',
 
   version: '1.0.0',
@@ -24,4 +25,4 @@ export default {
   defaultConfiguration: {
     templatePath: legacyHtml.defaultConfiguration.templatePath,
   },
-};
+});

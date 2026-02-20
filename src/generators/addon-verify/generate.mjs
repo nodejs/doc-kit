@@ -17,7 +17,7 @@ import getConfig from '../../utils/configuration/index.mjs';
 /**
  * Generates a file list from code blocks.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('addon-verify');

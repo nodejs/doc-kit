@@ -1,5 +1,7 @@
 'use strict';
 
+import { createLazyGenerator } from '../../utils/generators.mjs';
+
 /**
  * This generator parses Javascript sources passed into the generator's input
  * field. This is separate from the Markdown parsing step since it's not as
@@ -10,10 +12,12 @@
  *
  * @type {import('./types').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'ast-js',
 
   version: '1.0.0',
 
   description: 'Parses Javascript source files passed into the input.',
-};
+
+  hasParallelProcessor: true,
+});

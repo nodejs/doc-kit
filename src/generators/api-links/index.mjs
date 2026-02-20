@@ -1,5 +1,7 @@
 'use strict';
 
+import { createLazyGenerator } from '../../utils/generators.mjs';
+
 /**
  * This generator is responsible for mapping publicly accessible functions in
  * Node.js to their source locations in the Node.js repository.
@@ -10,7 +12,7 @@
  *
  * @type {import('./types').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'api-links',
 
   version: '1.0.0',
@@ -21,4 +23,4 @@ export default {
   // Unlike the rest of the generators, this utilizes Javascript sources being
   // passed into the input field rather than Markdown.
   dependsOn: 'ast-js',
-};
+});

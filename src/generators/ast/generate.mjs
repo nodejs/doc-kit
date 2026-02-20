@@ -18,7 +18,7 @@ const remarkProcessor = getRemark();
  * Process a chunk of markdown files in a worker thread.
  * Loads and parses markdown files into AST representations.
  *
- * @type {import('./types').Implementation['processChunk']}
+ * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(inputSlice, itemIndices) {
   const filePaths = itemIndices.map(idx => inputSlice[idx]);
@@ -42,7 +42,7 @@ export async function processChunk(inputSlice, itemIndices) {
 /**
  * Generates AST trees from markdown input files.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function* generate(_, worker) {
   const { ast: config } = getConfig();

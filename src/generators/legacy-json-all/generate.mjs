@@ -9,7 +9,7 @@ import { legacyToJSON } from '../../utils/generators.mjs';
 /**
  * Generates the legacy JSON `all.json` file.
  *
- * @type {import('./types').Implementation['generate']}
+ * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('legacy-json-all');

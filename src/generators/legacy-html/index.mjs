@@ -2,6 +2,8 @@
 
 import { join } from 'node:path';
 
+import { createLazyGenerator } from '../../utils/generators.mjs';
+
 /**
  *
  * This generator generates the legacy HTML pages of the legacy API docs
@@ -12,7 +14,7 @@ import { join } from 'node:path';
  *
  * @type {import('./types').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'legacy-html',
 
   version: '1.0.0',
@@ -27,4 +29,6 @@ export default {
     additionalPathsToCopy: [join(import.meta.dirname, 'assets')],
     ref: 'main',
   },
-};
+
+  hasParallelProcessor: true,
+});
