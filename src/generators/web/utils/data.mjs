@@ -32,8 +32,6 @@ export const createStaticData = () => {
     shikiDisplayNameMap,
     title: config.title,
     repository: config.repository,
-    versionMajor: config.version?.major ?? null,
-    remoteConfig: config.remoteConfig ?? null,
   };
 };
 

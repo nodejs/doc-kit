@@ -287,7 +287,10 @@ export const createDocumentLayout = (
   remark
 ) =>
   createTree('root', [
-    createJSXElement(JSX_IMPORTS.AnnouncementBanner.name),
+    createJSXElement(JSX_IMPORTS.AnnouncementBanner.name, {
+      remoteConfig: getConfig('web').remoteConfig,
+      versionMajor: getConfig('web').version?.major ?? null,
+    }),
     createJSXElement(JSX_IMPORTS.NavBar.name),
     createJSXElement(JSX_IMPORTS.Article.name, {
       children: [
