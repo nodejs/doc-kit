@@ -31,7 +31,11 @@ function isCodeBlock(node) {
   );
 }
 
-export const highlighter = await createHighlighter({ wasm: true });
+export const highlighter = await createHighlighter({
+  // s390x machines throw memory issues on WASM builds
+  // https://github.com/nodejs/node/blob/c9acf345922bd758fbb3f16ee6256aa165260219/test/common/sea.js#L55
+  wasm: process.arch !== 's390x',
+});
 
 /**
  * Creates a HAST transformer for Shiki which is used for transforming our codeboxes
