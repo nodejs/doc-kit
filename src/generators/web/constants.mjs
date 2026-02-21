@@ -22,6 +22,26 @@ export const JSX_IMPORTS = {
     name: 'Layout',
     source: '#theme/Layout',
   },
+  NavBar: {
+    name: 'NavBar',
+    source: resolve(ROOT, './ui/components/NavBar'),
+  },
+  Article: {
+    name: 'Article',
+    source: '@node-core/ui-components/Containers/Article',
+  },
+  SideBar: {
+    name: 'SideBar',
+    source: resolve(ROOT, './ui/components/SideBar'),
+  },
+  TableOfContents: {
+    name: 'TableOfContents',
+    source: '@node-core/ui-components/Common/TableOfContents',
+  },
+  MetaBar: {
+    name: 'MetaBar',
+    source: resolve(ROOT, './ui/components/MetaBar'),
+  },
   CodeBox: {
     name: 'CodeBox',
     source: resolve(ROOT, './ui/components/CodeBox'),
