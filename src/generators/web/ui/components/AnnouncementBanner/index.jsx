@@ -34,13 +34,13 @@ export default ({ remoteConfig, versionMajor }) => {
 
         const active = [];
 
-        const globalBanner = config.global?.banner;
+        const globalBanner = config.websiteBanners?.index;
         if (globalBanner && isBannerActive(globalBanner)) {
           active.push(globalBanner);
         }
 
         if (versionMajor != null) {
-          const versionBanner = config[`v${versionMajor}`]?.banner;
+          const versionBanner = config.websiteBanners[`v${versionMajor}`];
           if (versionBanner && isBannerActive(versionBanner)) {
             active.push(versionBanner);
           }
@@ -64,11 +64,11 @@ export default ({ remoteConfig, versionMajor }) => {
           {banner.link ? (
             <a href={banner.link} target="_blank" rel="noopener noreferrer">
               {banner.text}
-              <ArrowUpRightIcon />
             </a>
           ) : (
             banner.text
           )}
+          {banner.link && <ArrowUpRightIcon />}
         </Banner>
       ))}
     </div>
