@@ -1,3 +1,5 @@
+'use strict';
+
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
 import { u as createTree } from 'unist-builder';

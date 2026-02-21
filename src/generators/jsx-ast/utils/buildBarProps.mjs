@@ -1,3 +1,5 @@
+'use strict';
+
 import readingTime from 'reading-time';
 import { visit } from 'unist-util-visit';
 

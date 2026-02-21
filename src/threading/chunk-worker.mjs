@@ -17,7 +17,7 @@ export default async ({
 }) => {
   await setConfig(configuration);
 
-  const generator = await allGenerators[generatorName]();
+  const generator = allGenerators[generatorName];
 
   return generator.processChunk(input, itemIndices, extra);
 };

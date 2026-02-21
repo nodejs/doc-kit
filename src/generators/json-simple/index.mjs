@@ -1,12 +1,6 @@
 'use strict';
 
-import { writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
-import { remove } from 'unist-util-remove';
-
-import getConfig from '../../utils/configuration/index.mjs';
-import createQueries from '../../utils/queries/index.mjs';
+import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
  * This generator generates a simplified JSON version of the API docs and returns it as a string
@@ -17,7 +11,7 @@ import createQueries from '../../utils/queries/index.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default {
+export default createLazyGenerator({
   name: 'json-simple',
 
   version: '1.0.0',
@@ -26,39 +20,4 @@ export default {
     'Generates the simple JSON version of the API docs, and returns it as a string',
 
   dependsOn: 'metadata',
-
-  /**
-   * Generates the simplified JSON version of the API docs
-   */
-  async generate(input) {
-    const config = getConfig('json-simple');
-
-    // Iterates the input (ApiDocMetadataEntry) and performs a few changes
-    const mappedInput = input.map(node => {
-      // Deep clones the content nodes to avoid affecting upstream nodes
-      const content = JSON.parse(JSON.stringify(node.content));
-
-      // Removes numerous nodes from the content that should not be on the "body"
-      // of the JSON version of the API docs as they are already represented in the metadata
-      remove(content, [
-        createQueries.UNIST.isStabilityNode,
-        createQueries.UNIST.isHeading,
-      ]);
-
-      return { ...node, content };
-    });
-
-    if (config.output) {
-      // Writes all the API docs stringified content into one file
-      // Note: The full JSON generator in the future will create one JSON file per top-level API doc file
-      await writeFile(
-        join(config.output, 'api-docs.json'),
-        config.minify
-          ? JSON.stringify(mappedInput)
-          : JSON.stringify(mappedInput, null, 2)
-      );
-    }
-
-    return mappedInput;
-  },
-};
+});

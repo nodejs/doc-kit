@@ -6,8 +6,8 @@ import { globSync } from 'tinyglobby';
 import createWorkerPool from '../../../threading/index.mjs';
 import createParallelWorker from '../../../threading/parallel.mjs';
 import { setConfig } from '../../../utils/configuration/index.mjs';
-import astJs from '../../ast-js/index.mjs';
-import apiLinks from '../index.mjs';
+import { generate as astJsGenerate } from '../../ast-js/generate.mjs';
+import { generate as apiLinksGenerate } from '../generate.mjs';
 
 const relativePath = relative(process.cwd(), import.meta.dirname);
 
@@ -40,11 +40,11 @@ describe('api links', () => {
         // Collect results from the async generator
         const astJsResults = [];
 
-        for await (const chunk of astJs.generate(undefined, worker)) {
+        for await (const chunk of astJsGenerate(undefined, worker)) {
           astJsResults.push(...chunk);
         }
 
-        const actualOutput = await apiLinks.generate(astJsResults);
+        const actualOutput = await apiLinksGenerate(astJsResults);
 
         for (const [k, v] of Object.entries(actualOutput)) {
           actualOutput[k] = v.replace(/.*(?=lib\/)/, '');

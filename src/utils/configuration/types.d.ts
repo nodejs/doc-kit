@@ -16,7 +16,7 @@ export type Configuration = {
   chunkSize: number;
 } & {
   [K in keyof AllGenerators]: GlobalConfiguration &
-    ResolvedGenerator<K>['defaultConfiguration'];
+    AllGenerators[K]['defaultConfiguration'];
 };
 
 export type GlobalConfiguration = {

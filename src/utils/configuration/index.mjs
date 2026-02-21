@@ -14,33 +14,30 @@ import { importFromURL } from '../url.mjs';
 /**
  * Get's the default configuration
  */
-export const getDefaultConfig = lazy(async () => {
-  const defaults = /** @type {import('./types').Configuration} */ ({
-    global: {
-      version: process.version,
-      minify: true,
-      repository: 'nodejs/node',
-      ref: 'HEAD',
-      baseURL: 'https://nodejs.org/docs',
-      changelog: populate(CHANGELOG_URL, {
+export const getDefaultConfig = lazy(() =>
+  Object.keys(allGenerators).reduce(
+    (acc, k) => {
+      acc[k] = allGenerators[k].defaultConfiguration ?? {};
+      return acc;
+    },
+    /** @type {import('./types').Configuration} */ ({
+      global: {
+        version: process.version,
+        minify: true,
         repository: 'nodejs/node',
         ref: 'HEAD',
-      }),
-    },
+        baseURL: 'https://nodejs.org/docs',
+        changelog: populate(CHANGELOG_URL, {
+          repository: 'nodejs/node',
+          ref: 'HEAD',
+        }),
+      },
 
-    threads: cpus().length,
-    chunkSize: 10,
-  });
-
-  await Promise.all(
-    Object.keys(allGenerators).map(async k => {
-      const generator = await allGenerators[k]();
-      defaults[k] = generator.defaultConfiguration ?? {};
+      threads: cpus().length,
+      chunkSize: 10,
     })
-  );
-
-  return defaults;
-});
+  )
+);
 
 /**
  * Loads a configuration file from a URL or file path.
@@ -117,7 +114,7 @@ export const createRunConfiguration = async options => {
   const merged = deepMerge(
     config,
     createConfigFromCLIOptions(options),
-    await getDefaultConfig()
+    getDefaultConfig()
   );
 
   // These need to be coerced

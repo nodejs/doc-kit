@@ -1,22 +1,11 @@
 import type { publicGenerators, allGenerators } from './index.mjs';
 
 declare global {
-  /**
-   * A lazy generator loader that returns a promise resolving to the generator metadata.
-   */
-  export type LazyGenerator<T = GeneratorMetadata<any, any, any>> =
-    () => Promise<T>;
-
   // Public generators exposed to the CLI
   export type AvailableGenerators = typeof publicGenerators;
 
   // All generators including internal ones (metadata, jsx-ast, ast-js)
   export type AllGenerators = typeof allGenerators;
-
-  // The resolved type of a loaded generator
-  export type ResolvedGenerator<K extends keyof AllGenerators> = Awaited<
-    ReturnType<AllGenerators[K]>
-  >;
 
   /**
    * ParallelWorker interface for distributing work across Node.js worker threads.
@@ -81,6 +70,8 @@ declare global {
     version: string;
 
     description: string;
+
+    hasParallelProcessor: boolean;
 
     /**
      * The immediate generator that this generator depends on.
