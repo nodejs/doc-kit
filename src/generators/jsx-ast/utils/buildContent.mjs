@@ -285,11 +285,13 @@ export const createDocumentLayout = (
   sideBarProps,
   metaBarProps,
   remark
-) =>
-  createTree('root', [
+) => {
+  const config = getConfig('jsx-ast');
+
+  return createTree('root', [
     createJSXElement(JSX_IMPORTS.AnnouncementBanner.name, {
-      remoteConfig: getConfig('web').remoteConfig,
-      versionMajor: getConfig('web').version?.major ?? null,
+      remoteConfig: config.remoteConfig,
+      versionMajor: config.version?.major ?? null,
     }),
     createJSXElement(JSX_IMPORTS.NavBar.name),
     createJSXElement(JSX_IMPORTS.Article.name, {
@@ -312,6 +314,7 @@ export const createDocumentLayout = (
       ],
     }),
   ]);
+};
 
 /**
  * @typedef {import('estree').Node & { data: ApiDocMetadataEntry }} JSXContent

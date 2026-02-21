@@ -34,8 +34,6 @@ export default {
     imports: {
       '#config/Logo': '@node-core/ui-components/Common/NodejsLogo',
     },
-    remoteConfig:
-      'https://raw.githubusercontent.com/nodejs/nodejs.org/main/apps/site/site.json',
   },
 
   /**
