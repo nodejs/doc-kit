@@ -549,7 +549,6 @@ pre {
 
 pre > code {
   padding: 0;
-  float: left;
 }
 
 pre + h3 {
@@ -1015,6 +1014,9 @@ kbd {
   filter: invert(1);
 }
 
+:root:not(.has-js) .copy-button {
+  display: none;
+}
 .copy-button {
   float: right;
   outline: none;
@@ -1029,8 +1031,7 @@ kbd {
   text-transform: uppercase;
   font-weight: 700;
   padding: 0 0.5rem;
-  margin-right: 10px;
-  margin-top: -2px;
+  margin-right: 0.2rem;
   height: 1.5rem;
   transition-property:
     background-color, border-color, color, box-shadow, filter;
