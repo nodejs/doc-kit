@@ -1,19 +1,10 @@
-import module from 'node:module';
-import { join } from 'node:path';
-
 import virtual from '@rollup/plugin-virtual';
 import { build } from 'rolldown';
 
 import cssLoader from './css.mjs';
 import getStaticData from './data.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
-
-// Resolve node_modules relative to this package (doc-kit), not cwd.
-// This ensures modules are found when running from external directories.
-const DOC_KIT_NODE_MODULES = join(
-  module.findPackageJSON(new URL(import.meta.resolve('preact'))),
-  '../../../node_modules'
-);
+import { NODE_MODULES } from '../constants.mjs';
 
 /**
  * Asynchronously bundles JavaScript source code (and its CSS imports),
@@ -100,9 +91,8 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       },
 
       // Tell the bundler where to find node_modules.
-      // This ensures packages are found when running doc-kit from external directories
-      // (e.g., running from the node repository via tools/doc/node_modules/.bin/doc-kit).
-      modules: [DOC_KIT_NODE_MODULES, 'node_modules'],
+      // We use our custom `NODE_MODULES`, and then the cwd's `node_modules`.
+      modules: [NODE_MODULES, 'node_modules'],
     },
 
     // Array of plugins to apply during the build.
