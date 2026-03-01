@@ -62,7 +62,7 @@ updates:
           - 'recma-*'
       compiling:
         patterns:
-          - '@minify-html/wasm'
+          - '@swc/html-wasm'
           - '@rollup/*'
           - 'rolldown'
           - 'lightningcss-wasm'

@@ -63,7 +63,7 @@ export async function generate(input) {
   });
 
   if (config.minify) {
-    result = Buffer.from(await minifyHTML(result));
+    result = await minifyHTML(result);
   }
 
   if (config.output) {

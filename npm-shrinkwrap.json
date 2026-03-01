@@ -14,6 +14,7 @@
         "@orama/orama": "^3.1.18",
         "@orama/ui": "^1.5.4",
         "@rollup/plugin-virtual": "^3.0.2",
+        "@swc/html-wasm": "^1.15.17",
         "acorn": "^8.16.0",
         "commander": "^14.0.3",
         "dedent": "^1.7.1",
@@ -2463,6 +2464,12 @@
       "funding": {
         "url": "https://github.com/sponsors/sindresorhus"
       }
+    },
+    "node_modules/@swc/html-wasm": {
+      "version": "1.15.18",
+      "resolved": "https://registry.npmjs.org/@swc/html-wasm/-/html-wasm-1.15.18.tgz",
+      "integrity": "sha512-nABVlYRZjfTJA3bTEf7w6Gu8GgRfFJZqTAJ+ehJzwKtCreMy4QFBGiv3KkCjIjxXg+U8qrpnqgo9SjVOq3lPEw==",
+      "license": "Apache-2.0"
     },
     "node_modules/@tailwindcss/node": {
       "version": "4.1.18",
@@ -8334,6 +8341,7 @@
       "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
       "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
       "license": "Apache-2.0",
+      "peer": true,
       "bin": {
         "tsc": "bin/tsc",
         "tsserver": "bin/tsserver"
