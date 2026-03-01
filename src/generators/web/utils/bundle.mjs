@@ -1,3 +1,4 @@
+import module from 'node:module';
 import { join } from 'node:path';
 
 import virtual from '@rollup/plugin-virtual';
@@ -10,8 +11,8 @@ import getConfig from '../../../utils/configuration/index.mjs';
 // Resolve node_modules relative to this package (doc-kit), not cwd.
 // This ensures modules are found when running from external directories.
 const DOC_KIT_NODE_MODULES = join(
-  import.meta.dirname,
-  '../../../../node_modules'
+  module.findPackageJSON(new URL(import.meta.resolve('preact'))),
+  '../../../node_modules'
 );
 
 /**
