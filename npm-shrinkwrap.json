@@ -1,10 +1,12 @@
 {
-  "name": "@nodejs/doc-kit",
+  "name": "@node-core/doc-kit",
+  "version": "1.0.0",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
-      "name": "@nodejs/doc-kit",
+      "name": "@node-core/doc-kit",
+      "version": "1.0.0",
       "dependencies": {
         "@actions/core": "^3.0.0",
         "@heroicons/react": "^2.2.0",
@@ -1044,7 +1046,6 @@
       "resolved": "https://registry.npmjs.org/@orama/core/-/core-1.2.19.tgz",
       "integrity": "sha512-AVEI0eG/a1RUQK+tBloRMppQf46Ky4kIYKEVjo0V0VfIGZHdLOE2PJR4v949kFwiTnfSJCUaxgwM74FCA1uHUA==",
       "license": "AGPL-3.0",
-      "peer": true,
       "dependencies": {
         "@orama/cuid2": "2.2.3",
         "@orama/oramacore-events-parser": "0.0.5"
@@ -3158,7 +3159,6 @@
       "resolved": "https://registry.npmjs.org/@types/react/-/react-19.2.14.tgz",
       "integrity": "sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==",
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "csstype": "^3.2.2"
       }
@@ -3332,7 +3332,6 @@
       "integrity": "sha512-9Cnda8GS57AQakvRyG0PTejJNlA2xhvyNtEVIMlDWOOeEyBkYWhGPnfrIAnqxLMTSTo6q8g12XVjjev5l1NvMA==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "@eslint-community/eslint-utils": "^4.9.1",
         "@typescript-eslint/scope-manager": "8.54.0",
@@ -3722,7 +3721,6 @@
       "resolved": "https://registry.npmjs.org/acorn/-/acorn-8.16.0.tgz",
       "integrity": "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==",
       "license": "MIT",
-      "peer": true,
       "bin": {
         "acorn": "bin/acorn"
       },
@@ -4511,7 +4509,6 @@
       "integrity": "sha512-LEyamqS7W5HB3ujJyvi0HQK/dtVINZvd5mAAp9eT5S/ujByGjiZLCzPcHVzuXbpJDJF/cxwHlfceVUDZ2lnSTw==",
       "dev": true,
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "@eslint-community/eslint-utils": "^4.8.0",
         "@eslint-community/regexpp": "^4.12.1",
@@ -7357,7 +7354,6 @@
         }
       ],
       "license": "MIT",
-      "peer": true,
       "dependencies": {
         "nanoid": "^3.3.11",
         "picocolors": "^1.1.1",
@@ -7500,7 +7496,6 @@
       "resolved": "https://registry.npmjs.org/preact/-/preact-10.28.4.tgz",
       "integrity": "sha512-uKFfOHWuSNpRFVTnljsCluEFq57OKT+0QdOiQo8XWnQ/pSvg7OpX5eNOejELXJMWy+BwM2nobz0FkvzmnpCNsQ==",
       "license": "MIT",
-      "peer": true,
       "funding": {
         "type": "opencollective",
         "url": "https://opencollective.com/preact"
@@ -7584,7 +7579,6 @@
       "resolved": "https://registry.npmjs.org/react/-/react-19.2.4.tgz",
       "integrity": "sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==",
       "license": "MIT",
-      "peer": true,
       "engines": {
         "node": ">=0.10.0"
       }
@@ -8032,7 +8026,8 @@
       "version": "0.26.0",
       "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.26.0.tgz",
       "integrity": "sha512-NlHwttCI/l5gCPR3D1nNXtWABUmBwvZpEQiD4IXSbIDq8BzLIK/7Ir5gTFSGZDUu37K5cMNp0hFtzO38sC7gWA==",
-      "license": "MIT"
+      "license": "MIT",
+      "peer": true
     },
     "node_modules/semver": {
       "version": "7.7.4",
@@ -8508,7 +8503,6 @@
       "resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.3.tgz",
       "integrity": "sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==",
       "license": "MIT",
-      "peer": true,
       "engines": {
         "node": ">=12"
       },
@@ -8672,7 +8666,6 @@
       "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
       "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
       "license": "Apache-2.0",
-      "peer": true,
       "bin": {
         "tsc": "bin/tsc",
         "tsserver": "bin/tsserver"
@@ -8871,7 +8864,6 @@
       "integrity": "sha512-VUyWiTNQD7itdiMuJy+EuLEErLj3uwX/EpHQF8EOf33Dq3Ju6VW1GXm+swk6+1h7a49uv9fKZ+dft9jU7esdLA==",
       "dev": true,
       "hasInstallScript": true,
-      "peer": true,
       "dependencies": {
         "napi-postinstall": "^0.2.4"
       },
