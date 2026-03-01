@@ -62,7 +62,7 @@ export default () => {
           cssModules: id.endsWith('module.css'),
           resolver: {
             /**
-             *
+             * Resolve specifiers with Rolldown's resolution
              */
             resolve: (...args) => this.resolve(...args).then(r => r.id),
           },
