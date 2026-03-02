@@ -1,7 +1,16 @@
+import { findPackageJSON } from 'node:module';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = dirname(fileURLToPath(import.meta.url));
+
+// Resolve node_modules relative to this package (doc-kit), not cwd.
+// We do this by finding where one of our dependencies (preact) is stored,
+// and using it's NODE_MODULES
+export const NODE_MODULES = resolve(
+  findPackageJSON(new URL(import.meta.resolve('preact'))),
+  '../..'
+);
 
 /**
  * @typedef {Object} JSXImportConfig
