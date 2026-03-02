@@ -5,9 +5,9 @@ export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /node.js/i, to: 'nodejs' }, // Replace Node.js
   { from: /&/, to: '-and-' }, // Replace &
   { from: /[/_,:;\\ ]/g, to: '-' }, // Replace /_,:;\. and whitespace
-  { from: /--+/g, to: '-' }, // Replace multiple hyphens with single
-  { from: /^-/, to: '' }, // Remove any leading hyphen
-  { from: /-$/, to: '' }, // Remove any trailing hyphen
+  { from: /^-+(?!-*$)/g, to: '' }, // Remove any leading hyphens
+  { from: /(?<!^-*)-+$/g, to: '' }, // Remove any trailing hyphens
+  { from: /^(?!-+$).*?(--+)/g, to: '-' }, // Replace multiple hyphens
 ];
 
 // This is the base URL of the MDN Web documentation
