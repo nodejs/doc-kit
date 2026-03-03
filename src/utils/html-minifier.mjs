@@ -9,4 +9,4 @@ import { minify } from '@swc/html-wasm';
  * @param {import('@swc/html-wasm').Options} [options]
  */
 export const minifyHTML = async (html, options = {}) =>
-  minify(html, options).then(({ code }) => code)
+  minify(html, options).then(({ code }) => code);
