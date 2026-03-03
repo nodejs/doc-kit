@@ -8,15 +8,15 @@ import { bundleAsync } from 'lightningcss-wasm';
 const fileCache = new Map();
 
 /**
- * Rolldown plugin to support `.module.css` files with CSS Modules semantics.
+ * Rolldown plugin to support `.css` files with CSS Modules semantics.
  *
  * This plugin performs the following:
- * 1. Intercepts `.module.css` files during the build
+ * 1. Intercepts `.css` files during the build
  * 2. Processes them with Lightning CSS (including CSS Module transformation)
  * 3. Collects the resulting CSS to emit as a single `styles.css` file
  * 4. Exports the transformed class names back to the JS file
  *
- * TODO(@avivkeller): Once Rolldown natively supports CSS Modules, this plugin can be removed.
+ * @returns {import('rolldown').Plugin}
  */
 export default () => {
   const cssChunks = new Set();
@@ -26,15 +26,15 @@ export default () => {
 
     // Hook into the module loading phase of Rolldown
     load: {
-      // Match only files ending with `.module.css`
+      // Match only files ending with `.css`
       filter: {
         id: {
-          include: /\.module\.css$/,
+          include: /\.css$/,
         },
       },
 
       /**
-       * Load handler to process matched `.module.css` files
+       * Load handler to process matched `.css` files
        *
        * @param {string} id - Absolute file path to the CSS file
        */
@@ -59,7 +59,13 @@ export default () => {
         const { code, exports } = await bundleAsync({
           filename: id,
           code: Buffer.from(source),
-          cssModules: true,
+          cssModules: id.endsWith('module.css'),
+          resolver: {
+            /**
+             * Resolve specifiers with Rolldown's resolution
+             */
+            resolve: (...args) => this.resolve(...args).then(r => r.id),
+          },
         });
 
         const css = code.toString();
@@ -70,7 +76,7 @@ export default () => {
         // Map exported class names to their scoped identifiers
         // e.g., { button: '_button_abc123' }
         const mappedExports = Object.fromEntries(
-          Object.entries(exports).map(([key, value]) => [key, value.name])
+          Object.entries(exports ?? {}).map(([key, value]) => [key, value.name])
         );
 
         // Cache result
