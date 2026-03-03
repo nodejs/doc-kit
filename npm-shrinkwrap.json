@@ -9,7 +9,7 @@
         "@actions/core": "^3.0.0",
         "@heroicons/react": "^2.2.0",
         "@minify-html/wasm": "^0.18.1",
-        "@node-core/rehype-shiki": "^1.4.0",
+        "@node-core/rehype-shiki": "^1.4.1",
         "@node-core/ui-components": "^1.6.0",
         "@orama/orama": "^3.1.18",
         "@orama/ui": "^1.5.4",
@@ -975,9 +975,9 @@
       }
     },
     "node_modules/@node-core/rehype-shiki": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/@node-core/rehype-shiki/-/rehype-shiki-1.4.0.tgz",
-      "integrity": "sha512-TzeIsLXHlpxCfyG8h75qSuindowKi+1p8rJ4f9cnDQY7i0g/HEqonj4esD7ZkFDb0GSZbRwLhnOqo5xwo18t5g==",
+      "version": "1.4.1",
+      "resolved": "https://registry.npmjs.org/@node-core/rehype-shiki/-/rehype-shiki-1.4.1.tgz",
+      "integrity": "sha512-Ku63bR4wOq6MuZPRSNwj5NcVEU1zmQ+YtXRmwjIMm/Fdp8sZQVAhzyVJLjeYXDKTeYLRPYhtWu8jEu2+G9tumg==",
       "dependencies": {
         "@shikijs/core": "^3.22.0",
         "@shikijs/engine-javascript": "^3.22.0",
@@ -986,7 +986,11 @@
         "classnames": "~2.5.1",
         "hast-util-to-string": "^3.0.1",
         "shiki": "~3.22.0",
+        "typescript": "5.9.3",
         "unist-util-visit": "^5.1.0"
+      },
+      "engines": {
+        "node": ">=20"
       }
     },
     "node_modules/@node-core/ui-components": {
@@ -8344,7 +8348,6 @@
       "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
       "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
       "license": "Apache-2.0",
-      "peer": true,
       "bin": {
         "tsc": "bin/tsc",
         "tsserver": "bin/tsserver"
