@@ -25,19 +25,19 @@
     "doc-kit": "./bin/cli.mjs"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@reporters/github": "^1.12.0",
     "@types/mdast": "^4.0.4",
     "@types/node": "^24.10.1",
     "@types/semver": "^7.7.1",
     "c8": "^11.0.0",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.2",
     "eslint-import-resolver-node": "^0.3.9",
     "eslint-plugin-import-x": "^4.16.1",
-    "eslint-plugin-jsdoc": "^62.4.1",
-    "eslint-plugin-react-x": "^2.8.1",
+    "eslint-plugin-jsdoc": "^62.7.1",
+    "eslint-plugin-react-x": "^2.13.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^16.3.0",
     "prettier": "3.8.1"
   },
   "dependencies": {
