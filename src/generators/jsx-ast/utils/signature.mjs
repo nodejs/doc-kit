@@ -1,9 +1,12 @@
 import { h as createElement } from 'hastscript';
 
+import { createJSXElement } from './ast.mjs';
+import { parseListIntoProperties } from './types.mjs';
 import { highlighter } from '../../../utils/highlighter.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { parseListItem } from '../../legacy-json/utils/parseList.mjs';
 import parseSignature from '../../legacy-json/utils/parseSignature.mjs';
+import { JSX_IMPORTS } from '../../web/constants.mjs';
 
 /**
  * Generates a string representation of a function or class signature.
@@ -91,7 +94,7 @@ export const getFullName = ({ name, text }, fallback = name) => {
  * @param {import('@types/mdast').Heading} heading - The heading node with metadata.
  * @param {number} idx - The index at which the heading occurs in `parent.children`.
  */
-export default ({ children }, { data }, idx) => {
+export const insertSignatureCodeBlock = ({ children }, { data }, idx) => {
   // Try to locate the parameter list immediately following the heading
   const listIdx = children.findIndex(createQueries.UNIST.isStronglyTypedList);
 
@@ -126,4 +129,19 @@ export default ({ children }, { data }, idx) => {
       data.type === 'ctor' ? 'new ' : ''
     )
   );
+};
+
+/**
+ * Renders a table of properties based on parsed metadata from a Markdown list.
+ *
+ * @param {import('mdast').List} node
+ * @param {import('unified').Processor} remark - The remark processor
+ */
+export const createSignatureTable = (node, remark) => {
+  const items = parseListIntoProperties(node, remark);
+
+  return createJSXElement(JSX_IMPORTS.FunctionSignature.name, {
+    title: items.length === 1 && !items[0].name ? 'Type' : 'Attributes',
+    items,
+  });
 };

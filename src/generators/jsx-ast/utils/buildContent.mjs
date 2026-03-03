@@ -7,7 +7,6 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { createJSXElement } from './ast.mjs';
 import { buildMetaBarProps } from './buildBarProps.mjs';
-import createPropertyTable from './buildPropertyTable.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
@@ -21,7 +20,11 @@ import {
   TYPES_WITH_METHOD_SIGNATURES,
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
-import insertSignature, { getFullName } from './buildSignature.mjs';
+import {
+  insertSignatureCodeBlock,
+  createSignatureTable,
+  getFullName,
+} from './signature.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
   GITHUB_BLOB_URL,
@@ -242,7 +245,7 @@ export const transformHeadingNode = async (
 
   // If the heading type supports method signatures, insert signature block
   if (TYPES_WITH_METHOD_SIGNATURES.includes(node.data.type)) {
-    insertSignature(parent, node, index + 1);
+    insertSignatureCodeBlock(parent, node, index + 1);
   }
 
   return [SKIP];
@@ -269,7 +272,8 @@ export const processEntry = (entry, remark) => {
   visit(
     content,
     createQueries.UNIST.isStronglyTypedList,
-    (node, idx, parent) => (parent.children[idx] = createPropertyTable(node))
+    (node, idx, parent) =>
+      (parent.children[idx] = createSignatureTable(node, remark))
   );
 
   return content;

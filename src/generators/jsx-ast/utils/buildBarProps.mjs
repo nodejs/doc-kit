@@ -3,7 +3,7 @@
 import readingTime from 'reading-time';
 import { visit } from 'unist-util-visit';
 
-import { getFullName } from './buildSignature.mjs';
+import { getFullName } from './signature.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
   GITHUB_EDIT_URL,
