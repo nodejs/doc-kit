@@ -76,12 +76,11 @@ export const extractPropertyName = (nodes, current) => {
   first.value = first.value.slice(match[0].length);
   shiftIfBlankText(nodes);
 
-  // "Type" itself is not a property name, only a type annotation hint
-  const label = match[1] !== 'Type' && match[1];
-
-  if (label) {
-    current.name = label;
-    current.kind = label === 'Returns' ? 'return' : label.toLowerCase();
+  if (match[1]) {
+    current.name = match[1];
+    // NOTE: We currently only have one "kind". Should others be added for other
+    // starters, just replace the `undefined` with the other kinds.
+    current.kind = match[1] === 'Returns' ? 'return' : undefined;
   }
 };
 

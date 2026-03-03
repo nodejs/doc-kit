@@ -161,8 +161,8 @@ export const TYPES_WITH_METHOD_SIGNATURES = [
   'classMethod',
 ];
 
-// Regex to trim leading whitespace and colons from strings
-export const TRIMMABLE_PADDING_REGEX = /^[\s:]+/;
+// Regex to trim leading whitespace, colons, and hyphens from strings
+export const TRIMMABLE_PADDING_REGEX = /^[\s:-]+/;
 
 // Patterns to map deprecation "Type" text to AlertBox levels.
 // Order matters: first match wins.

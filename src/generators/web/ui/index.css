@@ -16,33 +16,6 @@ main {
     word-break: break-word;
   }
 
-  /* Don't overflow the parent */
-  .overflow-container {
-    overflow-x: auto;
-    width: 100%;
-    table td a + a {
-      margin-right: 0;
-    }
-  }
-
-  table {
-    td {
-      word-break: break-all;
-    }
-
-    /* In tables, don't pad `a` elements */
-    a {
-      padding-right: unset;
-    }
-
-    @media (min-width: 1024px) {
-      td code {
-        overflow-wrap: normal;
-        word-break: normal;
-      }
-    }
-  }
-
   /* Change history positioning */
   div:has(> h1, > h2, > h3, > h4, > h5, > h6) {
     display: flex;
