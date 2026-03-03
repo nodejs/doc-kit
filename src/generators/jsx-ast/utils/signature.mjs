@@ -82,7 +82,7 @@ export const getFullName = ({ name, text }, fallback = name) => {
   return code?.includes(name)
     ? code
         .slice(0, code.indexOf(name) + name.length) // Truncate everything after the name.
-        .replace(/^["']|new\s*/, '') // Strip quotes or "new" keyword
+        .replace(/^["']|new\s*/g, '') // Strip quotes or "new" keyword
     : fallback;
 };
 

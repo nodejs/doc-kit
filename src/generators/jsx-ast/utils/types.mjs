@@ -36,7 +36,7 @@ export const classifyTypeNode = node => {
  *
  * @param {Array<import('mdast').PhrasingContent>} nodes
  */
-const shiftIfBlankText = nodes => {
+export const shiftIfBlankText = nodes => {
   if (nodes[0]?.type === 'text' && !nodes[0].value.trim()) {
     nodes.shift();
   }
