@@ -130,7 +130,7 @@ export async function* generate(input, worker) {
         let result = replaceTemplateValues(apiTemplate, template, config);
 
         if (config.minify) {
-          result = Buffer.from(await minifyHTML(result));
+          result = await minifyHTML(result);
         }
 
         await writeFile(join(config.output, `${template.api}.html`), result);

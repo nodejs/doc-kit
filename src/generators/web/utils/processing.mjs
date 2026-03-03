@@ -123,10 +123,7 @@ export async function processJSXEntries(
         .replace('{{speculationRules}}', SPECULATION_RULES)
         .replace('{{ogTitle}}', title);
 
-      const minifiedHtml = await minifyHTML(renderedHtml);
-      const html = Buffer.from(minifiedHtml);
-
-      return { html, api };
+      return { html: await minifyHTML(renderedHtml), api };
     })
   );
 

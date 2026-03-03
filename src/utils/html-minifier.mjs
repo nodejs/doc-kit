@@ -1,24 +1,12 @@
-import { minify } from '@minify-html/wasm';
-
-const DEFAULT_HTML_MINIFIER_OPTIONS = {
-  minify_css: true,
-  minify_js: true,
-};
-
-const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
+import { minify } from '@swc/html-wasm';
 
 /**
- * Minifies HTML with project defaults and optional overrides.
+ * Minifies HTML with project defaults and optional overrides. At the moment,
+ * swc's defaults are suitable for our needs, but in the event that this changes,
+ * allowing project defaults is beneficial.
  *
  * @param {string} html
- * @param {Record<string, boolean | number | string | string[]>} [overrides]
+ * @param {import('@swc/html-wasm').Options} [options]
  */
-export const minifyHTML = async (html, overrides = {}) => {
-  const minified = minify(textEncoder.encode(html), {
-    ...DEFAULT_HTML_MINIFIER_OPTIONS,
-    ...overrides,
-  });
-
-  return textDecoder.decode(minified);
-};
+export const minifyHTML = async (html, options = {}) =>
+  minify(html, options).then(({ code }) => code);
