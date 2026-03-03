@@ -141,7 +141,7 @@ export const createSignatureTable = (node, remark) => {
   const items = parseListIntoProperties(node, remark);
 
   return createJSXElement(JSX_IMPORTS.FunctionSignature.name, {
-    title: items.length > 1 ? 'Attributes' : undefined,
+    title: items.length > 1 && 'kind' in items[0] ? 'Attributes' : undefined,
     items,
   });
 };
