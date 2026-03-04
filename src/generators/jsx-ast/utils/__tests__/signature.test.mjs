@@ -41,7 +41,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'baz()');
+      assert.strictEqual(sig, 'baz(): void');
     });
 
     it('handles empty return type', () => {
@@ -54,7 +54,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'test()');
+      assert.strictEqual(sig, 'test(): void');
     });
 
     it('includes prefix when provided', () => {
@@ -67,7 +67,7 @@ describe('generateSignature', () => {
         'new '
       );
 
-      assert.strictEqual(sig, 'new Constructor()');
+      assert.strictEqual(sig, 'new Constructor(): void');
     });
 
     it('handles complex union types with multiple pipes', () => {
@@ -111,7 +111,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'singleParam(value)');
+      assert.strictEqual(sig, 'singleParam(value): void');
     });
 
     it('handles multiple parameters', () => {
@@ -127,7 +127,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'multiParam(first, second)');
+      assert.strictEqual(sig, 'multiParam(first, second): void');
     });
 
     it('marks optional parameters with question mark', () => {
@@ -143,7 +143,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'optionalParam(required, optional?)');
+      assert.strictEqual(sig, 'optionalParam(required, optional?): void');
     });
 
     it('marks parameters with defaults as optional', () => {
@@ -159,7 +159,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'defaultParam(normal, withDefault?)');
+      assert.strictEqual(sig, 'defaultParam(normal, withDefault?): void');
     });
 
     it('handles parameters that are both optional and have defaults', () => {
@@ -172,7 +172,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'bothOptionalAndDefault(param?)');
+      assert.strictEqual(sig, 'bothOptionalAndDefault(param?): void');
     });
 
     it('handles empty params array', () => {
@@ -198,7 +198,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'implicitOptional(param1, param2?)');
+      assert.strictEqual(sig, 'implicitOptional(param1, param2?): void');
     });
   });
 
@@ -268,7 +268,7 @@ describe('generateSignature', () => {
         ''
       );
 
-      assert.strictEqual(sig, 'nullReturn()');
+      assert.strictEqual(sig, 'nullReturn(): void');
     });
 
     it('handles missing extends property', () => {
