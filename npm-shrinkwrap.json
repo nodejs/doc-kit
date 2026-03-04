@@ -27,7 +27,7 @@
         "lightningcss-wasm": "^1.31.1",
         "mdast-util-slice-markdown": "^2.0.1",
         "piscina": "^5.1.4",
-        "preact": "^11.0.0-beta.0",
+        "preact": "^10.28.4",
         "preact-render-to-string": "^6.6.3",
         "reading-time": "^1.5.0",
         "recma-jsx": "^1.0.1",
@@ -7227,9 +7227,9 @@
       "license": "MIT"
     },
     "node_modules/preact": {
-      "version": "11.0.0-beta.0",
-      "resolved": "https://registry.npmjs.org/preact/-/preact-11.0.0-beta.0.tgz",
-      "integrity": "sha512-IcODoASASYwJ9kxz7+MJeiJhvLriwSb4y4mHIyxdgaRZp6kPUud7xytrk/6GZw8U3y6EFJaRb5wi9SrEK+8+lg==",
+      "version": "10.28.4",
+      "resolved": "https://registry.npmjs.org/preact/-/preact-10.28.4.tgz",
+      "integrity": "sha512-uKFfOHWuSNpRFVTnljsCluEFq57OKT+0QdOiQo8XWnQ/pSvg7OpX5eNOejELXJMWy+BwM2nobz0FkvzmnpCNsQ==",
       "license": "MIT",
       "peer": true,
       "funding": {
