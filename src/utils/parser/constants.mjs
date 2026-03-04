@@ -29,7 +29,7 @@ export const DOC_MDN_BASE_URL_JS_GLOBALS = `${DOC_MDN_BASE_URL_JS}Reference/Glob
 // is a specific type of API Doc entry (e.g., Event, Class, Method, etc)
 // and to extract the inner content of said Heading to be used as the API doc entry name
 const CAMEL_CASE = '\\w+(?:\\.\\w+)*';
-const FUNCTION_CALL = '\\([^)]*\\)';
+const FUNCTION_CALL = '\\((?:[a-zA-Z$_][^)]*)?\\)';
 
 // Matches "bar":
 // Group 1: foo[bar]
