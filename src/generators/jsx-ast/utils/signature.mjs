@@ -26,7 +26,7 @@ export const generateSignature = (
   }
 
   // Function or method
-  const returnStr = (returnType ? `: ${returnType.type}` : '')
+  const returnStr = (returnType ? `: ${returnType.type}` : ': void')
     .split('|')
     .map(part => part.trim())
     .filter(Boolean)
@@ -141,7 +141,7 @@ export const createSignatureTable = (node, remark) => {
   const items = parseListIntoProperties(node, remark);
 
   return createJSXElement(JSX_IMPORTS.FunctionSignature.name, {
-    title: items.length > 1 && 'kind' in items[0] ? 'Attributes' : undefined,
+    title: items.length === 1 && 'kind' in items[0] ? null : 'Attributes',
     items,
   });
 };
