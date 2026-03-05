@@ -16,7 +16,11 @@ const remarkRecma = getRemarkRecma();
  *
  * @type {import('./types').Generator['processChunk']}
  */
-export async function processChunk(slicedInput, itemIndices, docPages) {
+export async function processChunk(
+  slicedInput,
+  itemIndices,
+  { docPages, stabilityOverviewEntries }
+) {
   const results = [];
 
   for (const idx of itemIndices) {
@@ -28,7 +32,8 @@ export async function processChunk(slicedInput, itemIndices, docPages) {
       entries,
       head,
       sideBarProps,
-      remarkRecma
+      remarkRecma,
+      stabilityOverviewEntries
     );
 
     results.push(content);
@@ -54,6 +59,19 @@ export async function* generate(input, worker) {
     ? config.index.map(({ section, api }) => [section, `${api}.html`])
     : headNodes.map(node => [node.heading.data.name, `${node.api}.html`]);
 
+  // Pre-compute stability overview data once — avoid serialising full AST nodes to workers
+  const stabilityOverviewEntries = headNodes
+    .filter(node => node.stability?.children?.length)
+    .map(({ api, heading, stability }) => {
+      const [{ data }] = stability.children;
+      return {
+        api,
+        name: heading.data.name,
+        stabilityIndex: parseInt(data.index, 10),
+        stabilityDescription: data.description.split('. ')[0],
+      };
+    });
+
   // Create sliced input: each item contains head + its module's entries
   // This avoids sending all 4700+ entries to every worker
   const entries = headNodes.map(head => ({
@@ -61,7 +79,10 @@ export async function* generate(input, worker) {
     entries: groupedModules.get(head.api),
   }));
 
-  for await (const chunkResult of worker.stream(entries, entries, docPages)) {
+  for await (const chunkResult of worker.stream(entries, entries, {
+    docPages,
+    stabilityOverviewEntries,
+  })) {
     yield chunkResult;
   }
 }

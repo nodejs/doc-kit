@@ -86,6 +86,10 @@ export const JSX_IMPORTS = {
     name: 'ArrowUpRightIcon',
     source: '@heroicons/react/24/solid/ArrowUpRightIcon',
   },
+  StabilityOverview: {
+    name: 'StabilityOverview',
+    source: resolve(ROOT, './ui/components/StabilityOverview'),
+  },
 };
 
 /**
