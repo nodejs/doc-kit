@@ -8,6 +8,7 @@ import { SKIP, visit } from 'unist-util-visit';
 import { createJSXElement } from './ast.mjs';
 import { buildMetaBarProps } from './buildBarProps.mjs';
 import createPropertyTable from './buildPropertyTable.mjs';
+import buildStabilityOverview from './buildStabilityOverview.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
 import createQueries from '../../../utils/queries/index.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
@@ -277,11 +278,7 @@ export const processEntry = (entry, remark, stabilityOverviewEntries = []) => {
     stabilityOverviewEntries.length &&
     entry.tags.includes('STABILITY_OVERVIEW_SLOT_BEGIN')
   ) {
-    content.children.push(
-      createJSXElement(JSX_IMPORTS.StabilityOverview.name, {
-        entries: stabilityOverviewEntries,
-      })
-    );
+    content.children.push(buildStabilityOverview(stabilityOverviewEntries));
   }
 
   return content;
