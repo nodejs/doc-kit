@@ -21,7 +21,6 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_dispatch' }}
     outputs:
       # Output the matrix of packages to publish for use in the publish job
       should_publish: ${{ steps.check.outputs.should_publish }}
