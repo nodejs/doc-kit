@@ -1,9 +1,10 @@
 {
-  "name": "@nodejs/doc-kit",
+  "name": "@node-core/doc-kit",
   "type": "module",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nodejs/api-docs-tooling.git"
+    "url": "git+https://github.com/nodejs/doc-kit.git"
   },
   "scripts": {
     "lint": "eslint . --no-warn-ignored",

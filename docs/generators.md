@@ -1,6 +1,6 @@
 # Creating Generators
 
-This guide explains how to create new documentation generators for `@nodejs/doc-kit`.
+This guide explains how to create new documentation generators for `@node-core/doc-kit`.
 
 ## Generator Concepts
 

@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <code>@nodejs/doc-kit</code> is a tool to generate API documentation of Node.js. <a href="https://github.com/nodejs/node/issues/52343">See this issue</a> for more information.
+  <code>@node-core/doc-kit</code> is a tool to generate API documentation of Node.js. <a href="https://github.com/nodejs/node/issues/52343">See this issue</a> for more information.
 </p>
 
 <p align="center">
@@ -40,7 +40,7 @@ $ node bin/cli.mjs --help
 ```
 
 ```
-Usage: @nodejs/doc-kit [options] [command]
+Usage: @node-core/doc-kit [options] [command]
 
 CLI tool to generate the Node.js API documentation
 
@@ -56,7 +56,7 @@ Commands:
 ### `generate`
 
 ```
-Usage: @nodejs/doc-kit generate [options]
+Usage: @node-core/doc-kit generate [options]
 
 Generate API docs
 
@@ -75,7 +75,7 @@ Options:
 ### `interactive`
 
 ```
-Usage: @nodejs/doc-kit interactive [options]
+Usage: @node-core/doc-kit interactive [options]
 
 Launch guided CLI wizard
 
