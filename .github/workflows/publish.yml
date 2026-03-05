@@ -77,7 +77,6 @@ jobs:
     steps:
       - uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
         with:
-          pnpm: true
           use-version-file: true
           registry-url: 'https://registry.npmjs.org'
 
