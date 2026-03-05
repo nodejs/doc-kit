@@ -21,6 +21,7 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     outputs:
       # Output the matrix of packages to publish for use in the publish job
       should_publish: ${{ steps.check.outputs.should_publish }}
@@ -61,19 +62,17 @@ jobs:
 
       - name: Check if we should publish
         id: check
-        env:
-          EVENT_NAME: ${{ github.event_name }}
         run: |
           OLD_VERSION=$(git show $COMMIT_SHA~1:package.json | jq -r '.version')
           NEW_VERSION=$(jq -r '.version' "package.json")
-          if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "$EVENT_NAME" == "workflow_dispatch" ]; then
+          if [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
             echo "should_publish=true" >> $GITHUB_OUTPUT
           fi
 
   publish:
     needs: prepare
     runs-on: ubuntu-latest
-    if: needs.prepare.outputs.should_publish == 'true'
+    if: github.event_name == 'workflow_dispatch' || needs.prepare.outputs.should_publish == 'true'
     steps:
       - uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
         with:
