@@ -44,7 +44,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
     const toc = String(
       remarkRehypeProcessor.processSync(
         tableOfContents(nodes, {
-          maxDepth: 4,
+          maxDepth: 5,
           parser: tableOfContents.parseToCNode,
         })
       )
