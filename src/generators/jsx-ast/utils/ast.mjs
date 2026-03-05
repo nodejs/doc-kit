@@ -84,9 +84,10 @@ export const createJSXElement = (
     ? AST_NODE_TYPES.MDX.JSX_INLINE_ELEMENT
     : AST_NODE_TYPES.MDX.JSX_BLOCK_ELEMENT;
 
-  const attrs = Object.entries(attributes).map(([key, value]) =>
-    createAttributeNode(key, value)
-  );
+  const attrs = Object.entries(attributes)
+    // Skip undefined/null values
+    .filter(([, value]) => value != null)
+    .map(([key, value]) => createAttributeNode(key, value));
 
   return createTree(elementType, {
     name,

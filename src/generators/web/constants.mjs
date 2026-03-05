@@ -86,6 +86,10 @@ export const JSX_IMPORTS = {
     name: 'DataTag',
     source: '@node-core/ui-components/Common/DataTag',
   },
+  FunctionSignature: {
+    name: 'FunctionSignature',
+    source: '@node-core/ui-components/Containers/FunctionSignature',
+  },
   ArrowUpRightIcon: {
     name: 'ArrowUpRightIcon',
     source: '@heroicons/react/24/solid/ArrowUpRightIcon',
