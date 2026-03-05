@@ -1,6 +1,6 @@
 'use strict';
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
@@ -35,8 +35,6 @@ export async function generate(input) {
 
   // Process all entries together (required for code-split bundles)
   if (config.output) {
-    await mkdir(config.output, { recursive: true });
-
     // Write HTML files
     for (const { html, api } of results) {
       await writeFile(join(config.output, `${api}.html`), html, 'utf-8');
