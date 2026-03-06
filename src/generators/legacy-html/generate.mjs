@@ -17,7 +17,7 @@ import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
  * @param {string} name - The name of the heading
  * @returns {HeadingMetadataEntry} The heading object
  */
-const getHeading = name => ({ data: { depth: 1, name } });
+const getHeading = name => ({ depth: 1, data: { name } });
 
 const remarkRehypeProcessor = getRemarkRehypeWithShiki();
 
