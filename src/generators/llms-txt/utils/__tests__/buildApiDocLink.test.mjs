@@ -72,7 +72,7 @@ describe('buildApiDocLink', () => {
     const result = buildApiDocLink(entry, 'https://example.com');
     assert.strictEqual(
       result,
-      '[Test API](https://example.com/docs/latest/test.md): Test description'
+      '[Test API](https://example.com/docs/latest/api/test.md): Test description'
     );
   });
 
@@ -84,6 +84,6 @@ describe('buildApiDocLink', () => {
     };
 
     const result = buildApiDocLink(entry, 'https://example.com');
-    assert.ok(result.includes('https://example.com/docs/latest/path.md'));
+    assert.ok(result.includes('https://example.com/docs/latest/api/path.md'));
   });
 });
