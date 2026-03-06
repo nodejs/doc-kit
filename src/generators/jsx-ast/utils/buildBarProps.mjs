@@ -73,8 +73,8 @@ const extractHeading = entry => {
     depth: entry.heading.depth,
     value: heading,
     stability: parseInt(entry.stability?.data.index ?? 2),
-    slug: entry.heading.slug,
-    data: { id: entry.heading.slug, type: data.type },
+    slug: data.slug,
+    data: { id: data.slug, type: data.type },
   };
 };
 

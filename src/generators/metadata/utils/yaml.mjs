@@ -48,11 +48,10 @@ export const parseYAMLIntoMetadata = yamlString => {
   // Ensures that the parsed YAML is an object, because even if it is not
   // i.e. a plain string or an array, it will simply not result into anything
   let parsedYaml = yaml.parse(normalizedYaml);
-
   // Ensure that only Objects get parsed on Object.keys(), since some `<!--`
   // comments, might be just plain strings and not even a valid YAML metadata
   if (typeof parsedYaml === 'string') {
-    parsedYaml = { tags: [parsedYaml] };
+    return { tags: [parsedYaml] };
   }
 
   return parsedYaml;

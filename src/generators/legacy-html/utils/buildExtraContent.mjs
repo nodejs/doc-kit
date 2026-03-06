@@ -56,7 +56,7 @@ const buildStabilityOverview = headMetadata => {
  */
 export default (headNodes, node) => {
   return createTree('root', [
-    node.tags.map(tag => {
+    (node.tags ?? []).map(tag => {
       switch (tag) {
         case 'STABILITY_OVERVIEW_SLOT_BEGIN':
           return buildStabilityOverview(headNodes);

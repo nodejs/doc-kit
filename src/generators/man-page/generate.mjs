@@ -41,11 +41,11 @@ export async function generate(input) {
 
   // Find the appropriate headers
   const optionsStart = components.findIndex(
-    ({ heading }) => heading.slug === config.cliOptionsHeaderSlug
+    ({ heading }) => heading.data.slug === config.cliOptionsHeaderSlug
   );
 
   const environmentStart = components.findIndex(
-    ({ heading }) => heading.slug === config.envVarsHeaderSlug
+    ({ heading }) => heading.data.slug === config.envVarsHeaderSlug
   );
 
   // The first header that is <3 in depth after environmentStart

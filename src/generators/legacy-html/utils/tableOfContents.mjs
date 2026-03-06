@@ -46,14 +46,9 @@ tableOfContents.parseNavigationNode = ({ api, heading }) =>
 tableOfContents.parseToCNode = ({ stability, api, heading }) => {
   const fullSlug = `${api}.html#${heading.data.slug}`;
 
-  // If the node has one stability index, we add the stability index class
-  // into the ToC; Otherwise, we cannot determine which class to add
-  // which is intentional, as some nodes have multiple stabilities
-  if (stability.children.length === 1) {
-    const [firstStability] = stability.children;
-
+  if (stability) {
     return (
-      `<span class="stability_${parseInt(firstStability.data.index)}">` +
+      `<span class="stability_${parseInt(stability.data.index)}">` +
       `<a href="${fullSlug}">${heading.data.text}</a></span>`
     );
   }

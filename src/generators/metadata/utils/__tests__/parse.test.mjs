@@ -64,8 +64,8 @@ describe('parseApiDoc', () => {
       ]);
       const results = parseApiDoc({ file, tree }, typeMap);
 
-      assert.strictEqual(results[0].slug, 'first');
-      assert.strictEqual(results[1].slug, 'second');
+      assert.strictEqual(results[0].heading.data.slug, 'first');
+      assert.strictEqual(results[1].heading.data.slug, 'second');
     });
   });
 
