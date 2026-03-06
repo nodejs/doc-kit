@@ -33,6 +33,7 @@ jobs:
       - name: Verify commit authenticity
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         run: |
           # Get commit data from GitHub API to verify its authenticity
           COMMIT_DATA=$(gh api repos/${{ github.repository }}/commits/$COMMIT_SHA)
@@ -66,7 +67,7 @@ jobs:
         run: |
           OLD_VERSION=$(git show $COMMIT_SHA~1:package.json | jq -r '.version')
           NEW_VERSION=$(jq -r '.version' "package.json")
-          if [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
+          if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "$EVENT_NAME" == "workflow_dispatch" ]; then
             echo "should_publish=true" >> $GITHUB_OUTPUT
           fi
 
@@ -77,7 +78,6 @@ jobs:
     steps:
       - uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
         with:
-          pnpm: true
           use-version-file: true
           registry-url: 'https://registry.npmjs.org'
 
