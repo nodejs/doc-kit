@@ -38,7 +38,7 @@ const shouldIncludeEntryInToC = ({ heading }) =>
   // Only include headings with text,
   heading?.data?.text.length &&
   // and whose depth <= the maximum allowed.
-  heading?.data?.depth <= TOC_MAX_HEADING_DEPTH;
+  heading?.depth <= TOC_MAX_HEADING_DEPTH;
 
 /**
  * Extracts and formats heading information from an API documentation entry.
