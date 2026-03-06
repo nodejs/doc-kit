@@ -62,6 +62,10 @@ export const JSX_IMPORTS = {
     name: 'TableOfContents',
     source: '@node-core/ui-components/Common/TableOfContents',
   },
+  BadgeGroup: {
+    name: 'BadgeGroup',
+    source: '@node-core/ui-components/Common/BadgeGroup',
+  },
   ChangeHistory: {
     name: 'ChangeHistory',
     source: '@node-core/ui-components/Common/ChangeHistory',
