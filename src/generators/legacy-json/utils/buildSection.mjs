@@ -107,7 +107,7 @@ export const createSectionBuilder = () => {
       section.stability = Number(stability.data.index);
       section.stabilityText = stability.data.description;
 
-      const stabilityIdx = content.children.indexOf(stability.children[0]);
+      const stabilityIdx = content.children.indexOf(stability);
 
       if (stabilityIdx) {
         nodes.splice(stabilityIdx - 1, 1);
