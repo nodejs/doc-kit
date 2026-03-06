@@ -8,10 +8,10 @@ import { lazy } from './misc.mjs';
  * Groups all the API metadata nodes by module (`api` property) so that we can process each different file
  * based on the module it belongs to.
  *
- * @param {Array<ApiDocMetadataEntry>} nodes The API metadata Nodes to be grouped
+ * @param {Array<import('../generators/metadata/types').MetadataEntry>} nodes The API metadata Nodes to be grouped
  */
 export const groupNodesByModule = nodes => {
-  /** @type {Map<string, Array<ApiDocMetadataEntry>>} */
+  /** @type {Map<string, Array<import('../generators/metadata/types').MetadataEntry>>} */
   const groupedNodes = new Map();
 
   for (const node of nodes) {
@@ -70,9 +70,9 @@ export const coerceSemVer = version => {
  * Gets compatible versions for an entry
  *
  * @param {string | import('semver').SemVer} introduced
- * @param {Array<ApiDocReleaseEntry>} releases
+ * @param {Array<import('../parsers/types').ReleaseEntry>} releases
  * @param {Boolean} [includeNonMajor=false]
- * @returns {Array<ApiDocReleaseEntry>}
+ * @returns {Array<import('../parsers/types').ReleaseEntry>}
  */
 export const getCompatibleVersions = (introduced, releases) => {
   const coercedMajor = major(coerceSemVer(introduced));
@@ -149,17 +149,13 @@ export const legacyToJSON = (
 /**
  * Builds the url of a api doc entry.
  *
- * @param {ApiDocMetadataEntry} entry
+ * @param {import('../generators/metadata/types').MetadataEntry} entry
  * @param {string} baseURL
  * @param {boolean} [useHtml]
  * @returns {URL}
  */
 export const buildApiDocURL = (entry, baseURL, useHtml = false) => {
-  const path = entry.api_doc_source.replace(/^doc\//, '/docs/latest/');
-
-  if (useHtml) {
-    return URL.parse(path.replace(/\.md$/, '.html'), baseURL);
-  }
+  const path = `/docs/latest/${entry.api}.${useHtml ? 'html' : 'md'}`;
 
   return URL.parse(path, baseURL);
 };

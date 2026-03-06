@@ -10,10 +10,10 @@ import {
 import getConfig from '../../utils/configuration/index.mjs';
 
 /**
- * @param {Array<ApiDocMetadataEntry>} components
+ * @param {Array<import('../metadata/types').MetadataEntry>} components
  * @param {number} start
  * @param {number} end
- * @param {(element: ApiDocMetadataEntry) => string} convert
+ * @param {(element: import('../metadata/types').MetadataEntry) => string} convert
  * @returns {string}
  */
 function extractMandoc(components, start, end, convert) {
@@ -41,11 +41,11 @@ export async function generate(input) {
 
   // Find the appropriate headers
   const optionsStart = components.findIndex(
-    ({ slug }) => slug === config.cliOptionsHeaderSlug
+    ({ heading }) => heading.slug === config.cliOptionsHeaderSlug
   );
 
   const environmentStart = components.findIndex(
-    ({ slug }) => slug === config.envVarsHeaderSlug
+    ({ heading }) => heading.slug === config.envVarsHeaderSlug
   );
 
   // The first header that is <3 in depth after environmentStart

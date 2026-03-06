@@ -6,12 +6,10 @@ import { u as createTree } from 'unist-builder';
 /**
  * Generates the Stability Overview table based on the API metadata nodes.
  *
- * @param {Array<ApiDocMetadataEntry>} headMetadata The API metadata nodes to be used for the Stability Overview
+ * @param {Array<import('../../metadata/types').MetadataEntry>} headMetadata The API metadata nodes to be used for the Stability Overview
  */
 const buildStabilityOverview = headMetadata => {
-  const headNodesWithStability = headMetadata.filter(entry =>
-    Boolean(entry.stability.children.length)
-  );
+  const headNodesWithStability = headMetadata.filter(entry => entry.stability);
 
   const mappedHeadNodesIntoTable = headNodesWithStability.map(
     ({ heading, api, stability }) => {
@@ -52,8 +50,8 @@ const buildStabilityOverview = headMetadata => {
 /**
  * Generates extra "special" HTML content based on extra metadata that a node may have.
  *
- * @param {Array<ApiDocMetadataEntry>} headNodes The API metadata nodes to be used for the Stability Overview
- * @param {ApiDocMetadataEntry} node The current API metadata node to be transformed into HTML content
+ * @param {Array<import('../../metadata/types').MetadataEntry>} headNodes The API metadata nodes to be used for the Stability Overview
+ * @param {import('../../metadata/types').MetadataEntry} node The current API metadata node to be transformed into HTML content
  * @returns {import('unist').Parent} The HTML AST tree for the extra content
  */
 export default (headNodes, node) => {

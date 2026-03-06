@@ -17,7 +17,7 @@ const NODE_LTS_VERSION_REGEX = /Long Term Support/i;
  * Retrieves all Node.js major versions from the provided CHANGELOG.md file
  * and returns an array of objects containing the version and LTS status.
  * @param {string|URL} path Path to changelog
- * @returns {Promise<Array<ApiDocReleaseEntry>>}
+ * @returns {Promise<Array<import('./types').ReleaseEntry>>}
  */
 export const parseChangelog = async path => {
   const changelog = await loadFromURL(path);

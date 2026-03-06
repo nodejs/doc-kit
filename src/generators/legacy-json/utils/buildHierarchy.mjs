@@ -1,8 +1,8 @@
 /**
  * Recursively finds the most suitable parent entry for a given `entry` based on heading depth.
  *
- * @param {ApiDocMetadataEntry} entry
- * @param {ApiDocMetadataEntry[]} entries
+ * @param {import('../../metadata/types').MetadataEntry} entry
+ * @param {import('../../metadata/types').MetadataEntry[]} entries
  * @param {number} startIdx
  * @returns {import('../types.d.ts').HierarchizedEntry}
  */
@@ -43,7 +43,7 @@ export function findParent(entry, entries, startIdx) {
  * can do this by just looping through entries in reverse starting at the
  * current index - 1.
  *
- * @param {Array<ApiDocMetadataEntry>} entries
+ * @param {Array<import('../../metadata/types').MetadataEntry>} entries
  * @returns {Array<import('../types.d.ts').HierarchizedEntry>}
  */
 export function buildHierarchy(entries) {

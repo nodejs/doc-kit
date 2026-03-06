@@ -137,7 +137,7 @@ export async function generate(input, worker) {
 
 /**
  * Transform metadata entries to MyFormat
- * @param {Array<ApiDocMetadataEntry>} entries
+ * @param {Array<MetadataEntry>} entries
  * @param {import('semver').SemVer} version
  * @returns {string}
  */

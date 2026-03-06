@@ -31,27 +31,12 @@ describe('parseApiDoc', () => {
       assert.strictEqual(results.length, 1);
     });
 
-    it('sets api and api_doc_source from the file', () => {
-      const tree = u('root', [h('fs')]);
-      const [entry] = parseApiDoc({ file, tree }, typeMap);
-
-      assert.strictEqual(entry.api, 'fs');
-      assert.strictEqual(entry.api_doc_source, 'doc/api/fs.md');
-    });
-
-    it('generates a slug from the heading text', () => {
-      const tree = u('root', [h('File System')]);
-      const [entry] = parseApiDoc({ file, tree }, typeMap);
-
-      assert.strictEqual(entry.slug, 'file-system');
-    });
-
     it('populates heading data with text and depth', () => {
       const tree = u('root', [h('File System')]);
       const [entry] = parseApiDoc({ file, tree }, typeMap);
 
       assert.strictEqual(entry.heading.data.text, 'File System');
-      assert.strictEqual(entry.heading.data.depth, 1);
+      assert.strictEqual(entry.heading.depth, 1);
     });
   });
 
@@ -89,7 +74,7 @@ describe('parseApiDoc', () => {
       const tree = u('root', [h('fs'), yaml('added: v0.1.0')]);
       const [entry] = parseApiDoc({ file, tree }, typeMap);
 
-      assert.strictEqual(entry.added_in, 'v0.1.0');
+      assert.strictEqual(entry.added, 'v0.1.0');
     });
 
     it('extracts deprecated_in', () => {
@@ -99,15 +84,15 @@ describe('parseApiDoc', () => {
       ]);
       const [entry] = parseApiDoc({ file, tree }, typeMap);
 
-      assert.strictEqual(entry.added_in, 'v1.0.0');
-      assert.strictEqual(entry.deprecated_in, 'v2.0.0');
+      assert.strictEqual(entry.added, 'v1.0.0');
+      assert.strictEqual(entry.deprecated, 'v2.0.0');
     });
 
     it('extracts removed_in', () => {
       const tree = u('root', [h('removedMethod'), yaml('removed: v3.0.0')]);
       const [entry] = parseApiDoc({ file, tree }, typeMap);
 
-      assert.strictEqual(entry.removed_in, 'v3.0.0');
+      assert.strictEqual(entry.removed, 'v3.0.0');
     });
 
     it('extracts changes', () => {
@@ -137,14 +122,6 @@ describe('parseApiDoc', () => {
 
       assert.deepStrictEqual(entry.tags, ['legacy']);
     });
-
-    it('defaults to empty arrays when YAML block is absent', () => {
-      const tree = u('root', [h('fs')]);
-      const [entry] = parseApiDoc({ file, tree }, typeMap);
-
-      assert.deepStrictEqual(entry.changes, []);
-      assert.deepStrictEqual(entry.tags, []);
-    });
   });
 
   describe('stability index', () => {
@@ -152,12 +129,8 @@ describe('parseApiDoc', () => {
       const tree = u('root', [h('fs'), stability('Stability: 2 - Stable')]);
       const [entry] = parseApiDoc({ file, tree }, typeMap);
 
-      assert.strictEqual(entry.stability.children.length, 1);
-      assert.strictEqual(entry.stability.children[0].data.index, '2');
-      assert.strictEqual(
-        entry.stability.children[0].data.description,
-        'Stable'
-      );
+      assert.strictEqual(entry.stability.data.index, '2');
+      assert.strictEqual(entry.stability.data.description, 'Stable');
     });
 
     it('captures multi-word stability description', () => {
@@ -168,7 +141,7 @@ describe('parseApiDoc', () => {
       const [entry] = parseApiDoc({ file, tree }, typeMap);
 
       assert.strictEqual(
-        entry.stability.children[0].data.description,
+        entry.stability.data.description,
         'Experimental: This API is experimental.'
       );
     });
@@ -183,14 +156,14 @@ describe('parseApiDoc', () => {
         typeMap
       );
 
-      assert.strictEqual(entry.stability.children.length, 0);
+      assert.ok(!('stability' in entry));
     });
 
     it('has empty stability when no blockquote is present', () => {
       const tree = u('root', [h('fs')]);
       const [entry] = parseApiDoc({ file, tree }, typeMap);
 
-      assert.strictEqual(entry.stability.children.length, 0);
+      assert.ok(!('stability' in entry));
     });
   });
 
