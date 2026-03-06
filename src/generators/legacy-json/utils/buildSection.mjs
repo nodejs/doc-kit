@@ -43,7 +43,7 @@ export const createSectionBuilder = () => {
     napiVersion = [],
     deprecated = [],
     removed = [],
-    changes,
+    changes = [],
   }) => {
     const meta = {};
 
@@ -62,7 +62,7 @@ export const createSectionBuilder = () => {
     }
 
     if (removed?.length) {
-      meta.removed = enforceArray(deprecated);
+      meta.removed = enforceArray(removed);
     }
 
     // Check if there are any non-empty fields in the meta object

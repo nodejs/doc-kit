@@ -45,8 +45,6 @@ export async function processChunk(slicedInput, itemIndices, docPages) {
 export async function* generate(input, worker) {
   const config = getConfig('jsx-ast');
 
-  console.log(input[0]);
-
   const groupedModules = groupNodesByModule(input);
 
   const headNodes = getSortedHeadNodes(input);

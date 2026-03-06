@@ -155,7 +155,7 @@ export const legacyToJSON = (
  * @returns {URL}
  */
 export const buildApiDocURL = (entry, baseURL, useHtml = false) => {
-  const path = `/docs/latest/${entry.api}.${useHtml ? 'html' : 'md'}`;
+  const path = `/docs/latest/api/${entry.api}.${useHtml ? 'html' : 'md'}`;
 
   return URL.parse(path, baseURL);
 };

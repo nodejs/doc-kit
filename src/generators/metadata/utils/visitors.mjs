@@ -135,7 +135,6 @@ export const visitStability = (node, metadata) => {
 };
 
 /**
-/**
  * Helper function to parse YAML from a node
  * @param {import('@types/mdast').Blockquote} node The blockquote node
  * @param {Object} metadata The metadata object to update
