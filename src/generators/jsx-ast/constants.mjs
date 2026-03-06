@@ -43,9 +43,9 @@ export const TAG_TRANSFORMS = {
  * API lifecycle change labels
  */
 export const LIFECYCLE_LABELS = {
-  added_in: 'Added in',
-  deprecated_in: 'Deprecated in',
-  removed_in: 'Removed in',
+  added: 'Added in',
+  deprecated: 'Deprecated in',
+  removed: 'Removed in',
   introduced_in: 'Introduced in',
 };
 

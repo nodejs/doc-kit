@@ -70,7 +70,7 @@ describe('buildMetaBarProps', () => {
   it('creates meta bar properties from entries', () => {
     const head = {
       api: 'fs',
-      added_in: 'v1.0.0',
+      added: 'v1.0.0',
     };
 
     const entries = [
@@ -106,7 +106,7 @@ describe('buildMetaBarProps', () => {
     assert.ok(Array.isArray(result.headings));
   });
 
-  it('falls back to introduced_in if added_in is missing', () => {
+  it('falls back to introduced_in if added is missing', () => {
     const head = {
       api: 'fs',
       introduced_in: 'v2.0.0',

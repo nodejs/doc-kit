@@ -39,30 +39,30 @@ export const createSectionBuilder = () => {
    * @returns {import('../types.d.ts').Meta | undefined} The created metadata, or undefined if all fields are empty.
    */
   const createMeta = ({
-    added_in = [],
-    n_api_version = [],
-    deprecated_in = [],
-    removed_in = [],
-    changes,
+    added = [],
+    napiVersion = [],
+    deprecated = [],
+    removed = [],
+    changes = [],
   }) => {
     const meta = {};
 
-    if (added_in?.length) {
-      meta.added = enforceArray(added_in);
+    if (added?.length) {
+      meta.added = enforceArray(added);
     }
 
     meta.changes = changes;
 
-    if (typeof n_api_version === 'number' || n_api_version?.length) {
-      meta.napiVersion = enforceArray(n_api_version);
+    if (typeof napiVersion === 'number' || napiVersion?.length) {
+      meta.napiVersion = enforceArray(napiVersion);
     }
 
-    if (deprecated_in?.length) {
-      meta.deprecated = enforceArray(deprecated_in);
+    if (deprecated?.length) {
+      meta.deprecated = enforceArray(deprecated);
     }
 
-    if (removed_in?.length) {
-      meta.removed = enforceArray(removed_in);
+    if (removed?.length) {
+      meta.removed = enforceArray(removed);
     }
 
     // Check if there are any non-empty fields in the meta object
@@ -76,7 +76,7 @@ export const createSectionBuilder = () => {
   /**
    * Creates a section from an entry and its heading.
    * @param {import('../types.d.ts').HierarchizedEntry} entry - The AST entry.
-   * @param {HeadingMetadataParent} head - The head node of the entry.
+   * @param {import('../../metadata/types').HeadingNode} head - The head node of the entry.
    * @returns {import('../types.d.ts').Section} The created section.
    */
   const createSection = (entry, head) => {
@@ -103,13 +103,11 @@ export const createSectionBuilder = () => {
    * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry providing stability information.
    */
   const parseStability = (section, nodes, { stability, content }) => {
-    const stabilityNode = stability.children[0];
+    if (stability) {
+      section.stability = Number(stability.data.index);
+      section.stabilityText = stability.data.description;
 
-    if (stabilityNode) {
-      section.stability = Number(stabilityNode.data.index);
-      section.stabilityText = stabilityNode.data.description;
-
-      const stabilityIdx = content.children.indexOf(stability.children[0]);
+      const stabilityIdx = content.children.indexOf(stability);
 
       if (stabilityIdx) {
         nodes.splice(stabilityIdx - 1, 1);
@@ -139,7 +137,7 @@ export const createSectionBuilder = () => {
    * Adds additional metadata to the section based on its type.
    * @param {import('../types.d.ts').Section} section - The section to update.
    * @param {import('../types.d.ts').Section} parent - The parent section.
-   * @param {import('../../types.d.ts').NodeWithData} heading - The heading node of the section.
+   * @param {import('../../metadata/types').HeadingNode} heading - The heading node of the section.
    */
   const addAdditionalMetadata = (section, parent, heading) => {
     if (!section.type || section.type === 'module') {
@@ -192,15 +190,16 @@ export const createSectionBuilder = () => {
 
   /**
    * Builds the module section from head metadata and entries.
-   * @param {ApiDocMetadataEntry} head - The head metadata entry.
-   * @param {Array<ApiDocMetadataEntry>} entries - The list of metadata entries.
+   * @param {import('../../metadata/types').MetadataEntry} head - The head metadata entry.
+   * @param {Array<import('../../metadata/types').MetadataEntry>} entries - The list of metadata entries.
    * @returns {import('../types.d.ts').ModuleSection} The constructed module section.
    */
   return (head, entries) => {
     const rootModule = {
       type: 'module',
       api: head.api,
-      source: head.api_doc_source,
+      // TODO(@avivkeller): This should be configurable
+      source: `doc/api/${head.api}.md`,
     };
 
     buildHierarchy(entries).forEach(entry => handleEntry(entry, rootModule));

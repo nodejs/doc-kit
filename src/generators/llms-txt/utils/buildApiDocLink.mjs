@@ -6,7 +6,7 @@ import { transformNodeToString } from '../../../utils/unist.mjs';
  * the entry has a llm_description property. If not, it extracts the first
  * paragraph from the entry's content.
  *
- * @param {ApiDocMetadataEntry} entry
+ * @param {import('../../metadata/types').MetadataEntry} entry
  * @returns {string}
  */
 export const getEntryDescription = entry => {
@@ -32,7 +32,7 @@ export const getEntryDescription = entry => {
 /**
  * Builds a markdown link for an API doc entry
  *
- * @param {ApiDocMetadataEntry} entry
+ * @param {import('../../metadata/types').MetadataEntry} entry
  * @param {string} baseURL
  * @returns {string}
  */

@@ -19,7 +19,7 @@ import { TOC_MAX_HEADING_DEPTH } from '../constants.mjs';
 /**
  * Generate a combined plain text string from all MDAST entries for estimating reading time.
  *
- * @param {Array<ApiDocMetadataEntry>} entries - API documentation entries
+ * @param {Array<import('../../metadata/types').MetadataEntry>} entries - API documentation entries
  */
 export const extractTextContent = entries => {
   return entries.reduce((acc, entry) => {
@@ -32,17 +32,17 @@ export const extractTextContent = entries => {
 
 /**
  * Determines if an entry should be included in the Table of Contents.
- * @param {ApiDocMetadataEntry} entry
+ * @param {import('../../metadata/types').MetadataEntry} entry
  */
 const shouldIncludeEntryInToC = ({ heading }) =>
   // Only include headings with text,
   heading?.data?.text.length &&
   // and whose depth <= the maximum allowed.
-  heading?.data?.depth <= TOC_MAX_HEADING_DEPTH;
+  heading?.depth <= TOC_MAX_HEADING_DEPTH;
 
 /**
  * Extracts and formats heading information from an API documentation entry.
- * @param {ApiDocMetadataEntry} entry
+ * @param {import('../../metadata/types').MetadataEntry} entry
  */
 const extractHeading = entry => {
   const data = entry.heading.data;
@@ -72,7 +72,7 @@ const extractHeading = entry => {
   return {
     depth: entry.heading.depth,
     value: heading,
-    stability: parseInt(entry.stability?.children[0]?.data.index ?? 2),
+    stability: parseInt(entry.stability?.data.index ?? 2),
     slug: data.slug,
     data: { id: data.slug, type: data.type },
   };
@@ -81,7 +81,7 @@ const extractHeading = entry => {
 /**
  * Build the list of heading metadata for sidebar navigation.
  *
- * @param {Array<ApiDocMetadataEntry>} entries - All API metadata entries
+ * @param {Array<import('../../metadata/types').MetadataEntry>} entries - All API metadata entries
  */
 export const extractHeadings = entries =>
   entries.filter(shouldIncludeEntryInToC).map(extractHeading);
@@ -89,15 +89,15 @@ export const extractHeadings = entries =>
 /**
  * Builds metadata for the meta bar (right panel).
  *
- * @param {ApiDocMetadataEntry} head - Main API metadata entry (used as reference point)
- * @param {Array<ApiDocMetadataEntry>} entries - All documentation entries for a given API item
+ * @param {import('../../metadata/types').MetadataEntry} head - Main API metadata entry (used as reference point)
+ * @param {Array<import('../../metadata/types').MetadataEntry>} entries - All documentation entries for a given API item
  */
 export const buildMetaBarProps = (head, entries) => {
   const config = getConfig('jsx-ast');
 
   return {
     headings: extractHeadings(entries),
-    addedIn: head.introduced_in || head.added_in || '',
+    addedIn: head.added || head.introduced_in || '',
     readingTime: readingTime(extractTextContent(entries)).text,
     viewAs: [
       ['JSON', `${head.api}.json`],
@@ -110,7 +110,7 @@ export const buildMetaBarProps = (head, entries) => {
 /**
  * Converts a compatible version entry into a version label and link.
  *
- * @param {Array<ApiDocReleaseEntry>} compatibleVersions - Compatible versions
+ * @param {Array<import('../../../parsers/types').ReleaseEntry>} compatibleVersions - Compatible versions
  * @param {string} api - API identifier (used in link)
  */
 export const formatVersionOptions = (compatibleVersions, api) => {
@@ -140,7 +140,7 @@ export const formatVersionOptions = (compatibleVersions, api) => {
 /**
  * Builds metadata for the sidebar (left panel).
  *
- * @param {ApiDocMetadataEntry} entry - Current documentation entry
+ * @param {import('../../metadata/types').MetadataEntry} entry - Current documentation entry
  * @param {Array<[string, string]>} docPages - Available doc pages for sidebar navigation
  */
 export const buildSideBarProps = (entry, docPages) => {

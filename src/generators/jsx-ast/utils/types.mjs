@@ -1,11 +1,9 @@
 import { u as createTree } from 'unist-builder';
 
-import createQueries from '../../../utils/queries/index.mjs';
+import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import { DEFAULT_EXPRESSION } from '../../legacy-json/constants.mjs';
 import { TRIMMABLE_PADDING_REGEX } from '../constants.mjs';
-
-const { QUERIES, UNIST } = createQueries;
 
 /**
  * Checks if the node is a union separator (`' | '`) or a type reference

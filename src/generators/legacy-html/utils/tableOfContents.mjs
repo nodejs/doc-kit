@@ -8,8 +8,8 @@
  *
  * This generates a Markdown string containing a list as the ToC for the API documentation.
  *
- * @param {Array<ApiDocMetadataEntry>} entries The API metadata nodes to be used for the ToC
- * @param {{ maxDepth: number; parser: (metadata: ApiDocMetadataEntry) => string }} options The optional ToC options
+ * @param {Array<import('../../metadata/types').MetadataEntry>} entries The API metadata nodes to be used for the ToC
+ * @param {{ maxDepth: number; parser: (metadata: import('../../metadata/types').MetadataEntry) => string }} options The optional ToC options
  */
 const tableOfContents = (entries, options) => {
   // Filter out the entries that have a name property / or that have empty content
@@ -18,9 +18,9 @@ const tableOfContents = (entries, options) => {
   // Generate the ToC based on the API headings (sections)
   return validEntries.reduce((acc, entry) => {
     // Check if the depth of the heading is less than or equal to the maximum depth
-    if (entry.heading.data.depth <= options.maxDepth) {
+    if (entry.heading.depth <= options.maxDepth) {
       // Generate the indentation based on the depth of the heading
-      const indent = '  '.repeat(entry.heading.data.depth - 1);
+      const indent = '  '.repeat(entry.heading.depth - 1);
 
       // Append the ToC entry to the accumulator
       acc += `${indent}- ${options.parser(entry)}\n`;
@@ -33,7 +33,7 @@ const tableOfContents = (entries, options) => {
 /**
  * Builds the Label with extra metadata to be used in the ToC
  *
- * @param {ApiDocMetadataEntry} metadata The current node that is being parsed
+ * @param {import('../../metadata/types').MetadataEntry} metadata The current node that is being parsed
  */
 tableOfContents.parseNavigationNode = ({ api, heading }) =>
   `<a class="nav-${api}" href="${api}.html">${heading.data.name}</a>`;
@@ -41,19 +41,14 @@ tableOfContents.parseNavigationNode = ({ api, heading }) =>
 /**
  * Builds the Label with extra metadata to be used in the ToC
  *
- * @param {ApiDocMetadataEntry} metadata
+ * @param {import('../../metadata/types').MetadataEntry} metadata
  */
 tableOfContents.parseToCNode = ({ stability, api, heading }) => {
   const fullSlug = `${api}.html#${heading.data.slug}`;
 
-  // If the node has one stability index, we add the stability index class
-  // into the ToC; Otherwise, we cannot determine which class to add
-  // which is intentional, as some nodes have multiple stabilities
-  if (stability.children.length === 1) {
-    const [firstStability] = stability.children;
-
+  if (stability) {
     return (
-      `<span class="stability_${parseInt(firstStability.data.index)}">` +
+      `<span class="stability_${parseInt(stability.data.index)}">` +
       `<a href="${fullSlug}">${heading.data.text}</a></span>`
     );
   }
