@@ -21,8 +21,8 @@ import {
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
 import {
-  insertSignatureCodeBlock,
   createSignatureTable,
+  createSignatureCodeBlock,
   getFullName,
 } from './signature.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
@@ -125,12 +125,15 @@ export const extractHeadingContent = content => {
 /**
  * Creates a heading wrapper element with anchors, icons, and optional change history.
  * @param {import('mdast').Node} content - The content node to extract text from
+ * @param {import('mdast.Node')} parent - The parent
  * @param {import('unist').Node|null} changeElement - The change history element, if available
  */
-export const createHeadingElement = (content, changeElement) => {
+export const createHeadingElement = (content, parent, changeElement) => {
   const { type, depth, slug } = content.data;
 
-  let headingContent = extractHeadingContent(content);
+  let headingContent = TYPES_WITH_METHOD_SIGNATURES.includes(type)
+    ? createSignatureCodeBlock(parent, content)
+    : extractHeadingContent(content);
 
   // Build heading with anchor link
   const headingWrapper = createElement('div', [
@@ -212,6 +215,7 @@ export const transformHeadingNode = async (
   // Replace heading node with our enhanced heading element
   parent.children[index] = createHeadingElement(
     node,
+    parent,
     createChangeElement(entry, remark)
   );
 
@@ -241,11 +245,6 @@ export const transformHeadingNode = async (
 
   if (sourceLink) {
     parent.children.splice(index + 1, 0, sourceLink);
-  }
-
-  // If the heading type supports method signatures, insert signature block
-  if (TYPES_WITH_METHOD_SIGNATURES.includes(node.data.type)) {
-    insertSignatureCodeBlock(parent, node, index + 1);
   }
 
   return [SKIP];
