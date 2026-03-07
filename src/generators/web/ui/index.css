@@ -106,15 +106,4 @@ main {
     display: inline;
     margin-left: var(--spacing, 0.25rem);
   }
-
-  .signature {
-    /* Signature styling - remove line numbers and padding */
-    .line {
-      padding-left: unset !important;
-
-      &::after {
-        all: unset !important;
-      }
-    }
-  }
 }

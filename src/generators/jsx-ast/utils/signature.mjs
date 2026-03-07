@@ -1,5 +1,3 @@
-import { h as createElement } from 'hastscript';
-
 import { createJSXElement } from './ast.mjs';
 import { parseListIntoProperties } from './types.mjs';
 import { highlighter } from '../../../utils/highlighter.mjs';
@@ -49,20 +47,6 @@ export const generateSignature = (
 };
 
 /**
- * Creates a syntax-highlighted code block for a signature using rehype-shiki.
- *
- * @param {string} functionName - The function name to display.
- * @param {import('../../legacy-json/types').MethodSignature} signature - Signature object with parameter and return type info.
- * @param {string} prefix - Optional prefix like `'new '`.
- */
-export const createSignatureCodeBlock = (functionName, signature, prefix) => {
-  const sig = generateSignature(functionName, signature, prefix);
-  const highlighted = highlighter.highlightToHast(sig, 'typescript');
-
-  return createElement('div', { class: 'signature' }, [highlighted]);
-};
-
-/**
  * Infers the "real" function name from a heading node.
  * Useful when auto-generated headings differ from code tokens.
  *
@@ -87,14 +71,12 @@ export const getFullName = ({ name, text }, fallback = name) => {
 };
 
 /**
- * Transforms a heading + list structure into a function/class signature block.
- * Mutates the `children` array by injecting the signature HAST node.
+ * Creates a syntax-highlighted code block for a signature using rehype-shiki.
  *
  * @param {import('@types/mdast').Parent} parent - The parent MDAST node (usually a section).
  * @param {import('@types/mdast').Heading} heading - The heading node with metadata.
- * @param {number} idx - The index at which the heading occurs in `parent.children`.
  */
-export const insertSignatureCodeBlock = ({ children }, { data }, idx) => {
+export const createSignatureCodeBlock = ({ children }, { data }) => {
   // Try to locate the parameter list immediately following the heading
   const listIdx = children.findIndex(createQueries.UNIST.isStronglyTypedList);
 
@@ -119,16 +101,15 @@ export const insertSignatureCodeBlock = ({ children }, { data }, idx) => {
     children.splice(listIdx, 1); // Remove class param list
   }
 
-  // Insert the highlighted signature block above the heading
-  children.splice(
-    idx,
-    0,
-    createSignatureCodeBlock(
-      displayName,
-      signature,
-      data.type === 'ctor' ? 'new ' : ''
-    )
+  const sig = generateSignature(
+    displayName,
+    signature,
+    data.type === 'ctor' ? 'new ' : ''
   );
+
+  const highlighted = highlighter.highlightToHast(sig, 'typescript');
+
+  return highlighted.children[0].children;
 };
 
 /**

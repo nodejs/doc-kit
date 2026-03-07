@@ -154,12 +154,7 @@ export const OVERRIDDEN_POSITIONS = [
 ];
 
 // These types are methods, and have signatures we should enumerate
-export const TYPES_WITH_METHOD_SIGNATURES = [
-  'class',
-  'ctor',
-  'method',
-  'classMethod',
-];
+export const TYPES_WITH_METHOD_SIGNATURES = ['ctor', 'method', 'classMethod'];
 
 // Regex to trim leading whitespace, colons, and hyphens from strings
 export const TRIMMABLE_PADDING_REGEX = /^[\s:-]+/;
