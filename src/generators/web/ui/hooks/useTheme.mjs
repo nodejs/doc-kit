@@ -4,13 +4,15 @@ const THEME_STORAGE_KEY = 'theme';
 const THEME_PREFERENCES = new Set(['system', 'light', 'dark']);
 
 /**
- *
+ * Sets up theme toggle button and system preference listener
  */
 const getSystemTheme = () =>
   matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
 /**
+ * Retrieves the stored theme preference from local storage.
  *
+ * @returns {'system'|'light'|'dark'|null} The stored theme preference or null if not found.
  */
 const getStoredThemePreference = () => {
   try {
@@ -22,7 +24,10 @@ const getStoredThemePreference = () => {
 };
 
 /**
+ * Stores the theme preference in local storage.
+ * If storage is unavailable, it fails silently, allowing the application to continue functioning with an in-memory preference.
  *
+ * @param {'system'|'light'|'dark'} themePreference - The theme preference to store.
  */
 const setStoredThemePreference = themePreference => {
   try {
