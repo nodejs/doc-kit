@@ -23,6 +23,10 @@ export const NODE_MODULES = resolve(
  * An object containing mappings for various JSX components to their import paths.
  */
 export const JSX_IMPORTS = {
+  AnnouncementBanner: {
+    name: 'AnnouncementBanner',
+    source: resolve(ROOT, './ui/components/AnnouncementBanner'),
+  },
   NavBar: {
     name: 'NavBar',
     source: resolve(ROOT, './ui/components/NavBar'),
