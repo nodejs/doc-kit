@@ -1,6 +1,7 @@
 'use strict';
 
 import { u as createTree } from 'unist-builder';
+import { relative, sep } from 'node:path';
 
 /**
  * This method allows us to handle creation of Metadata entries
@@ -86,7 +87,7 @@ const createMetadata = slugger => {
      * The Navigation entries has a dedicated separate method for retrieval
      * as it can be manipulated outside of the scope of the generation of the content
      *
-     * @param {{stem?: string, basename?: string}} apiDoc The API doc file being parsed
+     * @param {{stem?: string, basename?: string, path?: string, cwd?: string}} apiDoc The API doc file being parsed
      * @param {ApiDocMetadataEntry['content']} section An AST tree containing the Nodes of the API doc entry section
      * @returns {ApiDocMetadataEntry} The locally created Metadata entries
      */
@@ -118,12 +119,18 @@ const createMetadata = slugger => {
       internalMetadata.heading.data.type =
         type ?? internalMetadata.heading.data.type;
 
+      const relativePath =
+        apiDoc.path && apiDoc.cwd
+          ? relative(apiDoc.cwd, apiDoc.path).split(sep).join('/')
+          : apiDoc.basename;
+      const api = relativePath?.replace(/\.md$/u, '') ?? apiDoc.stem;
+
       // Returns the Metadata entry for the API doc
       return {
-        api: apiDoc.stem,
+        api,
         slug: sectionSlug,
         source_link,
-        api_doc_source: `doc/api/${apiDoc.basename}`,
+        api_doc_source: `doc/api/${relativePath}`,
         added_in: added,
         deprecated_in: deprecated,
         removed_in: removed,
