@@ -86,6 +86,29 @@ describe('createMetadata', () => {
     deepStrictEqual(actual, expected);
   });
 
+  it('should preserve nested directory structure in metadata paths', () => {
+    const { create, setHeading } = createMetadata(new GitHubSlugger());
+    setHeading(
+      u('heading', {
+        type: 'heading',
+        data: {
+          text: 'Nested Heading',
+          type: 'module',
+          name: 'nested',
+          depth: 1,
+        },
+      })
+    );
+
+    const actual = create(
+      new VFile({ cwd: '/repo/doc/api', path: '/repo/doc/api/cli/npm/config.md' }),
+      { type: 'root', children: [] }
+    );
+
+    deepStrictEqual(actual.api, 'cli/npm/config');
+    deepStrictEqual(actual.api_doc_source, 'doc/api/cli/npm/config.md');
+  });
+
   it('should be serializable', () => {
     const { create } = createMetadata(new GitHubSlugger());
     const actual = create(new VFile({ path: 'test.md' }), {
