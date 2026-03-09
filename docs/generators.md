@@ -241,7 +241,7 @@ export async function* generate(input, worker) {
   };
 
   // Stream chunks as they complete
-  for await (const chunkResult of worker.stream(input, input, deps)) {
+  for await (const chunkResult of worker.stream(input, deps)) {
     // Process chunk result if needed
     yield chunkResult;
   }
@@ -316,7 +316,7 @@ export async function processChunk(fullInput, itemIndices, deps) {
  */
 export async function* generate(input, worker) {
   // Stream results as workers complete chunks
-  for await (const chunkResult of worker.stream(input, input, {})) {
+  for await (const chunkResult of worker.stream(input, {})) {
     // Yield immediately - downstream can start processing
     yield chunkResult;
   }

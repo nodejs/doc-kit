@@ -123,7 +123,7 @@ export async function* generate(input, worker) {
   }));
 
   // Stream chunks as they complete - HTML files are written immediately
-  for await (const chunkResult of worker.stream(entries, entries, navigation)) {
+  for await (const chunkResult of worker.stream(entries, navigation)) {
     // Write files for this chunk in the generate method (main thread)
     if (config.output) {
       for (const template of chunkResult) {
