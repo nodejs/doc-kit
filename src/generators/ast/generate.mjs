@@ -52,7 +52,7 @@ export async function* generate(_, worker) {
   );
 
   // Parse markdown files in parallel using worker threads
-  for await (const chunkResult of worker.stream(files, files)) {
+  for await (const chunkResult of worker.stream(files)) {
     yield chunkResult;
   }
 }

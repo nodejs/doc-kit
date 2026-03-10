@@ -61,7 +61,7 @@ export async function* generate(input, worker) {
     entries: groupedModules.get(head.api),
   }));
 
-  for await (const chunkResult of worker.stream(entries, entries, docPages)) {
+  for await (const chunkResult of worker.stream(entries, docPages)) {
     yield chunkResult;
   }
 }
