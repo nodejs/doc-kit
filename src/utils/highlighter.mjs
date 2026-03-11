@@ -145,8 +145,8 @@ export default function rehypeShikiji() {
         // with different languages in order to create a switchable code tab
         if (
           codeElements.length === 2 &&
-          codeElements[0].properties.language !==
-            codeElements[1].properties.language
+          codeElements[0]?.properties?.language !==
+            codeElements[1]?.properties?.language
         ) {
           const switchablePreElement = createElement(
             'pre',
