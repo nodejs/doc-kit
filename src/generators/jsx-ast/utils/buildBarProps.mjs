@@ -3,7 +3,6 @@
 import readingTime from 'reading-time';
 import { visit } from 'unist-util-visit';
 
-import { getFullName } from './signature.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
   GITHUB_EDIT_URL,
@@ -49,25 +48,16 @@ const extractHeading = entry => {
 
   const cliFlagOrEnv = [...data.text.matchAll(/`(-[\w-]+|[A-Z0-9_]+=)/g)];
 
-  let heading;
-
-  if (cliFlagOrEnv.length > 0) {
-    heading = cliFlagOrEnv.at(-1)[1];
-  } else {
-    const rawName = data.name
-      // Remove any containing code blocks
-      .replace(/`/g, '')
-      // Remove any prefixes (i.e. 'Class:')
-      .replace(/^[^:]+:/, '')
-      // Trim the remaining whitespace
-      .trim();
-
-    heading = getFullName(data, rawName);
-  }
-
-  if (data.type === 'ctor') {
-    heading += ' Constructor';
-  }
+  const heading =
+    cliFlagOrEnv.length > 0
+      ? cliFlagOrEnv.at(-1)[1]
+      : data.text
+          // Remove any containing code blocks
+          .replace(/`/g, '')
+          // Remove any prefixes (i.e. 'Class:')
+          .replace(/^[^:]+:/, '')
+          // Trim the remaining whitespace
+          .trim();
 
   return {
     depth: entry.heading.depth,
