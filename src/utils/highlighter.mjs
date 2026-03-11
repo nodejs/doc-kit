@@ -142,8 +142,12 @@ export default function rehypeShikiji() {
         currentIndex += 1;
 
         // Since we only support CJS/MJS switch, we should have exactly 2 elements
-        // in order to create a switchable code tab
-        if (codeElements.length === 2) {
+        // with different languages in order to create a switchable code tab
+        if (
+          codeElements.length === 2 &&
+          codeElements[0].properties.language !==
+            codeElements[1].properties.language
+        ) {
           const switchablePreElement = createElement(
             'pre',
             {
