@@ -31,6 +31,19 @@ describe('transformTypeToReferenceLink', () => {
       '[`<SomeOtherType>`](fromTypeMap)'
     );
   });
+  it('should transform a basic Generic type into a Markdown link', () => {
+    strictEqual(
+      transformTypeToReferenceLink('{Promise<string>}'),
+      '[`<Promise>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type)&gt;'
+    );
+  });
+
+  it('should partially transform a Generic type if only one part is known', () => {
+    strictEqual(
+      transformTypeToReferenceLink('{CustomType<string>}', {}),
+      '`<CustomType>`&lt;[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type)&gt;'
+    );
+  });
 });
 
 describe('normalizeYamlSyntax', () => {
