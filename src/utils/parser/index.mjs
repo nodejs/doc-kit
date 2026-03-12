@@ -69,8 +69,9 @@ export const transformUnixManualToLink = (
  * @returns {string} The Markdown link as a string (formatted in Markdown)
  */
 export const transformTypeToReferenceLink = (type, record) => {
-  // Removes the wrapping tags that wrap the type references such as `<>` and `{}`
-  const typeInput = type.replace(/[{}<>]/g, '');
+  // Removes the wrapping curly braces that wrap the type references
+  // We keep the angle brackets `<>` intact here to parse Generics later
+  const typeInput = type.replace(/[{}]/g, '');
 
   /**
    * Handles the mapping (if there's a match) of the input text
@@ -115,17 +116,60 @@ export const transformTypeToReferenceLink = (type, record) => {
     return '';
   };
 
+  /**
+   * Attempts to parse and format a basic Generic type (e.g., Promise<string>).
+   *
+   * @param {string} typePiece The plain type piece to be evaluated
+   * @returns {string|null} The formatted Markdown link, or null if no match is found
+   */
+  const formatBasicGeneric = typePiece => {
+    const genericMatch = typePiece.match(/^([^<]+)<([^>]+)>$/);
+
+    if (genericMatch) {
+      const baseType = genericMatch[1].trim();
+      const innerType = genericMatch[2].trim();
+
+      const baseResult = transformType(baseType.replace('[]', ''));
+      const innerResult = transformType(innerType.replace('[]', ''));
+
+      // If at least one part is mapped successfully, format as a Generic Markdown link
+      if (baseResult || innerResult) {
+        const baseFormatted = baseResult
+          ? `[\`<${baseType}>\`](${baseResult})`
+          : `\`<${baseType}>\``;
+
+        const innerFormatted = innerResult
+          ? `[\`<${innerType}>\`](${innerResult})`
+          : `\`<${innerType}>\``;
+
+        return `${baseFormatted}&lt;${innerFormatted}&gt;`;
+      }
+    }
+
+    return null;
+  };
+
   const typePieces = typeInput.split('|').map(piece => {
     // This is the content to render as the text of the Markdown link
     const trimmedPiece = piece.trim();
 
+    // 1. Attempt to format as a basic Generic type first
+    const genericMarkdown = formatBasicGeneric(trimmedPiece);
+    if (genericMarkdown) {
+      return genericMarkdown;
+    }
+
+    // 2. Fallback to the logic for plain types
+    // Strip angle brackets here to match the behavior for non-generics
+    const plainPiece = trimmedPiece.replace(/[<>]/g, '');
+
     // This is what we will compare against the API types mappings
     // The ReGeX below is used to remove `[]` from the end of the type
-    const result = transformType(trimmedPiece.replace('[]', ''));
+    const result = transformType(plainPiece.replace('[]', ''));
 
     // If we have a valid result and the piece is not empty, we return the Markdown link
-    if (trimmedPiece.length && result.length) {
-      return `[\`<${trimmedPiece}>\`](${result})`;
+    if (plainPiece.length && result.length) {
+      return `[\`<${plainPiece}>\`](${result})`;
     }
   });
 
