@@ -104,7 +104,7 @@ const formatBasicGeneric = (typePiece, transformType) => {
     const baseType = genericMatch[1].trim();
     const innerType = genericMatch[2].trim();
 
-    const baseResult = transformType(baseType.replace('[]', ''));
+    const baseResult = transformType(baseType.replace(/\[\]$/, ''));
     const baseFormatted = baseResult
       ? `[\`<${baseType}>\`](${baseResult})`
       : `\`<${baseType}>\``;
@@ -124,7 +124,7 @@ const formatBasicGeneric = (typePiece, transformType) => {
           return ', ';
         }
 
-        const innerRes = transformType(trimmed.replace('[]', ''));
+        const innerRes = transformType(trimmed.replace(/\[\]$/, ''));
         return innerRes
           ? `[\`<${trimmed}>\`](${innerRes})`
           : `\`<${trimmed}>\``;
@@ -205,7 +205,7 @@ export const transformTypeToReferenceLink = (type, record) => {
     // 2. Fallback to the logic for plain types
     // This is what we will compare against the API types mappings
     // The ReGeX below is used to remove `[]` from the end of the type
-    const result = transformType(trimmedPiece.replace('[]', ''));
+    const result = transformType(trimmedPiece.replace(/\[\]$/, ''));
 
     // If we have a valid result and the piece is not empty, we return the Markdown link
     if (trimmedPiece.length && result.length) {

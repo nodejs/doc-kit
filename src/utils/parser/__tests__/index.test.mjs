@@ -31,6 +31,7 @@ describe('transformTypeToReferenceLink', () => {
       '[`<SomeOtherType>`](fromTypeMap)'
     );
   });
+
   it('should transform a basic Generic type into a Markdown link', () => {
     strictEqual(
       transformTypeToReferenceLink('{Promise<string>}'),
