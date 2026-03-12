@@ -23,8 +23,7 @@ export default {
 
   defaultConfiguration: {
     ref: 'main',
-    remoteConfig:
-      'https://raw.githubusercontent.com/nodejs/nodejs.org/main/apps/site/site.json',
+    remoteConfig: 'https://nodejs.org/site.json',
   },
 
   /**
