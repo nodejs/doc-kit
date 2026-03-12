@@ -101,7 +101,7 @@ export const transformTypeToReferenceLink = (type, record) => {
 
     // Transform Node.js type/module references into Markdown links
     // that refer to other API docs pages within the Node.js API docs
-    if (lookupPiece in record) {
+    if (record && lookupPiece in record) {
       return record[lookupPiece];
     }
 
@@ -118,6 +118,7 @@ export const transformTypeToReferenceLink = (type, record) => {
 
   /**
    * Attempts to parse and format a basic Generic type (e.g., Promise<string>).
+   * It also supports union and multi-parameter types within the generic brackets.
    *
    * @param {string} typePiece The plain type piece to be evaluated
    * @returns {string|null} The formatted Markdown link, or null if no match is found
@@ -130,26 +131,67 @@ export const transformTypeToReferenceLink = (type, record) => {
       const innerType = genericMatch[2].trim();
 
       const baseResult = transformType(baseType.replace('[]', ''));
-      const innerResult = transformType(innerType.replace('[]', ''));
+      const baseFormatted = baseResult
+        ? `[\`<${baseType}>\`](${baseResult})`
+        : `\`<${baseType}>\``;
 
-      // If at least one part is mapped successfully, format as a Generic Markdown link
-      if (baseResult || innerResult) {
-        const baseFormatted = baseResult
-          ? `[\`<${baseType}>\`](${baseResult})`
-          : `\`<${baseType}>\``;
+      // Split while capturing delimiters (| or ,) to preserve original syntax
+      const parts = innerType.split(/([|,])/);
 
-        const innerFormatted = innerResult
-          ? `[\`<${innerType}>\`](${innerResult})`
-          : `\`<${innerType}>\``;
+      const innerFormatted = parts
+        .map(part => {
+          const trimmed = part.trim();
+          // If it is a delimiter, return it as is
+          if (trimmed === '|') {
+            return ' | ';
+          }
 
-        return `${baseFormatted}&lt;${innerFormatted}&gt;`;
-      }
+          if (trimmed === ',') {
+            return ', ';
+          }
+
+          const innerRes = transformType(trimmed.replace('[]', ''));
+          return innerRes
+            ? `[\`<${trimmed}>\`](${innerRes})`
+            : `\`<${trimmed}>\``;
+        })
+        .join('');
+
+      return `${baseFormatted}&lt;${innerFormatted}&gt;`;
     }
 
     return null;
   };
 
-  const typePieces = typeInput.split('|').map(piece => {
+  /**
+   * Safely splits the string by `|`, ignoring pipes that are inside `< >`
+   *
+   * @param {string} str The type string to split
+   * @returns {string[]} An array of type pieces
+   */
+  const splitByOuterUnion = str => {
+    const result = [];
+    let current = '';
+    let depth = 0;
+
+    for (const char of str) {
+      if (char === '<') {
+        depth++;
+      } else if (char === '>') {
+        depth--;
+      } else if (char === '|' && depth === 0) {
+        result.push(current);
+        current = '';
+        continue;
+      }
+      current += char;
+    }
+
+    result.push(current);
+    return result;
+  };
+
+  const typePieces = splitByOuterUnion(typeInput).map(piece => {
     // This is the content to render as the text of the Markdown link
     const trimmedPiece = piece.trim();
 

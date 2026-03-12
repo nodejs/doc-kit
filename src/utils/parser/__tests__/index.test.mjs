@@ -44,6 +44,27 @@ describe('transformTypeToReferenceLink', () => {
       '`<CustomType>`&lt;[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type)&gt;'
     );
   });
+
+  it('should transform a Generic type with an inner union like {Promise<string|boolean>}', () => {
+    strictEqual(
+      transformTypeToReferenceLink('{Promise<string|boolean>}', {}),
+      '[`<Promise>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) | [`<boolean>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#boolean_type)&gt;'
+    );
+  });
+
+  it('should transform multi-parameter generics like {Map<string, number>}', () => {
+    strictEqual(
+      transformTypeToReferenceLink('{Map<string, number>}', {}),
+      '[`<Map>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type), [`<number>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type)&gt;'
+    );
+  });
+
+  it('should handle outer unions with generics like {Promise<string|number> | boolean}', () => {
+    strictEqual(
+      transformTypeToReferenceLink('{Promise<string|number> | boolean}', {}),
+      '[`<Promise>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type)&gt; | [`<boolean>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#boolean_type)'
+    );
+  });
 });
 
 describe('normalizeYamlSyntax', () => {
