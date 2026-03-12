@@ -8,4 +8,6 @@ export type BannerEntry = {
   type?: BannerProps['type'];
 };
 
-export type RemoteConfig = Record<string, { banner?: BannerEntry } | undefined>;
+export type RemoteConfig = {
+  websiteBanners?: Record<string, BannerEntry | undefined>;
+};
