@@ -10,11 +10,10 @@ import {
   DOC_TYPES_MAPPING_OTHER,
   DOC_TYPES_MAPPING_PRIMITIVES,
   DOC_MAN_BASE_URL,
+  TYPE_GENERIC_REGEX,
 } from './constants.mjs';
 import { slug } from './slugger.mjs';
 import createQueries from '../queries/index.mjs';
-
-const BASIC_GENERIC_REGEX = /^([^<]+)<([^>]+)>$/;
 
 /**
  * Extracts raw YAML content from a node
@@ -98,7 +97,7 @@ const splitByOuterUnion = str => {
  * @returns {string|null} The formatted Markdown link, or null if no match is found
  */
 const formatBasicGeneric = (typePiece, transformType) => {
-  const genericMatch = typePiece.match(BASIC_GENERIC_REGEX);
+  const genericMatch = typePiece.match(TYPE_GENERIC_REGEX);
 
   if (genericMatch) {
     const baseType = genericMatch[1].trim();
