@@ -4,8 +4,8 @@ import { OVERRIDDEN_POSITIONS } from '../constants.mjs';
 
 /**
  * Sorts entries by OVERRIDDEN_POSITIONS and then heading name.
- * @param {ApiDocMetadataEntry} a
- * @param {ApiDocMetadataEntry} b
+ * @param {import('../../metadata/types').MetadataEntry} a
+ * @param {import('../../metadata/types').MetadataEntry} b
  * @returns {number}
  */
 const headingSortFn = (a, b) => {
@@ -29,8 +29,8 @@ const headingSortFn = (a, b) => {
 
 /**
  * Filters and sorts entries by OVERRIDDEN_POSITIONS and then heading name.
- * @param {Array<ApiDocMetadataEntry>} entries
- * @returns {Array<ApiDocMetadataEntry>}
+ * @param {Array<import('../../metadata/types').MetadataEntry>} entries
+ * @returns {Array<import('../../metadata/types').MetadataEntry>}
  */
 export const getSortedHeadNodes = entries =>
   entries.filter(node => node.heading.depth === 1).toSorted(headingSortFn);

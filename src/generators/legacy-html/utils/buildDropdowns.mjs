@@ -50,7 +50,7 @@ export const buildNavigation = navigationContents =>
  *
  * @param {string} api The current API node name
  * @param {string} added The version the API was added
- * @param {Array<ApiDocReleaseEntry>} versions All available Node.js releases
+ * @param {Array<import('../../../parsers/types').ReleaseEntry>} versions All available Node.js releases
  */
 export const buildVersions = (api, added, versions) => {
   const config = getConfig('legacy-html');

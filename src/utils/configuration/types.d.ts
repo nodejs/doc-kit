@@ -1,4 +1,5 @@
-import { SemVer } from 'semver';
+import type { SemVer } from 'semver';
+import type { ReleaseEntry } from '../../parsers/types';
 
 export type Configuration = {
   global: GlobalConfiguration;
@@ -43,7 +44,7 @@ export type GlobalConfiguration = {
   version: SemVer;
 
   // A list of all major versions and their respective release information
-  changelog: Array<ApiDocReleaseEntry>;
+  changelog: Array<ReleaseEntry>;
 
   // A list of all the titles of all the documentation files
   index: Array<{ section: string; api: string }>;

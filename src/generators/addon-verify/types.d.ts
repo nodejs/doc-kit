@@ -1,4 +1,6 @@
+import type { MetadataEntry } from '../metadata/types';
+
 export type Generator = GeneratorMetadata<
   {},
-  Generate<Array<ApiDocMetadataEntry>, Promise<Record<string, string>>>
+  Generate<Array<MetadataEntry>, Promise<Record<string, string>>>
 >;
