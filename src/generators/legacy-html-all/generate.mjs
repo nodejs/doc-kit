@@ -32,7 +32,7 @@ export async function generate(input) {
   // Aggregates all individual content into one giant string
   const aggregatedContent = entries.map(entry => entry.content).join('\n');
 
-  // Creates a "mimic" of an `ApiDocMetadataEntry` which fulfils the requirements
+  // Creates a "mimic" of an `MetadataEntry` which fulfils the requirements
   // for generating the `tableOfContents` with the `tableOfContents.parseNavigationNode` parser
   const sideNavigationFromValues = entries.map(entry => ({
     api: entry.api,

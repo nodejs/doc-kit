@@ -1,45 +1,24 @@
 import { ListItem } from '@types/mdast';
+import { MetadataEntry } from '../metadata/types';
 
 /**
- * Represents an entry in a hierarchical structure, extending from ApiDocMetadataEntry.
+ * Represents an entry in a hierarchical structure, extending from MetadataEntry.
  * It includes children entries organized in a hierarchy.
  */
-export interface HierarchizedEntry extends ApiDocMetadataEntry {
+export interface HierarchizedEntry extends MetadataEntry {
   /**
    * List of child entries that are part of this entry's hierarchy.
    */
-  hierarchyChildren: ApiDocMetadataEntry[];
+  hierarchyChildren: MetadataEntry[];
 }
 
 /**
  * Contains metadata related to changes, additions, removals, and deprecated statuses of an entry.
  */
-export interface Meta {
-  /**
-   * A list of changes associated with the entry.
-   */
-  changes: ApiDocMetadataChange[];
-
-  /**
-   * A list of added versions or entities for the entry.
-   */
-  added: string[];
-
-  /**
-   * A list of NAPI (Node API) versions related to the entry.
-   */
-  napiVersion: string[];
-
-  /**
-   * A list of versions where the entry was deprecated.
-   */
-  deprecated: string[];
-
-  /**
-   * A list of versions where the entry was removed.
-   */
-  removed: string[];
-}
+export type Meta = Pick<
+  MetadataEntry,
+  'changes' | 'added' | 'napiVersion' | 'deprecated' | 'removed'
+>;
 
 /**
  * Base interface for sections in the API documentation, representing common properties.
@@ -281,9 +260,6 @@ export interface ParameterList {
 
 export type Generator = GeneratorMetadata<
   {},
-  Generate<Array<ApiDocMetadataEntry>, AsyncGenerator<Section>>,
-  ProcessChunk<
-    { head: ApiDocMetadataEntry; nodes: Array<ApiDocMetadataEntry> },
-    Section
-  >
+  Generate<Array<MetadataEntry>, AsyncGenerator<Section>>,
+  ProcessChunk<{ head: MetadataEntry; nodes: Array<MetadataEntry> }, Section>
 >;

@@ -6,11 +6,10 @@ import { extname } from 'node:path';
 import { globSync } from 'tinyglobby';
 import { VFile } from 'vfile';
 
+import { STABILITY_INDEX_URL } from './constants.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
-import createQueries from '../../utils/queries/index.mjs';
+import { QUERIES } from '../../utils/queries/index.mjs';
 import { getRemark } from '../../utils/remark.mjs';
-
-const { updateStabilityPrefixToLink } = createQueries();
 
 const remarkProcessor = getRemark();
 
@@ -26,9 +25,14 @@ export async function processChunk(inputSlice, itemIndices) {
   const results = [];
 
   for (const path of filePaths) {
-    const vfile = new VFile({ path, value: await readFile(path, 'utf-8') });
-
-    updateStabilityPrefixToLink(vfile);
+    const content = await readFile(path, 'utf-8');
+    const vfile = new VFile({
+      path,
+      value: content.replace(
+        QUERIES.stabilityIndexPrefix,
+        match => `[${match}](${STABILITY_INDEX_URL})`
+      ),
+    });
 
     results.push({
       tree: remarkProcessor.parse(vfile),

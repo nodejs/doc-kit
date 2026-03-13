@@ -46,6 +46,7 @@ export async function* generate(input, worker) {
   const config = getConfig('jsx-ast');
 
   const groupedModules = groupNodesByModule(input);
+
   const headNodes = getSortedHeadNodes(input);
 
   // Pre-compute docPages once in main thread
