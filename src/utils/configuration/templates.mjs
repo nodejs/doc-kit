@@ -8,7 +8,7 @@ export const GITHUB_BLOB_URL = 'https://github.com/{repository}/blob/{ref}/';
 // This is the API docs base URL for editing a file on GitHub UI
 // TODO(@avivkeller): specify /doc/api in config
 export const GITHUB_EDIT_URL =
-  'https://github.com/{repository}/edit/{ref}/doc/api/';
+  'https://github.com/{repository}/edit/{ref}/doc/api';
 
 /**
  * Populate a template string based on a configuration

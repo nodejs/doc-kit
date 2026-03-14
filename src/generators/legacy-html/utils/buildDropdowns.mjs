@@ -48,11 +48,11 @@ export const buildNavigation = navigationContents =>
  * Note.: We use plain strings here instead of HAST, since these are just
  * templates and not actual content that needs to be transformed.
  *
- * @param {string} api The current API node name
+ * @param {string} path The current API node name
  * @param {string} added The version the API was added
  * @param {Array<import('../../../parsers/types').ReleaseEntry>} versions All available Node.js releases
  */
-export const buildVersions = (api, added, versions) => {
+export const buildVersions = (path, added, versions) => {
   const config = getConfig('legacy-html');
 
   const compatibleVersions = getCompatibleVersions(added, versions);
@@ -64,7 +64,7 @@ export const buildVersions = (api, added, versions) => {
 
     const ltsLabel = isLts ? '<b>LTS</b>' : '';
 
-    return `<li><a href="${getVersionURL(parsedVersion, api, config.baseURL)}">${parsedVersion} ${ltsLabel}</a></li>`;
+    return `<li><a href="${getVersionURL(parsedVersion, path, config.baseURL)}">${parsedVersion} ${ltsLabel}</a></li>`;
   });
 
   return (

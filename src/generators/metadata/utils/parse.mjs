@@ -1,5 +1,8 @@
 'use strict';
 
+import { basename, sep } from 'node:path/posix';
+
+import { slug } from 'github-slugger';
 import { u as createTree } from 'unist-builder';
 import { findAfter } from 'unist-util-find-after';
 import { remove } from 'unist-util-remove';
@@ -18,6 +21,7 @@ import {
 } from './visitors.mjs';
 import { UNIST } from '../../../utils/queries/index.mjs';
 import { getRemark } from '../../../utils/remark.mjs';
+import { href } from '../../../utils/url.mjs';
 import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
 
 // Creates an instance of the Remark processor with GFM support
@@ -26,11 +30,11 @@ const remarkProcessor = getRemark();
 /**
  * This generator generates a flattened list of metadata entries from a API doc
  *
- * @param {ParserOutput<import('mdast').Root>} input
+ * @param {{ tree: import('mdast.Root') } & import('../types').MetadataEntry} input
  * @param {Record<string, string>} typeMap
  * @returns {Promise<Array<import('../types').MetadataEntry>>}
  */
-export const parseApiDoc = ({ file, tree }, typeMap) => {
+export const parseApiDoc = ({ path, tree }, typeMap) => {
   /**
    * Collection of metadata entries for the file
    * @type {Array<import('../types').MetadataEntry>}
@@ -39,6 +43,9 @@ export const parseApiDoc = ({ file, tree }, typeMap) => {
 
   // Creates a new Slugger instance for the current API doc file
   const nodeSlugger = createNodeSlugger();
+
+  // Slug the API (We use a non-class slugger, since we are fairly certain that `path` is unique)
+  const api = slug(path.slice(1).replace(sep, '-'));
 
   // Get all Markdown Footnote definitions from the tree
   const markdownDefinitions = selectAll('definition', tree);
@@ -54,6 +61,11 @@ export const parseApiDoc = ({ file, tree }, typeMap) => {
   // Removes all the original definitions from the tree as they are not needed anymore
   remove(tree, markdownDefinitions);
 
+  // Make all the typeMap links relative to us
+  const relativeTypeMap = Object.fromEntries(
+    Object.entries(typeMap).map(([type, url]) => [type, href(url, path)])
+  );
+
   // Handles the normalisation URLs that reference to API doc files with .md extension
   visit(tree, UNIST.isMarkdownUrl, node => visitMarkdownLink(node));
 
@@ -64,16 +76,17 @@ export const parseApiDoc = ({ file, tree }, typeMap) => {
 
   // On "About this Documentation", we define the stability indices, and thus
   // we don't need to check it for stability references
-  const ignoreStability = IGNORE_STABILITY_STEMS.includes(file.stem);
+  const ignoreStability = IGNORE_STABILITY_STEMS.includes(api);
 
   // Process each heading and create metadata entries
   visit(tree, UNIST.isHeading, (headingNode, index) => {
     // Initialize heading
     headingNode.data = transformNodeToHeading(headingNode);
-
     // Initialize the metadata
     const metadata = /** @type {import('../types').MetadataEntry} */ ({
-      api: file.stem,
+      api,
+      path,
+      basename: basename(path),
       heading: headingNode,
     });
 
@@ -106,7 +119,7 @@ export const parseApiDoc = ({ file, tree }, typeMap) => {
 
     // Process type references
     visit(subTree, UNIST.isTextWithType, (node, _, parent) =>
-      visitTextWithTypeNode(node, parent, typeMap)
+      visitTextWithTypeNode(node, parent, relativeTypeMap)
     );
 
     // Process Unix manual references

@@ -6,6 +6,7 @@ import { transform } from 'lightningcss-wasm';
 import bundleCode from './bundle.mjs';
 import { createChunkedRequire } from './chunks.mjs';
 import { minifyHTML } from '../../../utils/html-minifier.mjs';
+import { href } from '../../../utils/url.mjs';
 import { SPECULATION_RULES } from '../constants.mjs';
 
 /**
@@ -110,20 +111,24 @@ export async function processJSXEntries(
 
   // Step 3: Create final HTML (could be parallelized in workers)
   const results = await Promise.all(
-    entries.map(async ({ data: { api, heading } }) => {
-      const fileName = `${api}.js`;
+    entries.map(async ({ data: { api, path, heading } }) => {
       const title = `${heading.data.name} | ${titleSuffix}`;
+      const root = `${href('/', path)}/`;
 
       // Replace template placeholders with actual content
       const renderedHtml = template
         .replace('{{title}}', title)
-        .replace('{{dehydrated}}', serverBundle.pages.get(fileName) ?? '')
-        .replace('{{importMap}}', clientBundle.importMap ?? '')
-        .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
+        .replace('{{dehydrated}}', serverBundle.pages.get(`${api}.js`) ?? '')
+        .replace(
+          '{{importMap}}',
+          clientBundle.importMap?.replaceAll('/', root) ?? ''
+        )
+        .replace('{{entrypoint}}', `${api}.js?${randomUUID()}`)
         .replace('{{speculationRules}}', SPECULATION_RULES)
-        .replace('{{ogTitle}}', title);
+        .replace('{{ogTitle}}', title)
+        .replaceAll('{{root}}', root);
 
-      return { html: await minifyHTML(renderedHtml), api };
+      return { html: await minifyHTML(renderedHtml), path };
     })
   );
 

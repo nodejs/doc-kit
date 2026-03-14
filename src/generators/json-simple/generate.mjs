@@ -1,11 +1,11 @@
 'use strict';
 
-import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { remove } from 'unist-util-remove';
 
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 import { UNIST } from '../../utils/queries/index.mjs';
 
 /**

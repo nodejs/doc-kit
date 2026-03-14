@@ -39,11 +39,11 @@ export const getVersionFromSemVer = version =>
  * Gets the documentation URL for an API and version
  *
  * @param {string} version The version to be parsed
- * @param {string} api The document
+ * @param {string} path The document
  * @param {string} baseURL
  */
-export const getVersionURL = (version, api, baseURL) =>
-  `${baseURL}/latest-v${version}/api/${api}.html`;
+export const getVersionURL = (version, path, baseURL) =>
+  `${baseURL}/latest-v${version}/api${path}.html`;
 
 /**
  * @TODO: This should not be necessary, and indicates errors within the API docs
@@ -155,7 +155,7 @@ export const legacyToJSON = (
  * @returns {URL}
  */
 export const buildApiDocURL = (entry, baseURL, useHtml = false) => {
-  const path = `/docs/latest/api/${entry.api}.${useHtml ? 'html' : 'md'}`;
+  const path = `/docs/latest/api${entry.path}.${useHtml ? 'html' : 'md'}`;
 
   return URL.parse(path, baseURL);
 };
