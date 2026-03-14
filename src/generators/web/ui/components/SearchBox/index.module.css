@@ -1,5 +1,6 @@
 .searchResultsContainer {
   display: flex;
+  flex: 1;
   min-height: 0;
   flex-direction: column;
   overflow-y: auto;
