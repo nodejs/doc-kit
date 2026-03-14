@@ -69,7 +69,8 @@ describe('extractTextContent', () => {
 describe('buildMetaBarProps', () => {
   it('creates meta bar properties from entries', () => {
     const head = {
-      api: 'fs',
+      basename: 'fs',
+      path: '/fs',
       added: 'v1.0.0',
     };
 
@@ -151,7 +152,8 @@ describe('formatVersionOptions', () => {
 describe('buildSideBarProps', () => {
   it('creates sidebar properties with versions and navigation', () => {
     const entry = {
-      api: 'http',
+      path: 'http',
+      basename: 'http',
       introduced_in: 'v0.10.0',
     };
 

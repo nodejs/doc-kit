@@ -65,7 +65,7 @@ describe('buildApiDocLink', () => {
   it('builds markdown link with description', () => {
     const entry = {
       heading: { data: { name: 'Test API' } },
-      api: 'test',
+      path: '/test',
       llm_description: 'Test description',
     };
 
@@ -79,7 +79,7 @@ describe('buildApiDocLink', () => {
   it('handles doc path replacement', () => {
     const entry = {
       heading: { data: { name: 'API Method' } },
-      api: 'path',
+      path: '/path',
       content: { children: [] },
     };
 

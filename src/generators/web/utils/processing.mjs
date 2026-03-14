@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { sep } from 'node:path/posix';
 
 import { jsx, toJs } from 'estree-util-to-js';
 import { transform } from 'lightningcss-wasm';
@@ -110,20 +111,24 @@ export async function processJSXEntries(
 
   // Step 3: Create final HTML (could be parallelized in workers)
   const results = await Promise.all(
-    entries.map(async ({ data: { api, heading } }) => {
-      const fileName = `${api}.js`;
+    entries.map(async ({ data: { api, path, heading } }) => {
       const title = `${heading.data.name} | ${titleSuffix}`;
+
+      // The number of occurances is 1 less than the length of the split
+      // We also remove 1 `/`, as the path begins with a `/`
+      const root = '../'.repeat(path.split(sep).length - 2) || './';
 
       // Replace template placeholders with actual content
       const renderedHtml = template
         .replace('{{title}}', title)
-        .replace('{{dehydrated}}', serverBundle.pages.get(fileName) ?? '')
+        .replace('{{dehydrated}}', serverBundle.pages.get(`${api}.js`) ?? '')
         .replace('{{importMap}}', clientBundle.importMap ?? '')
-        .replace('{{entrypoint}}', `./${fileName}?${randomUUID()}`)
+        .replace('{{entrypoint}}', `${api}.js?${randomUUID()}`)
         .replace('{{speculationRules}}', SPECULATION_RULES)
-        .replace('{{ogTitle}}', title);
+        .replace('{{ogTitle}}', title)
+        .replaceAll('{{root}}', root);
 
-      return { html: await minifyHTML(renderedHtml), api };
+      return { html: await minifyHTML(renderedHtml), path };
     })
   );
 

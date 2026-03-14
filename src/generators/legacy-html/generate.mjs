@@ -1,13 +1,13 @@
 'use strict';
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, cp } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
-import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { minifyHTML } from '../../utils/html-minifier.mjs';
 import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
@@ -106,11 +106,8 @@ export async function* generate(input, worker) {
       // Define the output folder for API docs assets
       const assetsFolder = join(config.output, basename(path));
 
-      // Creates the assets folder if it does not exist
-      await mkdir(assetsFolder, { recursive: true });
-
-      // Copy all files from assets folder to output, skipping unchanged files
-      await safeCopy(path, assetsFolder);
+      // Copy all files from assets folder to output
+      await cp(path, assetsFolder, { recursive: true });
     }
   }
 

@@ -1,7 +1,7 @@
 import { buildSideBarProps } from './utils/buildBarProps.mjs';
 import buildContent from './utils/buildContent.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
+import { href } from '../../utils/file.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRecma } from '../../utils/remark.mjs';
 
@@ -22,7 +22,15 @@ export async function processChunk(slicedInput, itemIndices, docPages) {
   for (const idx of itemIndices) {
     const { head, entries } = slicedInput[idx];
 
-    const sideBarProps = buildSideBarProps(head, docPages);
+    const sideBarProps = buildSideBarProps(
+      head,
+      docPages.map(([heading, path]) => [
+        heading,
+        head.path === path
+          ? `${head.basename}.html`
+          : `${href(path, head.path)}.html`,
+      ])
+    );
 
     const content = await buildContent(
       entries,
@@ -43,17 +51,11 @@ export async function processChunk(slicedInput, itemIndices, docPages) {
  * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
-  const config = getConfig('jsx-ast');
-
   const groupedModules = groupNodesByModule(input);
 
   const headNodes = getSortedHeadNodes(input);
 
-  // Pre-compute docPages once in main thread
-  // TODO(@avivkeller): Load the index file here instead of during configuration
-  const docPages = config.index
-    ? config.index.map(({ section, api }) => [section, `${api}.html`])
-    : headNodes.map(node => [node.heading.data.name, `${node.api}.html`]);
+  const docPages = headNodes.map(node => [node.heading.data.name, node.path]);
 
   // Create sliced input: each item contains head + its module's entries
   // This avoids sending all 4700+ entries to every worker

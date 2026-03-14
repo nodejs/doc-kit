@@ -90,10 +90,10 @@ export const buildMetaBarProps = (head, entries) => {
     addedIn: head.added || head.introduced_in || '',
     readingTime: readingTime(extractTextContent(entries)).text,
     viewAs: [
-      ['JSON', `${head.api}.json`],
-      ['MD', `${head.api}.md`],
+      ['JSON', `${head.basename}.json`],
+      ['MD', `${head.basename}.md`],
     ],
-    editThisPage: `${populate(GITHUB_EDIT_URL, config)}${head.api}.md`,
+    editThisPage: `${populate(GITHUB_EDIT_URL, config)}${head.path}.md`,
   };
 };
 
@@ -101,14 +101,14 @@ export const buildMetaBarProps = (head, entries) => {
  * Converts a compatible version entry into a version label and link.
  *
  * @param {Array<import('../../../parsers/types').ReleaseEntry>} compatibleVersions - Compatible versions
- * @param {string} api - API identifier (used in link)
+ * @param {string} path - path for the version URL
  */
-export const formatVersionOptions = (compatibleVersions, api) => {
+export const formatVersionOptions = (compatibleVersions, path) => {
   const config = getConfig('jsx-ast');
 
   return compatibleVersions.map(({ version, isLts, isCurrent }) => {
     const parsed = getVersionFromSemVer(version);
-    const value = getVersionURL(parsed, api, config.baseURL);
+    const value = getVersionURL(parsed, path, config.baseURL);
 
     let label = `v${parsed}`;
 
@@ -143,9 +143,9 @@ export const buildSideBarProps = (entry, docPages) => {
   );
 
   return {
-    versions: formatVersionOptions(compatibleVersions, entry.api),
+    versions: formatVersionOptions(compatibleVersions, entry.path),
     currentVersion: `v${config.version.version}`,
-    pathname: `${entry.api}.html`,
+    pathname: `${entry.basename}.html`,
     docPages,
   };
 };
