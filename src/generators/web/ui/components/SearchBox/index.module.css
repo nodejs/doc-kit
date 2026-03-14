@@ -1,6 +1,6 @@
 .searchResultsContainer {
   display: flex;
-  flex-grow: 1;
+  min-height: 0;
   flex-direction: column;
   overflow-y: auto;
 }
@@ -9,6 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: baseline;
+  margin-top: auto;
   padding: 1rem;
   border-top: 1px solid var(--color-neutral-200);
   background-color: var(--color-neutral-100);
