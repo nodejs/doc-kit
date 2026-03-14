@@ -23,17 +23,9 @@ export const NODE_MODULES = resolve(
  * An object containing mappings for various JSX components to their import paths.
  */
 export const JSX_IMPORTS = {
-  NavBar: {
-    name: 'NavBar',
-    source: resolve(ROOT, './ui/components/NavBar'),
-  },
-  SideBar: {
-    name: 'SideBar',
-    source: resolve(ROOT, './ui/components/SideBar'),
-  },
-  MetaBar: {
-    name: 'MetaBar',
-    source: resolve(ROOT, './ui/components/MetaBar'),
+  Layout: {
+    name: 'Layout',
+    source: '#theme/Layout',
   },
   CodeBox: {
     name: 'CodeBox',
@@ -58,10 +50,6 @@ export const JSX_IMPORTS = {
     isDefaultExport: false,
     source: '@node-core/ui-components/MDX/Tooltip',
   },
-  TableOfContents: {
-    name: 'TableOfContents',
-    source: '@node-core/ui-components/Common/TableOfContents',
-  },
   ChangeHistory: {
     name: 'ChangeHistory',
     source: '@node-core/ui-components/Common/ChangeHistory',
@@ -69,10 +57,6 @@ export const JSX_IMPORTS = {
   AlertBox: {
     name: 'AlertBox',
     source: '@node-core/ui-components/Common/AlertBox',
-  },
-  Article: {
-    name: 'Article',
-    source: '@node-core/ui-components/Containers/Article',
   },
   Blockquote: {
     name: 'Blockquote',
