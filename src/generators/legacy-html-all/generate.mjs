@@ -49,6 +49,7 @@ export async function generate(input) {
 
   const templateValues = {
     api: 'all',
+    path: 'all',
     added: '',
     section: 'All',
     version: `v${config.version.version}`,

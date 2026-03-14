@@ -26,6 +26,10 @@ export const writeFile = (file, ...args) =>
  * @returns {string}
  */
 export const href = (to, from) => {
+  if (to.includes('://')) {
+    return to;
+  }
+
   const a = to.split('/').filter(Boolean);
   const b = from.split('/').slice(0, -1).filter(Boolean);
 

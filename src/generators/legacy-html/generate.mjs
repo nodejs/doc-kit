@@ -56,6 +56,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
 
     const template = {
       api: head.api,
+      path: head.path,
       added: head.introduced_in ?? '',
       section: head.heading.data.name || apiAsHeading,
       toc,
