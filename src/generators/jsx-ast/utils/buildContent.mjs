@@ -293,25 +293,10 @@ export const createDocumentLayout = (
   remark
 ) =>
   createTree('root', [
-    createJSXElement(JSX_IMPORTS.NavBar.name),
-    createJSXElement(JSX_IMPORTS.Article.name, {
-      children: [
-        createJSXElement(JSX_IMPORTS.SideBar.name, sideBarProps),
-        createElement('div', [
-          createElement('div', [
-            createJSXElement(JSX_IMPORTS.TableOfContents.name, {
-              headings: metaBarProps.headings,
-              summaryTitle: 'On this page',
-            }),
-            createElement('br'),
-            createElement(
-              'main',
-              entries.map(entry => processEntry(entry, remark))
-            ),
-          ]),
-          createJSXElement(JSX_IMPORTS.MetaBar.name, metaBarProps),
-        ]),
-      ],
+    createJSXElement(JSX_IMPORTS.Layout.name, {
+      sideBarProps,
+      metaBarProps,
+      children: entries.map(entry => processEntry(entry, remark)),
     }),
   ]);
 
