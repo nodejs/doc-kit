@@ -5,6 +5,7 @@ import logger from './logger/index.mjs';
 import { isAsyncGenerator, createStreamingCache } from './streaming.mjs';
 import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
+import createProgressBar from './utils/progressBar.mjs';
 
 const generatorsLogger = logger.child('generators');
 
@@ -92,7 +93,7 @@ const createGenerator = () => {
   /**
    * Runs all requested generators with their dependencies.
    *
-   * @param {import('./utils/configuration/types').Configuration} options - Runtime options
+   * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
    * @returns {Promise<unknown[]>} Results of all requested generators
    */
   const runGenerators = async configuration => {
@@ -111,6 +112,9 @@ const createGenerator = () => {
       await scheduleGenerator(name, configuration);
     }
 
+    const progress = createProgressBar({ enabled: configuration.progress });
+    progress?.start(generators.length, 0, { phase: 'Starting...' });
+
     // Start all collections in parallel (don't await sequentially)
     const resultPromises = generators.map(async name => {
       let result = await cachedGenerators[name];
@@ -119,14 +123,17 @@ const createGenerator = () => {
         result = await streamingCache.getOrCollect(name, result);
       }
 
+      progress?.increment({ phase: name });
       return result;
     });
 
-    const results = await Promise.all(resultPromises);
-
-    await pool.destroy();
-
-    return results;
+    try {
+      const results = await Promise.all(resultPromises);
+      return results;
+    } finally {
+      await pool.destroy();
+      progress?.stop();
+    }
   };
 
   return { runGenerators };
