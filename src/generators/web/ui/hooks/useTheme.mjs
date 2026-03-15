@@ -1,49 +1,112 @@
 import { useState, useEffect, useCallback } from 'react';
 
+const THEME_STORAGE_KEY = 'theme';
+const THEME_PREFERENCES = new Set(['system', 'light', 'dark']);
+
 /**
- * Applies the given theme to the `<html>` element's `data-theme` attribute
- * and persists the theme preference in `localStorage`.
- *
- * @param {string} theme - The theme to apply ('light' or 'dark').
+ * Sets up theme toggle button and system preference listener
  */
-const applyTheme = theme => {
-  document.documentElement.setAttribute('data-theme', theme);
-  document.documentElement.style.colorScheme = theme;
-  localStorage.setItem('theme', theme);
+const getSystemTheme = () =>
+  matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+/**
+ * Retrieves the stored theme preference from local storage.
+ *
+ * @returns {'system'|'light'|'dark'|null} The stored theme preference or null if not found.
+ */
+const getStoredThemePreference = () => {
+  try {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    return THEME_PREFERENCES.has(storedTheme) ? storedTheme : null;
+  } catch {
+    return null;
+  }
 };
 
 /**
- * A React hook for managing the application's light/dark theme.
+ * Stores the theme preference in local storage.
+ * If storage is unavailable, it fails silently, allowing the application to continue functioning with an in-memory preference.
+ *
+ * @param {'system'|'light'|'dark'} themePreference - The theme preference to store.
+ */
+const setStoredThemePreference = themePreference => {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, themePreference);
+  } catch {
+    // Ignore storage failures and keep non-persistent in-memory preference.
+  }
+};
+
+/**
+ * Applies a theme preference to the document.
+ *
+ * The persisted preference can be 'system', but the applied document theme is
+ * always resolved to either 'light' or 'dark'.
+ *
+ * @param {'system'|'light'|'dark'} themePreference - Theme preference.
+ */
+const applyThemePreference = themePreference => {
+  const resolvedTheme =
+    themePreference === 'system' ? getSystemTheme() : themePreference;
+
+  document.documentElement.setAttribute('data-theme', resolvedTheme);
+  document.documentElement.style.colorScheme = resolvedTheme;
+};
+
+/**
+ * A React hook for managing the application's theme preference.
  */
 export const useTheme = () => {
-  const [theme, setTheme] = useState('light');
+  const [themePreference, setThemePreferenceState] = useState('system');
 
   useEffect(() => {
-    const initial =
-      // Try to get the theme from localStorage first.
-      localStorage.getItem('theme') ||
-      // If not found, check the `data-theme` attribute on the document element
-      document.documentElement.getAttribute('data-theme') ||
-      // As a final fallback, check the user's system preference for dark mode.
-      (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    // Use persisted preference if available, otherwise default to system.
+    const initialPreference = getStoredThemePreference() || 'system';
 
-    applyTheme(initial);
-    setTheme(initial);
+    applyThemePreference(initialPreference);
+    setThemePreferenceState(initialPreference);
   }, []);
 
   /**
-   * Callback function to toggle between 'light' and 'dark' themes.
+   * Keep the resolved document theme in sync with system changes
+   * whenever the preference is set to 'system'.
    */
-  const toggleTheme = useCallback(() => {
-    setTheme(prev => {
-      // Determine the next theme based on the current theme.
-      const next = prev === 'light' ? 'dark' : 'light';
-      // Apply the new theme.
-      applyTheme(next);
-      // Return the new theme to update the state.
-      return next;
-    });
+  useEffect(() => {
+    if (themePreference !== 'system') {
+      return;
+    }
+
+    const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
+    /**
+     *
+     */
+    const handleSystemThemeChange = () => applyThemePreference('system');
+
+    if ('addEventListener' in mediaQueryList) {
+      mediaQueryList.addEventListener('change', handleSystemThemeChange);
+      return () => {
+        mediaQueryList.removeEventListener('change', handleSystemThemeChange);
+      };
+    }
+
+    mediaQueryList.addListener(handleSystemThemeChange);
+    return () => {
+      mediaQueryList.removeListener(handleSystemThemeChange);
+    };
+  }, [themePreference]);
+
+  /**
+   * Updates the theme preference and applies it immediately.
+   */
+  const setThemePreference = useCallback(nextPreference => {
+    if (!THEME_PREFERENCES.has(nextPreference)) {
+      return;
+    }
+
+    setThemePreferenceState(nextPreference);
+    setStoredThemePreference(nextPreference);
+    applyThemePreference(nextPreference);
   }, []);
 
-  return [theme, toggleTheme];
+  return [themePreference, setThemePreference];
 };
