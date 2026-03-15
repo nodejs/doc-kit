@@ -4,14 +4,10 @@ import readingTime from 'reading-time';
 import { visit } from 'unist-util-visit';
 
 import getConfig from '../../../utils/configuration/index.mjs';
-import {
-  GITHUB_EDIT_URL,
-  populate,
-} from '../../../utils/configuration/templates.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 import {
   getCompatibleVersions,
   getVersionFromSemVer,
-  getVersionURL,
 } from '../../../utils/generators.mjs';
 import { TOC_MAX_HEADING_DEPTH } from '../constants.mjs';
 
@@ -93,7 +89,7 @@ export const buildMetaBarProps = (head, entries) => {
       ['JSON', `${head.basename}.json`],
       ['MD', `${head.basename}.md`],
     ],
-    editThisPage: `${populate(GITHUB_EDIT_URL, config)}${head.path}.md`,
+    editThisPage: populate(config.editURL, { ...config, path: head.path }),
   };
 };
 
@@ -107,10 +103,13 @@ export const formatVersionOptions = (compatibleVersions, path) => {
   const config = getConfig('jsx-ast');
 
   return compatibleVersions.map(({ version, isLts, isCurrent }) => {
-    const parsed = getVersionFromSemVer(version);
-    const value = getVersionURL(parsed, path, config.baseURL);
+    let label = `v${getVersionFromSemVer(version)}`;
 
-    let label = `v${parsed}`;
+    const value = populate(config.pageURL, {
+      ...config,
+      path,
+      version: label,
+    });
 
     if (isLts) {
       label += ' (LTS)';

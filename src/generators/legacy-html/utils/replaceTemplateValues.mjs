@@ -7,10 +7,7 @@ import {
   buildGitHub,
 } from './buildDropdowns.mjs';
 import tableOfContents from './tableOfContents.mjs';
-import {
-  GITHUB_EDIT_URL,
-  populate,
-} from '../../../utils/configuration/templates.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 
 /**
  * Replaces the template values in the API template with the given values.
@@ -41,6 +38,6 @@ export const replaceTemplateValues = (
       '__EDIT_ON_GITHUB__',
       skipGitHub
         ? ''
-        : buildGitHub(`${populate(GITHUB_EDIT_URL, config)}${path}.md`)
+        : buildGitHub(populate(config.editURL, { ...config, path }))
     );
 };

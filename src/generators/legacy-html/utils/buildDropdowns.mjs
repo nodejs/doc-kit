@@ -1,10 +1,10 @@
 'use strict';
 
 import getConfig from '../../../utils/configuration/index.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 import {
   getCompatibleVersions,
   getVersionFromSemVer,
-  getVersionURL,
 } from '../../../utils/generators.mjs';
 
 /**
@@ -61,10 +61,15 @@ export const buildVersions = (path, added, versions) => {
   // Then we create a `<li>` entry for said version, ensuring we link to the correct API doc
   const versionsAsList = compatibleVersions.map(({ version, isLts }) => {
     const parsedVersion = getVersionFromSemVer(version);
+    const href = populate(config.pageURL, {
+      ...config,
+      path,
+      version: parsedVersion,
+    });
 
     const ltsLabel = isLts ? '<b>LTS</b>' : '';
 
-    return `<li><a href="${getVersionURL(parsedVersion, path, config.baseURL)}">${parsedVersion} ${ltsLabel}</a></li>`;
+    return `<li><a href="${href}">${parsedVersion} ${ltsLabel}</a></li>`;
   });
 
   return (

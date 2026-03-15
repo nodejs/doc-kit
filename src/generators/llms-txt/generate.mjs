@@ -19,7 +19,7 @@ export async function generate(input) {
 
   const apiDocsLinks = input
     .filter(entry => entry.heading.depth === 1)
-    .map(entry => `- ${buildApiDocLink(entry, config.baseURL)}`)
+    .map(entry => `- ${buildApiDocLink(entry, config)}`)
     .join('\n');
 
   const filledTemplate = `${template}${apiDocsLinks}`;

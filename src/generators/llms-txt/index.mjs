@@ -22,5 +22,6 @@ export default createLazyGenerator({
 
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.txt'),
+    pageURL: '{baseURL}/latest/api{path}.md',
   },
 });
