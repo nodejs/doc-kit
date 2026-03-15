@@ -1,6 +1,5 @@
 'use strict';
 
-import { writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
 import { checkIndirectReferences } from './utils/checkIndirectReferences.mjs';
@@ -11,6 +10,7 @@ import {
   GITHUB_BLOB_URL,
   populate,
 } from '../../utils/configuration/templates.mjs';
+import { writeFile } from '../../utils/file.mjs';
 
 /**
  * Generates the `apilinks.json` file.

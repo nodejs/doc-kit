@@ -1,10 +1,11 @@
 'use strict';
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createPageSitemapEntry } from './utils/createPageSitemapEntry.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 
 /**
  * Generates a sitemap.xml file
