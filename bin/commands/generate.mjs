@@ -58,10 +58,11 @@ export default new Command('generate')
   .addOption(new Option('--index <url>', 'index.md URL or path'))
   .addOption(new Option('--minify', 'Minify?'))
   .addOption(new Option('--type-map <url>', 'Type map URL or path'))
+  .addOption(new Option('--no-progress', 'Disable the progress bar'))
 
   .action(
     errorWrap(async opts => {
       const config = await setConfig(opts);
-      await runGenerators(config);
+      await runGenerators(config, opts.progress);
     })
   );
