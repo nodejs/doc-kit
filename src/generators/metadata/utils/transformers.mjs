@@ -1,15 +1,11 @@
 import {
-  DOC_MDN_BASE_URL_JS_GLOBALS,
-  DOC_MDN_BASE_URL_JS_PRIMITIVES,
-  DOC_TYPES_MAPPING_GLOBALS,
-  DOC_TYPES_MAPPING_OTHER,
-  DOC_TYPES_MAPPING_PRIMITIVES,
   DOC_MAN_BASE_URL,
   DOC_API_HEADING_TYPES,
   TYPE_GENERIC_REGEX,
 } from '../constants.mjs';
 import { slug } from './slugger.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
+import MDN_TYPE_MAP from '../typeMap.json' with { type: 'json' };
 
 /**
  * @param {string} text The inner text
@@ -121,28 +117,15 @@ export const transformTypeToReferenceLink = (type, record) => {
    * @returns {string} The reference URL or empty string if no match
    */
   const transformType = lookupPiece => {
-    // Transform JS primitive type references into Markdown links (MDN)
-    if (lookupPiece.toLowerCase() in DOC_TYPES_MAPPING_PRIMITIVES) {
-      const typeValue = DOC_TYPES_MAPPING_PRIMITIVES[lookupPiece.toLowerCase()];
-
-      return `${DOC_MDN_BASE_URL_JS_PRIMITIVES}#${typeValue}_type`;
-    }
-
-    // Transforms JS Global type references into Markdown links (MDN)
-    if (lookupPiece in DOC_TYPES_MAPPING_GLOBALS) {
-      return `${DOC_MDN_BASE_URL_JS_GLOBALS}${lookupPiece}`;
-    }
-
-    // Transform other external Web/JavaScript type references into Markdown links
-    // to diverse different external websites. These already are formatted as links
-    if (lookupPiece in DOC_TYPES_MAPPING_OTHER) {
-      return DOC_TYPES_MAPPING_OTHER[lookupPiece];
-    }
-
     // Transform Node.js type/module references into Markdown links
     // that refer to other API docs pages within the Node.js API docs
     if (record && lookupPiece in record) {
       return record[lookupPiece];
+    }
+
+    // Transform from MDN
+    if (lookupPiece.toLowerCase() in MDN_TYPE_MAP) {
+      return MDN_TYPE_MAP[lookupPiece.toLowerCase()];
     }
 
     // Transform Node.js types like 'vm.Something'.
