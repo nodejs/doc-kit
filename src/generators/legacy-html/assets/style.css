@@ -540,6 +540,7 @@ tt,
 }
 
 pre {
+  position: relative;
   padding: 1rem;
   vertical-align: top;
   border-radius: 4px;
@@ -1015,7 +1016,9 @@ kbd {
 }
 
 .copy-button {
-  float: right;
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
   outline: none;
   font-size: 10px;
   color: #fff;
@@ -1028,7 +1031,6 @@ kbd {
   text-transform: uppercase;
   font-weight: 700;
   padding: 0 0.5rem;
-  margin-right: 0.2rem;
   height: 1.5rem;
   transition-property:
     background-color, border-color, color, box-shadow, filter;
