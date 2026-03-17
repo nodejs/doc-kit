@@ -8,10 +8,6 @@ const compat = JSON.parse(
   )
 );
 
-// This is the base URL of the MDN Web documentation
-export const DOC_MDN_BASE_URL =
-  'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/';
-
 const creatingMapping = obj =>
   Object.fromEntries(
     Object.entries(obj)
@@ -29,17 +25,19 @@ const map = {
     'https://tc39.github.io/ecma262/#sec-module-namespace-exotic-objects',
 
   // Data structures
-  ...[
-    'null',
-    'undefined',
-    'boolean',
-    'number',
-    'bigint',
-    'string',
-    'symbol',
-  ].map(
-    k =>
-      `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/${k}`
+  ...Object.fromEntries(
+    [
+      'null',
+      'undefined',
+      'boolean',
+      'number',
+      'bigint',
+      'string',
+      'symbol',
+    ].map(k => [
+      k,
+      `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/${k}`,
+    ])
   ),
   integer:
     'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/number',
