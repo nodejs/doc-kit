@@ -10,7 +10,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  update-pnpm:
+  type-map-update:
     runs-on: ubuntu-latest
 
     steps:
