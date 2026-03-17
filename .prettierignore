@@ -9,3 +9,6 @@ src/generators/web/template.html
 
 # Output
 out/
+
+# Generated Files
+src/generators/metadata/maps/mdn.json

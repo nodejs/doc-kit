@@ -2,8 +2,6 @@
 // we don't need to check it for stability references
 export const IGNORE_STABILITY_STEMS = ['documentation'];
 
-import globals from 'globals';
-
 // These are string replacements specific to Node.js API docs for anchor IDs
 export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /node.js/i, to: 'nodejs' }, // Replace Node.js
@@ -13,21 +11,6 @@ export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /(?<!^-*)-+$/g, to: '' }, // Remove any trailing hyphens
   { from: /^(?!-+$).*?(--+)/g, to: '-' }, // Replace multiple hyphens
 ];
-
-// This is the base URL of the MDN Web documentation
-export const DOC_MDN_BASE_URL = 'https://developer.mozilla.org/en-US/docs/Web/';
-
-// This is the base URL of the Man7 documentation
-export const DOC_MAN_BASE_URL = 'http://man7.org/linux/man-pages/man';
-
-// This is the base URL for the MDN JavaScript documentation
-export const DOC_MDN_BASE_URL_JS = `${DOC_MDN_BASE_URL}JavaScript/`;
-
-// This is the base URL for the MDN JavaScript primitives documentation
-export const DOC_MDN_BASE_URL_JS_PRIMITIVES = `${DOC_MDN_BASE_URL_JS}Data_structures`;
-
-// This is the base URL for the MDN JavaScript global objects documentation
-export const DOC_MDN_BASE_URL_JS_GLOBALS = `${DOC_MDN_BASE_URL_JS}Reference/Global_Objects/`;
 
 // These are regular expressions used to determine if a given Markdown heading
 // is a specific type of API Doc entry (e.g., Event, Class, Method, etc)
@@ -76,60 +59,5 @@ export const DOC_API_HEADING_TYPES = [
 // This regex is used to match basic TypeScript generic types (e.g., Promise<string>)
 export const TYPE_GENERIC_REGEX = /^([^<]+)<([^>]+)>$/;
 
-// This is a mapping for types within the Markdown content and their respective
-// JavaScript primitive types within the MDN JavaScript docs
-// @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Data_structures#primitive_values
-export const DOC_TYPES_MAPPING_PRIMITIVES = {
-  null: 'null',
-  undefined: 'undefined',
-  boolean: 'boolean',
-  number: 'number',
-  bigint: 'bigint',
-  string: 'string',
-  symbol: 'symbol',
-  integer: 'number',
-};
-
-// This is a mapping for types within the Markdown content and their respective
-// JavaScript globals types within the MDN JavaScript docs
-// @see DOC_MDN_BASE_URL_JS_GLOBALS
-export const DOC_TYPES_MAPPING_GLOBALS = {
-  // This is updated with every ES-spec, so, as long as the
-  // `globals` package is up-to-date, so will our globals list.
-  ...Object.fromEntries(Object.keys(globals.builtin).map(e => [e, e])),
-  AsyncGeneratorFunction: 'AsyncGeneratorFunction',
-  AsyncIterator: 'AsyncIterator',
-  AsyncFunction: 'AsyncFunction',
-  TypedArray: 'TypedArray',
-  ErrorEvent: 'ErrorEvent',
-  'WebAssembly.Instance': 'WebAssembly/Instance',
-};
-
-// This is a mapping for miscellaneous types within the Markdown content and their respective
-// external reference on appropriate 3rd-party vendors/documentation sites.
-export const DOC_TYPES_MAPPING_OTHER = {
-  any: `${DOC_MDN_BASE_URL_JS_PRIMITIVES}#Data_types`,
-  this: `${DOC_MDN_BASE_URL_JS}Reference/Operators/this`,
-
-  ArrayBufferView: `${DOC_MDN_BASE_URL}/API/ArrayBufferView`,
-
-  AsyncIterable: 'https://tc39.github.io/ecma262/#sec-asynciterable-interface',
-
-  'Module Namespace Object':
-    'https://tc39.github.io/ecma262/#sec-module-namespace-exotic-objects',
-
-  Iterable: `${DOC_MDN_BASE_URL_JS}Reference/Iteration_protocols#The_iterable_protocol`,
-
-  CloseEvent: `${DOC_MDN_BASE_URL}/API/CloseEvent`,
-  EventSource: `${DOC_MDN_BASE_URL}/API/EventSource`,
-  MessageEvent: `${DOC_MDN_BASE_URL}/API/MessageEvent`,
-
-  DOMException: `${DOC_MDN_BASE_URL}/API/DOMException`,
-  Storage: `${DOC_MDN_BASE_URL}/API/Storage`,
-  WebSocket: `${DOC_MDN_BASE_URL}/API/WebSocket`,
-
-  FormData: `${DOC_MDN_BASE_URL}API/FormData`,
-  Headers: `${DOC_MDN_BASE_URL}/API/Headers`,
-  Response: `${DOC_MDN_BASE_URL}/API/Response`,
-  Request: `${DOC_MDN_BASE_URL}/API/Request`,
-};
+// This is the base URL of the Man7 documentation
+export const DOC_MAN_BASE_URL = 'http://man7.org/linux/man-pages/man';
