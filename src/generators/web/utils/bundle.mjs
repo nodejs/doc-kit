@@ -11,7 +11,7 @@ import { lazy } from '../../../utils/misc.mjs';
 // Resolve node_modules relative to this package (doc-kit), not cwd.
 // We do this by finding where one of our dependencies (preact) is stored,
 // and using it's NODE_MODULES
-// 
+//
 // FIXME(@avivkeller): When our CI (in Node.js Core) supports v22.x,
 // this lazy-loading solution can be replaced by a simple import. For that
 // matter, glob can also be replaced in other files throughout this repo.
