@@ -40,7 +40,8 @@ export async function processChunk(inputSlice, itemIndices) {
         file: { stem: vfile.stem, basename: vfile.basename, path },
       });
     } catch (err) {
-      const message = `Failed to process ${path}: ${err.message ?? err}`;
+      const errorText = err instanceof Error ? err.message : String(err);
+      const message = `Failed to process ${path}: ${errorText}`;
       throw new Error(message, { cause: err });
     }
   }

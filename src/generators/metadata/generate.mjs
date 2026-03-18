@@ -20,7 +20,8 @@ export async function processChunk(fullInput, itemIndices, typeMap) {
     } catch (err) {
       const path =
         input?.file?.path ?? input?.file?.basename ?? '<unknown file>';
-      const message = `Failed to parse metadata for ${path}: ${err.message ?? err}`;
+      const errorDetails = err instanceof Error ? err.message : String(err);
+      const message = `Failed to parse metadata for ${path}: ${errorDetails}`;
       throw new Error(message, { cause: err });
     }
   }

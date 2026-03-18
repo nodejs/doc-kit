@@ -52,4 +52,19 @@ describe('metadata/generate.mjs error handling', () => {
       cause: error,
     });
   });
+
+  it('should fallback to <unknown file> when both path and basename are missing', async () => {
+    const error = new Error('PARSE_ERROR');
+    mockParseApiDoc.mock.mockImplementation(() => {
+      throw error;
+    });
+
+    const fullInput = [{ file: {} }];
+
+    await assert.rejects(async () => await processChunk(fullInput, [0], {}), {
+      name: 'Error',
+      message: 'Failed to parse metadata for <unknown file>: PARSE_ERROR',
+      cause: error,
+    });
+  });
 });
