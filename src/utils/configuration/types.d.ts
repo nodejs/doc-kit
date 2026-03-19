@@ -15,6 +15,8 @@ export type Configuration = {
 
   // Number of items to process per worker thread
   chunkSize: number;
+
+  // Whether or not the progress bar is enabled
   progress: boolean;
 } & {
   [K in keyof AllGenerators]: GlobalConfiguration &
