@@ -180,7 +180,7 @@ const setupFlavorToggles = () => {
 const setupCopyButton = () => {
   document.querySelectorAll('.copy-button').forEach(button => {
     button.addEventListener('click', e => {
-      const parent = e.target.parentNode;
+      const parent = e.target.closest('pre');
       const flavorToggle = parent.querySelector('.js-flavor-toggle');
 
       let code;
