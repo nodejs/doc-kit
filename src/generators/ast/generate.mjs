@@ -25,25 +25,19 @@ export async function processChunk(inputSlice, itemIndices) {
   const results = [];
 
   for (const path of filePaths) {
-    try {
-      const content = await readFile(path, 'utf-8');
-      const vfile = new VFile({
-        path,
-        value: content.replace(
-          QUERIES.stabilityIndexPrefix,
-          match => `[${match}](${STABILITY_INDEX_URL})`
-        ),
-      });
+    const content = await readFile(path, 'utf-8');
+    const vfile = new VFile({
+      path,
+      value: content.replace(
+        QUERIES.stabilityIndexPrefix,
+        match => `[${match}](${STABILITY_INDEX_URL})`
+      ),
+    });
 
-      results.push({
-        tree: remarkProcessor.parse(vfile),
-        file: { stem: vfile.stem, basename: vfile.basename, path },
-      });
-    } catch (err) {
-      const errorText = err instanceof Error ? err.message : String(err);
-      const message = `Failed to process ${path}: ${errorText}`;
-      throw new Error(message, { cause: err });
-    }
+    results.push({
+      tree: remarkProcessor.parse(vfile),
+      file: { stem: vfile.stem, basename: vfile.basename, path },
+    });
   }
 
   return results;

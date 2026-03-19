@@ -19,7 +19,7 @@ mock.module('../../../utils/url.mjs', {
 const { processChunk } = await import('../generate.mjs');
 
 describe('metadata/generate.mjs error handling', () => {
-  it('should wrap parsing errors with filename, original message, and cause', async () => {
+  it('should bubble parsing errors to the caller', async () => {
     const error = new Error('PARSE_ERROR');
     mockParseApiDoc.mock.mockImplementation(() => {
       throw error;
@@ -30,41 +30,24 @@ describe('metadata/generate.mjs error handling', () => {
 
     await assert.rejects(
       async () => await processChunk(fullInput, itemIndices, {}),
-      {
-        name: 'Error',
-        message: 'Failed to parse metadata for docs/api/fs.md: PARSE_ERROR',
-        cause: error,
+      err => {
+        assert.strictEqual(err, error);
+        return true;
       }
     );
   });
 
-  it('should fallback to basename or unknown if path is missing', async () => {
-    const error = new Error('PARSE_ERROR');
+  it('should preserve non-Error throws from parseApiDoc', async () => {
     mockParseApiDoc.mock.mockImplementation(() => {
-      throw error;
+      throw 'PARSE_ERROR';
     });
 
-    const fullInput = [{ file: { basename: 'fs.md' } }];
-
-    await assert.rejects(async () => await processChunk(fullInput, [0], {}), {
-      name: 'Error',
-      message: 'Failed to parse metadata for fs.md: PARSE_ERROR',
-      cause: error,
-    });
-  });
-
-  it('should fallback to <unknown file> when both path and basename are missing', async () => {
-    const error = new Error('PARSE_ERROR');
-    mockParseApiDoc.mock.mockImplementation(() => {
-      throw error;
-    });
-
-    const fullInput = [{ file: {} }];
-
-    await assert.rejects(async () => await processChunk(fullInput, [0], {}), {
-      name: 'Error',
-      message: 'Failed to parse metadata for <unknown file>: PARSE_ERROR',
-      cause: error,
-    });
+    await assert.rejects(
+      async () => await processChunk([{}], [0], {}),
+      err => {
+        assert.strictEqual(err, 'PARSE_ERROR');
+        return true;
+      }
+    );
   });
 });

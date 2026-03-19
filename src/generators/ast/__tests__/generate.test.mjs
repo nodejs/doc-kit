@@ -16,7 +16,7 @@ mock.module('../../../utils/configuration/index.mjs', {
 const { processChunk } = await import('../generate.mjs');
 
 describe('ast/generate.mjs error handling', () => {
-  it('should wrap readFile errors with filename, original message, and cause', async () => {
+  it('should bubble readFile errors to the caller', async () => {
     const error = new Error('FS_ERROR');
     mockReadFile.mock.mockImplementation(async () => {
       throw error;
@@ -27,10 +27,9 @@ describe('ast/generate.mjs error handling', () => {
 
     await assert.rejects(
       async () => await processChunk(inputSlice, itemIndices),
-      {
-        name: 'Error',
-        message: 'Failed to process test.md: FS_ERROR',
-        cause: error,
+      err => {
+        assert.strictEqual(err, error);
+        return true;
       }
     );
   });

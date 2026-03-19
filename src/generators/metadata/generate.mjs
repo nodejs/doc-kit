@@ -14,16 +14,7 @@ export async function processChunk(fullInput, itemIndices, typeMap) {
   const results = [];
 
   for (const idx of itemIndices) {
-    const input = fullInput[idx];
-    try {
-      results.push(...parseApiDoc(input, typeMap));
-    } catch (err) {
-      const path =
-        input?.file?.path ?? input?.file?.basename ?? '<unknown file>';
-      const errorDetails = err instanceof Error ? err.message : String(err);
-      const message = `Failed to parse metadata for ${path}: ${errorDetails}`;
-      throw new Error(message, { cause: err });
-    }
+    results.push(...parseApiDoc(fullInput[idx], typeMap));
   }
 
   return results;
