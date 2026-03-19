@@ -128,8 +128,7 @@ const createGenerator = () => {
     });
 
     try {
-      const results = await Promise.all(resultPromises);
-      return results;
+      return Promise.all(resultPromises);
     } finally {
       await pool.destroy();
       progress?.stop();
