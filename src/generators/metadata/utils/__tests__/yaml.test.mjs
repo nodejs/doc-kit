@@ -1,37 +1,7 @@
 import { strictEqual, deepStrictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
-import {
-  parseYAMLIntoMetadata,
-  transformTypeToReferenceLink,
-  parseHeadingIntoMetadata,
-  normalizeYamlSyntax,
-} from '../index.mjs';
-
-describe('transformTypeToReferenceLink', () => {
-  it('should transform a JavaScript primitive type into a Markdown link', () => {
-    strictEqual(
-      transformTypeToReferenceLink('string'),
-      '[`<string>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type)'
-    );
-  });
-
-  it('should transform a JavaScript global type into a Markdown link', () => {
-    strictEqual(
-      transformTypeToReferenceLink('Array'),
-      '[`<Array>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)'
-    );
-  });
-
-  it('should transform a type into a Markdown link', () => {
-    strictEqual(
-      transformTypeToReferenceLink('SomeOtherType', {
-        SomeOtherType: 'fromTypeMap',
-      }),
-      '[`<SomeOtherType>`](fromTypeMap)'
-    );
-  });
-});
+import { parseYAMLIntoMetadata, normalizeYamlSyntax } from '../yaml.mjs';
 
 describe('normalizeYamlSyntax', () => {
   it('should normalize YAML syntax by fixing noncompliant properties', () => {
@@ -93,15 +63,5 @@ describe('parseYAMLIntoMetadata', () => {
       source_link: 'https://github.com/nodejs/node',
     };
     deepStrictEqual(parseYAMLIntoMetadata(input), expectedOutput);
-  });
-
-  it('should parse a raw Heading string into Heading metadata', () => {
-    const input = '## test';
-    const expectedOutput = {
-      text: '## test',
-      name: '## test',
-      depth: 2,
-    };
-    deepStrictEqual(parseHeadingIntoMetadata(input, 2), expectedOutput);
   });
 });

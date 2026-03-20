@@ -3,7 +3,7 @@ import { buildApiDocURL } from '../../../utils/generators.mjs';
 /**
  * Builds an API doc sitemap url.
  *
- * @param {ApiDocMetadataEntry} entry
+ * @param {import('../../metadata/types').MetadataEntry} entry
  * @param {string} baseURL
  * @param {string} lastmod
  * @returns {import('../types').SitemapEntry}

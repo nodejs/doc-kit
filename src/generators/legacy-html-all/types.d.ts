@@ -12,5 +12,5 @@ export type Generator = GeneratorMetadata<
   {
     templatePath: string;
   },
-  Generate<Array<string>, Promise<string>>
+  Generate<Array<TemplateValues>, Promise<string>>
 >;

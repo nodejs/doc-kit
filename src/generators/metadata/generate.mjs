@@ -32,7 +32,7 @@ export async function* generate(inputs, worker) {
 
   // Stream chunks as they complete - allows dependent generators
   // to start collecting/preparing while we're still processing
-  for await (const chunkResult of worker.stream(inputs, inputs, typeMap)) {
+  for await (const chunkResult of worker.stream(inputs, typeMap)) {
     yield chunkResult.flat();
   }
 }

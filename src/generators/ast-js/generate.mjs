@@ -50,7 +50,7 @@ export async function* generate(_, worker) {
 
   // Parse the Javascript sources into ASTs in parallel using worker threads
   // source is both the items list and the fullInput since we use sliceInput
-  for await (const chunkResult of worker.stream(files, files)) {
+  for await (const chunkResult of worker.stream(files)) {
     yield chunkResult;
   }
 }

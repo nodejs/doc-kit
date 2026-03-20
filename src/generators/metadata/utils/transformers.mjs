@@ -1,49 +1,15 @@
-'use strict';
-
-import yaml from 'yaml';
-
 import {
-  DOC_API_HEADING_TYPES,
   DOC_MDN_BASE_URL_JS_GLOBALS,
   DOC_MDN_BASE_URL_JS_PRIMITIVES,
   DOC_TYPES_MAPPING_GLOBALS,
   DOC_TYPES_MAPPING_OTHER,
   DOC_TYPES_MAPPING_PRIMITIVES,
   DOC_MAN_BASE_URL,
-} from './constants.mjs';
+  DOC_API_HEADING_TYPES,
+  TYPE_GENERIC_REGEX,
+} from '../constants.mjs';
 import { slug } from './slugger.mjs';
-import createQueries from '../queries/index.mjs';
-
-/**
- * Extracts raw YAML content from a node
- *
- * @param {import('mdast').Node} node A HTML node containing the YAML content
- * @returns {string} The extracted raw YAML content
- */
-export const extractYamlContent = node => {
-  return node.value.replace(
-    createQueries.QUERIES.yamlInnerContent,
-    // Either capture a YAML multinline block, or a simple single-line YAML block
-    (_, simple, yaml) => simple || yaml
-  );
-};
-
-/**
- * Normalizes YAML syntax by fixing some non-cool formatted properties of the
- * docs schema
- *
- * @param {string} yamlContent The raw YAML content to normalize
- * @returns {string} The normalized YAML content
- */
-export const normalizeYamlSyntax = yamlContent => {
-  return yamlContent
-    .replace('introduced_in=', 'introduced_in: ')
-    .replace('source_link=', 'source_link: ')
-    .replace('type=', 'type: ')
-    .replace('name=', 'name: ')
-    .replace('llm_description=', 'llm_description: ')
-    .replace(/^[\r\n]+|[\r\n]+$/g, ''); // Remove initial and final line breaks
-};
+import { transformNodesToString } from '../../../utils/unist.mjs';
 
 /**
  * @param {string} text The inner text
@@ -59,7 +25,81 @@ export const transformUnixManualToLink = (
 ) => {
   return `[\`${text}\`](${DOC_MAN_BASE_URL}${sectionNumber}/${command}.${sectionNumber}${sectionLetter}.html)`;
 };
+/**
+ * Safely splits the string by `|`, ignoring pipes that are inside `< >`
+ *
+ * @param {string} str The type string to split
+ * @returns {string[]} An array of type pieces
+ */
+const splitByOuterUnion = str => {
+  const result = [];
+  let current = '';
+  let depth = 0;
 
+  for (const char of str) {
+    if (char === '<') {
+      depth++;
+    } else if (char === '>') {
+      depth--;
+    } else if (char === '|' && depth === 0) {
+      result.push(current);
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+
+  result.push(current);
+  return result;
+};
+
+/**
+ * Attempts to parse and format a basic Generic type (e.g., Promise<string>).
+ * It also supports union and multi-parameter types within the generic brackets.
+ *
+ * @param {string} typePiece The plain type piece to be evaluated
+ * @param {Function} transformType The function used to resolve individual types into links
+ * @returns {string|null} The formatted Markdown link, or null if no match is found
+ */
+const formatBasicGeneric = (typePiece, transformType) => {
+  const genericMatch = typePiece.match(TYPE_GENERIC_REGEX);
+
+  if (genericMatch) {
+    const baseType = genericMatch[1].trim();
+    const innerType = genericMatch[2].trim();
+
+    const baseResult = transformType(baseType.replace(/\[\]$/, ''));
+    const baseFormatted = baseResult
+      ? `[\`<${baseType}>\`](${baseResult})`
+      : `\`<${baseType}>\``;
+
+    // Split while capturing delimiters (| or ,) to preserve original syntax
+    const parts = innerType.split(/([|,])/);
+
+    const innerFormatted = parts
+      .map(part => {
+        const trimmed = part.trim();
+        // If it is a delimiter, return it as is
+        if (trimmed === '|') {
+          return ' | ';
+        }
+
+        if (trimmed === ',') {
+          return ', ';
+        }
+
+        const innerRes = transformType(trimmed.replace(/\[\]$/, ''));
+        return innerRes
+          ? `[\`<${trimmed}>\`](${innerRes})`
+          : `\`<${trimmed}>\``;
+      })
+      .join('');
+
+    return `${baseFormatted}&lt;${innerFormatted}&gt;`;
+  }
+
+  return null;
+};
 /**
  * This method replaces plain text Types within the Markdown content into Markdown links
  * that link to the actual relevant reference for such type (either internal or external link)
@@ -69,8 +109,9 @@ export const transformUnixManualToLink = (
  * @returns {string} The Markdown link as a string (formatted in Markdown)
  */
 export const transformTypeToReferenceLink = (type, record) => {
-  // Removes the wrapping tags that wrap the type references such as `<>` and `{}`
-  const typeInput = type.replace(/[{}<>]/g, '');
+  // Removes the wrapping curly braces that wrap the type references
+  // We keep the angle brackets `<>` intact here to parse Generics later
+  const typeInput = type.replace(/[{}]/g, '');
 
   /**
    * Handles the mapping (if there's a match) of the input text
@@ -100,7 +141,7 @@ export const transformTypeToReferenceLink = (type, record) => {
 
     // Transform Node.js type/module references into Markdown links
     // that refer to other API docs pages within the Node.js API docs
-    if (lookupPiece in record) {
+    if (record && lookupPiece in record) {
       return record[lookupPiece];
     }
 
@@ -115,13 +156,20 @@ export const transformTypeToReferenceLink = (type, record) => {
     return '';
   };
 
-  const typePieces = typeInput.split('|').map(piece => {
+  const typePieces = splitByOuterUnion(typeInput).map(piece => {
     // This is the content to render as the text of the Markdown link
     const trimmedPiece = piece.trim();
 
+    // 1. Attempt to format as a basic Generic type first
+    const genericMarkdown = formatBasicGeneric(trimmedPiece, transformType);
+    if (genericMarkdown) {
+      return genericMarkdown;
+    }
+
+    // 2. Fallback to the logic for plain types
     // This is what we will compare against the API types mappings
     // The ReGeX below is used to remove `[]` from the end of the type
-    const result = transformType(trimmedPiece.replace('[]', ''));
+    const result = transformType(trimmedPiece.replace(/\[\]$/, ''));
 
     // If we have a valid result and the piece is not empty, we return the Markdown link
     if (trimmedPiece.length && result.length) {
@@ -140,53 +188,30 @@ export const transformTypeToReferenceLink = (type, record) => {
 };
 
 /**
- * Parses Markdown YAML source into a JavaScript object containing all the metadata
- * (this is forwarded to the parser so it knows what to do with said metadata)
- *
- * @param {string} yamlString The YAML string to be parsed
- * @returns {ApiDocRawMetadataEntry} The parsed YAML metadata
- */
-export const parseYAMLIntoMetadata = yamlString => {
-  const normalizedYaml = normalizeYamlSyntax(yamlString);
-
-  // Ensures that the parsed YAML is an object, because even if it is not
-  // i.e. a plain string or an array, it will simply not result into anything
-  /** @type {ApiDocRawMetadataEntry | string} */
-  let parsedYaml = yaml.parse(normalizedYaml);
-
-  // Ensure that only Objects get parsed on Object.keys(), since some `<!--`
-  // comments, might be just plain strings and not even a valid YAML metadata
-  if (typeof parsedYaml === 'string') {
-    parsedYaml = { tags: [parsedYaml] };
-  }
-
-  return parsedYaml;
-};
-
-/**
  * Parses a raw Heading string into Heading metadata
  *
- * @param {string} heading The raw Heading text
+ * @param {import('mdast').Heading} heading The raw Heading text
  * @param {number} depth The depth of the heading
  * @returns {HeadingMetadataEntry} Parsed Heading entry
  */
-export const parseHeadingIntoMetadata = (heading, depth) => {
+export const transformNodeToHeading = node => {
+  const text = transformNodesToString(node.children);
+
   for (const { type, regex } of DOC_API_HEADING_TYPES) {
     // Attempts to get a match from one of the heading types, if a match is found
     // we use that type as the heading type, and extract the regex expression match group
     // which should be the inner "plain" heading content (or the title of the heading for navigation)
-    const [, ...matches] = heading.match(regex) ?? [];
+    const [, ...matches] = text.match(regex) ?? [];
 
     if (matches?.length) {
       return {
-        text: heading,
+        text,
         type,
         // The highest match group should be used.
         name: matches.filter(Boolean).at(-1),
-        depth,
       };
     }
   }
 
-  return { text: heading, name: heading, depth };
+  return { text, name: text, depth: node.depth };
 };

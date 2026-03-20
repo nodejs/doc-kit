@@ -7,7 +7,7 @@ import SearchBox from './SearchBox';
 import { STATIC_DATA } from '../constants.mjs';
 import { useTheme } from '../hooks/useTheme.mjs';
 
-import Logo from '#config/Logo';
+import Logo from '#theme/Logo';
 
 /**
  * NavBar component that displays the headings, search, etc.

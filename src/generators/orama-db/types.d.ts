@@ -1,4 +1,5 @@
 import type { Orama, RawData } from '@orama/orama';
+import type { MetadataEntry } from '../metadata/types';
 
 /**
  * Schema for the Orama database entry
@@ -25,5 +26,5 @@ export type OramaDb = Orama<OramaDbEntry>;
 
 export type Generator = GeneratorMetadata<
   {},
-  Generate<Array<ApiDocMetadataEntry>, Promise<RawData>>
+  Generate<Array<MetadataEntry>, Promise<RawData>>
 >;

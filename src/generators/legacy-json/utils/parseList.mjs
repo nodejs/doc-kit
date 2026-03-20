@@ -6,7 +6,7 @@ import {
 } from '../constants.mjs';
 import parseSignature from './parseSignature.mjs';
 import { leftHandAssign } from '../../../utils/generators.mjs';
-import createQueries from '../../../utils/queries/index.mjs';
+import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 
 /**
@@ -47,7 +47,7 @@ export const extractPattern = (text, pattern, key, current) => {
 export function parseListItem(child) {
   const current = {};
 
-  const subList = child.children.find(createQueries.UNIST.isLooselyTypedList);
+  const subList = child.children.find(UNIST.isLooselyTypedList);
 
   // Extract and clean raw text from the node, excluding nested lists
   current.textRaw = transformTypeReferences(
@@ -59,7 +59,7 @@ export function parseListItem(child) {
   let text = current.textRaw;
 
   // Identify return items or extract key properties (name, type, default) from the text
-  const starter = text.match(createQueries.QUERIES.typedListStarters);
+  const starter = text.match(QUERIES.typedListStarters);
   if (starter) {
     current.name =
       starter[1] === 'Returns' ? 'return' : starter[1].toLowerCase();
@@ -89,7 +89,7 @@ export function parseListItem(child) {
  * @param {import('@types/mdast').RootContent[]} nodes
  */
 export function parseList(section, nodes) {
-  const listIdx = nodes.findIndex(createQueries.UNIST.isStronglyTypedList);
+  const listIdx = nodes.findIndex(UNIST.isStronglyTypedList);
   const list = nodes[listIdx];
 
   const values = list ? list.children.map(parseListItem) : [];

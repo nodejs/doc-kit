@@ -90,7 +90,7 @@ describe('createParallelWorker', () => {
     ];
 
     const chunks = await collectChunks(
-      worker.stream(mockInput, mockInput, { typeMap: {} })
+      worker.stream(mockInput, { typeMap: {} })
     );
 
     strictEqual(chunks.length, 4);
@@ -121,7 +121,7 @@ describe('createParallelWorker', () => {
     ];
 
     const chunks = await collectChunks(
-      worker.stream(mockInput, mockInput, { typeMap: {} })
+      worker.stream(mockInput, { typeMap: {} })
     );
 
     strictEqual(chunks.length, 2);
@@ -144,7 +144,7 @@ describe('createParallelWorker', () => {
     ];
 
     const chunks = await collectChunks(
-      worker.stream(mockInput, mockInput, { typeMap: {} })
+      worker.stream(mockInput, { typeMap: {} })
     );
 
     strictEqual(chunks.length, 1);
@@ -172,7 +172,7 @@ describe('createParallelWorker', () => {
     ];
 
     const chunks = await collectChunks(
-      worker.stream(mockInput, mockInput, { typeMap: {} })
+      worker.stream(mockInput, { typeMap: {} })
     );
 
     strictEqual(chunks.length, 2);

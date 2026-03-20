@@ -46,6 +46,7 @@ export async function* generate(input, worker) {
   const config = getConfig('jsx-ast');
 
   const groupedModules = groupNodesByModule(input);
+
   const headNodes = getSortedHeadNodes(input);
 
   // Pre-compute docPages once in main thread
@@ -61,7 +62,7 @@ export async function* generate(input, worker) {
     entries: groupedModules.get(head.api),
   }));
 
-  for await (const chunkResult of worker.stream(entries, entries, docPages)) {
+  for await (const chunkResult of worker.stream(entries, docPages)) {
     yield chunkResult;
   }
 }

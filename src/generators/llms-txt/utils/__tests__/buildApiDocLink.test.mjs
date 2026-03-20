@@ -65,24 +65,25 @@ describe('buildApiDocLink', () => {
   it('builds markdown link with description', () => {
     const entry = {
       heading: { data: { name: 'Test API' } },
-      api_doc_source: 'doc/api/test.md',
+      api: 'test',
       llm_description: 'Test description',
     };
 
     const result = buildApiDocLink(entry, 'https://example.com');
-    assert.ok(result.includes('[Test API]'));
-    assert.ok(result.includes('/docs/latest/api/test.md'));
-    assert.ok(result.includes('Test description'));
+    assert.strictEqual(
+      result,
+      '[Test API](https://example.com/docs/latest/api/test.md): Test description'
+    );
   });
 
   it('handles doc path replacement', () => {
     const entry = {
       heading: { data: { name: 'API Method' } },
-      api_doc_source: 'doc/some/path.md',
+      api: 'path',
       content: { children: [] },
     };
 
     const result = buildApiDocLink(entry, 'https://example.com');
-    assert.ok(result.includes('/docs/latest/some/path.md'));
+    assert.ok(result.includes('https://example.com/docs/latest/api/path.md'));
   });
 });

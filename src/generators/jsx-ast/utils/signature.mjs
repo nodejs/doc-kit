@@ -3,7 +3,7 @@ import { h as createElement } from 'hastscript';
 import { createJSXElement } from './ast.mjs';
 import { parseListIntoProperties } from './types.mjs';
 import { highlighter } from '../../../utils/highlighter.mjs';
-import createQueries from '../../../utils/queries/index.mjs';
+import { UNIST } from '../../../utils/queries/index.mjs';
 import { parseListItem } from '../../legacy-json/utils/parseList.mjs';
 import parseSignature from '../../legacy-json/utils/parseSignature.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
@@ -66,7 +66,7 @@ export const createSignatureCodeBlock = (functionName, signature, prefix) => {
  * Infers the "real" function name from a heading node.
  * Useful when auto-generated headings differ from code tokens.
  *
- * @param {HeadingMetadataEntry} heading - Metadata with name and text fields.
+ * @param {import('../../metadata/types').HeadingData} heading - Metadata with name and text fields.
  * @param {any} fallback - Fallback value if inference fails.
  */
 export const getFullName = ({ name, text }, fallback = name) => {
@@ -91,12 +91,12 @@ export const getFullName = ({ name, text }, fallback = name) => {
  * Mutates the `children` array by injecting the signature HAST node.
  *
  * @param {import('@types/mdast').Parent} parent - The parent MDAST node (usually a section).
- * @param {import('@types/mdast').Heading} heading - The heading node with metadata.
+ * @param {import('../../metadata/types').HeadingNode} heading - The heading node with metadata.
  * @param {number} idx - The index at which the heading occurs in `parent.children`.
  */
 export const insertSignatureCodeBlock = ({ children }, { data }, idx) => {
   // Try to locate the parameter list immediately following the heading
-  const listIdx = children.findIndex(createQueries.UNIST.isStronglyTypedList);
+  const listIdx = children.findIndex(UNIST.isStronglyTypedList);
 
   // Parse parameters from the list, if found
   const params =
