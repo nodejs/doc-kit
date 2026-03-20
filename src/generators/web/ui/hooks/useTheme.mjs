@@ -29,6 +29,10 @@ const applySystemTheme = () => applyTheme('system');
 export const useTheme = () => {
   // Read stored preference once on mount; default to 'system'.
   const [pref, setPref] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 'system';
+    }
+
     return localStorage.getItem('theme') || 'system';
   });
 
@@ -49,7 +53,9 @@ export const useTheme = () => {
   /** Updates the preference in both React state and localStorage. */
   const setTheme = useCallback(next => {
     setPref(next);
-    localStorage.setItem('theme', next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', next);
+    }
   }, []);
 
   return [pref, setTheme];
