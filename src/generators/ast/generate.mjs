@@ -36,7 +36,7 @@ export async function processChunk(inputSlice, itemIndices) {
 
     results.push({
       tree: remarkProcessor.parse(vfile),
-      file: { stem: vfile.stem, basename: vfile.basename },
+      file: { stem: vfile.stem, basename: vfile.basename, path },
     });
   }
 
