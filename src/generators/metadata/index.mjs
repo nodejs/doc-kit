@@ -17,7 +17,7 @@ export default createLazyGenerator({
   dependsOn: 'ast',
 
   defaultConfiguration: {
-    typeMap: import.meta.resolve('./typeMap.json'),
+    typeMap: import.meta.resolve('./maps/hardcoded.json'),
   },
 
   hasParallelProcessor: true,

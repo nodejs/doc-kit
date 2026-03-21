@@ -5,7 +5,8 @@ import {
 } from '../constants.mjs';
 import { slug } from './slugger.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
-import MDN_TYPE_MAP from '../typeMap.json' with { type: 'json' };
+import HARDCODED_TYPE_MAP from '../maps/hardcoded.json' with { type: 'json' };
+import MDN_TYPE_MAP from '../maps/mdn.json' with { type: 'json' };
 
 /**
  * @param {string} text The inner text
@@ -123,9 +124,16 @@ export const transformTypeToReferenceLink = (type, record) => {
       return record[lookupPiece];
     }
 
-    // Transform from MDN
-    if (lookupPiece.toLowerCase() in MDN_TYPE_MAP) {
-      return MDN_TYPE_MAP[lookupPiece.toLowerCase()];
+    const key = lookupPiece.toLowerCase();
+
+    // Check in our hardcoded map (i.e. TC39 objects)
+    if (key in HARDCODED_TYPE_MAP) {
+      return HARDCODED_TYPE_MAP[key];
+    }
+
+    // Check in MDN
+    if (key in MDN_TYPE_MAP) {
+      return MDN_TYPE_MAP[key];
     }
 
     // Transform Node.js types like 'vm.Something'.
