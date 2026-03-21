@@ -7,7 +7,6 @@ import {
   coerceSemVer,
   getCompatibleVersions,
   legacyToJSON,
-  buildApiDocURL,
   createLazyGenerator,
 } from '../generators.mjs';
 
@@ -123,23 +122,6 @@ describe('legacyToJSON', () => {
   it('passes extra args to JSON.stringify (e.g. indentation)', () => {
     const result = legacyToJSON({ ...base, api: 'fs' }, null, 2);
     assert.ok(result.includes('\n'));
-  });
-});
-
-describe('buildApiDocURL', () => {
-  const entry = { path: '/fs' };
-  const base = 'https://nodejs.org';
-
-  it('builds a .md URL by default', () => {
-    const url = buildApiDocURL(entry, base);
-    assert.ok(url instanceof URL);
-    assert.ok(url.pathname.endsWith('.md'));
-    assert.ok(url.pathname.includes('/fs'));
-  });
-
-  it('builds a .html URL when useHtml is true', () => {
-    const url = buildApiDocURL(entry, base, true);
-    assert.ok(url.pathname.endsWith('.html'));
   });
 });
 

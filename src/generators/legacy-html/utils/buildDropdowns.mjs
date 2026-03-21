@@ -64,7 +64,7 @@ export const buildVersions = (path, added, versions) => {
     const href = populate(config.pageURL, {
       ...config,
       path,
-      version: parsedVersion,
+      version: `v${parsedVersion}`,
     });
 
     const ltsLabel = isLts ? '<b>LTS</b>' : '';
