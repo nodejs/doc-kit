@@ -37,13 +37,10 @@ function isCodeBlock(node) {
 }
 
 export const highlighter = await createHighlighter({
-  // s390x machines throw memory issues on WASM builds
-  // https://github.com/nodejs/node/blob/c9acf345922bd758fbb3f16ee6256aa165260219/test/common/sea.js#L55
-  //
   // riscv64 with sv39 has limited virtual memory space, where creating
   // too many (>20) wasm memory instances fails.
   // https://github.com/nodejs/node/pull/60591
-  wasm: !['riscv64', 's390x'].includes(process.arch),
+  wasm: process.arch !== 'riscv64',
 });
 
 /**
