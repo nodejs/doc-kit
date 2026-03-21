@@ -4,8 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -146,7 +144,7 @@ jobs:
 
       - name: Generate ${{ matrix.target }}
         run: |
-          node bin/cli.mjs generate \
+          node packages/core/bin/cli.mjs generate \
             -t ${{ matrix.target }} \
             -i "${{ matrix.input }}" \
             -o out \

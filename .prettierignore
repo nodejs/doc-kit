@@ -1,11 +1,11 @@
 npm-shrinkwrap.json
 
 # Tests files
-src/generators/api-links/__tests__/fixtures/
+packages/core/src/generators/api-links/__tests__/fixtures/
 *.snapshot
 
 # Templates
-src/generators/web/template.html
+packages/core/src/generators/web/template.html
 
 # Output
 out/
