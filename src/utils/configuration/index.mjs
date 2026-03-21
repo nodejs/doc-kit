@@ -5,6 +5,7 @@ import { coerce } from 'semver';
 
 import { CHANGELOG_URL, populate } from './templates.mjs';
 import { allGenerators } from '../../generators/index.mjs';
+import logger from '../../logger/index.mjs';
 import { parseChangelog, parseIndex } from '../../parsers/markdown.mjs';
 import { enforceArray } from '../array.mjs';
 import { leftHandAssign } from '../generators.mjs';
@@ -33,7 +34,11 @@ export const getDefaultConfig = lazy(() =>
         }),
       },
 
-      threads: cpus().length,
+      // The number of wasm memory instances is severely limited on
+      // riscv64 with sv39. Running multiple generators that use wasm in
+      // parallel could cause failures to allocate new wasm instance.
+      // See also https://github.com/nodejs/node/pull/60591
+      threads: process.arch === 'riscv64' ? 1 : cpus().length,
       chunkSize: 10,
     })
   )
@@ -120,6 +125,14 @@ export const createRunConfiguration = async options => {
   // These need to be coerced
   merged.threads = Math.max(merged.threads, 1);
   merged.chunkSize = Math.max(merged.chunkSize, 1);
+
+  if (process.arch === 'riscv64' && merged.threads > 1) {
+    logger.warn(
+      `Using ${merged.threads} threads might cause failures when` +
+        'allocating wasm memory due to insufficient virtual address space' +
+        'on riscv64 with sv39. Please consider using only a single thread.'
+    );
+  }
 
   // Transform global config if it wasn't already done
   await transformConfig(merged.global);
