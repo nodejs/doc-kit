@@ -113,7 +113,7 @@ const createGenerator = () => {
     }
 
     const progress = createProgressBar({ enabled: configuration.progress });
-    progress?.start(generators.length, 0, { phase: 'Starting...' });
+    progress.start(generators.length, 0, { phase: 'Starting...' });
 
     // Start all collections in parallel (don't await sequentially)
     const resultPromises = generators.map(async name => {
@@ -123,16 +123,16 @@ const createGenerator = () => {
         result = await streamingCache.getOrCollect(name, result);
       }
 
-      progress?.increment({ phase: name });
+      progress.increment({ phase: name });
       return result;
     });
 
-    try {
-      return Promise.all(resultPromises);
-    } finally {
-      await pool.destroy();
-      progress?.stop();
-    }
+    const results = await Promise.all(resultPromises);
+
+    await pool.destroy();
+    progress.stop();
+
+    return results;
   };
 
   return { runGenerators };
