@@ -27,6 +27,7 @@ export const fetchBanners = async (remoteConfig, versionMajor) => {
     active.push(globalBanner);
   }
 
+  // no version info available, skip version-specific banner
   if (versionMajor != null) {
     const versionBanner = config.websiteBanners?.[`v${versionMajor}`];
     if (versionBanner && isBannerActive(versionBanner)) {
