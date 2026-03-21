@@ -1,0 +1,14 @@
+{
+  "asynciterable": "https://tc39.github.io/ecma262/#sec-asynciterable-interface",
+  "module namespace object": "https://tc39.github.io/ecma262/#sec-module-namespace-exotic-objects",
+  "null": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/null",
+  "undefined": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/undefined",
+  "boolean": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/boolean",
+  "number": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/number",
+  "bigint": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/bigint",
+  "string": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/string",
+  "symbol": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/symbol",
+  "integer": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/number",
+  "any": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures/#Data_types",
+  "this": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this"
+}
