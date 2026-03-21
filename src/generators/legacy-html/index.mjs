@@ -2,6 +2,7 @@
 
 import { join } from 'node:path';
 
+import { GITHUB_EDIT_URL } from '../../utils/configuration/templates.mjs';
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -28,6 +29,8 @@ export default createLazyGenerator({
     templatePath: join(import.meta.dirname, 'template.html'),
     additionalPathsToCopy: [join(import.meta.dirname, 'assets')],
     ref: 'main',
+    pageURL: '{baseURL}/latest-{version}/api{path}.html',
+    editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
   },
 
   hasParallelProcessor: true,

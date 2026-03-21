@@ -15,6 +15,9 @@ export interface SitemapEntry {
 }
 
 export type Generator = GeneratorMetadata<
-  {},
+  {
+    indexURL: string;
+    pageURL: string;
+  },
   Generate<Array<MetadataEntry>, Promise<string>>
 >;

@@ -1,5 +1,6 @@
 'use strict';
 
+import { GITHUB_EDIT_URL } from '../../utils/configuration/templates.mjs';
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -18,6 +19,8 @@ export default createLazyGenerator({
 
   defaultConfiguration: {
     ref: 'main',
+    pageURL: '{baseURL}/latest-{version}/api{path}.html',
+    editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
   },
 
   hasParallelProcessor: true,

@@ -33,38 +33,31 @@ function extractMandoc(components, start, end, convert) {
 export async function generate(input) {
   const config = getConfig('man-page');
 
-  // Filter to only 'cli'.
-  const components = input.filter(({ api }) => api === 'cli');
-
-  if (!components.length) {
-    throw new Error('Could not find any `cli` documentation.');
-  }
-
   // Find the appropriate headers
-  const optionsStart = components.findIndex(
+  const optionsStart = input.findIndex(
     ({ heading }) => heading.data.slug === config.cliOptionsHeaderSlug
   );
 
-  const environmentStart = components.findIndex(
+  const environmentStart = input.findIndex(
     ({ heading }) => heading.data.slug === config.envVarsHeaderSlug
   );
 
   // The first header that is <3 in depth after environmentStart
-  const environmentEnd = components.findIndex(
+  const environmentEnd = input.findIndex(
     ({ heading }, index) => heading.depth < 3 && index > environmentStart
   );
 
   const output = {
     // Extract the CLI options.
     options: extractMandoc(
-      components,
+      input,
       optionsStart + 1,
       environmentStart,
       convertOptionToMandoc
     ),
     // Extract the environment variables.
     env: extractMandoc(
-      components,
+      input,
       environmentStart + 1,
       environmentEnd,
       convertEnvVarToMandoc
