@@ -6,7 +6,7 @@ import { transform } from 'lightningcss-wasm';
 import bundleCode from './bundle.mjs';
 import { createChunkedRequire } from './chunks.mjs';
 import { minifyHTML } from '../../../utils/html-minifier.mjs';
-import { href } from '../../../utils/url.mjs';
+import { relative } from '../../../utils/url.mjs';
 import { SPECULATION_RULES } from '../constants.mjs';
 
 /**
@@ -113,7 +113,7 @@ export async function processJSXEntries(
   const results = await Promise.all(
     entries.map(async ({ data: { api, path, heading } }) => {
       const title = `${heading.data.name} | ${titleSuffix}`;
-      const root = `${href('/', path)}/`;
+      const root = `${relative('/', path)}/`;
 
       // Replace template placeholders with actual content
       const renderedHtml = template

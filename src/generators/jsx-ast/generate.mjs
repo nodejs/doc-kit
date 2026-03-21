@@ -3,7 +3,7 @@ import buildContent from './utils/buildContent.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRecma } from '../../utils/remark.mjs';
-import { href } from '../../utils/url.mjs';
+import { relative } from '../../utils/url.mjs';
 
 const remarkRecma = getRemarkRecma();
 
@@ -28,7 +28,7 @@ export async function processChunk(slicedInput, itemIndices, docPages) {
         heading,
         head.path === path
           ? `${head.basename}.html`
-          : `${href(path, head.path)}.html`,
+          : `${relative(path, head.path)}.html`,
       ])
     );
 

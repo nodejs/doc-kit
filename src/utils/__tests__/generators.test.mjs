@@ -127,7 +127,7 @@ describe('legacyToJSON', () => {
 });
 
 describe('buildApiDocURL', () => {
-  const entry = { api: 'fs' };
+  const entry = { path: '/fs' };
   const base = 'https://nodejs.org';
 
   it('builds a .md URL by default', () => {

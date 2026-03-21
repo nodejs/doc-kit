@@ -53,7 +53,7 @@ export const importFromURL = async url => {
  * @param {string} to
  * @returns {string}
  */
-export const href = (to, from) => {
+export const relative = (to, from) => {
   if (to.includes('://')) {
     return to;
   }

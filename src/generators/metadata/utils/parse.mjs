@@ -21,7 +21,7 @@ import {
 } from './visitors.mjs';
 import { UNIST } from '../../../utils/queries/index.mjs';
 import { getRemark } from '../../../utils/remark.mjs';
-import { href } from '../../../utils/url.mjs';
+import { relative } from '../../../utils/url.mjs';
 import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
 
 // Creates an instance of the Remark processor with GFM support
@@ -63,7 +63,7 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
 
   // Make all the typeMap links relative to us
   const relativeTypeMap = Object.fromEntries(
-    Object.entries(typeMap).map(([type, url]) => [type, href(url, path)])
+    Object.entries(typeMap).map(([type, url]) => [type, relative(url, path)])
   );
 
   // Handles the normalisation URLs that reference to API doc files with .md extension
