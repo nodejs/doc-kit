@@ -1,7 +1,9 @@
 {
-  "name": "@node-core/doc-kit",
+  "private": true,
   "type": "module",
-  "version": "1.2.0",
+  "workspaces": [
+    "packages/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git"
@@ -12,18 +14,13 @@
     "format": "prettier .",
     "format:write": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
-    "test:coverage": "c8 node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
-    "test:ci": "c8 --reporter=lcov node --test --experimental-test-module-mocks \"src/**/*.test.mjs\" --test-reporter=@reporters/github --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml --test-reporter=spec --test-reporter-destination=stdout",
-    "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots \"src/**/*.test.mjs\"",
-    "test:watch": "node --test --experimental-test-module-mocks --watch \"src/**/*.test.mjs\"",
+    "test": "node --test --experimental-test-module-mocks \"packages/*/src/**/*.test.mjs\"",
+    "test:coverage": "c8 node --test --experimental-test-module-mocks \"packages/*/src/**/*.test.mjs\"",
+    "test:ci": "c8 --reporter=lcov node --test --experimental-test-module-mocks \"packages/*/src/**/*.test.mjs\" --test-reporter=@reporters/github --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml --test-reporter=spec --test-reporter-destination=stdout",
+    "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots \"packages/*/src/**/*.test.mjs\"",
+    "test:watch": "node --test --experimental-test-module-mocks --watch \"packages/*/src/**/*.test.mjs\"",
     "prepare": "husky || exit 0",
-    "run": "node bin/cli.mjs",
-    "watch": "node --watch bin/cli.mjs"
-  },
-  "main": "./src/index.mjs",
-  "bin": {
-    "doc-kit": "./bin/cli.mjs"
+    "watch": "npm run watch --workspaces --if-present"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -40,52 +37,5 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "3.8.1"
-  },
-  "dependencies": {
-    "@actions/core": "^3.0.0",
-    "@heroicons/react": "^2.2.0",
-    "@minify-html/wasm": "^0.18.1",
-    "@node-core/rehype-shiki": "^1.4.1",
-    "@node-core/ui-components": "^1.6.1",
-    "@orama/orama": "^3.1.18",
-    "@orama/ui": "^1.5.4",
-    "@rollup/plugin-virtual": "^3.0.2",
-    "@swc/html-wasm": "^1.15.18",
-    "acorn": "^8.16.0",
-    "commander": "^14.0.3",
-    "dedent": "^1.7.1",
-    "estree-util-to-js": "^2.0.0",
-    "estree-util-visit": "^2.0.0",
-    "github-slugger": "^2.0.0",
-    "glob-parent": "^6.0.2",
-    "globals": "^17.3.0",
-    "hast-util-to-string": "^3.0.1",
-    "hastscript": "^9.0.1",
-    "lightningcss-wasm": "^1.31.1",
-    "mdast-util-slice-markdown": "^2.0.1",
-    "piscina": "^5.1.4",
-    "preact": "^10.28.4",
-    "preact-render-to-string": "^6.6.3",
-    "reading-time": "^1.5.0",
-    "recma-jsx": "^1.0.1",
-    "rehype-raw": "^7.0.0",
-    "rehype-recma": "^1.0.0",
-    "rehype-stringify": "^10.0.1",
-    "remark-gfm": "^4.0.1",
-    "remark-parse": "^11.0.0",
-    "remark-rehype": "^11.1.2",
-    "remark-stringify": "^11.0.0",
-    "rolldown": "^1.0.0-rc.6",
-    "semver": "^7.7.4",
-    "shiki": "^4.0.0",
-    "tinyglobby": "^0.2.15",
-    "unified": "^11.0.5",
-    "unist-builder": "^4.0.0",
-    "unist-util-find-after": "^5.0.0",
-    "unist-util-position": "^5.0.0",
-    "unist-util-remove": "^4.0.0",
-    "unist-util-select": "^5.1.0",
-    "unist-util-visit": "^5.1.0",
-    "yaml": "^2.8.2"
   }
 }
