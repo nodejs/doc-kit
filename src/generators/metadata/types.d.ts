@@ -133,8 +133,10 @@ export type StabilityNode = NodeWithData<Blockquote, StabilityData>;
  * for documentation generation, search indexing, and validation.
  */
 export interface MetadataEntry extends YAMLProperties {
-  /** API identifier/name */
+  /** Path + API identification */
   api: string;
+  path: string; // Note: this is extensionless
+  basename: string;
   /** Processed heading with metadata */
   heading: HeadingNode;
   /** Stability classification information */

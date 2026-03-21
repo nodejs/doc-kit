@@ -1,6 +1,6 @@
 'use strict';
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -8,6 +8,7 @@ import {
   convertEnvVarToMandoc,
 } from './utils/converter.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 
 /**
  * @param {Array<import('../metadata/types').MetadataEntry>} components
