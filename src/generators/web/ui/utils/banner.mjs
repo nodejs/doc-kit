@@ -8,13 +8,10 @@
  * @param {BannerEntry} banner
  * @returns {boolean}
  */
-export const isBannerActive = banner => {
+export const isBannerActive = ({ startDate, endDate }) => {
   const now = Date.now();
-  if (banner.startDate && now < new Date(banner.startDate).getTime()) {
-    return false;
-  }
-  if (banner.endDate && now > new Date(banner.endDate).getTime()) {
-    return false;
-  }
-  return true;
+  return (
+    (!startDate || now >= new Date(startDate)) &&
+    (!endDate || now <= new Date(endDate))
+  );
 };
