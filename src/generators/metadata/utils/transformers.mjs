@@ -5,7 +5,7 @@ import {
 } from '../constants.mjs';
 import { slug } from './slugger.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
-import HARDCODED_TYPE_MAP from '../maps/hardcoded.json' with { type: 'json' };
+import BUILTIN_TYPE_MAP from '../maps/builtin.json' with { type: 'json' };
 import MDN_TYPE_MAP from '../maps/mdn.json' with { type: 'json' };
 
 /**
@@ -126,9 +126,9 @@ export const transformTypeToReferenceLink = (type, record) => {
 
     const key = lookupPiece.toLowerCase();
 
-    // Check in our hardcoded map (i.e. TC39 objects)
-    if (key in HARDCODED_TYPE_MAP) {
-      return HARDCODED_TYPE_MAP[key];
+    // Check in our built-in map (i.e. TC39 objects)
+    if (key in BUILTIN_TYPE_MAP) {
+      return BUILTIN_TYPE_MAP[key];
     }
 
     // Check in MDN

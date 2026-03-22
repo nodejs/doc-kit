@@ -1,12 +1,9 @@
 import { writeFile } from 'node:fs/promises';
 
+import { MDN_COMPAT_URL, MDN_TYPE_MAP } from './constants.mjs';
 import { loadFromURL } from '../src/utils/url.mjs';
 
-const compat = JSON.parse(
-  await loadFromURL(
-    'https://github.com/mdn/browser-compat-data/releases/latest/download/data.json'
-  )
-);
+const compat = JSON.parse(await loadFromURL(MDN_COMPAT_URL));
 
 const creatingMapping = obj =>
   Object.fromEntries(
@@ -20,7 +17,4 @@ const map = {
   ...creatingMapping(compat.javascript.builtins),
 };
 
-writeFile(
-  './src/generators/metadata/maps/mdn.json',
-  JSON.stringify(map, null, 2) + '\n'
-);
+writeFile(MDN_TYPE_MAP, JSON.stringify(map, null, 2));
