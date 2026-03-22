@@ -35,6 +35,7 @@ export const getDefaultConfig = lazy(() =>
 
       threads: cpus().length,
       chunkSize: 10,
+      progress: true,
     })
   )
 );
@@ -96,6 +97,7 @@ export const createConfigFromCLIOptions = options => ({
   target: options.target,
   threads: options.threads,
   chunkSize: options.chunkSize,
+  progress: options.progress,
 });
 
 /**
