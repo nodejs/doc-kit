@@ -13,7 +13,7 @@ import Logo from '#theme/Logo';
  * NavBar component that displays the headings, search, etc.
  */
 export default () => {
-  const [theme, toggleTheme] = useTheme();
+  const [themePreference, setThemePreference] = useTheme();
 
   return (
     <NavBar
@@ -23,8 +23,8 @@ export default () => {
     >
       <SearchBox />
       <ThemeToggle
-        onClick={toggleTheme}
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+        onChange={setThemePreference}
+        currentTheme={themePreference}
       />
       <a
         href={`https://github.com/${STATIC_DATA.repository}`}

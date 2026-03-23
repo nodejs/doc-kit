@@ -1,49 +1,62 @@
 import { useState, useEffect, useCallback } from 'react';
 
+/** @returns {'dark'|'light'} The current OS-level color scheme. */
+const getSystemTheme = () =>
+  matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
 /**
- * Applies the given theme to the `<html>` element's `data-theme` attribute
- * and persists the theme preference in `localStorage`.
- *
- * @param {string} theme - The theme to apply ('light' or 'dark').
+ * Applies a theme to the document root.
+ * Resolves 'system' to the actual OS preference before applying.
+ * @param {'system'|'light'|'dark'} pref - The theme preference.
  */
-const applyTheme = theme => {
+const applyTheme = pref => {
+  const theme = pref === 'system' ? getSystemTheme() : pref;
   document.documentElement.setAttribute('data-theme', theme);
   document.documentElement.style.colorScheme = theme;
-  localStorage.setItem('theme', theme);
 };
 
 /**
- * A React hook for managing the application's light/dark theme.
+ * Applies the system theme to the document root.
+ */
+const applySystemTheme = () => applyTheme('system');
+
+/**
+ * React hook for managing theme preference.
+ * Persists the choice to localStorage and listens for OS theme changes
+ * when set to 'system'.
+ * @returns {['system'|'light'|'dark', (next: 'system'|'light'|'dark') => void]}
  */
 export const useTheme = () => {
-  const [theme, setTheme] = useState('light');
+  // Read stored preference once on mount; default to 'system'.
+  const [pref, setPref] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 'system';
+    }
 
+    return localStorage.getItem('theme') || 'system';
+  });
+
+  // Apply theme on every preference change, and if 'system',
+  // also listen for OS-level color scheme changes.
   useEffect(() => {
-    const initial =
-      // Try to get the theme from localStorage first.
-      localStorage.getItem('theme') ||
-      // If not found, check the `data-theme` attribute on the document element
-      document.documentElement.getAttribute('data-theme') ||
-      // As a final fallback, check the user's system preference for dark mode.
-      (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(pref);
 
-    applyTheme(initial);
-    setTheme(initial);
+    if (pref !== 'system') {
+      return;
+    }
+
+    const mql = matchMedia('(prefers-color-scheme: dark)');
+    mql.addEventListener('change', applySystemTheme);
+    return () => mql.removeEventListener('change', applySystemTheme);
+  }, [pref]);
+
+  /** Updates the preference in both React state and localStorage. */
+  const setTheme = useCallback(next => {
+    setPref(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', next);
+    }
   }, []);
 
-  /**
-   * Callback function to toggle between 'light' and 'dark' themes.
-   */
-  const toggleTheme = useCallback(() => {
-    setTheme(prev => {
-      // Determine the next theme based on the current theme.
-      const next = prev === 'light' ? 'dark' : 'light';
-      // Apply the new theme.
-      applyTheme(next);
-      // Return the new theme to update the state.
-      return next;
-    });
-  }, []);
-
-  return [theme, toggleTheme];
+  return [pref, setTheme];
 };
