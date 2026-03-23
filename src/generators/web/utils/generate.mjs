@@ -80,11 +80,15 @@ export default () => {
       // Import all JSX components
       ...baseImports,
 
-      // Import Preact's SSR render function (named import)
-      createImportDeclaration('render', 'preact-render-to-string', false),
+      // Import Preact's async SSR render function (named import)
+      createImportDeclaration(
+        'renderToStringAsync',
+        'preact-render-to-string',
+        false
+      ),
 
       // Render component to HTML string and return it
-      `return render(${componentCode});`,
+      `return renderToStringAsync(${componentCode});`,
     ].join('\n');
   };
 
