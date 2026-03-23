@@ -92,6 +92,10 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
 
     // Generate slug and update heading data
     metadata.heading.data.slug = nodeSlugger.slug(metadata.heading.data.text);
+    metadata.heading.data.legacySlug = nodeSlugger.legacySlug(
+      metadata.heading.data.text,
+      api
+    );
 
     // Find the next heading to determine section boundaries
     const nextHeadingNode =

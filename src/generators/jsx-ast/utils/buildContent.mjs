@@ -128,12 +128,14 @@ export const extractHeadingContent = content => {
  * @param {import('unist').Node|null} changeElement - The change history element, if available
  */
 export const createHeadingElement = (content, changeElement) => {
-  const { type, slug } = content.data;
+  const { type, slug, legacySlug } = content.data;
 
   let headingContent = extractHeadingContent(content);
 
   // Build heading with anchor link
   const headingWrapper = createElement('div', [
+    // Legacy anchor alias to preserve old external links
+    createElement('a', { id: legacySlug }),
     createElement(
       `h${content.depth}`,
       { id: slug },

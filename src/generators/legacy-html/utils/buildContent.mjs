@@ -26,6 +26,8 @@ const buildHeading = ({ data, children, depth }, index, parent) => {
     // The inner Heading markdown content is still using Remark nodes, and they need
     // to be converted into Rehype nodes
     ...children,
+    // Legacy anchor alias to preserve old external links
+    createElement('span', createElement(`a#${data.legacySlug}`)),
     // Creates the element that references the link to the heading
     // (The `#` anchor on the right of each Heading section)
     createElement(
