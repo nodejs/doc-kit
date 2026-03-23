@@ -5,6 +5,7 @@ import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
 import buildExtraContent from './buildExtraContent.mjs';
+import { createLegacySlugger } from './slugger.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
   GITHUB_BLOB_URL,
@@ -20,12 +21,14 @@ import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
  * @param {import('unist').Parent} parent The parent node of the current node
  * @returns {import('hast').Element} The HTML AST tree of the heading content
  */
-const buildHeading = ({ data, children, depth }, index, parent) => {
+const buildHeading = ({ data, children, depth }, index, parent, legacySlug) => {
   // Creates the heading element with the heading text and the link to the heading
   const headingElement = createElement(`h${depth + 1}`, [
     // The inner Heading markdown content is still using Remark nodes, and they need
     // to be converted into Rehype nodes
     ...children,
+    // Legacy anchor alias to preserve old external links
+    createElement('span', createElement(`a#${legacySlug}`)),
     // Creates the element that references the link to the heading
     // (The `#` anchor on the right of each Heading section)
     createElement(
@@ -220,6 +223,8 @@ const buildMetadataElement = (node, remark) => {
  * @param {import('unified').Processor} remark The Remark instance to be used to process
  */
 export default (headNodes, metadataEntries, remark) => {
+  const legacySlugger = createLegacySlugger();
+
   // Creates the root node for the content
   const parsedNodes = createTree(
     'root',
@@ -229,7 +234,13 @@ export default (headNodes, metadataEntries, remark) => {
       const content = structuredClone(entry.content);
 
       // Parses the Heading nodes into Heading elements
-      visit(content, UNIST.isHeading, buildHeading);
+      visit(content, UNIST.isHeading, (node, index, parent) => {
+        const legacySlug = legacySlugger.getLegacySlug(
+          node.data.text,
+          entry.api
+        );
+        buildHeading(node, index, parent, legacySlug);
+      });
 
       // Parses the Blockquotes into Stability elements
       // This is treated differently as we want to preserve the position of a Stability Index
