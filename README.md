@@ -32,7 +32,7 @@
 Local invocation:
 
 ```sh
-$ npx doc-kit --help
+$ npx @node-core/doc-kit --help
 ```
 
 ```sh
@@ -90,7 +90,7 @@ Options:
 To generate a 1:1 match with the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the `legacy-html`, `legacy-json`, `legacy-html-all`, and `legacy-json-all` generators.
 
 ```sh
-npx doc-kit generate \
+npx @node-core/doc-kit generate \
   -t legacy-html \
   -t legacy-json \
   -i "path/to/node/doc/api/*.md" \
@@ -103,7 +103,7 @@ npx doc-kit generate \
 To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling.vercel.app), use the `web` and `orama-db` (for search) generators.
 
 ```sh
-npx doc-kit generate \
+npx @node-core/doc-kit generate \
   -t web \
   -t orama-db \
   -i "path/to/node/doc/api/*.md" \
