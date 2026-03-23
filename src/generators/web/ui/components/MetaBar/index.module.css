@@ -9,3 +9,10 @@
   display: inline-block;
   margin-left: 0.25rem;
 }
+
+.tocActive {
+  color: var(--color-primary, #0078d4);
+  font-weight: 600;
+  border-left: 2px solid var(--color-primary, #0078d4);
+  padding-left: 0.25rem;
+}
