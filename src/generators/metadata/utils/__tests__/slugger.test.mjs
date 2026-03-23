@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import createNodeSlugger, { slug } from '../slugger.mjs';
+import createNodeSlugger, { slug, getLegacySlug } from '../slugger.mjs';
 
 const identity = str => str;
 
@@ -114,5 +114,41 @@ describe('createNodeSlugger', () => {
     const slugger2 = createNodeSlugger();
     slugger1.slug('Hello');
     assert.strictEqual(slugger2.slug('Hello'), 'hello');
+  });
+});
+
+describe('getLegacySlug', () => {
+  it('prefixes with api stem and uses underscores', () => {
+    assert.strictEqual(getLegacySlug('File System', 'fs'), 'fs_file_system');
+  });
+
+  it('replaces special characters with underscores', () => {
+    assert.strictEqual(
+      getLegacySlug('fs.readFile(path)', 'fs'),
+      'fs_fs_readfile_path'
+    );
+  });
+
+  it('strips leading and trailing underscores', () => {
+    assert.strictEqual(getLegacySlug('Hello', 'fs'), 'fs_hello');
+  });
+
+  it('prefixes with underscore when result starts with non-alpha', () => {
+    assert.strictEqual(getLegacySlug('123 test', '0num'), '_0num_123_test');
+  });
+});
+
+describe('createNodeSlugger legacySlug', () => {
+  it('deduplicates repeated legacy slugs with a counter', () => {
+    const slugger = createNodeSlugger();
+    assert.strictEqual(slugger.legacySlug('Hello', 'fs'), 'fs_hello');
+    assert.strictEqual(slugger.legacySlug('Hello', 'fs'), 'fs_hello_1');
+    assert.strictEqual(slugger.legacySlug('Hello', 'fs'), 'fs_hello_2');
+  });
+
+  it('does not deduplicate different titles', () => {
+    const slugger = createNodeSlugger();
+    assert.strictEqual(slugger.legacySlug('First', 'fs'), 'fs_first');
+    assert.strictEqual(slugger.legacySlug('Second', 'fs'), 'fs_second');
   });
 });

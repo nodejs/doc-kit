@@ -100,6 +100,8 @@ export interface HeadingData extends Data {
   name: string;
   /** URL-safe slug derived from heading text */
   slug: string;
+  /** Legacy slug for backward-compatible anchor links */
+  legacySlug: string;
   /** Optional type classification */
   type?: HeadingType;
 }
