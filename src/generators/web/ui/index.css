@@ -118,3 +118,8 @@ main {
     }
   }
 }
+
+/* Override the min-width of the select component used for version selection in the sidebar */
+[class*="select"] button[role="combobox"] {
+  min-width: initial;
+}
