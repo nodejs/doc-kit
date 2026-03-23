@@ -3,6 +3,7 @@ import Banner from '@node-core/ui-components/Common/Banner';
 import { useEffect, useState } from 'preact/hooks';
 
 import { fetchBanners } from './fetchBanners.mjs';
+import styles from './index.module.css';
 
 /** @import { BannerEntry } from './types.d.ts' */
 
@@ -31,7 +32,7 @@ export default ({ remoteConfig, versionMajor }) => {
   }
 
   return (
-    <div role="region" aria-label="Announcements">
+    <div role="region" aria-label="Announcements" className={styles.banners}>
       {banners.map(banner => (
         <Banner key={banner.text ?? banner.text} type={banner.type}>
           {banner.link ? (
