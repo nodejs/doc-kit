@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { fetchBanners } from '../fetchBanners.mjs';
+import { renderHook, waitFor } from '@testing-library/react';
+
+import { useBanners } from '../useBanners.mjs';
 
 const PAST = new Date(Date.now() - 86_400_000).toISOString(); // yesterday
 const FUTURE = new Date(Date.now() + 86_400_000).toISOString(); // tomorrow
@@ -11,14 +13,19 @@ const makeResponse = (banners, ok = true) => ({
   json: async () => ({ websiteBanners: banners }),
 });
 
-describe('fetchBanners', () => {
+describe('useBanners', () => {
   describe('fetch behavior', () => {
     it('fetches from the given URL', async t => {
       t.mock.method(global, 'fetch', () => Promise.resolve(makeResponse({})));
 
-      await fetchBanners('https://example.com/site.json', null);
+      renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
+      );
 
-      assert.equal(global.fetch.mock.calls.length, 1);
+      await waitFor(() => assert.equal(global.fetch.mock.calls.length, 1));
       assert.equal(
         global.fetch.mock.calls[0].arguments[0],
         'https://example.com/site.json'
@@ -30,20 +37,31 @@ describe('fetchBanners', () => {
         Promise.resolve(makeResponse({}, false))
       );
 
-      const result = await fetchBanners('https://example.com/site.json', null);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
+      );
 
-      assert.deepEqual(result, []);
+      await waitFor(() => assert.equal(global.fetch.mock.calls.length, 1));
+      assert.deepEqual(result.current.banners, []);
     });
 
-    it('propagates fetch errors to the caller', async t => {
+    it('handles fetch errors silently', async t => {
       t.mock.method(global, 'fetch', () =>
         Promise.reject(new Error('Network error'))
       );
 
-      await assert.rejects(
-        () => fetchBanners('https://example.com/site.json', null),
-        { message: 'Network error' }
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
       );
+
+      await waitFor(() => assert.equal(global.fetch.mock.calls.length, 1));
+      assert.deepEqual(result.current.banners, []);
     });
   });
 
@@ -54,9 +72,14 @@ describe('fetchBanners', () => {
         Promise.resolve(makeResponse({ index: banner }))
       );
 
-      const result = await fetchBanners('https://example.com/site.json', null);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
+      );
 
-      assert.deepEqual(result, [banner]);
+      await waitFor(() => assert.deepEqual(result.current.banners, [banner]));
     });
 
     it('returns the active version-specific banner', async t => {
@@ -65,9 +88,14 @@ describe('fetchBanners', () => {
         Promise.resolve(makeResponse({ v20: banner }))
       );
 
-      const result = await fetchBanners('https://example.com/site.json', 20);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: 20,
+        })
+      );
 
-      assert.deepEqual(result, [banner]);
+      await waitFor(() => assert.deepEqual(result.current.banners, [banner]));
     });
 
     it('returns both global and version banners when both are active', async t => {
@@ -79,9 +107,16 @@ describe('fetchBanners', () => {
         )
       );
 
-      const result = await fetchBanners('https://example.com/site.json', 20);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: 20,
+        })
+      );
 
-      assert.deepEqual(result, [globalBanner, versionBanner]);
+      await waitFor(() =>
+        assert.deepEqual(result.current.banners, [globalBanner, versionBanner])
+      );
     });
 
     it('returns global banner first, version banner second', async t => {
@@ -93,10 +128,17 @@ describe('fetchBanners', () => {
         )
       );
 
-      const result = await fetchBanners('https://example.com/site.json', 22);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: 22,
+        })
+      );
 
-      assert.equal(result[0], globalBanner);
-      assert.equal(result[1], versionBanner);
+      await waitFor(() => {
+        assert.equal(result.current.banners[0], globalBanner);
+        assert.equal(result.current.banners[1], versionBanner);
+      });
     });
 
     it('does not include the version banner when versionMajor is null', async t => {
@@ -108,9 +150,16 @@ describe('fetchBanners', () => {
         )
       );
 
-      const result = await fetchBanners('https://example.com/site.json', null);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
+      );
 
-      assert.deepEqual(result, [globalBanner]);
+      await waitFor(() =>
+        assert.deepEqual(result.current.banners, [globalBanner])
+      );
     });
 
     it('returns an empty array when websiteBanners is absent', async t => {
@@ -118,9 +167,15 @@ describe('fetchBanners', () => {
         Promise.resolve({ ok: true, json: async () => ({}) })
       );
 
-      const result = await fetchBanners('https://example.com/site.json', null);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
+      );
 
-      assert.deepEqual(result, []);
+      await waitFor(() => assert.equal(global.fetch.mock.calls.length, 1));
+      assert.deepEqual(result.current.banners, []);
     });
   });
 
@@ -131,9 +186,15 @@ describe('fetchBanners', () => {
         Promise.resolve(makeResponse({ index: banner }))
       );
 
-      const result = await fetchBanners('https://example.com/site.json', null);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
+      );
 
-      assert.deepEqual(result, []);
+      await waitFor(() => assert.equal(global.fetch.mock.calls.length, 1));
+      assert.deepEqual(result.current.banners, []);
     });
 
     it('excludes a banner whose startDate is in the future', async t => {
@@ -142,9 +203,15 @@ describe('fetchBanners', () => {
         Promise.resolve(makeResponse({ index: banner }))
       );
 
-      const result = await fetchBanners('https://example.com/site.json', null);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
+      );
 
-      assert.deepEqual(result, []);
+      await waitFor(() => assert.equal(global.fetch.mock.calls.length, 1));
+      assert.deepEqual(result.current.banners, []);
     });
 
     it('includes a banner within its active date range', async t => {
@@ -158,9 +225,14 @@ describe('fetchBanners', () => {
         Promise.resolve(makeResponse({ index: banner }))
       );
 
-      const result = await fetchBanners('https://example.com/site.json', null);
+      const { result } = renderHook(() =>
+        useBanners({
+          remoteConfig: 'https://example.com/site.json',
+          versionMajor: null,
+        })
+      );
 
-      assert.deepEqual(result, [banner]);
+      await waitFor(() => assert.deepEqual(result.current.banners, [banner]));
     });
   });
 });

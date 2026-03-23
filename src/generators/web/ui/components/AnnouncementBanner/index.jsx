@@ -1,11 +1,8 @@
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import Banner from '@node-core/ui-components/Common/Banner';
-import { useEffect, useState } from 'preact/hooks';
 
-import { fetchBanners } from './fetchBanners.mjs';
 import styles from './index.module.css';
-
-/** @import { BannerEntry } from './types.d.ts' */
+import { useBanners } from './useBanners.mjs';
 
 /**
  * Asynchronously fetches and displays announcement banners from the remote config.
@@ -15,17 +12,7 @@ import styles from './index.module.css';
  * @param {{ remoteConfig: string, versionMajor: number | null }} props
  */
 export default ({ remoteConfig, versionMajor }) => {
-  const [banners, setBanners] = useState(/** @type {BannerEntry[]} */ ([]));
-
-  useEffect(() => {
-    if (!remoteConfig) {
-      return;
-    }
-
-    fetchBanners(remoteConfig, versionMajor)
-      .then(setBanners)
-      .catch(console.error);
-  }, []);
+  const { banners } = useBanners({ remoteConfig, versionMajor });
 
   if (!banners.length) {
     return null;
