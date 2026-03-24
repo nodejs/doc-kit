@@ -18,6 +18,8 @@ export const QUERIES = {
   stabilityIndexPrefix: /Stability: ([0-5](?:\.[0-3])?)/,
   // ReGeX for retrieving the inner content from a YAML block
   yamlInnerContent: /^<!--[ ]?(?:YAML([\s\S]*?)|([ \S]*?))?[ ]?-->/,
+  // ReGeX for standard Markdown YAML frontmatter
+  standardYamlFrontmatter: /^---\r?\n([\s\S]*?)\r?\n---/,
   // ReGeX for finding references to Unix manuals
   unixManualPage: /\b([a-z.]+)\((\d)([a-z]?)\)/g,
   // ReGeX for determing a typed list's non-property names

@@ -28,10 +28,15 @@ export async function processChunk(inputSlice, itemIndices) {
     const content = await readFile(path, 'utf-8');
     const vfile = new VFile({
       path,
-      value: content.replace(
-        QUERIES.stabilityIndexPrefix,
-        match => `[${match}](${STABILITY_INDEX_URL})`
-      ),
+      value: content
+        .replace(
+          QUERIES.standardYamlFrontmatter,
+          (_, yaml) => '<!-- YAML\n' + yaml + '\n-->\n'
+        )
+        .replace(
+          QUERIES.stabilityIndexPrefix,
+          match => `[${match}](${STABILITY_INDEX_URL})`
+        ),
     });
 
     results.push({
