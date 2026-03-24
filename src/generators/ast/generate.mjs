@@ -1,13 +1,14 @@
 'use strict';
 
 import { readFile } from 'node:fs/promises';
-import { extname } from 'node:path';
+import { relative, sep } from 'node:path/posix';
 
+import globParent from 'glob-parent';
 import { globSync } from 'tinyglobby';
-import { VFile } from 'vfile';
 
 import { STABILITY_INDEX_URL } from './constants.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { withExt } from '../../utils/file.mjs';
 import { QUERIES } from '../../utils/queries/index.mjs';
 import { getRemark } from '../../utils/remark.mjs';
 
@@ -24,24 +25,24 @@ export async function processChunk(inputSlice, itemIndices) {
 
   const results = [];
 
-  for (const path of filePaths) {
+  for (const [path, parent] of filePaths) {
     const content = await readFile(path, 'utf-8');
-    const vfile = new VFile({
-      path,
-      value: content
-        .replace(
-          QUERIES.standardYamlFrontmatter,
-          (_, yaml) => '<!-- YAML\n' + yaml + '\n-->\n'
-        )
-        .replace(
-          QUERIES.stabilityIndexPrefix,
-          match => `[${match}](${STABILITY_INDEX_URL})`
-        ),
-    });
+    const value = content
+      .replace(
+        QUERIES.standardYamlFrontmatter,
+        (_, yaml) => '<!-- YAML\n' + yaml + '\n-->\n'
+      )
+      .replace(
+        QUERIES.stabilityIndexPrefix,
+        match => `[${match}](${STABILITY_INDEX_URL})`
+      );
+
+    const relativePath = sep + withExt(relative(parent, path));
 
     results.push({
-      tree: remarkProcessor.parse(vfile),
-      file: { stem: vfile.stem, basename: vfile.basename },
+      tree: remarkProcessor.parse(value),
+      // The path is the relative path minus the extension
+      path: relativePath,
     });
   }
 
@@ -56,9 +57,14 @@ export async function processChunk(inputSlice, itemIndices) {
 export async function* generate(_, worker) {
   const { ast: config } = getConfig();
 
-  const files = globSync(config.input, { ignore: config.ignore }).filter(
-    p => extname(p) === '.md'
-  );
+  const files = config.input.flatMap(input => {
+    const parent = globParent(input);
+
+    return globSync(input, { ignore: config.ignore }).map(child => [
+      child,
+      parent,
+    ]);
+  });
 
   // Parse markdown files in parallel using worker threads
   for await (const chunkResult of worker.stream(files)) {
