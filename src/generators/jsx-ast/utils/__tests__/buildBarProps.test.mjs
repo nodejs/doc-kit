@@ -69,7 +69,8 @@ describe('extractTextContent', () => {
 describe('buildMetaBarProps', () => {
   it('creates meta bar properties from entries', () => {
     const head = {
-      api: 'fs',
+      basename: 'fs',
+      path: '/fs',
       added: 'v1.0.0',
     };
 
@@ -127,22 +128,20 @@ describe('formatVersionOptions', () => {
       { version: new SemVer('18.0.0'), isLts: false, isCurrent: false },
     ];
 
-    const api = 'http';
-
-    const result = formatVersionOptions(versions, api);
+    const result = formatVersionOptions(versions, '/http');
 
     assert.deepStrictEqual(result, [
       {
+        value: 'https://nodejs.org/docs/latest-v16.x/api/http.html',
         label: 'v16.x (LTS)',
-        value: '/api/16.x/http',
       },
       {
+        value: 'https://nodejs.org/docs/latest-v17.x/api/http.html',
         label: 'v17.x (Current)',
-        value: '/api/17.x/http',
       },
       {
+        value: 'https://nodejs.org/docs/latest-v18.x/api/http.html',
         label: 'v18.x',
-        value: '/api/18.x/http',
       },
     ]);
   });
@@ -151,7 +150,8 @@ describe('formatVersionOptions', () => {
 describe('buildSideBarProps', () => {
   it('creates sidebar properties with versions and navigation', () => {
     const entry = {
-      api: 'http',
+      path: 'http',
+      basename: 'http',
       introduced_in: 'v0.10.0',
     };
 

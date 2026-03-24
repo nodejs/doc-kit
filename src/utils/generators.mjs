@@ -36,16 +36,6 @@ export const getVersionFromSemVer = version =>
     : `${version.major}.${version.minor}.x`;
 
 /**
- * Gets the documentation URL for an API and version
- *
- * @param {string} version The version to be parsed
- * @param {string} api The document
- * @param {string} baseURL
- */
-export const getVersionURL = (version, api, baseURL) =>
-  `${baseURL}/latest-v${version}/api/${api}.html`;
-
-/**
  * @TODO: This should not be necessary, and indicates errors within the API docs
  * @TODO: Hookup into a future Validation/Linting API
  *
@@ -145,20 +135,6 @@ export const legacyToJSON = (
         },
     ...args
   );
-
-/**
- * Builds the url of a api doc entry.
- *
- * @param {import('../generators/metadata/types').MetadataEntry} entry
- * @param {string} baseURL
- * @param {boolean} [useHtml]
- * @returns {URL}
- */
-export const buildApiDocURL = (entry, baseURL, useHtml = false) => {
-  const path = `/docs/latest/api/${entry.api}.${useHtml ? 'html' : 'md'}`;
-
-  return URL.parse(path, baseURL);
-};
 
 /**
  * Creates a generator with the provided metadata.

@@ -273,6 +273,26 @@ describe('parseSignature', () => {
         ],
       },
     },
+    {
+      name: 'handles un-backticked method signatures without dropping arguments',
+      input: {
+        textRaw: 'new Console(options)',
+        markdown: [{ name: 'options' }],
+      },
+      expected: {
+        params: [{ name: 'options' }],
+      },
+    },
+    {
+      name: 'handles standard method signatures without backticks',
+      input: {
+        textRaw: 'foo(a, b)',
+        markdown: [{ name: 'a' }, { name: 'b' }],
+      },
+      expected: {
+        params: [{ name: 'a' }, { name: 'b' }],
+      },
+    },
   ];
 
   for (const testCase of testCases) {

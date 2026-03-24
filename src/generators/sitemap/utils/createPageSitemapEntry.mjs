@@ -1,15 +1,18 @@
-import { buildApiDocURL } from '../../../utils/generators.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 
 /**
  * Builds an API doc sitemap url.
  *
  * @param {import('../../metadata/types').MetadataEntry} entry
- * @param {string} baseURL
- * @param {string} lastmod
+ * @param {import('../../../utils/configuration/types').Configuration['sitemap']} config
  * @returns {import('../types').SitemapEntry}
  */
-export const createPageSitemapEntry = (entry, baseURL, lastmod) => {
-  const { href } = buildApiDocURL(entry, baseURL, true);
-
-  return { loc: href, lastmod, changefreq: 'weekly', priority: '0.8' };
-};
+export const createPageSitemapEntry = (entry, config, lastmod) => ({
+  loc: populate(config.pageURL, {
+    ...config,
+    path: entry.path,
+  }),
+  lastmod,
+  changefreq: 'weekly',
+  priority: '0.8',
+});

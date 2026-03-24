@@ -73,6 +73,9 @@ export const DOC_API_HEADING_TYPES = [
   },
 ];
 
+// This regex is used to match basic TypeScript generic types (e.g., Promise<string>)
+export const TYPE_GENERIC_REGEX = /^([^<]+)<([^>]+)>$/;
+
 // This is a mapping for types within the Markdown content and their respective
 // JavaScript primitive types within the MDN JavaScript docs
 // @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Data_structures#primitive_values

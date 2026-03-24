@@ -95,5 +95,5 @@ jobs:
             :bust_in_silhouette: *Published by*: ${{ github.triggering_actor }}
             :octocat: *Commit*: <https://github.com/${{ github.repository }}/commit/${{ env.COMMIT_SHA }}|${{ env.COMMIT_SHA }}>
           SLACK_USERNAME: nodejs-bot
-          SLACK_CHANNEL: nodejs-web-infra
+          SLACK_CHANNEL: nodejs-web-infra-alerts
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}

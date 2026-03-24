@@ -4,14 +4,10 @@ import readingTime from 'reading-time';
 import { visit } from 'unist-util-visit';
 
 import getConfig from '../../../utils/configuration/index.mjs';
-import {
-  GITHUB_EDIT_URL,
-  populate,
-} from '../../../utils/configuration/templates.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 import {
   getCompatibleVersions,
   getVersionFromSemVer,
-  getVersionURL,
 } from '../../../utils/generators.mjs';
 import { TOC_MAX_HEADING_DEPTH } from '../constants.mjs';
 
@@ -90,10 +86,10 @@ export const buildMetaBarProps = (head, entries) => {
     addedIn: head.added || head.introduced_in || '',
     readingTime: readingTime(extractTextContent(entries)).text,
     viewAs: [
-      ['JSON', `${head.api}.json`],
-      ['MD', `${head.api}.md`],
+      ['JSON', `${head.basename}.json`],
+      ['MD', `${head.basename}.md`],
     ],
-    editThisPage: `${populate(GITHUB_EDIT_URL, config)}${head.api}.md`,
+    editThisPage: populate(config.editURL, { ...config, path: head.path }),
   };
 };
 
@@ -101,16 +97,19 @@ export const buildMetaBarProps = (head, entries) => {
  * Converts a compatible version entry into a version label and link.
  *
  * @param {Array<import('../../../parsers/types').ReleaseEntry>} compatibleVersions - Compatible versions
- * @param {string} api - API identifier (used in link)
+ * @param {string} path - path for the version URL
  */
-export const formatVersionOptions = (compatibleVersions, api) => {
+export const formatVersionOptions = (compatibleVersions, path) => {
   const config = getConfig('jsx-ast');
 
   return compatibleVersions.map(({ version, isLts, isCurrent }) => {
-    const parsed = getVersionFromSemVer(version);
-    const value = getVersionURL(parsed, api, config.baseURL);
+    let label = `v${getVersionFromSemVer(version)}`;
 
-    let label = `v${parsed}`;
+    const value = populate(config.pageURL, {
+      ...config,
+      path,
+      version: label,
+    });
 
     if (isLts) {
       label += ' (LTS)';
@@ -143,9 +142,9 @@ export const buildSideBarProps = (entry, docPages) => {
   );
 
   return {
-    versions: formatVersionOptions(compatibleVersions, entry.api),
+    versions: formatVersionOptions(compatibleVersions, entry.path),
     currentVersion: `v${config.version.version}`,
-    pathname: `${entry.api}.html`,
+    pathname: `${entry.basename}.html`,
     docPages,
   };
 };
