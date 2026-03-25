@@ -12,11 +12,11 @@ import { isBannerActive } from '../../utils/banner.mjs';
  * @returns {Promise<BannerEntry[]>}
  */
 export const loadBanners = async (remoteConfig, versionMajor) => {
-  try {
-    if (!remoteConfig) {
-      return [];
-    }
+  if (!remoteConfig) {
+    return [];
+  }
 
+  try {
     const res = await fetch(remoteConfig, {
       signal: AbortSignal.timeout(2500),
     });
@@ -25,22 +25,15 @@ export const loadBanners = async (remoteConfig, versionMajor) => {
     }
 
     /** @type {RemoteConfig} */
-    const config = await res.json();
-    const active = [];
+    const { websiteBanners = {} } = await res.json();
 
-    const globalBanner = config.websiteBanners?.index;
-    if (globalBanner && isBannerActive(globalBanner)) {
-      active.push(globalBanner);
-    }
+    const keys = ['index', versionMajor != null && `v${versionMajor}`].filter(
+      Boolean
+    );
 
-    if (versionMajor != null) {
-      const versionBanner = config.websiteBanners?.[`v${versionMajor}`];
-      if (versionBanner && isBannerActive(versionBanner)) {
-        active.push(versionBanner);
-      }
-    }
-
-    return active;
+    return keys
+      .map(key => websiteBanners[key])
+      .filter(banner => banner && isBannerActive(banner));
   } catch {
     return [];
   }
