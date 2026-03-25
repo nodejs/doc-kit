@@ -8,7 +8,32 @@ import { loadBanners } from './loadBanners.mjs';
 
 /** @import { BannerEntry } from './types.d.ts' */
 
-export default ({ remoteConfig, versionMajor }) => {
+/**
+ * @param {{ banners: BannerEntry[] }} props
+ */
+const AnnouncementBanner = ({ banners }) => (
+  <div role="region" aria-label="Announcements" className={styles.banners}>
+    {banners.map(banner => (
+      <Banner key={banner.text} type={banner.type}>
+        {banner.link ? (
+          <a href={banner.link} target="_blank" rel="noopener noreferrer">
+            {banner.text}
+          </a>
+        ) : (
+          banner.text
+        )}
+        {banner.link && <ArrowUpRightIcon />}
+      </Banner>
+    ))}
+  </div>
+);
+
+export default AnnouncementBanner;
+
+/**
+ * @param {{ remoteConfig: string, versionMajor: number | null }} props
+ */
+export const RemoteLoadableBanner = ({ remoteConfig, versionMajor }) => {
   const LazyBanners = useMemo(
     () =>
       lazy(async () => {
@@ -18,32 +43,7 @@ export default ({ remoteConfig, versionMajor }) => {
           return { default: () => null };
         }
 
-        return {
-          default: () => (
-            <div
-              role="region"
-              aria-label="Announcements"
-              className={styles.banners}
-            >
-              {active.map(banner => (
-                <Banner key={banner.text} type={banner.type}>
-                  {banner.link ? (
-                    <a
-                      href={banner.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {banner.text}
-                    </a>
-                  ) : (
-                    banner.text
-                  )}
-                  {banner.link && <ArrowUpRightIcon />}
-                </Banner>
-              ))}
-            </div>
-          ),
-        };
+        return { default: () => <AnnouncementBanner banners={active} /> };
       }),
     []
   );

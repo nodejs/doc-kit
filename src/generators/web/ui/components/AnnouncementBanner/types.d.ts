@@ -11,3 +11,12 @@ export type BannerEntry = {
 export type RemoteConfig = {
   websiteBanners?: Record<string, BannerEntry | undefined>;
 };
+
+export type AnnouncementBannerProps = {
+  banners: BannerEntry[];
+};
+
+export type RemoteLoadableBannerProps = {
+  remoteConfig: string;
+  versionMajor: number | null;
+};
