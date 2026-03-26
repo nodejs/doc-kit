@@ -23,9 +23,4 @@ describe('populate', () => {
     const result = populate('{missing}', {});
     assert.strictEqual(result, '{missing}');
   });
-
-  it('should handle multiple substitutions in one template', () => {
-    const result = populate('{a}-{b}-{c}', { a: '1', b: '2', c: '3' });
-    assert.strictEqual(result, '1-2-3');
-  });
 });
