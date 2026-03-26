@@ -27,10 +27,15 @@ export async function processChunk(inputSlice, itemIndices) {
 
   for (const [path, parent] of filePaths) {
     const content = await readFile(path, 'utf-8');
-    const value = content.replace(
-      QUERIES.stabilityIndexPrefix,
-      match => `[${match}](${STABILITY_INDEX_URL})`
-    );
+    const value = content
+      .replace(
+        QUERIES.standardYamlFrontmatter,
+        (_, yaml) => '<!-- YAML\n' + yaml + '\n-->\n'
+      )
+      .replace(
+        QUERIES.stabilityIndexPrefix,
+        match => `[${match}](${STABILITY_INDEX_URL})`
+      );
 
     const relativePath = sep + withExt(relative(parent, path));
 
