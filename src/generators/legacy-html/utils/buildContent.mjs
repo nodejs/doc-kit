@@ -223,7 +223,7 @@ const buildMetadataElement = (node, remark) => {
  * @param {import('unified').Processor} remark The Remark instance to be used to process
  */
 export default (headNodes, metadataEntries, remark) => {
-  const legacySlugger = createLegacySlugger();
+  const getLegacySlug = createLegacySlugger();
 
   // Creates the root node for the content
   const parsedNodes = createTree(
@@ -234,13 +234,14 @@ export default (headNodes, metadataEntries, remark) => {
       const content = structuredClone(entry.content);
 
       // Parses the Heading nodes into Heading elements
-      visit(content, UNIST.isHeading, (node, index, parent) => {
-        const legacySlug = legacySlugger.getLegacySlug(
-          node.data.text,
-          entry.api
-        );
-        buildHeading(node, index, parent, legacySlug);
-      });
+      visit(content, UNIST.isHeading, (node, index, parent) =>
+        buildHeading(
+          node,
+          index,
+          parent,
+          getLegacySlug(node.data.text, entry.api)
+        )
+      );
 
       // Parses the Blockquotes into Stability elements
       // This is treated differently as we want to preserve the position of a Stability Index
