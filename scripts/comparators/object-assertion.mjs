@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BASE, HEAD, TITLE } from './constants.mjs';
+import { BASE, HEAD, TITLE } from '../constants.mjs';
 
 const files = await readdir(BASE);
 
