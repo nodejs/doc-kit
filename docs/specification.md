@@ -67,19 +67,17 @@ in the relevant section.
   - [6.2. Simple Directives](#62-simple-directives)
     - [6.2.1. `introduced_in`](#621-introduced_in)
     - [6.2.2. `type`](#622-type)
-    - [6.2.3. `name`](#623-name)
-    - [6.2.4. `source_link`](#624-source_link)
-    - [6.2.5. `llm_description`](#625-llm_description)
-    - [6.2.6. `module`](#626-module)
+    - [6.2.3. `source_link`](#623-source_link)
+    - [6.2.4. `llm_description`](#624-llm_description)
+    - [6.2.5. `module`](#625-module)
   - [6.3. YAML Metadata Fields](#63-yaml-metadata-fields)
     - [6.3.1. `added`](#631-added)
     - [6.3.2. `deprecated`](#632-deprecated)
     - [6.3.3. `removed`](#633-removed)
-    - [6.3.4. `napiVersion`](#634-napiversion)
-    - [6.3.5. `changes`](#635-changes)
-    - [6.3.6. `type` (Override)](#636-type-override)
-    - [6.3.7. `source_link`](#637-source_link)
-    - [6.3.8. `llm_description`](#638-llm_description)
+    - [6.3.4. `changes`](#634-changes)
+    - [6.3.5. `type` (Override)](#635-type-override)
+    - [6.3.6. `source_link`](#636-source_link)
+    - [6.3.7. `llm_description`](#637-llm_description)
   - [6.4. Version Strings](#64-version-strings)
   - [6.5. Plain Tag Comments](#65-plain-tag-comments)
   - [6.6. Frontmatter Conversion](#66-frontmatter-conversion)
@@ -244,6 +242,17 @@ order. Items marked OPTIONAL MAY be omitted entirely.
 6. **[Link reference definitions][§11.6]** (OPTIONAL) - Collected at the end
    of the file, after all [entry][term-entry] [sections][term-section].
 
+```markdown
+# Command-line API
+
+<!--introduced_in=v5.9.1-->
+
+<!--type=misc-->
+
+Node.js comes with a variety of CLI options. These options expose built-in
+debugging, multiple ways to execute scripts, and other helpful runtime options.
+```
+
 ### 3.2. Entry Ordering
 
 Within each API [entry][term-entry], elements MUST appear in this order:
@@ -323,7 +332,7 @@ whitespace and a backtick-wrapped, single-quoted event name.
 #### 4.3.3. Class
 
 The heading text begins with the literal prefix `Class:` followed by optional
-whitespace and a backtick-wrapped class identifier. The class name MUST begin
+whitespace and a backtick-wrapped class identifier. The class name SHOULD begin
 with an uppercase ASCII letter.
 
 ```markdown
@@ -382,8 +391,7 @@ all headings in the file. This context can be overridden at the
 
 When `type` is `module` (or when no `type` directive is present, as `module`
 is the default), classified [entries][term-entry] are treated as **exports of
-the module** identified by the document's filename or
-[`name` directive][§6.2.3].
+the module** identified by the document's filename or [`module` simple directive][§6.2.5].
 
 A single module document MAY describe exports from more than one related
 module (e.g., `fs` and `fs/promises`). The module boundary does not affect
@@ -426,7 +434,7 @@ module prefix).
 
 #### 4.4.4. Module Context Override
 
-The [`module` simple directive][§6.2.6] overrides the owning module for all
+The [`module` simple directive][§6.2.5] overrides the owning module for all
 sub-entries beneath the heading it is attached to. This allows a single
 document to describe exports from multiple modules without splitting into
 separate files.
@@ -446,7 +454,7 @@ context until the next heading of equal or lesser depth, or until another
 #### 4.4.5. Per-Entry Override
 
 Individual [entries][term-entry] MAY override their classification context
-using the [`type` field][§6.3.6] in a [YAML metadata block][§6]:
+using the [`type` field][§6.3.5] in a [YAML metadata block][§6]:
 
 ```markdown
 ### `globalThis.structuredClone(value[, options])`
@@ -551,8 +559,10 @@ added: v12.0.0
 -->
 ```
 
-The comment MUST appear on its own lines. A [heading][§4] MUST have at most
-one [YAML metadata block][term-yaml-block].
+The comment MUST appear on its own lines. A [heading][§4] MAY contain
+multiple [YAML metadata blocks][term-yaml-block] and related HTML comments
+within its subtree; such blocks MUST be merged into a single metadata
+object for that heading.
 
 ### 6.2. Simple Directives
 
@@ -560,9 +570,9 @@ one [YAML metadata block][term-yaml-block].
 uses a compact `key=value` syntax inside [HTML comments][cm-html-comment].
 Each directive has the form `<!--key=value-->`.
 
-Document-level directives MUST appear immediately after the depth-1 heading.
-Section-level directives (see [§6.2.6][§6.2.6]) MUST appear immediately after
-the heading they annotate.
+Document-level directives (i.e. `introduced_in`) SHOULD appear immediately
+after the depth-1 heading. Section-level directives (see [§6.2.5][§6.2.5])
+SHOULD appear immediately after the heading they annotate.
 
 ```markdown
 # File System
@@ -588,20 +598,16 @@ The [document][term-document] classification. Recognized values are `module`,
 
 See [§4.4][§4.4] for how document type influences heading interpretation.
 
-#### 6.2.3. `name`
-
-An identifier overriding the default module name derived from the filename.
-
-#### 6.2.4. `source_link`
+#### 6.2.3. `source_link`
 
 A relative file path to the implementation source. Rendered as a link.
 
-#### 6.2.5. `llm_description`
+#### 6.2.4. `llm_description`
 
 A plain-text description optimized for consumption by Large Language Models,
 used in preference to extracted prose where available.
 
-#### 6.2.6. `module`
+#### 6.2.5. `module`
 
 Overrides the owning module for all sub-entries beneath the annotated heading.
 The value is a module specifier (e.g., `node:fs/promises`). This directive
@@ -623,7 +629,7 @@ ignored by conforming implementations that do not recognize it.
 
 #### 6.3.1. `added`
 
-The [version(s)][§6.4] in which this API was first available.
+The [version(s)][§6.4] in which this entry was first available.
 
 - **Type:** [version string][§6.4], or array of version strings for backports.
 - **Example:** `added: v8.0.0`
@@ -644,14 +650,7 @@ The [version(s)][§6.4] in which this API was removed.
 - **Type:** [version string][§6.4], or array of version strings.
 - **Example:** `removed: v14.0.0`
 
-#### 6.3.4. `napiVersion`
-
-The minimum N-API version required.
-
-- **Type:** integer.
-- **Example:** `napiVersion: 1`
-
-#### 6.3.5. `changes`
+#### 6.3.4. `changes`
 
 A chronological array of change records. Each record MUST contain the
 following properties:
@@ -676,7 +675,7 @@ changes:
     description: Added multi-line value support.
 ```
 
-#### 6.3.6. `type` (Override)
+#### 6.3.5. `type` (Override)
 
 When present in a [YAML block][term-yaml-block], this overrides the
 [heading classification type][§4.3] for the enclosing [entry][term-entry].
@@ -687,14 +686,14 @@ in [§4.4.5][§4.4.5].
   context value such as `global`).
 - **Example:** `type: method`
 
-#### 6.3.7. `source_link`
+#### 6.3.6. `source_link`
 
 Relative path to the implementation source file. Identical semantics to the
-[simple directive][§6.2.4] of the same name.
+[simple directive][§6.2.3] of the same name.
 
-#### 6.3.8. `llm_description`
+#### 6.3.7. `llm_description`
 
-Identical semantics to the [simple directive][§6.2.5] of the same name.
+Identical semantics to the [simple directive][§6.2.4] of the same name.
 
 ### 6.4. Version Strings
 
@@ -741,9 +740,10 @@ Frontmatter is accepted for compatibility.
 
 ### 6.7. Placement
 
-A [YAML metadata block][term-yaml-block] MUST immediately follow the
-[heading][§4] it annotates. No content, including blank lines, MAY intervene
-between the heading and its [YAML block][term-yaml-block].
+A [YAML metadata block][term-yaml-block] SHOULD immediately follow the
+[heading][§4] it annotates. This placement is RECOMMENDED for clarity and
+consistency, but the parser accepts [YAML blocks][term-yaml-block] anywhere
+within the annotated entry's subtree.
 
 ---
 
@@ -785,7 +785,8 @@ actively maintained. Other alternatives are available.
 ### 7.3. Sub-Levels
 
 [Level 1][§7.2.2] supports decimal sub-levels indicating maturity within the
-experimental phase. Sub-levels MUST only be used with level 1.
+experimental phase. This specification only defines semantics for decimal
+sub-levels of level 1.
 
 #### 7.3.1. 1.0 - Early Development
 
@@ -822,7 +823,17 @@ A [stability indicator][term-stability] MUST appear after the
 [YAML metadata block][§6] (if present) and before the
 [typed parameter list][§9] and prose body. A [document][term-document] SHOULD
 have at most one [stability indicator][term-stability] per
-[entry][term-entry].
+[entry][term-entry]:
+
+```markdown
+### `myModule.myMethod()`
+
+<!-- YAML
+added: v1.2.3
+-->
+
+> Stability: 3 - Legacy: Use [`alternative()`][] instead.
+```
 
 A [stability indicator][term-stability] on the depth-1 heading applies to the
 [document][term-document] as a whole.
@@ -861,7 +872,7 @@ These MUST be resolved to documentation for JavaScript global objects.
 
 Types not in the primitive or global sets are resolved via a configurable type
 map provided to the toolchain. The type map associates type names with
-documentation URLs.
+documentation URLs. An example type-map is available for viewing [here][nodejs-typemap].
 
 ### 8.5. Compound Types
 
@@ -916,13 +927,15 @@ match terminates resolution.
 
 ### 8.7. Unresolved Types
 
-If a type cannot be resolved through any tier, it SHOULD be rendered as
-unlinked formatted text. Conforming implementations MUST NOT produce errors
-for unresolved types.
+If a type cannot be resolved through any tier, it WILL be rendered as
+unlinked formatted text.
 
 ---
 
 ## 9. Typed Parameter Lists
+
+A [typed list][term-typed-list] is an unordered Markdown list used to
+define parameters, properties, or other lists of types.
 
 ### 9.1. Identification
 
@@ -932,8 +945,8 @@ its first item matches any of these conditions:
 
 1. It begins with text matching one of the [special prefixes][§9.3]
    (`Returns:`, `Extends:`, `Type:`).
-2. It begins with a [type-reference][§8] link (a link whose label starts with
-   `<`).
+2. It begins with a [type-reference][§8] link (a link whose label is a type
+   annotation such as `{Type}`).
 3. It begins with an inline code span (the parameter name) followed by a
    space and then a [type-reference][§8] link.
 
@@ -1086,8 +1099,9 @@ External links MUST use full URLs including the protocol:
 
 ### 11.4. System-Call Auto-Linking
 
-References to system calls in the format `name(section)` (e.g., `open(2)`,
-`read(3)`) are automatically converted to links to the appropriate manual page
+References to system calls in the format `name(section)`
+(e.g., `open(2)` links to https://man7.org/linux/man-pages/man2/open.2.html)
+are automatically converted to links to the appropriate manual page
 documentation by conforming implementations.
 
 ### 11.5. Type Auto-Linking
@@ -1107,7 +1121,7 @@ of the [document][term-document], after all content
 [`stream.Readable`]: stream.md#class-streamreadable
 ```
 
-<!-- External specifications -->
+<!-- External -->
 
 [doc-kit]: https://github.com/nodejs/doc-kit
 [commonmark]: https://spec.commonmark.org/0.31.2/
@@ -1118,6 +1132,7 @@ of the [document][term-document], after all content
 [rfc-8174]: https://www.rfc-editor.org/rfc/rfc8174
 [yaml-1.2]: https://yaml.org/spec/1.2.2/
 [semver]: https://semver.org/
+[nodejs-typemap]: https://github.com/nodejs/node/blob/main/doc/type-map.json
 
 <!-- CommonMark spec sections -->
 
@@ -1162,11 +1177,10 @@ of the [document][term-document], after all content
 [§6]: #6-yaml-comment-blocks
 [§6.2]: #62-simple-directives
 [§6.2.2]: #622-type
-[§6.2.3]: #623-name
-[§6.2.4]: #624-source_link
-[§6.2.5]: #625-llm_description
-[§6.2.6]: #626-module
-[§6.3.6]: #636-type-override
+[§6.2.3]: #623-source_link
+[§6.2.4]: #624-llm_description
+[§6.2.5]: #625-module
+[§6.3.5]: #635-type-override
 [§6.4]: #64-version-strings
 [§7]: #7-stability-indicators
 [§7.2.2]: #722-level-1--experimental
