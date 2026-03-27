@@ -1,18 +1,7 @@
-import type {
-  Root,
-  Position,
-  Node,
-  Data,
-  Parent,
-  Blockquote,
-  Heading,
-} from 'mdast';
+import type { Root, Position, Node, Data, Blockquote, Heading } from 'mdast';
 
 export type Generator = GeneratorMetadata<
-  {
-    /** Type mapping configuration for AST node processing */
-    typeMap: string | URL;
-  },
+  {},
   Generate<Array<Root>, AsyncGenerator<MetadataEntry>>,
   ProcessChunk<Root, MetadataEntry, Record<string, string>>
 >;

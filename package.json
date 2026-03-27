@@ -37,6 +37,7 @@
     "eslint-plugin-import-x": "^4.16.2",
     "eslint-plugin-jsdoc": "^62.8.0",
     "eslint-plugin-react-x": "^3.0.0",
+    "globals": "~17.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "3.8.1"
@@ -58,7 +59,6 @@
     "estree-util-visit": "^2.0.0",
     "github-slugger": "^2.0.0",
     "glob-parent": "^6.0.2",
-    "globals": "^17.3.0",
     "hast-util-to-string": "^3.0.1",
     "hastscript": "^9.0.1",
     "lightningcss-wasm": "^1.32.0",
