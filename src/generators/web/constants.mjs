@@ -22,6 +22,10 @@ export const JSX_IMPORTS = {
     name: 'CodeBox',
     source: resolve(ROOT, './ui/components/CodeBox'),
   },
+  StabilityOverview: {
+    name: 'StabilityOverview',
+    source: resolve(ROOT, './ui/components/StabilityOverview'),
+  },
   CodeTabs: {
     name: 'CodeTabs',
     source: '@node-core/ui-components/MDX/CodeTabs',

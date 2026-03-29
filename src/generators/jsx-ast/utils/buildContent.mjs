@@ -280,7 +280,7 @@ export const processEntry = (entry, remark, stabilityOverviewEntries = []) => {
   // Inject the stability overview table where the slot tag is present
   if (
     stabilityOverviewEntries.length &&
-    entry.tags.includes('STABILITY_OVERVIEW_SLOT_BEGIN')
+    entry.tags?.includes('STABILITY_OVERVIEW_SLOT_BEGIN')
   ) {
     content.children.push(buildStabilityOverview(stabilityOverviewEntries));
   }
