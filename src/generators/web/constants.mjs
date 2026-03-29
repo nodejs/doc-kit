@@ -22,6 +22,10 @@ export const JSX_IMPORTS = {
     name: 'CodeBox',
     source: resolve(ROOT, './ui/components/CodeBox'),
   },
+  StabilityOverview: {
+    name: 'StabilityOverview',
+    source: resolve(ROOT, './ui/components/StabilityOverview'),
+  },
   CodeTabs: {
     name: 'CodeTabs',
     source: '@node-core/ui-components/MDX/CodeTabs',
@@ -40,6 +44,14 @@ export const JSX_IMPORTS = {
     name: 'MDXTooltipTrigger',
     isDefaultExport: false,
     source: '@node-core/ui-components/MDX/Tooltip',
+  },
+  TableOfContents: {
+    name: 'TableOfContents',
+    source: '@node-core/ui-components/Common/TableOfContents',
+  },
+  BadgeGroup: {
+    name: 'BadgeGroup',
+    source: '@node-core/ui-components/Common/BadgeGroup',
   },
   ChangeHistory: {
     name: 'ChangeHistory',

@@ -7,6 +7,7 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { createJSXElement } from './ast.mjs';
 import { buildMetaBarProps } from './buildBarProps.mjs';
+import buildStabilityOverview from './buildStabilityOverview.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 import {
@@ -256,7 +257,7 @@ export const transformHeadingNode = async (
  * @param {import('../../metadata/types').MetadataEntry} entry - The API metadata entry to process
  * @param {import('unified').Processor} remark - The remark processor
  */
-export const processEntry = (entry, remark) => {
+export const processEntry = (entry, remark, stabilityOverviewEntries = []) => {
   // Deep copy content to avoid mutations on original
   const content = structuredClone(entry.content);
 
@@ -276,6 +277,14 @@ export const processEntry = (entry, remark) => {
       (parent.children[idx] = createSignatureTable(node, remark))
   );
 
+  // Inject the stability overview table where the slot tag is present
+  if (
+    stabilityOverviewEntries.length &&
+    entry.tags?.includes('STABILITY_OVERVIEW_SLOT_BEGIN')
+  ) {
+    content.children.push(buildStabilityOverview(stabilityOverviewEntries));
+  }
+
   return content;
 };
 
@@ -290,13 +299,16 @@ export const createDocumentLayout = (
   entries,
   sideBarProps,
   metaBarProps,
-  remark
+  remark,
+  stabilityOverviewEntries = []
 ) =>
   createTree('root', [
     createJSXElement(JSX_IMPORTS.Layout.name, {
       sideBarProps,
       metaBarProps,
-      children: entries.map(entry => processEntry(entry, remark)),
+      children: entries.map(entry =>
+        processEntry(entry, remark, stabilityOverviewEntries)
+      ),
     }),
   ]);
 
@@ -310,7 +322,13 @@ export const createDocumentLayout = (
  * @param {import('unified').Processor} remark - Remark processor instance for markdown processing
  * @returns {Promise<JSXContent>}
  */
-const buildContent = async (metadataEntries, head, sideBarProps, remark) => {
+const buildContent = async (
+  metadataEntries,
+  head,
+  sideBarProps,
+  remark,
+  stabilityOverviewEntries = []
+) => {
   // Build props for the MetaBar from head and entries
   const metaBarProps = buildMetaBarProps(head, metadataEntries);
 
@@ -319,7 +337,8 @@ const buildContent = async (metadataEntries, head, sideBarProps, remark) => {
     metadataEntries,
     sideBarProps,
     metaBarProps,
-    remark
+    remark,
+    stabilityOverviewEntries
   );
 
   // Run remark processor to transform AST (parse markdown, plugins, etc.)
