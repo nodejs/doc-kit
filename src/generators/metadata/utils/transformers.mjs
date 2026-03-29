@@ -33,7 +33,7 @@ const splitByOuterSeparator = str => {
   const pieces = [];
   let current = '';
   let depth = 0;
-  let separator = ' | ';
+  let separator;
 
   for (const char of str) {
     if (char === '<') {
@@ -43,7 +43,7 @@ const splitByOuterSeparator = str => {
     } else if ((char === '|' || char === '&') && depth === 0) {
       pieces.push(current);
       current = '';
-      separator = char === '&' ? ' & ' : ' | ';
+      separator ??= ` ${char} `;
       continue;
     }
     current += char;
