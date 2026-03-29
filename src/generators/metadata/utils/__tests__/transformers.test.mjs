@@ -61,4 +61,18 @@ describe('transformTypeToReferenceLink', () => {
       '[`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt; | [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)'
     );
   });
+
+  it('should transform an intersection type joined with & into linked parts', () => {
+    strictEqual(
+      transformTypeToReferenceLink('{string&boolean}', {}),
+      '[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) & [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)'
+    );
+  });
+
+  it('should handle an intersection with generics like {Map<string, number>&Array<string>}', () => {
+    strictEqual(
+      transformTypeToReferenceLink('{Map<string, number>&Array<string>}', {}),
+      '[`<Map>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type), [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt; & [`<Array>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)&gt;'
+    );
+  });
 });
