@@ -10,13 +10,18 @@ import shikiConfig from '../../shiki.config.mjs';
 // to attribute the current language of the <pre> element
 const languagePrefix = 'language-';
 
-// Creates a static button element which is used for the "copy" button
-// within codeboxes for copying the code to the clipboard
-const copyButtonElement = createElement(
-  'button',
-  { class: 'copy-button' },
-  'copy'
-);
+/**
+ * Creates a toolbar element with a language label and copy button.
+ *
+ * @param {string} languageId - The language identifier for the code block.
+ * @returns {import('hast').Element} The toolbar element.
+ */
+function createToolbarElement(languageId) {
+  return createElement('div', { class: 'code-toolbar' }, [
+    createElement('span', { class: 'code-language' }, languageId),
+    createElement('button', { class: 'copy-button' }, 'copy'),
+  ]);
+}
 
 /**
  * Checks if the given node is a valid code element.
@@ -32,9 +37,10 @@ function isCodeBlock(node) {
 }
 
 export const highlighter = await createHighlighter({
-  // s390x machines throw memory issues on WASM builds
-  // https://github.com/nodejs/node/blob/c9acf345922bd758fbb3f16ee6256aa165260219/test/common/sea.js#L55
-  wasm: process.arch !== 's390x',
+  // riscv64 with sv39 has limited virtual memory space, where creating
+  // too many (>20) wasm memory instances fails.
+  // https://github.com/nodejs/node/pull/60591
+  wasm: process.arch !== 'riscv64',
 });
 
 /**
@@ -103,8 +109,8 @@ export default function rehypeShikiji() {
       // Adds the original language back to the <pre> element
       children[0].properties.class = `${children[0].properties.class} ${codeLanguage}`;
 
-      // Adds the "copy" button to the <pre> element
-      children[0].children.push(copyButtonElement);
+      // Adds the toolbar (language label + copy button) to the <pre> element
+      children[0].children.push(createToolbarElement(languageId));
 
       // Replaces the <pre> element with the updated one
       parent.children.splice(index, 1, ...children);
@@ -142,8 +148,12 @@ export default function rehypeShikiji() {
         currentIndex += 1;
 
         // Since we only support CJS/MJS switch, we should have exactly 2 elements
-        // in order to create a switchable code tab
-        if (codeElements.length === 2) {
+        // with different languages in order to create a switchable code tab
+        if (
+          codeElements.length === 2 &&
+          codeElements[0].properties?.language !==
+            codeElements[1].properties?.language
+        ) {
           const switchablePreElement = createElement(
             'pre',
             {
@@ -161,7 +171,7 @@ export default function rehypeShikiji() {
                 checked: codeElements[0].properties.language === 'cjs',
               }),
               ...codeElements,
-              copyButtonElement,
+              createToolbarElement('javascript'),
             ]
           );
 

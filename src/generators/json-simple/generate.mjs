@@ -1,12 +1,12 @@
 'use strict';
 
-import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { remove } from 'unist-util-remove';
 
 import getConfig from '../../utils/configuration/index.mjs';
-import createQueries from '../../utils/queries/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
+import { UNIST } from '../../utils/queries/index.mjs';
 
 /**
  * Generates the simplified JSON version of the API docs
@@ -16,17 +16,14 @@ import createQueries from '../../utils/queries/index.mjs';
 export async function generate(input) {
   const config = getConfig('json-simple');
 
-  // Iterates the input (ApiDocMetadataEntry) and performs a few changes
+  // Iterates the input (MetadataEntry) and performs a few changes
   const mappedInput = input.map(node => {
     // Deep clones the content nodes to avoid affecting upstream nodes
     const content = JSON.parse(JSON.stringify(node.content));
 
     // Removes numerous nodes from the content that should not be on the "body"
     // of the JSON version of the API docs as they are already represented in the metadata
-    remove(content, [
-      createQueries.UNIST.isStabilityNode,
-      createQueries.UNIST.isHeading,
-    ]);
+    remove(content, [UNIST.isStabilityNode, UNIST.isHeading]);
 
     return { ...node, content };
   });

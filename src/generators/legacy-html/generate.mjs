@@ -1,13 +1,13 @@
 'use strict';
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, cp } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
-import { safeCopy } from './utils/safeCopy.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { minifyHTML } from '../../utils/html-minifier.mjs';
 import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
@@ -17,7 +17,7 @@ import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
  * @param {string} name - The name of the heading
  * @returns {HeadingMetadataEntry} The heading object
  */
-const getHeading = name => ({ data: { depth: 1, name } });
+const getHeading = name => ({ depth: 1, data: { name } });
 
 const remarkRehypeProcessor = getRemarkRehypeWithShiki();
 
@@ -44,7 +44,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
     const toc = String(
       remarkRehypeProcessor.processSync(
         tableOfContents(nodes, {
-          maxDepth: 4,
+          maxDepth: 5,
           parser: tableOfContents.parseToCNode,
         })
       )
@@ -56,6 +56,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
 
     const template = {
       api: head.api,
+      path: head.path,
       added: head.introduced_in ?? '',
       section: head.heading.data.name || apiAsHeading,
       toc,
@@ -106,11 +107,8 @@ export async function* generate(input, worker) {
       // Define the output folder for API docs assets
       const assetsFolder = join(config.output, basename(path));
 
-      // Creates the assets folder if it does not exist
-      await mkdir(assetsFolder, { recursive: true });
-
-      // Copy all files from assets folder to output, skipping unchanged files
-      await safeCopy(path, assetsFolder);
+      // Copy all files from assets folder to output
+      await cp(path, assetsFolder, { recursive: true });
     }
   }
 
@@ -123,7 +121,7 @@ export async function* generate(input, worker) {
   }));
 
   // Stream chunks as they complete - HTML files are written immediately
-  for await (const chunkResult of worker.stream(entries, entries, navigation)) {
+  for await (const chunkResult of worker.stream(entries, navigation)) {
     // Write files for this chunk in the generate method (main thread)
     if (config.output) {
       for (const template of chunkResult) {

@@ -1,6 +1,6 @@
 # Creating Comparators
 
-This guide explains how to create build comparison scripts for `@nodejs/doc-kit`. Comparators help identify differences between documentation builds, useful for CI/CD and regression testing.
+This guide explains how to create build comparison scripts for `@node-core/doc-kit`. Comparators help identify differences between documentation builds, useful for CI/CD and regression testing.
 
 ## Comparator Concepts
 

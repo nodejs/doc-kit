@@ -1,12 +1,13 @@
 'use strict';
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 import createASTBuilder from './utils/generate.mjs';
 import { processJSXEntries } from './utils/processing.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 
 /**
  * Main generation function that processes JSX AST entries into web bundles.
@@ -36,8 +37,8 @@ export async function generate(input) {
   // Process all entries together (required for code-split bundles)
   if (config.output) {
     // Write HTML files
-    for (const { html, api } of results) {
-      await writeFile(join(config.output, `${api}.html`), html, 'utf-8');
+    for (const { html, path } of results) {
+      await writeFile(join(config.output, `${path}.html`), html, 'utf-8');
     }
 
     // Write code-split JavaScript chunks

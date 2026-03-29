@@ -1,10 +1,10 @@
 'use strict';
 
 import getConfig from '../../../utils/configuration/index.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 import {
   getCompatibleVersions,
   getVersionFromSemVer,
-  getVersionURL,
 } from '../../../utils/generators.mjs';
 
 /**
@@ -48,11 +48,11 @@ export const buildNavigation = navigationContents =>
  * Note.: We use plain strings here instead of HAST, since these are just
  * templates and not actual content that needs to be transformed.
  *
- * @param {string} api The current API node name
+ * @param {string} path The current API node name
  * @param {string} added The version the API was added
- * @param {Array<ApiDocReleaseEntry>} versions All available Node.js releases
+ * @param {Array<import('../../../parsers/types').ReleaseEntry>} versions All available Node.js releases
  */
-export const buildVersions = (api, added, versions) => {
+export const buildVersions = (path, added, versions) => {
   const config = getConfig('legacy-html');
 
   const compatibleVersions = getCompatibleVersions(added, versions);
@@ -61,10 +61,15 @@ export const buildVersions = (api, added, versions) => {
   // Then we create a `<li>` entry for said version, ensuring we link to the correct API doc
   const versionsAsList = compatibleVersions.map(({ version, isLts }) => {
     const parsedVersion = getVersionFromSemVer(version);
+    const href = populate(config.pageURL, {
+      ...config,
+      path,
+      version: `v${parsedVersion}`,
+    });
 
     const ltsLabel = isLts ? '<b>LTS</b>' : '';
 
-    return `<li><a href="${getVersionURL(parsedVersion, api, config.baseURL)}">${parsedVersion} ${ltsLabel}</a></li>`;
+    return `<li><a href="${href}">${parsedVersion} ${ltsLabel}</a></li>`;
   });
 
   return (

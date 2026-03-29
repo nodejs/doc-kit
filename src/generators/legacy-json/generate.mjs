@@ -49,7 +49,7 @@ export async function* generate(input, worker) {
     nodes: groupedModules.get(head.api),
   }));
 
-  for await (const chunkResult of worker.stream(entries, entries)) {
+  for await (const chunkResult of worker.stream(entries)) {
     if (config.output) {
       for (const section of chunkResult) {
         const out = join(config.output, `${section.api}.json`);

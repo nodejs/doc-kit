@@ -1,5 +1,5 @@
 import { VALID_JAVASCRIPT_PROPERTY } from './constants.mjs';
-import createQueries from './index.mjs';
+import { QUERIES } from './index.mjs';
 
 /**
  * @param {import('@types/mdast').List} list
@@ -23,7 +23,7 @@ export const isTypedList = list => {
   const value = firstNode?.value?.trimStart();
 
   // Typed list starters (strong signal)
-  if (value && createQueries.QUERIES.typedListStarters.test(value)) {
+  if (value && QUERIES.typedListStarters.test(value)) {
     return 2;
   }
 

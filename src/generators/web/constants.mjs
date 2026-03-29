@@ -1,16 +1,7 @@
-import { findPackageJSON } from 'node:module';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = dirname(fileURLToPath(import.meta.url));
-
-// Resolve node_modules relative to this package (doc-kit), not cwd.
-// We do this by finding where one of our dependencies (preact) is stored,
-// and using it's NODE_MODULES
-export const NODE_MODULES = resolve(
-  findPackageJSON(new URL(import.meta.resolve('preact'))),
-  '../..'
-);
 
 /**
  * @typedef {Object} JSXImportConfig
@@ -23,17 +14,9 @@ export const NODE_MODULES = resolve(
  * An object containing mappings for various JSX components to their import paths.
  */
 export const JSX_IMPORTS = {
-  NavBar: {
-    name: 'NavBar',
-    source: resolve(ROOT, './ui/components/NavBar'),
-  },
-  SideBar: {
-    name: 'SideBar',
-    source: resolve(ROOT, './ui/components/SideBar'),
-  },
-  MetaBar: {
-    name: 'MetaBar',
-    source: resolve(ROOT, './ui/components/MetaBar'),
+  Layout: {
+    name: 'Layout',
+    source: '#theme/Layout',
   },
   CodeBox: {
     name: 'CodeBox',
@@ -73,10 +56,6 @@ export const JSX_IMPORTS = {
   AlertBox: {
     name: 'AlertBox',
     source: '@node-core/ui-components/Common/AlertBox',
-  },
-  Article: {
-    name: 'Article',
-    source: '@node-core/ui-components/Containers/Article',
   },
   Blockquote: {
     name: 'Blockquote',

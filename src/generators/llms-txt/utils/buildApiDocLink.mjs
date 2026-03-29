@@ -1,4 +1,4 @@
-import { buildApiDocURL } from '../../../utils/generators.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 import { transformNodeToString } from '../../../utils/unist.mjs';
 
 /**
@@ -6,7 +6,7 @@ import { transformNodeToString } from '../../../utils/unist.mjs';
  * the entry has a llm_description property. If not, it extracts the first
  * paragraph from the entry's content.
  *
- * @param {ApiDocMetadataEntry} entry
+ * @param {import('../../metadata/types').MetadataEntry} entry
  * @returns {string}
  */
 export const getEntryDescription = entry => {
@@ -32,14 +32,17 @@ export const getEntryDescription = entry => {
 /**
  * Builds a markdown link for an API doc entry
  *
- * @param {ApiDocMetadataEntry} entry
- * @param {string} baseURL
+ * @param {import('../../metadata/types').MetadataEntry} entry
+ * @param {import('../../../utils/configuration/types').Configuration['llms-txt']}
  * @returns {string}
  */
-export const buildApiDocLink = (entry, baseURL) => {
+export const buildApiDocLink = (entry, config) => {
   const title = entry.heading.data.name;
 
-  const url = buildApiDocURL(entry, baseURL);
+  const url = populate(config.pageURL, {
+    ...config,
+    path: entry.path,
+  });
 
   const link = `[${title}](${url})`;
 

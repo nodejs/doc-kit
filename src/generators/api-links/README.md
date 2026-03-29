@@ -6,7 +6,8 @@ The `api-links` generator creates a mapping of publicly accessible functions to 
 
 The `api-links` generator accepts the following configuration options:
 
-| Name     | Type      | Default                 | Description                                         |
-| -------- | --------- | ----------------------- | --------------------------------------------------- |
-| `output` | `string`  | -                       | The directory where `apilinks.json` will be written |
-| `minify` | `boolean` | Inherited from `global` | Whether to minify the output JSON                   |
+| Name        | Type      | Default                              | Description                                         |
+| ----------- | --------- | ------------------------------------ | --------------------------------------------------- |
+| `output`    | `string`  | -                                    | The directory where `apilinks.json` will be written |
+| `sourceURL` | `string`  | `'${GITHUB_BLOB_URL}lib/{fileName}'` | URL template for linking to source files            |
+| `minify`    | `boolean` | Inherited from `global`              | Whether to minify the output JSON                   |

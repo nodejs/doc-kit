@@ -1,6 +1,6 @@
 'use strict';
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
@@ -8,12 +8,13 @@ import {
   convertEnvVarToMandoc,
 } from './utils/converter.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 
 /**
- * @param {Array<ApiDocMetadataEntry>} components
+ * @param {Array<import('../metadata/types').MetadataEntry>} components
  * @param {number} start
  * @param {number} end
- * @param {(element: ApiDocMetadataEntry) => string} convert
+ * @param {(element: import('../metadata/types').MetadataEntry) => string} convert
  * @returns {string}
  */
 function extractMandoc(components, start, end, convert) {
@@ -32,38 +33,31 @@ function extractMandoc(components, start, end, convert) {
 export async function generate(input) {
   const config = getConfig('man-page');
 
-  // Filter to only 'cli'.
-  const components = input.filter(({ api }) => api === 'cli');
-
-  if (!components.length) {
-    throw new Error('Could not find any `cli` documentation.');
-  }
-
   // Find the appropriate headers
-  const optionsStart = components.findIndex(
-    ({ slug }) => slug === config.cliOptionsHeaderSlug
+  const optionsStart = input.findIndex(
+    ({ heading }) => heading.data.slug === config.cliOptionsHeaderSlug
   );
 
-  const environmentStart = components.findIndex(
-    ({ slug }) => slug === config.envVarsHeaderSlug
+  const environmentStart = input.findIndex(
+    ({ heading }) => heading.data.slug === config.envVarsHeaderSlug
   );
 
   // The first header that is <3 in depth after environmentStart
-  const environmentEnd = components.findIndex(
+  const environmentEnd = input.findIndex(
     ({ heading }, index) => heading.depth < 3 && index > environmentStart
   );
 
   const output = {
     // Extract the CLI options.
     options: extractMandoc(
-      components,
+      input,
       optionsStart + 1,
       environmentStart,
       convertOptionToMandoc
     ),
     // Extract the environment variables.
     env: extractMandoc(
-      components,
+      input,
       environmentStart + 1,
       environmentEnd,
       convertEnvVarToMandoc

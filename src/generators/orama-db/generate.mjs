@@ -1,12 +1,13 @@
 'use strict';
 
-import { writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import { create, save, insertMultiple } from '@orama/orama';
 
 import { SCHEMA } from './constants.mjs';
 import { buildHierarchicalTitle } from './utils/title.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { transformNodeToString } from '../../utils/unist.mjs';
 
@@ -36,7 +37,7 @@ export async function generate(input) {
         description: paragraph
           ? transformNodeToString(paragraph, true)
           : undefined,
-        href: `${entry.api}.html#${entry.slug}`,
+        href: `${entry.path.slice(1)}.html#${entry.heading.data.slug}`,
         siteSection: headings[0].heading.data.name,
       };
     })
@@ -50,7 +51,7 @@ export async function generate(input) {
   // Persist
   if (config.output) {
     await writeFile(
-      `${config.output}/orama-db.json`,
+      join(config.output, 'orama-db.json'),
       config.minify ? JSON.stringify(result) : JSON.stringify(result, null, 2)
     );
   }

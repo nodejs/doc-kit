@@ -9,7 +9,6 @@ import { createJSXElement } from './ast.mjs';
 import { buildMetaBarProps } from './buildBarProps.mjs';
 import buildStabilityOverview from './buildStabilityOverview.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
-import createQueries from '../../../utils/queries/index.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 import {
   STABILITY_LEVELS,
@@ -31,10 +30,11 @@ import {
   GITHUB_BLOB_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
+import { UNIST } from '../../../utils/queries/index.mjs';
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
- * @param {ApiDocMetadataEntry} entry - The metadata entry
+ * @param {import('../../metadata/types').MetadataEntry} entry - The metadata entry
  * @param {import('unified').Processor} remark - The remark processor
  */
 export const gatherChangeEntries = (entry, remark) => {
@@ -58,7 +58,7 @@ export const gatherChangeEntries = (entry, remark) => {
 
 /**
  * Creates a JSX ChangeHistory element or returns null if no changes.
- * @param {ApiDocMetadataEntry} entry - The metadata entry
+ * @param {import('../../metadata/types').MetadataEntry} entry - The metadata entry
  * @param {import('unified').Processor} remark - The remark processor
  */
 export const createChangeElement = (entry, remark) => {
@@ -125,18 +125,18 @@ export const extractHeadingContent = content => {
 
 /**
  * Creates a heading wrapper element with anchors, icons, and optional change history.
- * @param {import('mdast').Node} content - The content node to extract text from
+ * @param {import('../../metadata/types').HeadingNode} content - The content node to extract text from
  * @param {import('unist').Node|null} changeElement - The change history element, if available
  */
 export const createHeadingElement = (content, changeElement) => {
-  const { type, depth, slug } = content.data;
+  const { type, slug } = content.data;
 
   let headingContent = extractHeadingContent(content);
 
   // Build heading with anchor link
   const headingWrapper = createElement('div', [
     createElement(
-      `h${depth}`,
+      `h${content.depth}`,
       { id: slug },
       createElement(
         'a',
@@ -163,7 +163,7 @@ export const createHeadingElement = (content, changeElement) => {
 
 /**
  * Converts a stability note node to an AlertBox JSX element
- * @param {import('mdast').Blockquote} node - The stability node to transform
+ * @param {import('../../metadata/types').StabilityNode} node - The stability node to transform
  * @param {number} index - The index of the node in its parent's children array
  * @param {import('unist').Parent} parent - The parent node containing the stability node
  */
@@ -197,9 +197,9 @@ const getLevelFromDeprecationType = typeText => {
 
 /**
  * Transforms a heading node by injecting metadata, source links, and signatures.
- * @param {ApiDocMetadataEntry} entry - The API metadata entry
+ * @param {import('../../metadata/types').MetadataEntry} entry - The API metadata entry
  * @param {import('unified').Processor} remark - The remark processor
- * @param {import('mdast').Heading} node - The heading node to transform
+ * @param {import('../../metadata/types').HeadingNode} node - The heading node to transform
  * @param {number} index - The index of the node in its parent's children array
  * @param {import('unist').Parent} parent - The parent node containing the heading
  */
@@ -254,7 +254,7 @@ export const transformHeadingNode = async (
 
 /**
  * Processes a single API documentation entry's content
- * @param {ApiDocMetadataEntry} entry - The API metadata entry to process
+ * @param {import('../../metadata/types').MetadataEntry} entry - The API metadata entry to process
  * @param {import('unified').Processor} remark - The remark processor
  */
 export const processEntry = (entry, remark, stabilityOverviewEntries = []) => {
@@ -262,17 +262,17 @@ export const processEntry = (entry, remark, stabilityOverviewEntries = []) => {
   const content = structuredClone(entry.content);
 
   // Visit and transform stability nodes
-  visit(content, createQueries.UNIST.isStabilityNode, transformStabilityNode);
+  visit(content, UNIST.isStabilityNode, transformStabilityNode);
 
   // Visit and transform headings with metadata and links
-  visit(content, createQueries.UNIST.isHeading, (...args) =>
+  visit(content, UNIST.isHeading, (...args) =>
     transformHeadingNode(entry, remark, ...args)
   );
 
   // Transform typed lists into property tables
   visit(
     content,
-    createQueries.UNIST.isStronglyTypedList,
+    UNIST.isStronglyTypedList,
     (node, idx, parent) =>
       (parent.children[idx] = createSignatureTable(node, remark))
   );
@@ -290,7 +290,7 @@ export const processEntry = (entry, remark, stabilityOverviewEntries = []) => {
 
 /**
  * Builds the overall document layout tree
- * @param {Array<ApiDocMetadataEntry>} entries - API documentation metadata entries
+ * @param {Array<import('../../metadata/types').MetadataEntry>} entries - API documentation metadata entries
  * @param {ReturnType<import('./buildBarProps.mjs').buildSideBarProps>} sideBarProps - Props for the sidebar component
  * @param {ReturnType<buildMetaBarProps>} metaBarProps - Props for the meta bar component
  * @param {import('unified').Processor} remark - The remark processor
@@ -303,36 +303,21 @@ export const createDocumentLayout = (
   stabilityOverviewEntries = []
 ) =>
   createTree('root', [
-    createJSXElement(JSX_IMPORTS.NavBar.name),
-    createJSXElement(JSX_IMPORTS.Article.name, {
-      children: [
-        createJSXElement(JSX_IMPORTS.SideBar.name, sideBarProps),
-        createElement('div', [
-          createElement('div', [
-            createJSXElement(JSX_IMPORTS.TableOfContents.name, {
-              headings: metaBarProps.headings,
-              summaryTitle: 'On this page',
-            }),
-            createElement('br'),
-            createElement(
-              'main',
-              entries.map(entry =>
-                processEntry(entry, remark, stabilityOverviewEntries)
-              )
-            ),
-          ]),
-          createJSXElement(JSX_IMPORTS.MetaBar.name, metaBarProps),
-        ]),
-      ],
+    createJSXElement(JSX_IMPORTS.Layout.name, {
+      sideBarProps,
+      metaBarProps,
+      children: entries.map(entry =>
+        processEntry(entry, remark, stabilityOverviewEntries)
+      ),
     }),
   ]);
 
 /**
- * @typedef {import('estree').Node & { data: ApiDocMetadataEntry }} JSXContent
+ * @typedef {import('estree').Node & { data: import('../../metadata/types').MetadataEntry }} JSXContent
  *
  * Transforms API metadata entries into processed MDX content
- * @param {Array<ApiDocMetadataEntry>} metadataEntries - API documentation metadata entries
- * @param {ApiDocMetadataEntry} head - Main API metadata entry with version information
+ * @param {Array<import('../../metadata/types').MetadataEntry>} metadataEntries - API documentation metadata entries
+ * @param {import('../../metadata/types').MetadataEntry} head - Main API metadata entry with version information
  * @param {Object} sideBarProps - Props for the sidebar component
  * @param {import('unified').Processor} remark - Remark processor instance for markdown processing
  * @returns {Promise<JSXContent>}

@@ -10,19 +10,19 @@ import {
   GITHUB_BLOB_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
-import createQueries from '../../../utils/queries/index.mjs';
+import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
 
 /**
  * Builds a Markdown heading for a given node
  *
- * @param {ApiDocMetadataEntry['heading']} node The node to build the Markdown heading for
+ * @param {import('../../metadata/types').HeadingNode} node The node to build the Markdown heading for
  * @param {number} index The index of the current node
  * @param {import('unist').Parent} parent The parent node of the current node
  * @returns {import('hast').Element} The HTML AST tree of the heading content
  */
-const buildHeading = ({ data, children }, index, parent) => {
+const buildHeading = ({ data, children, depth }, index, parent) => {
   // Creates the heading element with the heading text and the link to the heading
-  const headingElement = createElement(`h${data.depth + 1}`, [
+  const headingElement = createElement(`h${depth + 1}`, [
     // The inner Heading markdown content is still using Remark nodes, and they need
     // to be converted into Rehype nodes
     ...children,
@@ -48,7 +48,7 @@ const buildHeading = ({ data, children }, index, parent) => {
 /**
  * Builds an HTML Stability element
  *
- * @param {import('@types/mdast').Blockquote} node The HTML AST tree of the Stability Index content
+ * @param {import('../../metadata/types').StabilityNode} node The HTML AST tree of the Stability Index content
  * @param {number} index The index of the current node
  * @param {import('unist').Parent} parent The parent node of the current node
  */
@@ -75,7 +75,7 @@ const buildStability = ({ children, data }, index, parent) => {
  */
 const buildHtmlTypeLink = node => {
   node.value = node.value.replace(
-    createQueries.QUERIES.linksWithTypes,
+    QUERIES.linksWithTypes,
     (_, type, link) => `<a href="${link}" class="type">&lt;${type}&gt;</a>`
   );
 };
@@ -83,7 +83,7 @@ const buildHtmlTypeLink = node => {
 /**
  * Creates a history table row.
  *
- * @param {ApiDocMetadataChange} change
+ * @param {import('../../metadata/types').ChangeEntry} change
  * @param {import('unified').Processor} remark
  */
 const createHistoryTableRow = (
@@ -104,7 +104,7 @@ const createHistoryTableRow = (
 /**
  * Builds the Metadata Properties into content
  *
- * @param {ApiDocMetadataEntry} node The node to build the properties from
+ * @param {import('../../metadata/types').MetadataEntry} node The node to build the properties from
  * @param {import('unified').Processor} remark The Remark instance to be used to process changes table
  * @returns {import('unist').Parent} The HTML AST tree of the properties content
  */
@@ -129,10 +129,10 @@ const buildMetadataElement = (node, remark) => {
   }
 
   // We use a `span` element to display the added in version
-  if (typeof node.added_in !== 'undefined') {
-    const addedIn = Array.isArray(node.added_in)
-      ? node.added_in.join(', ')
-      : node.added_in;
+  if (typeof node.added !== 'undefined') {
+    const addedIn = Array.isArray(node.added)
+      ? node.added.join(', ')
+      : node.added;
 
     // Creates the added in element with the added in version
     const addedinElement = createElement('span', ['Added in: ', addedIn]);
@@ -142,10 +142,10 @@ const buildMetadataElement = (node, remark) => {
   }
 
   // We use a `span` element to display the deprecated in version
-  if (typeof node.deprecated_in !== 'undefined') {
-    const deprecatedIn = Array.isArray(node.deprecated_in)
-      ? node.deprecated_in.join(', ')
-      : node.deprecated_in;
+  if (typeof node.deprecated !== 'undefined') {
+    const deprecatedIn = Array.isArray(node.deprecated)
+      ? node.deprecated.join(', ')
+      : node.deprecated;
 
     // Creates the deprecated in element with the deprecated in version
     const deprecatedInElement = createElement('span', [
@@ -158,10 +158,10 @@ const buildMetadataElement = (node, remark) => {
   }
 
   // We use a `span` element to display the removed in version
-  if (typeof node.removed_in !== 'undefined') {
-    const removedIn = Array.isArray(node.removed_in)
-      ? node.removed_in.join(', ')
-      : node.removed_in;
+  if (typeof node.removed !== 'undefined') {
+    const removedIn = Array.isArray(node.removed)
+      ? node.removed.join(', ')
+      : node.removed;
 
     // Creates the removed in element with the removed in version
     const removedInElement = createElement('span', ['Removed in: ', removedIn]);
@@ -171,11 +171,11 @@ const buildMetadataElement = (node, remark) => {
   }
 
   // We use a `span` element to display the N-API version if it is available
-  if (typeof node.n_api_version === 'number') {
+  if (typeof node.napiVersion === 'number') {
     // Creates the N-API version element with the N-API version
     const nApiVersionElement = createElement('span', [
       createElement('b', 'N-API Version: '),
-      node.n_api_version,
+      node.napiVersion,
     ]);
 
     // Appends the source n-api element to the metadata element
@@ -215,8 +215,8 @@ const buildMetadataElement = (node, remark) => {
 /**
  * Builds the whole content of a given node (API module)
  *
- * @param {Array<ApiDocMetadataEntry>} headNodes The API metadata Nodes that are considered the "head" of each module
- * @param {Array<ApiDocMetadataEntry>} metadataEntries The API metadata Nodes to be transformed into HTML content
+ * @param {Array<import('../../metadata/types').MetadataEntry>} headNodes The API metadata Nodes that are considered the "head" of each module
+ * @param {Array<import('../../metadata/types').MetadataEntry>} metadataEntries The API metadata Nodes to be transformed into HTML content
  * @param {import('unified').Processor} remark The Remark instance to be used to process
  */
 export default (headNodes, metadataEntries, remark) => {
@@ -229,16 +229,16 @@ export default (headNodes, metadataEntries, remark) => {
       const content = structuredClone(entry.content);
 
       // Parses the Heading nodes into Heading elements
-      visit(content, createQueries.UNIST.isHeading, buildHeading);
+      visit(content, UNIST.isHeading, buildHeading);
 
       // Parses the Blockquotes into Stability elements
       // This is treated differently as we want to preserve the position of a Stability Index
       // within the content, so we can't just remove it and append it to the metadata
-      visit(content, createQueries.UNIST.isStabilityNode, buildStability);
+      visit(content, UNIST.isStabilityNode, buildStability);
 
       // Parses the type references that got replaced into Markdown links (raw)
       // into actual HTML links, these then get parsed into HAST nodes on `runSync`
-      visit(content, createQueries.UNIST.isHtmlWithType, buildHtmlTypeLink);
+      visit(content, UNIST.isHtmlWithType, buildHtmlTypeLink);
 
       // Splits the content into the Heading node and the rest of the content
       const [headingNode, ...restNodes] = content.children;

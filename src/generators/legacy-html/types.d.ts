@@ -1,3 +1,5 @@
+import type { MetadataEntry } from '../metadata/types';
+
 export interface TemplateValues {
   api: string;
   added: string;
@@ -10,14 +12,16 @@ export interface TemplateValues {
 export type Generator = GeneratorMetadata<
   {
     templatePath: string;
+    pageURL: string;
+    editURL: string;
     additionalPathsToCopy: Array<string>;
   },
-  Generate<Array<ApiDocMetadataEntry>, AsyncGenerator<TemplateValues>>,
+  Generate<Array<MetadataEntry>, AsyncGenerator<TemplateValues>>,
   ProcessChunk<
     {
-      head: ApiDocMetadataEntry;
-      nodes: Array<ApiDocMetadataEntry>;
-      headNodes: Array<ApiDocMetadataEntry>;
+      head: MetadataEntry;
+      nodes: Array<MetadataEntry>;
+      headNodes: Array<MetadataEntry>;
     },
     TemplateValues,
     string

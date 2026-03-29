@@ -1,9 +1,9 @@
 import { buildSideBarProps } from './utils/buildBarProps.mjs';
 import buildContent from './utils/buildContent.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { getRemarkRecma } from '../../utils/remark.mjs';
+import { relative } from '../../utils/url.mjs';
 
 const remarkRecma = getRemarkRecma();
 
@@ -26,7 +26,15 @@ export async function processChunk(
   for (const idx of itemIndices) {
     const { head, entries } = slicedInput[idx];
 
-    const sideBarProps = buildSideBarProps(head, docPages);
+    const sideBarProps = buildSideBarProps(
+      head,
+      docPages.map(([heading, path]) => [
+        heading,
+        head.path === path
+          ? `${head.basename}.html`
+          : `${relative(path, head.path)}.html`,
+      ])
+    );
 
     const content = await buildContent(
       entries,
@@ -48,27 +56,21 @@ export async function processChunk(
  * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
-  const config = getConfig('jsx-ast');
-
   const groupedModules = groupNodesByModule(input);
+
   const headNodes = getSortedHeadNodes(input);
 
-  // Pre-compute docPages once in main thread
-  // TODO(@avivkeller): Load the index file here instead of during configuration
-  const docPages = config.index
-    ? config.index.map(({ section, api }) => [section, `${api}.html`])
-    : headNodes.map(node => [node.heading.data.name, `${node.api}.html`]);
+  const docPages = headNodes.map(node => [node.heading.data.name, node.path]);
 
   // Pre-compute stability overview data once — avoid serialising full AST nodes to workers
   const stabilityOverviewEntries = headNodes
-    .filter(node => node.stability?.children?.length)
+    .filter(node => node.stability)
     .map(({ api, heading, stability }) => {
-      const [{ data }] = stability.children;
       return {
         api,
         name: heading.data.name,
-        stabilityIndex: parseInt(data.index, 10),
-        stabilityDescription: data.description.split('. ')[0],
+        stabilityIndex: parseInt(stability.data.index, 10),
+        stabilityDescription: stability.data.description.split('. ')[0],
       };
     });
 
@@ -79,7 +81,7 @@ export async function* generate(input, worker) {
     entries: groupedModules.get(head.api),
   }));
 
-  for await (const chunkResult of worker.stream(entries, entries, {
+  for await (const chunkResult of worker.stream(entries, {
     docPages,
     stabilityOverviewEntries,
   })) {

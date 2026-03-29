@@ -1,7 +1,7 @@
 /**
  * Builds a hierarchical title chain based on heading depths
  *
- * @param {ApiDocMetadataEntry[]} headings - All headings sorted by order
+ * @param {import("../../metadata/types").MetadataEntry[]} headings - All headings sorted by order
  * @param {number} currentIndex - Index of current heading
  * @returns {string} Hierarchical title
  */

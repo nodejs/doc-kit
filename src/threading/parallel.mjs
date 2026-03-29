@@ -76,13 +76,12 @@ export default function createParallelWorker(
     /**
      * Processes items in parallel, yielding results as chunks complete.
      *
-     * @template T, R
+     * @template T
      * @param {T[]} items - Items to process
-     * @param {T[]} fullInput - Full input for context
      * @param {object} extra - Extra options
      * @yields {R[]} Chunk results as they complete
      */
-    async *stream(items, fullInput, extra) {
+    async *stream(items, extra) {
       if (items.length === 0) {
         return;
       }
@@ -101,7 +100,7 @@ export default function createParallelWorker(
         chunks.map(indices => {
           if (runInOneGo) {
             const promise = generator
-              .processChunk(fullInput, indices, extra)
+              .processChunk(items, indices, extra)
               .then(result => ({ promise, result }));
 
             return promise;
@@ -109,13 +108,7 @@ export default function createParallelWorker(
 
           const promise = pool
             .run(
-              createTask(
-                fullInput,
-                indices,
-                extra,
-                configuration,
-                generatorName
-              )
+              createTask(items, indices, extra, configuration, generatorName)
             )
             .then(result => ({ promise, result }));
 

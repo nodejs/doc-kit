@@ -1,3 +1,5 @@
+import type { MetadataEntry } from '../metadata/types';
+
 export interface SitemapEntry {
   loc: string;
   lastmod?: string;
@@ -13,6 +15,9 @@ export interface SitemapEntry {
 }
 
 export type Generator = GeneratorMetadata<
-  {},
-  Generate<Array<ApiDocMetadataEntry>, Promise<string>>
+  {
+    indexURL: string;
+    pageURL: string;
+  },
+  Generate<Array<MetadataEntry>, Promise<string>>
 >;

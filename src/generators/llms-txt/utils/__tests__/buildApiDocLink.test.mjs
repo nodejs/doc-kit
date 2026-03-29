@@ -65,24 +65,35 @@ describe('buildApiDocLink', () => {
   it('builds markdown link with description', () => {
     const entry = {
       heading: { data: { name: 'Test API' } },
-      api_doc_source: 'doc/api/test.md',
+      path: '/test',
       llm_description: 'Test description',
     };
 
-    const result = buildApiDocLink(entry, 'https://example.com');
-    assert.ok(result.includes('[Test API]'));
-    assert.ok(result.includes('/docs/latest/api/test.md'));
-    assert.ok(result.includes('Test description'));
+    const config = {
+      baseURL: 'https://example.com',
+      pageURL: '{baseURL}/docs/latest/api{path}.md',
+    };
+
+    const result = buildApiDocLink(entry, config);
+    assert.strictEqual(
+      result,
+      '[Test API](https://example.com/docs/latest/api/test.md): Test description'
+    );
   });
 
-  it('handles doc path replacement', () => {
+  it('handles custom pageURL template', () => {
     const entry = {
       heading: { data: { name: 'API Method' } },
-      api_doc_source: 'doc/some/path.md',
+      path: '/path',
       content: { children: [] },
     };
 
-    const result = buildApiDocLink(entry, 'https://example.com');
-    assert.ok(result.includes('/docs/latest/some/path.md'));
+    const config = {
+      baseURL: 'https://example.com',
+      pageURL: '{baseURL}/api{path}.md',
+    };
+
+    const result = buildApiDocLink(entry, config);
+    assert.ok(result.includes('https://example.com/api/path.md'));
   });
 });

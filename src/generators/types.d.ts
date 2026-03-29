@@ -18,13 +18,11 @@ declare global {
      * while upstream chunks are still being processed.
      *
      * @param items - Items to process (determines chunk distribution)
-     * @param fullInput - Full input data for context rebuilding in workers
      * @param opts - Additional options to pass to workers
      * @yields Each chunk's results as they complete
      */
     stream<T, R>(
       items: T[],
-      fullInput: T[],
       opts?: Record<string, unknown>
     ): AsyncGenerator<R[], void, unknown>;
   }
