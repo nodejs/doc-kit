@@ -1,4 +1,5 @@
 import { createJSXElement } from './ast.mjs';
+// TODO(@avivkeller): JSX imports belong in the JSX generator
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 
 /**
