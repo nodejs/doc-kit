@@ -1,6 +1,6 @@
 import BadgeGroup from '@node-core/ui-components/Common/BadgeGroup';
 
-const STABILITY_KINDS = ['error', 'warning', 'default', 'info'];
+import { STABILITY_KINDS } from './constants.mjs';
 
 /**
  * Renders the module stability overview table.
