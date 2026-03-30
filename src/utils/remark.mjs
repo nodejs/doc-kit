@@ -12,6 +12,7 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
+import codeTabs from './code-tabs.mjs';
 import syntaxHighlighter, { highlighter } from './highlighter.mjs';
 import { AST_NODE_TYPES } from '../generators/jsx-ast/constants.mjs';
 import transformElements from '../generators/jsx-ast/utils/transformer.mjs';
@@ -74,6 +75,7 @@ export const getRemarkRecma = () =>
     .use(remarkRehype, { allowDangerousHtml: true, passThrough })
     // Any `raw` HTML in the markdown must be converted to AST in order for Recma to understand it
     .use(rehypeRaw, { passThrough })
+    .use(codeTabs)
     .use(() => singletonShiki)
     .use(transformElements)
     .use(rehypeRecma)
