@@ -1,4 +1,4 @@
-node bin/cli.mjs generate \
+node packages/core/bin/cli.mjs generate \
   -t @node-core/doc-kit/generators/orama-db \
   -t @node-core/doc-kit/generators/legacy-json \
   -t @node-core/doc-kit/generators/llms-txt \
