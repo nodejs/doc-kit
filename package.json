@@ -12,7 +12,7 @@
     "format": "prettier .",
     "format:write": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test --experimental-test-module-mocks --import=global-jsdom/register \"src/**/*.test.mjs\"",
+    "test": "node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
     "test:coverage": "c8 node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
     "test:ci": "c8 --reporter=lcov node --test --experimental-test-module-mocks \"src/**/*.test.mjs\" --test-reporter=@reporters/github --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml --test-reporter=spec --test-reporter-destination=stdout",
     "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots \"src/**/*.test.mjs\"",
@@ -28,8 +28,6 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@reporters/github": "^1.12.0",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/react": "^16.3.2",
     "@types/mdast": "^4.0.4",
     "@types/node": "^24.10.1",
     "@types/semver": "^7.7.1",
