@@ -1,7 +1,7 @@
 import TableOfContents from '@node-core/ui-components/Common/TableOfContents';
 import Article from '@node-core/ui-components/Containers/Article';
 
-import { RemoteLoadableBanner } from '../AnnouncementBanner';
+import RemoteLoadableBanner from '../AnnouncementBanner';
 
 import Footer from '#theme/Footer';
 import MetaBar from '#theme/Metabar';
