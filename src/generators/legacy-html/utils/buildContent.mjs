@@ -12,7 +12,7 @@ import {
   populate,
 } from '../../../utils/configuration/templates.mjs';
 import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
-import { getRemarkRehypeWithShiki as remark } from '../../utils/remark.mjs';
+import { getRemarkRehypeWithShiki as remark } from '../../../utils/remark.mjs';
 
 /**
  * Builds a Markdown heading for a given node
