@@ -1,6 +1,7 @@
 import { u as createTree } from 'unist-builder';
 
 import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
+import { getRemarkRecma as remark } from '../../../utils/remark.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import { DEFAULT_EXPRESSION } from '../../legacy-json/constants.mjs';
 import { TRIMMABLE_PADDING_REGEX } from '../constants.mjs';
@@ -87,9 +88,8 @@ export const extractPropertyName = (nodes, current) => {
  * separators) from the front of `nodes` and updates the current object.
  *
  * @param {Array<import('mdast').PhrasingContent>} nodes
- * @param {import('unified').Processor} remark - The remark processor
  */
-export const extractTypeAnnotations = (nodes, remark) => {
+export const extractTypeAnnotations = nodes => {
   const types = [];
 
   while (nodes.length) {
@@ -107,7 +107,7 @@ export const extractTypeAnnotations = (nodes, remark) => {
   }
 
   if (types.length > 0) {
-    return remark.runSync(createTree('root', types)).body[0].expression;
+    return remark().runSync(createTree('root', types)).body[0].expression;
   }
 };
 
@@ -115,9 +115,8 @@ export const extractTypeAnnotations = (nodes, remark) => {
  * Parses each list item into a structured property descriptor
  *
  * @param {import('mdast').List} node
- * @param {import('unified').Processor} remark - The remark processor
  */
-export const parseListIntoProperties = (node, remark) =>
+export const parseListIntoProperties = node =>
   node?.children.map(item => {
     const [{ children }, ...rest] = item.children;
     const current = {};
@@ -127,7 +126,7 @@ export const parseListIntoProperties = (node, remark) =>
     // Strip stale whitespace left over after name extraction
     shiftIfBlankText(children);
 
-    current.type = extractTypeAnnotations(children, remark);
+    current.type = extractTypeAnnotations(children);
 
     if (children.length > 0) {
       children[0].value &&= children[0].value.replace(
@@ -139,14 +138,13 @@ export const parseListIntoProperties = (node, remark) =>
         transformNodesToString(children)
       );
 
-      current.description = remark.runSync(
+      current.description = remark().runSync(
         createTree('root', children)
       ).body[0].expression;
     }
 
     current.children = parseListIntoProperties(
-      rest.find(UNIST.isLooselyTypedList),
-      remark
+      rest.find(UNIST.isLooselyTypedList)
     );
 
     return current;

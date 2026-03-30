@@ -1,7 +1,7 @@
 import { buildHierarchy } from './buildHierarchy.mjs';
 import { parseList } from './parseList.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
-import { getRemarkRehype } from '../../../utils/remark.mjs';
+import { getRemarkRehype as remark } from '../../../utils/remark.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import { SECTION_TYPE_PLURALS, UNPROMOTED_KEYS } from '../constants.mjs';
 
@@ -31,8 +31,6 @@ export const promoteMiscChildren = (section, parent) => {
  *
  */
 export const createSectionBuilder = () => {
-  const html = getRemarkRehype();
-
   /**
    * Creates metadata from a hierarchized entry.
    * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry to create metadata from.
@@ -125,8 +123,8 @@ export const createSectionBuilder = () => {
       return;
     }
 
-    const rendered = html.stringify(
-      html.runSync({ type: 'root', children: nodes })
+    const rendered = remark().stringify(
+      remark().runSync({ type: 'root', children: nodes })
     );
 
     section.shortDesc = section.desc || undefined;
