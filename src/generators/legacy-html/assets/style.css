@@ -912,6 +912,10 @@ kbd {
   outline: var(--brand3) dotted 2px;
 }
 
+.theme-toggle-btn svg {
+  pointer-events: none;
+}
+
 @media only screen and (width >= 601px) {
   #gtoc > ul > li {
     display: inline;

@@ -32,18 +32,12 @@ export const useTheme = () => {
   }, []);
 
   /**
-   * Callback function to toggle between 'light' and 'dark' themes.
+   * Callback function to change the theme.
    */
-  const toggleTheme = useCallback(() => {
-    setTheme(prev => {
-      // Determine the next theme based on the current theme.
-      const next = prev === 'light' ? 'dark' : 'light';
-      // Apply the new theme.
-      applyTheme(next);
-      // Return the new theme to update the state.
-      return next;
-    });
+  const changeTheme = useCallback(newTheme => {
+    setTheme(newTheme);
+    applyTheme(newTheme);
   }, []);
 
-  return [theme, toggleTheme];
+  return [theme, changeTheme];
 };
