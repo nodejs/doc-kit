@@ -17,12 +17,7 @@ export const loadBanners = async (remoteConfig, versionMajor) => {
   }
 
   try {
-    const res = await fetch(remoteConfig, {
-      signal: AbortSignal.timeout(2500),
-    });
-    if (!res.ok) {
-      return [];
-    }
+    const res = await fetch(remoteConfig);
 
     /** @type {RemoteConfig} */
     const { websiteBanners = {} } = await res.json();
