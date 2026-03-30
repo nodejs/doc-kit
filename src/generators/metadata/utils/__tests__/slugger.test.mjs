@@ -25,8 +25,8 @@ describe('slug', () => {
   });
 
   describe('special character to hyphen replacement', () => {
-    it('replaces underscores with hyphens', () => {
-      assert.strictEqual(slug('foo_bar', identity), 'foo-bar');
+    it('preserves underscores (does not replace with hyphens)', () => {
+      assert.strictEqual(slug('foo_bar', identity), 'foo_bar');
     });
 
     it('replaces forward slashes with hyphens', () => {
@@ -43,6 +43,24 @@ describe('slug', () => {
 
     it('replaces semicolons with hyphens', () => {
       assert.strictEqual(slug('foo;bar', identity), 'foo-bar');
+    });
+  });
+
+  describe('underscore preservation (anchor link compatibility)', () => {
+    it('preserves leading underscores so __dirname slug matches #__dirname anchor', () => {
+      assert.strictEqual(slug('__dirname', identity), '__dirname');
+    });
+
+    it('preserves leading underscores so __filename slug matches #__filename anchor', () => {
+      assert.strictEqual(slug('__filename', identity), '__filename');
+    });
+
+    it('preserves underscores within names', () => {
+      assert.strictEqual(slug('child_process', identity), 'child_process');
+    });
+
+    it('preserves mixed underscores and other characters', () => {
+      assert.strictEqual(slug('foo_bar:baz', identity), 'foo_bar-baz');
     });
   });
 
@@ -85,12 +103,20 @@ describe('slug', () => {
       assert.strictEqual(slug('Hello World'), 'hello-world');
     });
 
-    it('converts underscored names to hyphenated slugs', () => {
-      assert.strictEqual(slug('child_process'), 'child-process');
+    it('preserves underscores in names (no hyphenation)', () => {
+      assert.strictEqual(slug('child_process'), 'child_process');
     });
 
     it('handles titles with no special characters', () => {
       assert.strictEqual(slug('stability index'), 'stability-index');
+    });
+
+    it('generates correct slug for __dirname', () => {
+      assert.strictEqual(slug('__dirname'), '__dirname');
+    });
+
+    it('generates correct slug for __filename', () => {
+      assert.strictEqual(slug('__filename'), '__filename');
     });
   });
 });

@@ -6,7 +6,7 @@ export const IGNORE_STABILITY_STEMS = ['documentation'];
 export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /node.js/i, to: 'nodejs' }, // Replace Node.js
   { from: /&/, to: '-and-' }, // Replace &
-  { from: /[/_,:;\\ ]/g, to: '-' }, // Replace /_,:;\. and whitespace
+  { from: /[/,:;\\ ]/g, to: '-' }, // Replace /,:;\ and whitespace (underscores are preserved)
   { from: /^-+(?!-*$)/g, to: '' }, // Remove any leading hyphens
   { from: /(?<!^-*)-+$/g, to: '' }, // Remove any trailing hyphens
   { from: /^(?!-+$).*?(--+)/g, to: '-' }, // Replace multiple hyphens
