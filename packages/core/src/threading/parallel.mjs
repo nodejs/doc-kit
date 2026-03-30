@@ -1,6 +1,5 @@
 'use strict';
 
-import { allGenerators } from '../generators/index.mjs';
 import logger from '../logger/index.mjs';
 
 const parallelLogger = logger.child('parallel');
@@ -30,8 +29,9 @@ const createChunks = (count, size) => {
  * @param {unknown[]} fullInput - Full input array
  * @param {number[]} indices - Indices to process
  * @param {Object} extra - Stuff to pass to the worker
- * @param {import('../utils/configuration/types').Configuration} configuration - Serialized options
- * @param {string} generatorName - Name of the generator
+ * @param {object} configuration - Serialized options
+ * @param {string} generatorSpecifier - Import specifier of the generator
+ * @param {string} generatorName - Short name of the generator
  * @returns {ParallelTaskOptions} Task data for Piscina
  */
 const createTask = (
@@ -39,10 +39,11 @@ const createTask = (
   indices,
   extra,
   configuration,
+  generatorSpecifier,
   generatorName
 ) => {
   return {
-    generatorName,
+    generatorSpecifier,
     // Only send the items needed for this chunk (reduces serialization overhead)
     input: indices.map(i => fullInput[i]),
     // Remap indices to 0-based for the sliced array
@@ -58,19 +59,20 @@ const createTask = (
 /**
  * Creates a parallel worker that distributes work across a Piscina thread pool.
  *
- * @param {keyof AllGenerators} generatorName - Generator name
+ * @param {string} generatorSpecifier - Import specifier for the generator
+ * @param {object} generator - The loaded generator object
  * @param {import('piscina').Piscina} pool - Piscina instance
- * @param {import('../utils/configuration/types').Configuration} configuration - Generator options
+ * @param {object} configuration - Generator options
  * @returns {ParallelWorker}
  */
 export default function createParallelWorker(
-  generatorName,
+  generatorSpecifier,
+  generator,
   pool,
   configuration
 ) {
   const { threads, chunkSize } = configuration;
-
-  const generator = allGenerators[generatorName];
+  const { name: generatorName } = generator;
 
   return {
     /**
@@ -90,7 +92,12 @@ export default function createParallelWorker(
 
       parallelLogger.debug(
         `Distributing ${items.length} items across ${chunks.length} chunks`,
-        { generator: generatorName, chunks: chunks.length, chunkSize, threads }
+        {
+          generator: generatorName,
+          chunks: chunks.length,
+          chunkSize,
+          threads,
+        }
       );
 
       const runInOneGo = threads <= 1 || items.length <= 2;
@@ -108,7 +115,14 @@ export default function createParallelWorker(
 
           const promise = pool
             .run(
-              createTask(items, indices, extra, configuration, generatorName)
+              createTask(
+                items,
+                indices,
+                extra,
+                configuration,
+                generatorSpecifier,
+                generatorName
+              )
             )
             .then(result => ({ promise, result }));
 

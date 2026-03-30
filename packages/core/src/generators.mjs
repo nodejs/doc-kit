@@ -1,6 +1,5 @@
 'use strict';
 
-import { allGenerators } from './generators/index.mjs';
 import logger from './logger/index.mjs';
 import { isAsyncGenerator, createStreamingCache } from './streaming.mjs';
 import createWorkerPool from './threading/index.mjs';
@@ -12,8 +11,10 @@ const generatorsLogger = logger.child('generators');
  * Creates a generator orchestration system that manages the execution of
  * documentation generators in dependency order, with support for parallel
  * processing and streaming results.
+ *
+ * @param {Map<string, object>} loadedGenerators - Map of specifier → loaded generator
  */
-const createGenerator = () => {
+const createGenerator = loadedGenerators => {
   /** @type {{ [key: string]: Promise<unknown> | AsyncGenerator }} */
   const cachedGenerators = {};
 
@@ -25,7 +26,7 @@ const createGenerator = () => {
   /**
    * Gets the collected input from a dependency generator.
    *
-   * @param {string | undefined} dependsOn - Dependency generator name
+   * @param {string | undefined} dependsOn - Dependency generator specifier
    * @returns {Promise<unknown>}
    */
   const getDependencyInput = async dependsOn => {
@@ -45,36 +46,36 @@ const createGenerator = () => {
   /**
    * Schedules a generator and its dependencies for execution.
    *
-   * @param {string} generatorName - Generator to schedule
-   * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
+   * @param {string} specifier - Generator specifier to schedule
+   * @param {object} configuration - Runtime options
    */
-  const scheduleGenerator = async (generatorName, configuration) => {
-    if (generatorName in cachedGenerators) {
+  const scheduleGenerator = async (specifier, configuration) => {
+    if (specifier in cachedGenerators) {
       return;
     }
 
-    const { dependsOn, generate, hasParallelProcessor } =
-      allGenerators[generatorName];
+    const generator = loadedGenerators.get(specifier);
+    const { dependsOn, generate, processChunk, name } = generator;
 
     // Schedule dependency first
     if (dependsOn && !(dependsOn in cachedGenerators)) {
       await scheduleGenerator(dependsOn, configuration);
     }
 
-    generatorsLogger.debug(`Scheduling "${generatorName}"`, {
+    generatorsLogger.debug(`Scheduling "${name}"`, {
       dependsOn: dependsOn || 'none',
-      streaming: hasParallelProcessor,
+      streaming: !!processChunk,
     });
 
     // Schedule the generator
-    cachedGenerators[generatorName] = (async () => {
+    cachedGenerators[specifier] = (async () => {
       const dependencyInput = await getDependencyInput(dependsOn);
 
-      generatorsLogger.debug(`Starting "${generatorName}"`);
+      generatorsLogger.debug(`Starting "${name}"`);
 
       // Create parallel worker for streaming generators
-      const worker = hasParallelProcessor
-        ? createParallelWorker(generatorName, pool, configuration)
+      const worker = processChunk
+        ? createParallelWorker(specifier, generator, pool, configuration)
         : Promise.resolve(null);
 
       const result = await generate(dependencyInput, await worker);
@@ -82,7 +83,7 @@ const createGenerator = () => {
       // For streaming generators, "Completed" is logged when collection finishes
       // (in streamingCache.getOrCollect), not here when the generator returns
       if (!isAsyncGenerator(result)) {
-        generatorsLogger.debug(`Completed "${generatorName}"`);
+        generatorsLogger.debug(`Completed "${name}"`);
       }
 
       return result;
@@ -92,14 +93,17 @@ const createGenerator = () => {
   /**
    * Runs all requested generators with their dependencies.
    *
-   * @param {import('./utils/configuration/types').Configuration} options - Runtime options
+   * @param {object} configuration - Runtime options
+   * @param {string[]} targetSpecifiers - Resolved target specifiers
    * @returns {Promise<unknown[]>} Results of all requested generators
    */
-  const runGenerators = async configuration => {
-    const { target: generators, threads } = configuration;
+  const runGenerators = async (configuration, targetSpecifiers) => {
+    const { threads } = configuration;
 
     generatorsLogger.debug(`Starting pipeline`, {
-      generators: generators.join(', '),
+      generators: targetSpecifiers
+        .map(s => loadedGenerators.get(s).name)
+        .join(', '),
       threads,
     });
 
@@ -107,16 +111,16 @@ const createGenerator = () => {
     pool = createWorkerPool(threads);
 
     // Schedule all generators
-    for (const name of generators) {
-      await scheduleGenerator(name, configuration);
+    for (const specifier of targetSpecifiers) {
+      await scheduleGenerator(specifier, configuration);
     }
 
     // Start all collections in parallel (don't await sequentially)
-    const resultPromises = generators.map(async name => {
-      let result = await cachedGenerators[name];
+    const resultPromises = targetSpecifiers.map(async specifier => {
+      let result = await cachedGenerators[specifier];
 
       if (isAsyncGenerator(result)) {
-        result = await streamingCache.getOrCollect(name, result);
+        result = await streamingCache.getOrCollect(specifier, result);
       }
 
       return result;

@@ -1,23 +1,46 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { join } from 'node:path';
+
+import { remove } from 'unist-util-remove';
+
+import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
+import { UNIST } from '../../utils/queries/index.mjs';
+
+export const name = 'json-simple';
+export const dependsOn = '@node-core/doc-kit/generators/metadata';
 
 /**
- * This generator generates a simplified JSON version of the API docs and returns it as a string
- * this is not meant to be used for the final API docs, but for debugging and testing purposes
+ * Generates the simplified JSON version of the API docs
  *
- * This generator is a top-level generator, and it takes the raw AST tree of the API doc files
- * and returns a stringified JSON version of the API docs.
- *
- * @type {import('./types').Generator}
+ * @type {import('./types').Generator['generate']}
  */
-export default createLazyGenerator({
-  name: 'json-simple',
+export async function generate(input) {
+  const config = getConfig('json-simple');
 
-  version: '1.0.0',
+  // Iterates the input (MetadataEntry) and performs a few changes
+  const mappedInput = input.map(node => {
+    // Deep clones the content nodes to avoid affecting upstream nodes
+    const content = JSON.parse(JSON.stringify(node.content));
 
-  description:
-    'Generates the simple JSON version of the API docs, and returns it as a string',
+    // Removes numerous nodes from the content that should not be on the "body"
+    // of the JSON version of the API docs as they are already represented in the metadata
+    remove(content, [UNIST.isStabilityNode, UNIST.isHeading]);
 
-  dependsOn: 'metadata',
-});
+    return { ...node, content };
+  });
+
+  if (config.output) {
+    // Writes all the API docs stringified content into one file
+    // Note: The full JSON generator in the future will create one JSON file per top-level API doc file
+    await writeFile(
+      join(config.output, 'api-docs.json'),
+      config.minify
+        ? JSON.stringify(mappedInput)
+        : JSON.stringify(mappedInput, null, 2)
+    );
+  }
+
+  return mappedInput;
+}

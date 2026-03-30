@@ -19,6 +19,9 @@
     "watch": "node --watch bin/cli.mjs"
   },
   "main": "./src/generators.mjs",
+  "exports": {
+    "./generators/*": "./src/generators/*/index.mjs"
+  },
   "bin": {
     "doc-kit": "./bin/cli.mjs"
   },

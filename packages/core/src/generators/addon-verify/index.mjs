@@ -1,21 +1,84 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 
+import { visit } from 'unist-util-visit';
+
+import { EXTRACT_CODE_FILENAME_COMMENT } from './constants.mjs';
+import { generateFileList } from './utils/generateFileList.mjs';
+import {
+  generateSectionFolderName,
+  isBuildableSection,
+  normalizeSectionName,
+} from './utils/section.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
+
+export const name = 'addon-verify';
+export const dependsOn = '@node-core/doc-kit/generators/metadata';
 /**
- * This generator generates a file list from code blocks extracted from
- * `doc/api/addons.md` to facilitate C++ compilation and JavaScript runtime
- * validations.
+ * Generates a file list from code blocks.
  *
- * @type {import('./types').Generator}
+ * @type {import('./types').Generator['generate']}
  */
-export default await createLazyGenerator({
-  name: 'addon-verify',
+export async function generate(input) {
+  const config = getConfig('addon-verify');
 
-  version: '1.0.0',
+  const sectionsCodeBlocks = input.reduce((addons, node) => {
+    const sectionName = node.heading.data.name;
 
-  description:
-    'Generates a file list from code blocks extracted from `doc/api/addons.md` to facilitate C++ compilation and JavaScript runtime validations',
+    const content = node.content;
 
-  dependsOn: 'metadata',
-});
+    visit(content, childNode => {
+      if (childNode.type === 'code') {
+        const filename = childNode.value.match(EXTRACT_CODE_FILENAME_COMMENT);
+
+        if (filename === null) {
+          return;
+        }
+
+        if (!addons[sectionName]) {
+          addons[sectionName] = [];
+        }
+
+        addons[sectionName].push({
+          name: filename[1],
+          content: childNode.value,
+        });
+      }
+    });
+
+    return addons;
+  }, {});
+
+  const files = await Promise.all(
+    Object.entries(sectionsCodeBlocks)
+      .filter(([, codeBlocks]) => isBuildableSection(codeBlocks))
+      .flatMap(async ([sectionName, codeBlocks], index) => {
+        const files = generateFileList(codeBlocks);
+
+        if (config.output) {
+          const normalizedSectionName = normalizeSectionName(sectionName);
+
+          const folderName = generateSectionFolderName(
+            normalizedSectionName,
+            index
+          );
+
+          await mkdir(join(config.output, folderName), { recursive: true });
+
+          for (const file of files) {
+            await writeFile(
+              join(config.output, folderName, file.name),
+              file.content
+            );
+          }
+        }
+
+        return files;
+      })
+  );
+
+  return files;
+}

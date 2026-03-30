@@ -76,36 +76,36 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: man-page
+          - target: '@node-core/doc-kit/generators/man-page'
             input: './node/doc/api/cli.md'
 
-          - target: addon-verify
+          - target: '@node-core/doc-kit/generators/addon-verify'
             input: './node/doc/api/addons.md'
 
-          - target: api-links
+          - target: '@node-core/doc-kit/generators/api-links'
             input: './node/lib/*.js'
             compare: object-assertion
 
-          - target: orama-db
+          - target: '@node-core/doc-kit/generators/orama-db'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: json-simple
+          - target: '@node-core/doc-kit/generators/json-simple'
             input: './node/doc/api/*.md'
 
-          - target: legacy-json
+          - target: '@node-core/doc-kit/generators/legacy-json'
             input: './node/doc/api/*.md'
             compare: object-assertion
 
-          - target: legacy-html
+          - target: '@node-core/doc-kit/generators/legacy-html'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: web
+          - target: '@node-core/doc-kit/generators/web'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: llms-txt
+          - target: '@node-core/doc-kit/generators/llms-txt'
             input: './node/doc/api/*.md'
             compare: file-size
     steps:

@@ -12,15 +12,6 @@ const createMockConfig = (overrides = {}) => ({
 });
 
 // Mock modules
-mock.module('../../../generators/index.mjs', {
-  namedExports: {
-    allGenerators: {
-      json: { defaultConfiguration: { format: 'json' } },
-      html: { defaultConfiguration: { format: 'html' } },
-      markdown: {},
-    },
-  },
-});
 mock.module('../../../parsers/markdown.mjs', {
   namedExports: {
     parseChangelog: mockParseChangelog,
@@ -39,6 +30,20 @@ const {
   setConfig,
   default: getConfig,
 } = await import('../index.mjs');
+
+// Create a mock loaded generators map for tests
+const createMockGenerators = () =>
+  new Map([
+    [
+      '@node-core/doc-kit/generators/json',
+      { name: 'json', defaultConfiguration: { format: 'json' } },
+    ],
+    [
+      '@node-core/doc-kit/generators/html',
+      { name: 'html', defaultConfiguration: { format: 'html' } },
+    ],
+    ['@node-core/doc-kit/generators/markdown', { name: 'markdown' }],
+  ]);
 
 // Helper to reset all mocks
 const resetAllMocks = () => {
@@ -131,11 +136,14 @@ describe('config.mjs', () => {
         createMockConfig({ global: { input: 'custom-src/' } })
       );
 
-      const config = await createRunConfiguration({
-        configFile: 'config.mjs',
-        output: 'custom-dist/',
-        threads: 2,
-      });
+      const config = await createRunConfiguration(
+        {
+          configFile: 'config.mjs',
+          output: 'custom-dist/',
+          threads: 2,
+        },
+        createMockGenerators()
+      );
 
       assert.strictEqual(config.global.input, 'custom-src/');
       assert.strictEqual(config.global.output, 'custom-dist/');
@@ -157,7 +165,10 @@ describe('config.mjs', () => {
       );
 
       resetAllMocks(); // Clear calls from getDefaultConfig
-      await createRunConfiguration({ configFile: 'config.mjs' });
+      await createRunConfiguration(
+        { configFile: 'config.mjs' },
+        createMockGenerators()
+      );
 
       // Each should be called at least once for the string value
       assert.ok(
@@ -172,20 +183,26 @@ describe('config.mjs', () => {
     });
 
     it('should enforce minimum constraints', async () => {
-      const config = await createRunConfiguration({
-        threads: -5,
-        chunkSize: 0,
-      });
+      const config = await createRunConfiguration(
+        {
+          threads: -5,
+          chunkSize: 0,
+        },
+        createMockGenerators()
+      );
 
       assert.strictEqual(config.threads, 1);
       assert.strictEqual(config.chunkSize, 1);
     });
 
     it('should work without config file', async () => {
-      const config = await createRunConfiguration({
-        version: '20.0.0',
-        threads: 4,
-      });
+      const config = await createRunConfiguration(
+        {
+          version: '20.0.0',
+          threads: 4,
+        },
+        createMockGenerators()
+      );
 
       assert.ok(config);
       assert.strictEqual(config.threads, 4);
@@ -200,9 +217,12 @@ describe('config.mjs', () => {
         })
       );
 
-      const config = await createRunConfiguration({
-        configFile: 'config.mjs',
-      });
+      const config = await createRunConfiguration(
+        {
+          configFile: 'config.mjs',
+        },
+        createMockGenerators()
+      );
 
       assert.ok(config.json);
       assert.ok(config.html);
@@ -212,7 +232,10 @@ describe('config.mjs', () => {
 
   describe('setConfig and getConfig', () => {
     it('should persist config across calls', async () => {
-      const config = await setConfig({ version: '20.0.0', threads: 2 });
+      const config = await setConfig(
+        { version: '20.0.0', threads: 2 },
+        createMockGenerators()
+      );
       const retrieved = getConfig();
 
       assert.strictEqual(config, retrieved);
@@ -243,7 +266,10 @@ describe('config.mjs', () => {
         );
 
         resetAllMocks();
-        await createRunConfiguration({ configFile: 'config.mjs' });
+        await createRunConfiguration(
+          { configFile: 'config.mjs' },
+          createMockGenerators()
+        );
 
         assert.ok(countCallsMatching(mockFn, ([arg]) => arg === value) >= 1);
       });

@@ -4,45 +4,37 @@ import { isMainThread } from 'node:worker_threads';
 import { coerce } from 'semver';
 
 import { CHANGELOG_URL, populate } from './templates.mjs';
-import { allGenerators } from '../../generators/index.mjs';
 import logger from '../../logger/index.mjs';
 import { parseChangelog, parseIndex } from '../../parsers/markdown.mjs';
 import { enforceArray } from '../array.mjs';
 import { leftHandAssign } from '../generators.mjs';
-import { deepMerge, lazy } from '../misc.mjs';
+import { deepMerge } from '../misc.mjs';
 import { importFromURL } from '../url.mjs';
 
 /**
- * Get's the default configuration
+ * Get's the default configuration (global/structural defaults only).
+ * Per-generator defaults are merged separately via mergeGeneratorDefaults.
  */
-export const getDefaultConfig = lazy(() =>
-  Object.keys(allGenerators).reduce(
-    (acc, k) => {
-      acc[k] = allGenerators[k].defaultConfiguration ?? {};
-      return acc;
-    },
-    /** @type {import('./types').Configuration} */ ({
-      global: {
-        version: process.version,
-        minify: true,
-        repository: 'nodejs/node',
-        ref: 'HEAD',
-        baseURL: 'https://nodejs.org/docs',
-        changelog: populate(CHANGELOG_URL, {
-          repository: 'nodejs/node',
-          ref: 'HEAD',
-        }),
-      },
+export const getDefaultConfig = () => ({
+  global: {
+    version: process.version,
+    minify: true,
+    repository: 'nodejs/node',
+    ref: 'HEAD',
+    baseURL: 'https://nodejs.org/docs',
+    changelog: populate(CHANGELOG_URL, {
+      repository: 'nodejs/node',
+      ref: 'HEAD',
+    }),
+  },
 
-      // The number of wasm memory instances is severely limited on
-      // riscv64 with sv39. Running multiple generators that use wasm in
-      // parallel could cause failures to allocate new wasm instance.
-      // See also https://github.com/nodejs/node/pull/60591
-      threads: process.arch === 'riscv64' ? 1 : cpus().length,
-      chunkSize: 10,
-    })
-  )
-);
+  // The number of wasm memory instances is severely limited on
+  // riscv64 with sv39. Running multiple generators that use wasm in
+  // parallel could cause failures to allocate new wasm instance.
+  // See also https://github.com/nodejs/node/pull/60591
+  threads: process.arch === 'riscv64' ? 1 : cpus().length,
+  chunkSize: 10,
+});
 
 /**
  * Loads a configuration file from a URL or file path.
@@ -109,9 +101,10 @@ export const createConfigFromCLIOptions = options => ({
  * and constraint enforcement for threads and chunk size.
  *
  * @param {import('../../../bin/commands/generate.mjs').CLIOptions} options - User-provided configuration options
+ * @param {Map<string, object>} loadedGenerators - Map of specifier → loaded generator
  * @returns {Promise<import('./types').Configuration>} The configuration
  */
-export const createRunConfiguration = async options => {
+export const createRunConfiguration = async (options, loadedGenerators) => {
   const config = await loadConfigFile(options.configFile);
   config.target &&= enforceArray(config.target);
 
@@ -137,18 +130,30 @@ export const createRunConfiguration = async options => {
   // Transform global config if it wasn't already done
   await transformConfig(merged.global);
 
-  // Now assign to each generator config (they inherit from global)
-  await Promise.all(
-    Object.keys(allGenerators).map(async k => {
-      const value = merged[k];
+  // Merge per-generator defaults from loaded generators and apply global config
+  if (loadedGenerators) {
+    await Promise.all(
+      [...loadedGenerators.values()].map(async generator => {
+        const { name, defaultConfiguration } = generator;
 
-      // Transform generator-specific overrides
-      await transformConfig(value);
+        // Initialize generator config section if it doesn't exist
+        if (!merged[name]) {
+          merged[name] = {};
+        }
 
-      // Assign from global (this populates missing values from global)
-      leftHandAssign(value, merged.global);
-    })
-  );
+        // Merge generator's default configuration
+        if (defaultConfiguration) {
+          leftHandAssign(merged[name], defaultConfiguration);
+        }
+
+        // Transform generator-specific overrides
+        await transformConfig(merged[name]);
+
+        // Assign from global (this populates missing values from global)
+        leftHandAssign(merged[name], merged.global);
+      })
+    );
+  }
 
   return merged;
 };
@@ -159,10 +164,13 @@ let config;
 /**
  * Configuration setter
  * @param {import('./types').Configuration | import('../../../bin/commands/generate.mjs').CLIOptions} options
+ * @param {Map<string, object>} [loadedGenerators]
  * @returns {Promise<import('./types').Configuration>}
  */
-export const setConfig = async options =>
-  (config = isMainThread ? await createRunConfiguration(options) : options);
+export const setConfig = async (options, loadedGenerators) =>
+  (config = isMainThread
+    ? await createRunConfiguration(options, loadedGenerators)
+    : options);
 
 /**
  * Configuration getter
@@ -170,6 +178,7 @@ export const setConfig = async options =>
  * @param {T} generator
  * @returns {T extends keyof import('./types').Configuration ? import('./types').Configuration[T] : import('./types').Configuration}
  */
-const getConfig = generator => (generator ? config[generator] : config);
+const getConfig = generator =>
+  generator ? (config[generator] ?? config.global) : config;
 
 export default getConfig;
