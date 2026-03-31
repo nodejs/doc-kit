@@ -3,10 +3,8 @@ import Banner from '@node-core/ui-components/Common/Banner';
 
 import styles from './index.module.css';
 
-/** @import { BannerEntry } from './types.d.ts' */
-
 /**
- * @param {{ banners: BannerEntry[] }} props
+ * @param {import('./types.d.ts').AnnouncementBannerProps} props
  */
 const AnnouncementBanner = ({ banners }) => (
   <div role="region" aria-label="Announcements" className={styles.banners}>
