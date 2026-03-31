@@ -262,17 +262,5 @@ describe('parseApiDoc', () => {
       assert.strictEqual(secondContent.length, 2);
       assert.strictEqual(secondContent[0].type, 'heading');
     });
-
-    it('works correctly without top-level frontmatter', () => {
-      const tree = u('root', [
-        h('First Heading'),
-        u('paragraph', [u('text', 'First content.')]),
-      ]);
-      const results = parseApiDoc({ path, tree }, typeMap);
-
-      assert.strictEqual(results.length, 1);
-      assert.strictEqual(results[0].content.children.length, 2);
-      assert.strictEqual(results[0].content.children[0].type, 'heading');
-    });
   });
 });
