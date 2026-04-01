@@ -12,3 +12,7 @@ out/
 
 # Generated Files
 src/generators/metadata/maps/mdn.json
+
+# The specification uses things that prettier would not
+# approve of, such as bullets with `*`
+docs/specification.md
