@@ -127,7 +127,7 @@ jobs:
           repository: nodejs/node
           ref: ${{ needs.prepare.outputs.sha }}
           sparse-checkout: |
-            doc/api
+            doc
             lib
             .
           path: node
@@ -151,6 +151,7 @@ jobs:
             -i "${{ matrix.input }}" \
             -o out \
             -c ./node/CHANGELOG.md \
+            --type-map "./node/doc/type-map.json" \
             --index ./node/doc/api/index.md \
             --log-level debug
 
