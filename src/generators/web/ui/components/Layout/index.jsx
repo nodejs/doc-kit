@@ -13,23 +13,24 @@ import SideBar from '#theme/Sidebar';
  * main content, meta bar, and footer. Override via `#theme/Layout` in your
  * configuration's `imports` to customize the entire page structure.
  *
- * @param {{ sideBarProps: object, metaBarProps: object, children: import('preact').ComponentChildren }} props
+ * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime: string, children: import('preact').ComponentChildren }} props
  */
-export default ({ sideBarProps, metaBarProps, children }) => (
+export default ({ metadata, headings, readingTime, children }) => (
   <>
     <NavBar />
     <Article>
-      <SideBar {...sideBarProps} />
+      <SideBar metadata={metadata} />
       <div>
         <div>
-          <TableOfContents
-            headings={metaBarProps.headings}
-            summaryTitle="On this page"
-          />
+          <TableOfContents headings={headings} summaryTitle="On this page" />
           <br />
           <main>{children}</main>
         </div>
-        <MetaBar {...metaBarProps} />
+        <MetaBar
+          metadata={metadata}
+          headings={headings}
+          readingTime={readingTime}
+        />
       </div>
     </Article>
     <Footer />

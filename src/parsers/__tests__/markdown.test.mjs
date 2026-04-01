@@ -7,7 +7,7 @@ import dedent from 'dedent';
 import { SemVer } from 'semver';
 
 let content;
-mock.module('../../utils/parser.mjs', {
+mock.module('../../utils/loaders.mjs', {
   namedExports: {
     loadFromURL: async () => content,
   },

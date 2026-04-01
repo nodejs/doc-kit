@@ -2,6 +2,7 @@
 
 import { join } from 'node:path';
 
+import { GITHUB_EDIT_URL } from '../../utils/configuration/templates.mjs';
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -29,6 +30,8 @@ export default createLazyGenerator({
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.html'),
     title: 'Node.js',
+    editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
+    pageURL: '{baseURL}/latest-{version}/api{path}.html',
     imports: {
       '#theme/Logo': '@node-core/ui-components/Common/NodejsLogo',
       '#theme/Navigation': join(import.meta.dirname, './ui/components/NavBar'),

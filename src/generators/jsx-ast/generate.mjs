@@ -1,11 +1,6 @@
-import { buildSideBarProps } from './utils/buildBarProps.mjs';
 import buildContent from './utils/buildContent.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
-import { getRemarkRecma } from '../../utils/remark.mjs';
-import { relative } from '../../utils/url.mjs';
-
-const remarkRecma = getRemarkRecma();
 
 /**
  * Process a chunk of items in a worker thread.
@@ -16,28 +11,13 @@ const remarkRecma = getRemarkRecma();
  *
  * @type {import('./types').Generator['processChunk']}
  */
-export async function processChunk(slicedInput, itemIndices, docPages) {
+export async function processChunk(slicedInput, itemIndices) {
   const results = [];
 
   for (const idx of itemIndices) {
     const { head, entries } = slicedInput[idx];
 
-    const sideBarProps = buildSideBarProps(
-      head,
-      docPages.map(([heading, path]) => [
-        heading,
-        head.path === path
-          ? `${head.basename}.html`
-          : `${relative(path, head.path)}.html`,
-      ])
-    );
-
-    const content = await buildContent(
-      entries,
-      head,
-      sideBarProps,
-      remarkRecma
-    );
+    const content = await buildContent(entries, head);
 
     results.push(content);
   }
@@ -55,8 +35,6 @@ export async function* generate(input, worker) {
 
   const headNodes = getSortedHeadNodes(input);
 
-  const docPages = headNodes.map(node => [node.heading.data.name, node.path]);
-
   // Create sliced input: each item contains head + its module's entries
   // This avoids sending all 4700+ entries to every worker
   const entries = headNodes.map(head => ({
@@ -64,7 +42,7 @@ export async function* generate(input, worker) {
     entries: groupedModules.get(head.api),
   }));
 
-  for await (const chunkResult of worker.stream(entries, docPages)) {
+  for await (const chunkResult of worker.stream(entries)) {
     yield chunkResult;
   }
 }

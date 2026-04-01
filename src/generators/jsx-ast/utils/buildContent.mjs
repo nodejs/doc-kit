@@ -2,12 +2,14 @@
 
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
+import readingTime from 'reading-time';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { createJSXElement } from './ast.mjs';
-import { buildMetaBarProps } from './buildBarProps.mjs';
+import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
+import { extractPrimitives } from '../../../utils/misc.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 import {
   STABILITY_LEVELS,
@@ -273,14 +275,14 @@ export const processEntry = entry => {
 /**
  * Builds the overall document layout tree
  * @param {Array<import('../../metadata/types').MetadataEntry>} entries - API documentation metadata entries
- * @param {ReturnType<import('./buildBarProps.mjs').buildSideBarProps>} sideBarProps - Props for the sidebar component
- * @param {ReturnType<buildMetaBarProps>} metaBarProps - Props for the meta bar component
+ * @param {Object} metadata - Raw page metadata from the head entry
  */
-export const createDocumentLayout = (entries, sideBarProps, metaBarProps) =>
+export const createDocumentLayout = (entries, metadata) =>
   createTree('root', [
     createJSXElement(JSX_IMPORTS.Layout.name, {
-      sideBarProps,
-      metaBarProps,
+      metadata,
+      headings: extractHeadings(entries),
+      readingTime: readingTime(extractTextContent(entries)).text,
       children: entries.map(processEntry),
     }),
   ]);
@@ -291,19 +293,13 @@ export const createDocumentLayout = (entries, sideBarProps, metaBarProps) =>
  * Transforms API metadata entries into processed MDX content
  * @param {Array<import('../../metadata/types').MetadataEntry>} metadataEntries - API documentation metadata entries
  * @param {import('../../metadata/types').MetadataEntry} head - Main API metadata entry with version information
- * @param {Object} sideBarProps - Props for the sidebar component
  * @returns {Promise<JSXContent>}
  */
-const buildContent = async (metadataEntries, head, sideBarProps) => {
-  // Build props for the MetaBar from head and entries
-  const metaBarProps = buildMetaBarProps(head, metadataEntries);
+const buildContent = async (metadataEntries, head) => {
+  const metadata = extractPrimitives(head);
 
   // Create root document AST with all layout components and processed content
-  const root = createDocumentLayout(
-    metadataEntries,
-    sideBarProps,
-    metaBarProps
-  );
+  const root = createDocumentLayout(metadataEntries, metadata);
 
   // Run remark processor to transform AST (parse markdown, plugins, etc.)
   const ast = await remark().run(root);
