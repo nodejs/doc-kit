@@ -1,7 +1,5 @@
 import { isBannerActive } from '../../utils/banner.mjs';
 
-/** @import { BannerEntry, RemoteConfig } from './types.d.ts' */
-
 /**
  * Fetches and returns active banners for the given version.
  * Returns an empty array when remoteConfig is absent, the response is not ok,
@@ -9,7 +7,7 @@ import { isBannerActive } from '../../utils/banner.mjs';
  *
  * @param {string | undefined} remoteConfig
  * @param {number | null} versionMajor
- * @returns {Promise<BannerEntry[]>}
+ * @returns {Promise<import('./types.d.ts').BannerEntry[]>}
  */
 export const loadBanners = async (remoteConfig, versionMajor) => {
   if (!remoteConfig) {
@@ -19,7 +17,7 @@ export const loadBanners = async (remoteConfig, versionMajor) => {
   try {
     const res = await fetch(remoteConfig);
 
-    /** @type {RemoteConfig} */
+    /** @type {import('./types.d.ts').RemoteConfig} */
     const { websiteBanners = {} } = await res.json();
 
     const keys = ['index', versionMajor != null && `v${versionMajor}`].filter(
