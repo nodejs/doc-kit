@@ -1,22 +1,30 @@
-import { useState, useEffect } from 'preact/hooks';
+import { lazy, Suspense } from 'preact/compat';
 
 import AnnouncementBanner from './AnnouncementBanner.jsx';
 import { loadBanners } from './loadBanners.mjs';
 
 import { remoteConfig, versionMajor } from '#theme/config';
 
-const RemoteLoadableBanner = () => {
-  const [banners, setBanners] = useState([]);
+const LazyBanners = SERVER
+  ? null
+  : lazy(async () => {
+      const active = await loadBanners(remoteConfig, versionMajor);
 
-  useEffect(() => {
-    loadBanners(remoteConfig, versionMajor).then(active => {
-      if (active.length) {
-        setBanners(active);
+      if (!active.length) {
+        return { default: () => null };
       }
-    });
-  }, []);
 
-  return banners.length ? <AnnouncementBanner banners={banners} /> : null;
-};
+      return { default: () => <AnnouncementBanner banners={active} /> };
+    });
+
+const RemoteLoadableBanner = SERVER
+  ? () => <div />
+  : () => (
+      <div>
+        <Suspense fallback={null}>
+          <LazyBanners />
+        </Suspense>
+      </div>
+    );
 
 export default RemoteLoadableBanner;
