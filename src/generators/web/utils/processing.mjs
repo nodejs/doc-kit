@@ -84,7 +84,7 @@ async function executeServerCode(serverCodeMap, requireFn, virtualImports) {
   // Execute each bundled entry and collect dehydrated HTML results
   for (const chunk of entryChunks) {
     const executedFunction = new Function('require', chunk.code);
-    pages.set(chunk.fileName, executedFunction(enhancedRequire));
+    pages.set(chunk.fileName, await executedFunction(enhancedRequire));
   }
 
   return { pages, css };

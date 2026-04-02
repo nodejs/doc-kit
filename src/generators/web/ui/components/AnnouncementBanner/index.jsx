@@ -19,6 +19,7 @@ const RemoteLoadableBanner = ({ remoteConfig, versionMajor }) => {
 
         return { default: () => <AnnouncementBanner banners={active} /> };
       }),
+    // eslint-disable-next-line react-x/exhaustive-deps
     []
   );
 

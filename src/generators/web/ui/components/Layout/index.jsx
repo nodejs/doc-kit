@@ -3,6 +3,7 @@ import Article from '@node-core/ui-components/Containers/Article';
 
 import RemoteLoadableBanner from '../AnnouncementBanner';
 
+import { remoteConfig, versionMajor } from '#theme/config';
 import Footer from '#theme/Footer';
 import MetaBar from '#theme/Metabar';
 import NavBar from '#theme/Navigation';
@@ -15,23 +16,14 @@ import SideBar from '#theme/Sidebar';
  * main content, meta bar, and footer. Override via `#theme/Layout` in your
  * configuration's `imports` to customize the entire page structure.
  *
- * @param {{
- *  metadata: import('../../types').SerializedMetadata,
- *  headings: Array,
- *  readingTime: string,
- *  children: import('preact').ComponentChildren,
- *  announcementBannerProps: object
- * }} props
+ * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime: string, children: import('preact').ComponentChildren }} props
  */
-export default ({
-  metadata,
-  headings,
-  readingTime,
-  announcementBannerProps,
-  children,
-}) => (
+export default ({ metadata, headings, readingTime, children }) => (
   <>
-    <RemoteLoadableBanner {...announcementBannerProps} />
+    <RemoteLoadableBanner
+      remoteConfig={remoteConfig}
+      versionMajor={versionMajor}
+    />
     <NavBar metadata={metadata} />
     <Article>
       <SideBar metadata={metadata} />

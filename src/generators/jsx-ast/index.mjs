@@ -18,7 +18,6 @@ export default createLazyGenerator({
 
   defaultConfiguration: {
     ref: 'main',
-    remoteConfig: 'https://nodejs.org/site.json',
   },
 
   hasParallelProcessor: true,

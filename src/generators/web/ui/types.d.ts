@@ -24,6 +24,7 @@ declare module '#theme/config' {
 
   // From config generation
   export const version: string;
+  export const versionMajor: number;
   export const versions: Array<{
     url: string;
     label: string;
@@ -32,6 +33,7 @@ declare module '#theme/config' {
   export const editURL: string;
   export const pages: Array<[string, string]>;
   export const languageDisplayNameMap: Map<string[], string>;
+  export const remoteConfig: string;
 }
 
 // Omit Primitives from Metadata
