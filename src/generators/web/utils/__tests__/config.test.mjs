@@ -49,15 +49,11 @@ const makeEntry = (api, name, path) => ({
 
 describe('buildVersionEntries', () => {
   it('creates version entries with labels and URL templates', () => {
-    const config = {
-      changelog: [
+    const result = buildVersionEntries(
+      [
         { version: new SemVer('20.0.0'), isLts: true, isCurrent: false },
         { version: new SemVer('22.0.0'), isLts: false, isCurrent: true },
       ],
-    };
-
-    const result = buildVersionEntries(
-      config,
       'https://nodejs.org/docs/latest-{version}/api{path}.html'
     );
 
