@@ -7,12 +7,10 @@ import {
   transformUnixManualToLink,
 } from './transformers.mjs';
 import { extractYamlContent, parseYAMLIntoMetadata } from './yaml.mjs';
-import { lazy } from '../../../utils/misc.mjs';
 import { QUERIES } from '../../../utils/queries/index.mjs';
-import { getRemark } from '../../../utils/remark.mjs';
+import { getRemark as remark } from '../../../utils/remark.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 
-const remark = lazy(getRemark);
 /**
  * Updates a Markdown link into a HTML link for API docs
  * @param {import('@types/mdast').Link} node A Markdown link node

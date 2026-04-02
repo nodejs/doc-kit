@@ -20,12 +20,9 @@ import {
   visitYAML,
 } from './visitors.mjs';
 import { UNIST } from '../../../utils/queries/index.mjs';
-import { getRemark } from '../../../utils/remark.mjs';
+import { getRemark as remark } from '../../../utils/remark.mjs';
 import { relative } from '../../../utils/url.mjs';
 import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
-
-// Creates an instance of the Remark processor with GFM support
-const remarkProcessor = getRemark();
 
 /**
  * This generator generates a flattened list of metadata entries from a API doc
@@ -133,7 +130,7 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
     remove(subTree, [UNIST.isYamlNode]);
 
     // Apply AST transformations
-    const parsedSubTree = remarkProcessor.runSync(subTree);
+    const parsedSubTree = remark().runSync(subTree);
     metadata.content = parsedSubTree;
 
     // Add to collection

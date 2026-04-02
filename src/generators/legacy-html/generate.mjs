@@ -10,7 +10,7 @@ import getConfig from '../../utils/configuration/index.mjs';
 import { writeFile } from '../../utils/file.mjs';
 import { groupNodesByModule } from '../../utils/generators.mjs';
 import { minifyHTML } from '../../utils/html-minifier.mjs';
-import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
+import { getRemarkRehypeWithShiki as remark } from '../../utils/remark.mjs';
 
 /**
  * Creates a heading object with the given name.
@@ -18,8 +18,6 @@ import { getRemarkRehypeWithShiki } from '../../utils/remark.mjs';
  * @returns {HeadingMetadataEntry} The heading object
  */
 const getHeading = name => ({ depth: 1, data: { name } });
-
-const remarkRehypeProcessor = getRemarkRehypeWithShiki();
 
 /**
  * Process a chunk of items in a worker thread.
@@ -42,7 +40,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
     );
 
     const toc = String(
-      remarkRehypeProcessor.processSync(
+      remark().processSync(
         tableOfContents(nodes, {
           maxDepth: 5,
           parser: tableOfContents.parseToCNode,
@@ -50,7 +48,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
       )
     );
 
-    const content = buildContent(headNodes, nodes, remarkRehypeProcessor);
+    const content = buildContent(headNodes, nodes);
 
     const apiAsHeading = head.api.charAt(0).toUpperCase() + head.api.slice(1);
 
@@ -94,7 +92,7 @@ export async function* generate(input, worker) {
     : headNodes;
 
   const navigation = String(
-    remarkRehypeProcessor.processSync(
+    remark().processSync(
       tableOfContents(indexOfFiles, {
         maxDepth: 1,
         parser: tableOfContents.parseNavigationNode,

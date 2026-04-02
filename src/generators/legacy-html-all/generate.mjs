@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import getConfig from '../../utils/configuration/index.mjs';
 import { minifyHTML } from '../../utils/html-minifier.mjs';
-import { getRemarkRehype } from '../../utils/remark.mjs';
+import { getRemarkRehype as remark } from '../../utils/remark.mjs';
 import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValues.mjs';
 import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
 
@@ -16,9 +16,6 @@ import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
  */
 export async function generate(input) {
   const config = getConfig('legacy-html-all');
-
-  // Gets a Remark Processor that parses Markdown to minified HTML
-  const remarkWithRehype = getRemarkRehype();
 
   // Reads the API template.html file to be used as a base for the HTML files
   const apiTemplate = await readFile(config.templatePath, 'utf-8');
@@ -40,7 +37,7 @@ export async function generate(input) {
   }));
 
   // Generates the global Table of Contents (Sidebar Navigation)
-  const parsedSideNav = remarkWithRehype.processSync(
+  const parsedSideNav = remark().processSync(
     tableOfContents(sideNavigationFromValues, {
       maxDepth: 1,
       parser: tableOfContents.parseNavigationNode,
