@@ -40,9 +40,9 @@ export const buildSideBarGroups = (items, defaultGroupName = 'Others') => {
       continue;
     }
 
-    const items = groups.get(resolvedCategory) ?? [];
-    items.push({ label, link });
-    groups.set(resolvedCategory, items);
+    const groupItems = groups.get(resolvedCategory) ?? [];
+    groupItems.push({ label, link });
+    groups.set(resolvedCategory, groupItems);
   }
 
   // Convert the groups map to an array while preserving the original order of categories
