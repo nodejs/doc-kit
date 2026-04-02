@@ -239,4 +239,28 @@ describe('parseApiDoc', () => {
       assert.strictEqual(results.length, 0);
     });
   });
+
+  describe('top-level nodes (YAML frontmatter)', () => {
+    it('captures top-level frontmatter in the first entry', () => {
+      const tree = u('root', [
+        u('yaml', 'layout: home\ncontributors: [shams]'),
+        h('First Heading'),
+        u('paragraph', [u('text', 'First content.')]),
+        h('Second Heading', 2),
+        u('paragraph', [u('text', 'Second content.')]),
+      ]);
+      const results = parseApiDoc({ path, tree }, typeMap);
+
+      assert.strictEqual(results.length, 2);
+
+      const firstContent = results[0].content.children;
+      assert.strictEqual(firstContent.length, 3);
+      assert.strictEqual(firstContent[0].type, 'yaml');
+      assert.strictEqual(firstContent[1].type, 'heading');
+
+      const secondContent = results[1].content.children;
+      assert.strictEqual(secondContent.length, 2);
+      assert.strictEqual(secondContent[0].type, 'heading');
+    });
+  });
 });

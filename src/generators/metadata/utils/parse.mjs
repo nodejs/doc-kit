@@ -102,8 +102,10 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
         ? tree.children.length
         : tree.children.indexOf(nextHeadingNode);
 
-    // Create subtree for this section
-    const subTree = createTree('root', tree.children.slice(index, stop));
+    // Create subtree for this section. If it's the first entry, we start from the
+    // beginning of the tree to ensure top-level nodes (like YAML) are captured.
+    const startIndex = metadataCollection.length === 0 ? 0 : index;
+    const subTree = createTree('root', tree.children.slice(startIndex, stop));
 
     visit(subTree, UNIST.isStabilityNode, node =>
       visitStability(node, ignoreStability ? undefined : metadata)
