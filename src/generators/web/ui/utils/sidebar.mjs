@@ -1,4 +1,4 @@
-import { SIDEBAR_GROUPS } from '../../constants.mjs';
+import { SIDEBAR_GROUPS } from '../constants.mjs';
 
 /**
  * @deprecated This is being exported temporarily during the transition period.
