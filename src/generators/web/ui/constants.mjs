@@ -50,6 +50,7 @@ export const SIDEBAR_GROUPS = [
       'zlib.html',
       'readline.html',
       'tty.html',
+      'zlib_iter.html',
     ],
   },
   {
@@ -60,6 +61,7 @@ export const SIDEBAR_GROUPS = [
       'events.html',
       'timers.html',
       'webstreams.html',
+      'stream_iter.html',
     ],
   },
   {
