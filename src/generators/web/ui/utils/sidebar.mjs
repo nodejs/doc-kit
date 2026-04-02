@@ -2,7 +2,7 @@ import { SIDEBAR_GROUPS } from '../../constants.mjs';
 
 /**
  * @deprecated This is being exported temporarily during the transition period.
- * Reverse lookup: filename (e.g. 'fs.html') → groupName, used as category
+ * Reverse lookup: filename (e.g. 'fs.html') -> groupName, used as category
  * fallback for pages without explicit category in metadata.
  */
 export const fileToGroup = new Map(
@@ -15,19 +15,16 @@ export const fileToGroup = new Map(
  * Builds grouped sidebar navigation from categorized page entries.
  * Pages without a category are placed under the provided default group.
  *
- * @param {Array<{ label: string, link: string, category?: string }>} frontmatter
+ * @param {Array<{ label: string, link: string, category?: string }>} items
  * @param {string} [defaultGroupName='Others']
  * @returns {Array<{ groupName: string, items: Array<{ label: string, link: string }> }>}
  */
-export const buildSideBarGroups = (
-  frontmatter,
-  defaultGroupName = 'Others'
-) => {
+export const buildSideBarGroups = (items, defaultGroupName = 'Others') => {
   const groups = new Map();
   const others = [];
 
   // Group entries by category while preserving insertion order
-  for (const { label, link, category } of frontmatter) {
+  for (const { label, link, category } of items) {
     const linkFilename = link.split('/').at(-1);
 
     // Skip index pages as they are typically the main entry point for a section
