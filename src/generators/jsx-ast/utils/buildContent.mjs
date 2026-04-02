@@ -279,7 +279,6 @@ export const processEntry = entry => {
  */
 export const createDocumentLayout = (entries, metadata) =>
   createTree('root', [
-    createJSXElement(JSX_IMPORTS.AnnouncementBanner.name),
     createJSXElement(JSX_IMPORTS.Layout.name, {
       metadata,
       headings: extractHeadings(entries),
