@@ -28,7 +28,7 @@ export default ({ metadata }) => {
       />
       <a
         href={`https://github.com/${repository}`}
-        aria-label={repository}
+        aria-label={`View ${repository} on GitHub`}
         className={styles.ghIconWrapper}
       >
         <GitHubIcon />
