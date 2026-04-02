@@ -3,7 +3,6 @@ import Article from '@node-core/ui-components/Containers/Article';
 
 import RemoteLoadableBanner from '../AnnouncementBanner';
 
-import { remoteConfig, versionMajor } from '#theme/config';
 import Footer from '#theme/Footer';
 import MetaBar from '#theme/Metabar';
 import NavBar from '#theme/Navigation';
@@ -20,10 +19,7 @@ import SideBar from '#theme/Sidebar';
  */
 export default ({ metadata, headings, readingTime, children }) => (
   <>
-    <RemoteLoadableBanner
-      remoteConfig={remoteConfig}
-      versionMajor={versionMajor}
-    />
+    <RemoteLoadableBanner />
     <NavBar metadata={metadata} />
     <Article>
       <SideBar metadata={metadata} />
