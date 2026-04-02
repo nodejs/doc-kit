@@ -1,14 +1,7 @@
 'use strict';
 
-import readingTime from 'reading-time';
 import { visit } from 'unist-util-visit';
 
-import getConfig from '../../../utils/configuration/index.mjs';
-import { populate } from '../../../utils/configuration/templates.mjs';
-import {
-  getCompatibleVersions,
-  getVersionFromSemVer,
-} from '../../../utils/generators.mjs';
 import { TOC_MAX_HEADING_DEPTH } from '../constants.mjs';
 
 /**
@@ -71,80 +64,3 @@ const extractHeading = entry => {
  */
 export const extractHeadings = entries =>
   entries.filter(shouldIncludeEntryInToC).map(extractHeading);
-
-/**
- * Builds metadata for the meta bar (right panel).
- *
- * @param {import('../../metadata/types').MetadataEntry} head - Main API metadata entry (used as reference point)
- * @param {Array<import('../../metadata/types').MetadataEntry>} entries - All documentation entries for a given API item
- */
-export const buildMetaBarProps = (head, entries) => {
-  const config = getConfig('jsx-ast');
-
-  return {
-    headings: extractHeadings(entries),
-    addedIn: head.added || head.introduced_in || '',
-    readingTime: readingTime(extractTextContent(entries)).text,
-    viewAs: [
-      ['JSON', `${head.basename}.json`],
-      ['MD', `${head.basename}.md`],
-    ],
-    editThisPage: populate(config.editURL, { ...config, path: head.path }),
-  };
-};
-
-/**
- * Converts a compatible version entry into a version label and link.
- *
- * @param {Array<import('../../../parsers/types').ReleaseEntry>} compatibleVersions - Compatible versions
- * @param {string} path - path for the version URL
- */
-export const formatVersionOptions = (compatibleVersions, path) => {
-  const config = getConfig('jsx-ast');
-
-  return compatibleVersions.map(({ version, isLts, isCurrent }) => {
-    let label = `v${getVersionFromSemVer(version)}`;
-
-    const value = populate(config.pageURL, {
-      ...config,
-      path,
-      version: label,
-    });
-
-    if (isLts) {
-      label += ' (LTS)';
-    }
-
-    if (isCurrent) {
-      label += ' (Current)';
-    }
-
-    return {
-      value,
-      label,
-    };
-  });
-};
-
-/**
- * Builds metadata for the sidebar (left panel).
- *
- * @param {import('../../metadata/types').MetadataEntry} entry - Current documentation entry
- * @param {Array<[string, string]>} docPages - Available doc pages for sidebar navigation
- */
-export const buildSideBarProps = (entry, docPages) => {
-  const config = getConfig('jsx-ast');
-
-  const compatibleVersions = getCompatibleVersions(
-    entry.introduced_in,
-    config.changelog,
-    true
-  );
-
-  return {
-    versions: formatVersionOptions(compatibleVersions, entry.path),
-    currentVersion: `v${config.version.version}`,
-    pathname: `${entry.basename}.html`,
-    docPages,
-  };
-};

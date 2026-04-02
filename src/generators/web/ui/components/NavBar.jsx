@@ -4,9 +4,9 @@ import styles from '@node-core/ui-components/Containers/NavBar/index.module.css'
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
 import SearchBox from './SearchBox';
-import { STATIC_DATA } from '../constants.mjs';
 import { useTheme } from '../hooks/useTheme.mjs';
 
+import { title, repository } from '#theme/config';
 import Logo from '#theme/Logo';
 
 /**
@@ -27,8 +27,8 @@ export default () => {
         aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
       />
       <a
-        href={`https://github.com/${STATIC_DATA.repository}`}
-        aria-label={`${STATIC_DATA.title} GitHub`}
+        href={`https://github.com/${repository}`}
+        aria-label={`${title} GitHub`}
         className={styles.ghIconWrapper}
       >
         <GitHubIcon />

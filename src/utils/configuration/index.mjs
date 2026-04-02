@@ -9,8 +9,8 @@ import logger from '../../logger/index.mjs';
 import { parseChangelog, parseIndex } from '../../parsers/markdown.mjs';
 import { enforceArray } from '../array.mjs';
 import { leftHandAssign } from '../generators.mjs';
+import { importFromURL } from '../loaders.mjs';
 import { deepMerge, lazy } from '../misc.mjs';
-import { importFromURL } from '../url.mjs';
 
 /**
  * Get's the default configuration

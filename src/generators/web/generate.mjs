@@ -1,10 +1,8 @@
 'use strict';
 
 import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
-import createASTBuilder from './utils/generate.mjs';
 import { processJSXEntries } from './utils/processing.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
 import { writeFile } from '../../utils/file.mjs';
@@ -19,20 +17,8 @@ export async function generate(input) {
 
   const template = await readFile(config.templatePath, 'utf-8');
 
-  // Create AST builders for server and client programs
-  const astBuilders = createASTBuilder();
-
-  // Create require function for resolving external packages in server code
-  const requireFn = createRequire(import.meta.url);
-
   // Process all entries: convert JSX to HTML/CSS/JS
-  const { results, css, chunks } = await processJSXEntries(
-    input,
-    template,
-    astBuilders,
-    requireFn,
-    config
-  );
+  const { results, css, chunks } = await processJSXEntries(input, template);
 
   // Process all entries together (required for code-split bundles)
   if (config.output) {

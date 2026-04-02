@@ -20,6 +20,18 @@ export const isPlainObject = value =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
 /**
+ * Extracts all the primitives from an object
+ */
+export const extractPrimitives = obj =>
+  Object.fromEntries(
+    Object.entries(obj).filter(
+      ([, value]) =>
+        value !== Object(value) ||
+        (Array.isArray(value) && value.every(item => item !== Object(item)))
+    )
+  );
+
+/**
  * Recursively merges multiple objects deeply.
  * @template T
  * @param {...T} objects - Any number of objects to merge

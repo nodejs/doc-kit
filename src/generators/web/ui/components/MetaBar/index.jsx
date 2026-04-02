@@ -5,19 +5,12 @@ import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
 import styles from './index.module.css';
 
+import { editURL } from '#theme/config';
+
 const iconMap = {
   JSON: CodeBracketIcon,
   MD: DocumentIcon,
 };
-
-/**
- * @typedef MetaBarProps
- * @property {Array<import('@vcarl/remark-headings').Heading & { stability: string }>} headings - Array of page headings for table of contents
- * @property {string} addedIn - Version or date when feature was added
- * @property {string} readingTime - Estimated reading time for the page
- * @property {Array<[string, string]>} viewAs - Array of [title, path] tuples for view options
- * @property {string} editThisPage - URL for editing the current page
- */
 
 const STABILITY_KINDS = ['error', 'warning', null, 'info'];
 const STABILITY_LABELS = ['D', 'E', null, 'L'];
@@ -56,50 +49,53 @@ const HeadingValue = ({ value, stability }) => {
 
 /**
  * MetaBar component that displays table of contents and page metadata
- * @param {MetaBarProps} props - Component props
+ * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime: string }} props
  */
-export default ({
-  headings = [],
-  addedIn,
-  readingTime,
-  viewAs = [],
-  editThisPage,
-}) => (
-  <MetaBar
-    heading="Table of Contents"
-    headings={{
-      items: headings.map(({ value, stability, ...heading }) => ({
-        ...heading,
-        value: <HeadingValue value={value} stability={stability} />,
-      })),
-    }}
-    items={{
-      'Reading Time': readingTime,
-      'Added In': addedIn,
-      'View As': (
-        <ol>
-          {viewAs.map(([title, path]) => {
-            const Icon = iconMap[title];
+export default ({ metadata, headings = [], readingTime }) => {
+  const editThisPage = editURL.replace('{path}', metadata.path);
 
-            return (
-              <li key={title}>
-                <a href={path}>
-                  {Icon && <Icon className={styles.icon} />}
+  const viewAs = [
+    ['JSON', `${metadata.basename}.json`],
+    ['MD', `${metadata.basename}.md`],
+  ];
 
-                  {title}
-                </a>
-              </li>
-            );
-          })}
-        </ol>
-      ),
-      Contribute: (
-        <>
-          <GitHubIcon className="fill-neutral-700 dark:fill-neutral-100" />
+  return (
+    <MetaBar
+      heading="Table of Contents"
+      headings={{
+        items: headings.map(({ value, stability, ...heading }) => ({
+          ...heading,
+          value: <HeadingValue value={value} stability={stability} />,
+        })),
+      }}
+      items={{
+        'Reading Time': readingTime,
+        'Added In': metadata.added ?? metadata.introduced_in,
+        'View As': (
+          <ol>
+            {viewAs.map(([viewTitle, path]) => {
+              const Icon = iconMap[viewTitle];
 
-          <a href={editThisPage}>Edit this page</a>
-        </>
-      ),
-    }}
-  />
-);
+              return (
+                <li key={viewTitle}>
+                  <a href={path}>
+                    {Icon && <Icon className={styles.icon} />}
+
+                    {viewTitle}
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        ),
+        Contribute: (
+          <>
+            <GitHubIcon className="fill-neutral-700 dark:fill-neutral-100" />
+
+            <a href={editThisPage}>Edit this page</a>
+          </>
+        ),
+      }}
+    />
+  );
+};
