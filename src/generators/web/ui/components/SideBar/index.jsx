@@ -3,6 +3,7 @@ import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
 import { relative } from '../../../../../utils/url.mjs';
+import { buildSideBarGroups } from '../../utils/sidebar.mjs';
 
 import { title, version, versions, pages } from '#theme/config';
 
@@ -36,32 +37,30 @@ export default ({ metadata }) => {
       label,
     }));
 
-  const items = pages.map(([heading, path]) => ({
+  const items = pages.map(([heading, path, category]) => ({
     label: heading,
     link:
       metadata.path === path
         ? `${metadata.basename}.html`
         : `${relative(path, metadata.path)}.html`,
+    category,
   }));
 
   return (
     <SideBar
       pathname={`${metadata.basename}.html`}
-      groups={[{ groupName: 'API Documentation', items }]}
+      groups={buildSideBarGroups(items)}
       onSelect={redirect}
       as={props => <a {...props} rel="prefetch" />}
       title="Navigation"
     >
-      <div>
-        <Select
-          label={`${title} version`}
-          values={compatibleVersions}
-          inline={true}
-          className={styles.select}
-          placeholder={version}
-          onChange={redirect}
-        />
-      </div>
+      <Select
+        label={`${title} version`}
+        values={compatibleVersions}
+        className={styles.select}
+        placeholder={version}
+        onChange={redirect}
+      />
     </SideBar>
   );
 };

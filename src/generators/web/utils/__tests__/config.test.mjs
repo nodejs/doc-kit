@@ -43,6 +43,7 @@ const makeEntry = (api, name, path) => ({
   data: {
     api,
     path,
+    category: api === 'fs' ? 'File System' : undefined,
     heading: { depth: 1, data: { name } },
   },
 });
@@ -101,7 +102,7 @@ describe('buildVersionEntries', () => {
 });
 
 describe('buildPageList', () => {
-  it('returns sorted [name, path] tuples from input entries', () => {
+  it('returns sorted [name, path, category] tuples from input entries', () => {
     const input = [
       makeEntry('http', 'HTTP', '/http'),
       makeEntry('fs', 'File System', '/fs'),
@@ -111,8 +112,8 @@ describe('buildPageList', () => {
 
     assert.equal(result.length, 2);
     // Sorted alphabetically by name
-    assert.deepStrictEqual(result[0], ['File System', '/fs']);
-    assert.deepStrictEqual(result[1], ['HTTP', '/http']);
+    assert.deepStrictEqual(result[0], ['File System', '/fs', 'File System']);
+    assert.deepStrictEqual(result[1], ['HTTP', '/http', undefined]);
   });
 
   it('filters out entries whose heading depth is not 1', () => {
@@ -130,7 +131,7 @@ describe('buildPageList', () => {
     const result = buildPageList(input);
 
     assert.equal(result.length, 1);
-    assert.deepStrictEqual(result[0], ['File System', '/fs']);
+    assert.deepStrictEqual(result[0], ['File System', '/fs', 'File System']);
   });
 });
 

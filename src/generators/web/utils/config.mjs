@@ -33,11 +33,16 @@ export function buildVersionEntries(config, pageURLBase) {
  * Pre-compute sorted page list for sidebar navigation.
  *
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input
- * @returns {Array<[string, string]>}
+ * @returns {Array<[string, string, string?]>}
  */
 export function buildPageList(input) {
-  const headNodes = getSortedHeadNodes(input.map(e => e.data));
-  return headNodes.map(node => [node.heading.data.name, node.path]);
+  const headNodes = getSortedHeadNodes(input.map(({ data }) => data));
+
+  return headNodes.map(({ path, category, heading }) => [
+    heading.data.name,
+    path,
+    category,
+  ]);
 }
 
 /**

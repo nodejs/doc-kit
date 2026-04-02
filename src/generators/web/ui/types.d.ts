@@ -15,7 +15,7 @@ declare module '#theme/config' {
     major: number;
   }>;
   export const editURL: string;
-  export const pages: Array<[string, string]>;
+  export const pages: Array<[string, string, string?]>;
   export const languageDisplayNameMap: Map<string, string>;
 }
 
