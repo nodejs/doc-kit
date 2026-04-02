@@ -102,7 +102,7 @@ export async function processJSXEntries(entries, template) {
 
   const titleSuffix = populate(config.title, {
     ...config,
-    version: `v${config.version.version}`,
+    version: config.version.version,
   });
 
   // Step 3: Render final HTML pages
