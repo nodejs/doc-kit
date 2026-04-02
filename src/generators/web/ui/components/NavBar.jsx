@@ -6,7 +6,7 @@ import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 import SearchBox from './SearchBox';
 import { useTheme } from '../hooks/useTheme.mjs';
 
-import { title, repository } from '#theme/config';
+import { repository } from '#theme/config';
 import Logo from '#theme/Logo';
 
 /**
@@ -28,7 +28,7 @@ export default ({ metadata }) => {
       />
       <a
         href={`https://github.com/${repository}`}
-        aria-label={`${title} GitHub`}
+        aria-label={repository}
         className={styles.ghIconWrapper}
       >
         <GitHubIcon />
