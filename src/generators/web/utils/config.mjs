@@ -72,9 +72,9 @@ export function buildLanguageDisplayNameMap() {
  * @returns {string} JavaScript source code string with named exports
  */
 export default function createConfigSource(input) {
-  const config = getConfig('web');
+  const { version: configVersion, ...config } = getConfig('web');
 
-  const version = `v${config.version.version}`;
+  const version = `v${configVersion.version}`;
   const editURL = populate(config.editURL, { ...config, version });
   const pageURL = populate(config.pageURL, config);
 
