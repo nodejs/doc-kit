@@ -1,11 +1,13 @@
 import type { JSXContent } from '../jsx-ast/utils/buildContent.mjs';
 
+export type Configuration = {
+  templatePath: string;
+  title: string;
+  imports: Record<string, string>;
+  virtualImports: Record<string, string>;
+};
+
 export type Generator = GeneratorMetadata<
-  {
-    templatePath: string;
-    title: string;
-    imports: Record<string, string>;
-    virtualImports: Record<string, string>;
-  },
+  Configuration,
   Generate<Array<JSXContent>, AsyncGenerator<{ html: string; css: string }>>
 >;

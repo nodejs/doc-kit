@@ -9,7 +9,7 @@ import { SKIP, visit } from 'unist-util-visit';
 import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
-import { extractPrimitives } from '../../../utils/misc.mjs';
+import { omitKeys } from '../../../utils/misc.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 import {
   STABILITY_LEVELS,
@@ -296,7 +296,8 @@ export const createDocumentLayout = (entries, metadata) =>
  * @returns {Promise<JSXContent>}
  */
 const buildContent = async (metadataEntries, head) => {
-  const metadata = extractPrimitives(head);
+  // The metadata is the heading without the node children
+  const metadata = omitKeys(head, ['content', 'heading', 'stability']);
 
   // Create root document AST with all layout components and processed content
   const root = createDocumentLayout(metadataEntries, metadata);

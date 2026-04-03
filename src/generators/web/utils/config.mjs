@@ -5,6 +5,7 @@ import { LANGS } from '@node-core/rehype-shiki';
 import getConfig from '../../../utils/configuration/index.mjs';
 import { populate } from '../../../utils/configuration/templates.mjs';
 import { getVersionFromSemVer } from '../../../utils/generators.mjs';
+import { omitKeys } from '../../../utils/misc.mjs';
 import { getSortedHeadNodes } from '../../jsx-ast/utils/getSortedHeadNodes.mjs';
 
 /**
@@ -79,10 +80,10 @@ export default function createConfigSource(input) {
   const pageURL = populate(config.pageURL, config);
 
   const exports = {
-    ...Object.fromEntries(
-      Object.entries(config).filter(
-        ([, v]) => v === null || typeof v !== 'object'
-      )
+    ...omitKeys(
+      config,
+      // These are keys that are large, and not needed by components, so we ignore them
+      ['changelog', 'index', 'imports', 'virtualImport']
     ),
     version,
     versions: buildVersionEntries(config.changelog, pageURL),

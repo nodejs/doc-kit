@@ -20,15 +20,14 @@ export const isPlainObject = value =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
 /**
- * Extracts all the primitives from an object
+ * Returns a shallow copy of `obj` without the specified keys.
+ * @param {Record<string, any>} obj
+ * @param {string[]} keys - Keys to exclude
+ * @returns {Record<string, any>}
  */
-export const extractPrimitives = obj =>
+export const omitKeys = (obj, keys = []) =>
   Object.fromEntries(
-    Object.entries(obj).filter(
-      ([, value]) =>
-        value !== Object(value) ||
-        (Array.isArray(value) && value.every(item => item !== Object(item)))
-    )
+    Object.entries(obj).filter(([key]) => !keys.includes(key))
   );
 
 /**
