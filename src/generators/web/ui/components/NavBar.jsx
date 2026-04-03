@@ -13,8 +13,8 @@ import Logo from '#theme/Logo';
  * NavBar component that displays the headings, search, etc.
  */
 export default ({ metadata }) => {
-  const [theme, toggleTheme] = useTheme();
-
+  const [themePreference, setThemePreference] = useTheme();
+  
   return (
     <NavBar
       Logo={Logo}
@@ -23,8 +23,8 @@ export default ({ metadata }) => {
     >
       <SearchBox pathname={metadata.path} />
       <ThemeToggle
-        onClick={toggleTheme}
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+        onChange={setThemePreference}
+        currentTheme={themePreference}
       />
       <a
         href={`https://github.com/${repository}`}
