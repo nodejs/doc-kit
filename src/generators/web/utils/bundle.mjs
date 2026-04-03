@@ -4,7 +4,6 @@ import virtual from '@rollup/plugin-virtual';
 import { build } from 'rolldown';
 
 import cssLoader from './css.mjs';
-import getStaticData from './data.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import { lazy } from '../../../utils/misc.mjs';
 
@@ -30,9 +29,14 @@ const getNodeModules = lazy(async () => {
  *
  * @param {Map<string, string>} codeMap - Map of {fileName: code} for all builds.
  * @param {Object} [options] - Build configuration object.
+ * @param {Object} [virtualImports] - Virtual imports
  * @param {boolean} [options.server=false] - Whether this is a server-side build.
  */
-export default async function bundleCode(codeMap, { server = false } = {}) {
+export default async function bundleCode(
+  codeMap,
+  virtualImports = {},
+  { server = false } = {}
+) {
   const config = getConfig('web');
 
   const result = await build({
@@ -78,9 +82,6 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       // These are useful for tree-shaking and conditional branching.
       // Be sure to update type declarations (`types.d.ts`) if these change.
       define: {
-        // Static data injected directly into the bundle (as a literal or serialized JSON).
-        __STATIC_DATA__: getStaticData(),
-
         // Boolean flags used for conditional logic in source code:
         // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
         // These flags help split logic for server/client environments.
@@ -115,8 +116,12 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
 
     // Array of plugins to apply during the build.
     plugins: [
-      // Virtual plugin: provides in-memory modules from codeMap
-      virtual(Object.fromEntries(codeMap)),
+      // Virtual plugin: provides in-memory modules from codeMap,
+      // plus the #theme/config virtual module
+      virtual({
+        ...Object.fromEntries(codeMap),
+        ...virtualImports,
+      }),
 
       // Load CSS imports via the custom plugin.
       // This plugin will collect imported CSS files and return them as `source` chunks.

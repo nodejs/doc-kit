@@ -2,15 +2,16 @@ import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
-import { STATIC_DATA } from '../../constants.mjs';
+import { relative } from '../../../../../utils/url.mjs';
+
+import { title, version, versions, pages } from '#theme/config';
 
 /**
- * @typedef {Object} SideBarProps
- * @property {string} pathname - The current document
- * @property {Array<string>} versions - Available documentation versions
- * @property {string} currentVersion - Currently selected version
- * @property {Array<[string, string]>} docPages - [Title, URL] pairs
+ * Extracts the major version number from a version string.
+ * @param {string} v - Version string (e.g., 'v14.0.0', '14.0.0')
+ * @returns {number}
  */
+const getMajorVersion = v => parseInt(String(v).match(/\d+/)?.[0] ?? '0', 10);
 
 /**
  * Redirect to a URL
@@ -20,30 +21,47 @@ const redirect = url => (window.location.href = url);
 
 /**
  * Sidebar component for MDX documentation with version selection and page navigation
- * @param {SideBarProps} props - Component props
+ * @param {{ metadata: import('../../types').SerializedMetadata }} props
  */
-export default ({ versions, pathname, currentVersion, docPages }) => (
-  <SideBar
-    pathname={pathname}
-    groups={[
-      {
-        groupName: 'API Documentation',
-        items: docPages.map(([label, link]) => ({ label, link })),
-      },
-    ]}
-    onSelect={redirect}
-    as={props => <a {...props} rel="prefetch" />}
-    title="Navigation"
-  >
-    <div>
-      <Select
-        label={`${STATIC_DATA.title} version`}
-        values={versions}
-        inline={true}
-        className={styles.select}
-        placeholder={currentVersion}
-        onChange={redirect}
-      />
-    </div>
-  </SideBar>
-);
+export default ({ metadata }) => {
+  const introducedMajor = getMajorVersion(
+    metadata.added ?? metadata.introduced_in
+  );
+
+  // Filter pre-computed versions by compatibility and resolve per-page URL
+  const compatibleVersions = versions
+    .filter(v => v.major >= introducedMajor)
+    .map(({ url, label }) => ({
+      value: url.replace('{path}', metadata.path),
+      label,
+    }));
+
+  const items = pages.map(([heading, path]) => ({
+    label: heading,
+    link:
+      metadata.path === path
+        ? `${metadata.basename}.html`
+        : `${relative(path, metadata.path)}.html`,
+  }));
+
+  return (
+    <SideBar
+      pathname={`${metadata.basename}.html`}
+      groups={[{ groupName: 'API Documentation', items }]}
+      onSelect={redirect}
+      as={props => <a {...props} rel="prefetch" />}
+      title="Navigation"
+    >
+      <div>
+        <Select
+          label={`${title} version`}
+          values={compatibleVersions}
+          inline={true}
+          className={styles.select}
+          placeholder={version}
+          onChange={redirect}
+        />
+      </div>
+    </SideBar>
+  );
+};

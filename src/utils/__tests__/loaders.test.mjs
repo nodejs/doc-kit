@@ -8,7 +8,8 @@ mock.module('node:fs/promises', {
   },
 });
 
-const { toParsedURL, loadFromURL } = await import('../url.mjs');
+const { toParsedURL, loadFromURL, importFromURL } =
+  await import('../loaders.mjs');
 
 describe('toParsedURL', () => {
   it('should return the same URL instance when given a URL object', () => {
@@ -49,5 +50,20 @@ describe('loadFromURL', () => {
 
     const result = await loadFromURL('https://nodejs.org/data.txt');
     assert.strictEqual(result, 'fetched content');
+  });
+});
+
+describe('importFromURL', () => {
+  it('should import a module from a valid URL and return default export', async () => {
+    const mod = await importFromURL(import.meta.url);
+    // The test file itself has no default export, so the full module is returned
+    assert.ok(mod !== undefined);
+  });
+
+  it('should resolve a relative path to an absolute file URL', async () => {
+    // Importing the loaders module itself as a sanity check
+    const mod = await importFromURL(new URL('../loaders.mjs', import.meta.url));
+    assert.ok(typeof mod.loadFromURL === 'function');
+    assert.ok(typeof mod.importFromURL === 'function');
   });
 });

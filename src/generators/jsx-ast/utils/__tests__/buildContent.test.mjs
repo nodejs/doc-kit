@@ -29,7 +29,7 @@ describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
     const parent = makeParent('Documentation');
     const node = parent.children[0];
 
-    transformHeadingNode(entry, {}, node, 0, parent);
+    transformHeadingNode(entry, node, 0, parent);
 
     const alert = parent.children[1];
     const levelAttr = alert.attributes.find(a => a.name === 'level');
@@ -43,7 +43,7 @@ describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
     const parent = makeParent('Runtime');
     const node = parent.children[0];
 
-    transformHeadingNode(entry, {}, node, 0, parent);
+    transformHeadingNode(entry, node, 0, parent);
 
     const alert = parent.children[1];
     const levelAttr = alert.attributes.find(a => a.name === 'level');
@@ -57,7 +57,7 @@ describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
     const parent = makeParent('SomeOtherThing');
     const node = parent.children[0];
 
-    transformHeadingNode(entry, {}, node, 0, parent);
+    transformHeadingNode(entry, node, 0, parent);
 
     const alert = parent.children[1];
     const levelAttr = alert.attributes.find(a => a.name === 'level');

@@ -10,9 +10,7 @@ import { STABILITY_INDEX_URL } from './constants.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
 import { withExt } from '../../utils/file.mjs';
 import { QUERIES } from '../../utils/queries/index.mjs';
-import { getRemark } from '../../utils/remark.mjs';
-
-const remarkProcessor = getRemark();
+import { getRemark as remark } from '../../utils/remark.mjs';
 
 /**
  * Process a chunk of markdown files in a worker thread.
@@ -40,7 +38,7 @@ export async function processChunk(inputSlice, itemIndices) {
     const relativePath = sep + withExt(relative(parent, path));
 
     results.push({
-      tree: remarkProcessor.parse(value),
+      tree: remark().parse(value),
       // The path is the relative path minus the extension
       path: relativePath,
     });

@@ -23,31 +23,34 @@ export const transformUnixManualToLink = (
   return `[\`${text}\`](${DOC_MAN_BASE_URL}${sectionNumber}/${command}.${sectionNumber}${sectionLetter}.html)`;
 };
 /**
- * Safely splits the string by `|`, ignoring pipes that are inside `< >`
+ * Safely splits the string by `|` or `&` at the top level (ignoring those
+ * inside `< >`), and returns both the pieces and the separator used.
  *
  * @param {string} str The type string to split
- * @returns {string[]} An array of type pieces
+ * @returns {{ pieces: string[], separator: string }} The split pieces and the separator string used to join them (` | ` or ` & `)
  */
-const splitByOuterUnion = str => {
-  const result = [];
+const splitByOuterSeparator = str => {
+  const pieces = [];
   let current = '';
   let depth = 0;
+  let separator;
 
   for (const char of str) {
     if (char === '<') {
       depth++;
     } else if (char === '>') {
       depth--;
-    } else if (char === '|' && depth === 0) {
-      result.push(current);
+    } else if ((char === '|' || char === '&') && depth === 0) {
+      pieces.push(current);
       current = '';
+      separator ??= ` ${char} `;
       continue;
     }
     current += char;
   }
 
-  result.push(current);
-  return result;
+  pieces.push(current);
+  return { pieces, separator };
 };
 
 /**
@@ -147,7 +150,9 @@ export const transformTypeToReferenceLink = (type, record) => {
     return '';
   };
 
-  const typePieces = splitByOuterUnion(typeInput).map(piece => {
+  const { pieces: outerPieces, separator } = splitByOuterSeparator(typeInput);
+
+  const typePieces = outerPieces.map(piece => {
     // This is the content to render as the text of the Markdown link
     const trimmedPiece = piece.trim();
 
@@ -169,8 +174,8 @@ export const transformTypeToReferenceLink = (type, record) => {
   });
 
   // Filter out pieces that we failed to map and then join the valid ones
-  // into different links separated by a ` | `
-  const markdownLinks = typePieces.filter(Boolean).join(' | ');
+  // using the same separator that appeared in the original type string
+  const markdownLinks = typePieces.filter(Boolean).join(separator);
 
   // Return the replaced links or the original content if they all failed to be replaced
   // Note that if some failed to get replaced, only the valid ones will be returned
