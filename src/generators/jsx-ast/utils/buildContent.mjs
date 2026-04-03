@@ -297,7 +297,12 @@ export const createDocumentLayout = (entries, metadata) =>
  */
 const buildContent = async (metadataEntries, head) => {
   // The metadata is the heading without the node children
-  const metadata = omitKeys(head, ['content', 'heading', 'stability']);
+  const metadata = omitKeys(head, [
+    'content',
+    'heading',
+    'stability',
+    'changes',
+  ]);
 
   // Create root document AST with all layout components and processed content
   const root = createDocumentLayout(metadataEntries, metadata);
