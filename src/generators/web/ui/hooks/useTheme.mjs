@@ -28,13 +28,9 @@ const applySystemTheme = () => applyTheme('system');
  */
 export const useTheme = () => {
   // Read stored preference once on mount; default to 'system'.
-  const [pref, setPref] = useState(() => {
-    if (typeof window === 'undefined') {
-      return 'system';
-    }
-
-    return localStorage.getItem('theme') || 'system';
-  });
+  const [pref, setPref] = useState(() =>
+    SERVER ? 'system' : (localStorage.getItem('theme') ?? 'system')
+  );
 
   // Apply theme on every preference change, and if 'system',
   // also listen for OS-level color scheme changes.
@@ -53,7 +49,7 @@ export const useTheme = () => {
   /** Updates the preference in both React state and localStorage. */
   const setTheme = useCallback(next => {
     setPref(next);
-    if (typeof window !== 'undefined') {
+    if (CLIENT) {
       localStorage.setItem('theme', next);
     }
   }, []);
