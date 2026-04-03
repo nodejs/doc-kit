@@ -72,31 +72,29 @@ export function buildLanguageDisplayNameMap() {
  * @returns {string} JavaScript source code string with named exports
  */
 export default function createConfigSource(input) {
-  const {
-    version: versionMeta,
-    changelog,
-    editURL: editURLTemplate,
-    pageURL: pageURLTemplate,
-    ...rest
-  } = getConfig('web');
+  const config = getConfig('web');
 
-  const version = `v${versionMeta.version}`;
-  const editURL = populate(editURLTemplate, { ...rest, version });
-  const pageURL = populate(pageURLTemplate, rest);
+  const version = `v${config.version.version}`;
+  const editURL = populate(config.editURL, { ...config, version });
+  const pageURL = populate(config.pageURL, config);
 
-  const lines = [];
+  const exports = {
+    ...Object.fromEntries(
+      Object.entries(config).filter(
+        ([, v]) => v === null || typeof v !== 'object'
+      )
+    ),
+    version,
+    versions: buildVersionEntries(config.changelog, pageURL),
+    editURL,
+    pages: buildPageList(input),
+  };
 
-  for (const [k, v] of Object.entries(rest)) {
-    if (v === null || typeof v !== 'object') {
-      lines.push(`export const ${k} = ${JSON.stringify(v)};`);
-    }
-  }
+  const lines = Object.entries(exports).map(
+    ([k, v]) => `export const ${k} = ${JSON.stringify(v)};`
+  );
 
   lines.push(
-    `export const version = ${JSON.stringify(version)};`,
-    `export const versions = ${JSON.stringify(buildVersionEntries(changelog, pageURL))};`,
-    `export const editURL = ${JSON.stringify(editURL)};`,
-    `export const pages = ${JSON.stringify(buildPageList(input))};`,
     `export const languageDisplayNameMap = new Map(${JSON.stringify(buildLanguageDisplayNameMap())});`
   );
 

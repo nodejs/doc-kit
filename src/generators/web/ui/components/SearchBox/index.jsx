@@ -8,6 +8,7 @@ import SearchResults from '@node-core/ui-components/Common/Search/Results';
 import SearchHit from '@node-core/ui-components/Common/Search/Results/Hit';
 
 import styles from './index.module.css';
+import { relative } from '../../../../../utils/url.mjs';
 import useOrama from '../../hooks/useOrama.mjs';
 
 const SearchBox = ({ pathname }) => {
@@ -18,7 +19,14 @@ const SearchBox = ({ pathname }) => {
       <div className={styles.searchResultsContainer}>
         <SearchResults
           noResultsTitle="No results found for"
-          onHit={hit => <SearchHit document={hit.document} />}
+          onHit={hit => (
+            <SearchHit
+              document={{
+                ...hit.document,
+                href: relative(hit.document.href, pathname),
+              }}
+            />
+          )}
         />
       </div>
 
