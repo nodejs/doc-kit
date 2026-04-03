@@ -1,16 +1,4 @@
 import { relative } from '../../../../../../utils/url.mjs';
-import { SIDEBAR_GROUPS } from '../../../constants.mjs';
-
-/**
- * @deprecated This is being exported temporarily during the transition period.
- * Reverse lookup: filename (e.g. 'fs.html') -> groupName, used as category
- * fallback for pages without explicit category in metadata.
- */
-export const fileToGroup = new Map(
-  SIDEBAR_GROUPS.flatMap(({ groupName, items }) =>
-    items.map(item => [item, groupName])
-  )
-);
 
 /**
  * Builds grouped sidebar navigation from categorized page entries.
@@ -40,16 +28,14 @@ export const buildSideBarGroups = (
       continue;
     }
 
-    const resolvedCategory = category ?? fileToGroup.get(linkFilename);
-
-    if (!resolvedCategory) {
+    if (!category) {
       others.push({ label, link });
       continue;
     }
 
-    const groupItems = groups.get(resolvedCategory) ?? [];
+    const groupItems = groups.get(category) ?? [];
     groupItems.push({ label, link });
-    groups.set(resolvedCategory, groupItems);
+    groups.set(category, groupItems);
   }
 
   // Convert the groups map to an array while preserving the original order of categories
