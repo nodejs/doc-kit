@@ -14,7 +14,7 @@ import Logo from '#theme/Logo';
  */
 export default ({ metadata }) => {
   const [themePreference, setThemePreference] = useTheme();
-  
+
   return (
     <NavBar
       Logo={Logo}
