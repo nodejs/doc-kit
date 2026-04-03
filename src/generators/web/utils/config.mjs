@@ -76,7 +76,11 @@ export default function createConfigSource(input) {
 
   const version = `v${configVersion.version}`;
   const editURL = populate(config.editURL, { ...config, version });
-  const pageURL = populate(config.pageURL, config);
+  // Preserve the `{version}` placeholder in `pageURL` for buildVersionEntries.
+  // Avoid passing the SemVer object so populate() does not replace `{version}` prematurely.
+  const configWithoutVersion = { ...config };
+  delete configWithoutVersion.version;
+  const pageURL = populate(config.pageURL, configWithoutVersion);
 
   const exports = {
     ...Object.fromEntries(
