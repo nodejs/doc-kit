@@ -2,3 +2,8 @@
   width: 100%;
   margin-bottom: -1rem;
 }
+
+/* Override the min-width of the select component used for version selection in the sidebar */
+.select button[role='combobox'] {
+  min-width: initial;
+}
