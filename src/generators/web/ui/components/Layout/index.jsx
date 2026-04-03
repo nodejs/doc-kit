@@ -17,7 +17,7 @@ import SideBar from '#theme/Sidebar';
  */
 export default ({ metadata, headings, readingTime, children }) => (
   <>
-    <NavBar />
+    <NavBar metadata={metadata} />
     <Article>
       <SideBar metadata={metadata} />
       <div>

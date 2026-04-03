@@ -12,7 +12,7 @@ import Logo from '#theme/Logo';
 /**
  * NavBar component that displays the headings, search, etc.
  */
-export default () => {
+export default ({ metadata }) => {
   const [themePreference, setThemePreference] = useTheme();
 
   return (
@@ -21,7 +21,7 @@ export default () => {
       sidebarItemTogglerAriaLabel="Toggle navigation menu"
       navItems={[]}
     >
-      <SearchBox />
+      <SearchBox pathname={metadata.path} />
       <ThemeToggle
         onChange={setThemePreference}
         currentTheme={themePreference}

@@ -10,8 +10,8 @@ import SearchHit from '@node-core/ui-components/Common/Search/Results/Hit';
 import styles from './index.module.css';
 import useOrama from '../../hooks/useOrama.mjs';
 
-const SearchBox = () => {
-  const client = useOrama();
+const SearchBox = ({ pathname }) => {
+  const client = useOrama(pathname);
 
   return (
     <SearchModal client={client} placeholder="Start typing...">
