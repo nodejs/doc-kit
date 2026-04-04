@@ -133,7 +133,7 @@ export async function processJSXEntries(entries, template) {
         dehydrated: serverBundle.pages.get(`${data.api}.js`) ?? '',
         importMap: clientBundle.importMap?.replaceAll('/', root) ?? '',
         entrypoint: `${data.api}.js?${randomUUID()}`,
-        speculationRules: JSON.stringify(SPECULATION_RULES),
+        speculationRules: SPECULATION_RULES,
         root,
         metadata: data,
         config,
