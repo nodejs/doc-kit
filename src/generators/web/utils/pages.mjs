@@ -6,27 +6,25 @@ export const DEFAULT_PAGE_WEIGHT = -1;
 /**
  * Normalizes a page weight value to a finite number, or falls back to default.
  *
- * @param {unknown} weight
+ * @param {number|string} weight
  * @returns {number}
  */
 export const normalizePageWeight = weight => {
-  if (typeof weight === 'number' && Number.isFinite(weight)) {
-    return weight;
+  let candidate = NaN;
+
+  if (typeof weight === 'number') {
+    candidate = weight;
   }
 
   if (typeof weight === 'string') {
     const trimmedWeight = weight.trim();
 
-    if (trimmedWeight.length > 0) {
-      const parsedWeight = Number(trimmedWeight);
-
-      if (Number.isFinite(parsedWeight)) {
-        return parsedWeight;
-      }
+    if (trimmedWeight !== '') {
+      candidate = Number(trimmedWeight);
     }
   }
 
-  return DEFAULT_PAGE_WEIGHT;
+  return Number.isFinite(candidate) ? candidate : DEFAULT_PAGE_WEIGHT;
 };
 
 /**
@@ -43,7 +41,7 @@ export const compareSidebarPageWeight = (a, b) => {
   const aHasWeight = a.weight !== DEFAULT_PAGE_WEIGHT;
   const bHasWeight = b.weight !== DEFAULT_PAGE_WEIGHT;
 
-  if (aHasWeight && bHasWeight && a.weight !== b.weight) {
+  if (aHasWeight && bHasWeight) {
     return a.weight - b.weight;
   }
 
