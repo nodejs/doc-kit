@@ -20,6 +20,7 @@ declare module '#theme/config' {
   // From web configuration
   export const templatePath: Configuration['templatePath'];
   export const title: Configuration['title'];
+  export const useAbsoluteURLs: Configuration['useAbsoluteURLs'];
 
   // From config generation
   export const version: string;
