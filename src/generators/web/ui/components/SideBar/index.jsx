@@ -2,7 +2,7 @@ import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
-import { relative } from '../../../../../utils/url.mjs';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
 import { project, version, versions, pages } from '#theme/config';
 
@@ -41,7 +41,7 @@ export default ({ metadata }) => {
     link:
       metadata.path === path
         ? `${metadata.basename}.html`
-        : `${relative(path, metadata.path)}.html`,
+        : `${relativeOrAbsolute(path, metadata.path)}.html`,
   }));
 
   return (
