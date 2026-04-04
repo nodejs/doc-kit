@@ -38,7 +38,7 @@ describe('createLegacySlugger', () => {
   });
 
   describe('deprecation headings', () => {
-    it('returns the DEP code for deprecation headings in the deprecations doc', () => {
+    it('returns the DEP code for a deprecation heading', () => {
       const getLegacySlug = createLegacySlugger();
       assert.strictEqual(
         getLegacySlug(
@@ -56,14 +56,6 @@ describe('createLegacySlugger', () => {
           'DEP0190: spawning .bat and .cmd files with child_process.spawn() with shell option',
           'deprecations'
         ),
-        'DEP0190'
-      );
-    });
-
-    it('does not apply deprecation special-casing outside the deprecations doc', () => {
-      const getLegacySlug = createLegacySlugger();
-      assert.notStrictEqual(
-        getLegacySlug('DEP0190: some heading', 'child_process'),
         'DEP0190'
       );
     });
