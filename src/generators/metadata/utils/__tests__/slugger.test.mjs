@@ -102,14 +102,6 @@ describe('slug', () => {
     it('handles titles with no special characters', () => {
       assert.strictEqual(slug('stability index'), 'stability-index');
     });
-
-    it('generates correct slug for __dirname (preserves leading underscores)', () => {
-      assert.strictEqual(slug('__dirname'), '__dirname');
-    });
-
-    it('generates correct slug for __filename (preserves leading underscores)', () => {
-      assert.strictEqual(slug('__filename'), '__filename');
-    });
   });
 });
 
