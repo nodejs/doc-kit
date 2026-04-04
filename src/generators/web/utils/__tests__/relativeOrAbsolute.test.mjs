@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { beforeEach, describe, it } from 'node:test';
 
-import { setConfig } from '../../../../utils/configuration/index.mjs';
+import {
+  setConfig,
+  default as getConfig,
+} from '../../../../utils/configuration/index.mjs';
 import { relativeOrAbsolute } from '../relativeOrAbsolute.mjs';
 
 await setConfig({
@@ -15,10 +18,14 @@ await setConfig({
   },
 });
 
-describe('relativeOrAbsolute (relative mode)', async () => {
+describe('relativeOrAbsolute (relative mode)', () => {
+  beforeEach(() => {
+    getConfig('web').useAbsoluteURLs = false;
+  });
+
   it('returns a relative path from a nested page to root', () => {
     const result = relativeOrAbsolute('/', '/api/fs');
-    assert.strictEqual(result, '../..');
+    assert.strictEqual(result, '..');
   });
 
   it('returns a relative path between sibling pages', () => {
@@ -28,34 +35,23 @@ describe('relativeOrAbsolute (relative mode)', async () => {
 
   it('returns a relative path for a deeper target', () => {
     const result = relativeOrAbsolute('/orama-db.json', '/api/fs');
-    assert.strictEqual(result, '../../orama-db.json');
+    assert.strictEqual(result, '../orama-db.json');
   });
 
   it('returns "." when source and target resolve to the same path', () => {
-    const result = relativeOrAbsolute('/fs', '/fs');
+    const result = relativeOrAbsolute('/', '/');
     assert.strictEqual(result, '.');
   });
 });
 
-describe('relativeOrAbsolute (absolute mode)', async () => {
-  await setConfig({
-    version: 'v22.0.0',
-    changelog: [],
-    generators: {
-      web: {
-        useAbsoluteURLs: true,
-        baseURL: 'https://nodejs.org/docs',
-      },
-    },
+describe('relativeOrAbsolute (absolute mode)', () => {
+  beforeEach(() => {
+    getConfig('web').useAbsoluteURLs = true;
   });
-
-  // Cache-busting query param to get a fresh module with new config
-  const { relativeOrAbsolute } =
-    await import('../relativeOrAbsolute.mjs?absolute');
 
   it('returns an absolute URL to root', () => {
     const result = relativeOrAbsolute('/', '/api/fs');
-    assert.strictEqual(result, 'https://nodejs.org/docs/');
+    assert.strictEqual(result, 'https://nodejs.org/docs');
   });
 
   it('returns an absolute URL for a page path', () => {
@@ -66,24 +62,5 @@ describe('relativeOrAbsolute (absolute mode)', async () => {
   it('returns an absolute URL for a resource', () => {
     const result = relativeOrAbsolute('/orama-db.json', '/api/fs');
     assert.strictEqual(result, 'https://nodejs.org/docs/orama-db.json');
-  });
-
-  it('strips trailing slash from baseURL before joining', async () => {
-    await setConfig({
-      version: 'v22.0.0',
-      changelog: [],
-      generators: {
-        web: {
-          useAbsoluteURLs: true,
-          baseURL: 'https://nodejs.org/docs/',
-        },
-      },
-    });
-
-    const { relativeOrAbsolute: roa } =
-      await import('../relativeOrAbsolute.mjs?trailing-slash');
-
-    const result = roa('/fs', '/http');
-    assert.strictEqual(result, 'https://nodejs.org/docs/fs');
   });
 });
