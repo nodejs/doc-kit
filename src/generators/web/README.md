@@ -47,15 +47,15 @@ import { title, repository, editURL } from '#theme/config';
 
 #### Available exports
 
-| Export                   | Type                           | Description                                                                                         |
-| ------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `title`                  | `string`                       | Site title (e.g. `'Node.js'`)                                                                       |
-| `repository`             | `string`                       | GitHub repository in `owner/repo` format                                                            |
-| `version`                | `string`                       | Current version label (e.g. `'v22.x'`)                                                              |
-| `versions`               | `Array<{ url, label, major }>` | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use) |
-| `editURL`                | `string`                       | Partially populated "edit this page" URL template (only `{path}` remains)                           |
+| Export                   | Type                                            | Description                                                                                           |
+| ------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `title`                  | `string`                                        | Site title (e.g. `'Node.js'`)                                                                         |
+| `repository`             | `string`                                        | GitHub repository in `owner/repo` format                                                              |
+| `version`                | `string`                                        | Current version label (e.g. `'v22.x'`)                                                                |
+| `versions`               | `Array<{ url, label, major }>`                  | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use)   |
+| `editURL`                | `string`                                        | Partially populated "edit this page" URL template (only `{path}` remains)                             |
 | `pages`                  | `Array<[number, { heading, path, category? }]>` | Sorted `[weight, page]` tuples for sidebar navigation (explicit weights first, then default ordering) |
-| `languageDisplayNameMap` | `Map<string, string>`          | Shiki language alias → display name map for code blocks                                             |
+| `languageDisplayNameMap` | `Map<string, string>`                           | Shiki language alias → display name map for code blocks                                               |
 
 #### Usage in custom components
 
