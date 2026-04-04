@@ -12,7 +12,5 @@ import { relative } from '../../../utils/url.mjs';
 export const relativeOrAbsolute = (to, from) => {
   const { useAbsoluteURLs, baseURL } = getConfig('web');
 
-  return useAbsoluteURLs
-    ? `${baseURL.replace(/\/$/, '')}${to.replace(/\/$/, '')}`
-    : relative(to, from);
+  return useAbsoluteURLs ? new URL(`.${to}`, baseURL).href : relative(to, from);
 };
