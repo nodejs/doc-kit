@@ -83,7 +83,7 @@ export default function createConfigSource(input) {
     ...omitKeys(
       config,
       // These are keys that are large, and not needed by components, so we ignore them
-      ['changelog', 'index', 'imports', 'virtualImport']
+      ['changelog', 'index', 'imports', 'virtualImports']
     ),
     version,
     versions: buildVersionEntries(config.changelog, pageURL),
