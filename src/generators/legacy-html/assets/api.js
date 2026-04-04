@@ -203,18 +203,19 @@ const setupCopyButton = () => {
 function setupSidebarScroll() {
   const sidebarLinks = document.querySelectorAll('#column2 a');
 
-  let link;
-  for (link of sidebarLinks) {
+  let activeLink = null;
+  for (const link of sidebarLinks) {
     if (link.pathname === window.location.pathname) {
+      activeLink = link;
       break;
     }
   }
 
-  if (!link) {
+  if (!activeLink) {
     return;
   }
 
-  link.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  activeLink.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // Initialize either on DOMContentLoaded or immediately if already loaded

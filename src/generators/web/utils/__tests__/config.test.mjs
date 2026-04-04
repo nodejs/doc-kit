@@ -50,15 +50,11 @@ const makeEntry = (api, name, path) => ({
 
 describe('buildVersionEntries', () => {
   it('creates version entries with labels and URL templates', () => {
-    const config = {
-      changelog: [
+    const result = buildVersionEntries(
+      [
         { version: new SemVer('20.0.0'), isLts: true, isCurrent: false },
         { version: new SemVer('22.0.0'), isLts: false, isCurrent: true },
       ],
-    };
-
-    const result = buildVersionEntries(
-      config,
       'https://nodejs.org/docs/latest-{version}/api{path}.html'
     );
 
@@ -76,25 +72,19 @@ describe('buildVersionEntries', () => {
   });
 
   it('does not append a label suffix for versions that are neither LTS nor Current', () => {
-    const config = {
-      changelog: [
-        { version: new SemVer('18.0.0'), isLts: false, isCurrent: false },
-      ],
-    };
-
-    const result = buildVersionEntries(config, '{version}');
+    const result = buildVersionEntries(
+      [{ version: new SemVer('18.0.0'), isLts: false, isCurrent: false }],
+      '{version}'
+    );
 
     assert.equal(result[0].label, 'v18.x');
   });
 
   it('formats minor versions when minor is non-zero', () => {
-    const config = {
-      changelog: [
-        { version: new SemVer('21.7.0'), isLts: false, isCurrent: false },
-      ],
-    };
-
-    const result = buildVersionEntries(config, '{version}');
+    const result = buildVersionEntries(
+      [{ version: new SemVer('21.7.0'), isLts: false, isCurrent: false }],
+      '{version}'
+    );
 
     assert.equal(result[0].label, 'v21.7.x');
     assert.equal(result[0].major, 21);

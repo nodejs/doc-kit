@@ -8,7 +8,7 @@ import {
   redirect,
 } from './utils/index.mjs';
 
-import { title, version, versions, pages } from '#theme/config';
+import { project, version, versions, pages } from '#theme/config';
 
 /**
  * Sidebar component for MDX documentation with version selection and page navigation
@@ -29,7 +29,7 @@ export default ({ metadata }) => {
       title="Navigation"
     >
       <Select
-        label={`${title} version`}
+        label={`${project} version`}
         values={compatibleVersions}
         className={styles.select}
         placeholder={version}

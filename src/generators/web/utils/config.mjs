@@ -4,18 +4,19 @@ import { buildSidebarPages } from './pages.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import { populate } from '../../../utils/configuration/templates.mjs';
 import { getVersionFromSemVer } from '../../../utils/generators.mjs';
+import { omitKeys } from '../../../utils/misc.mjs';
 import { getSortedHeadNodes } from '../../jsx-ast/utils/getSortedHeadNodes.mjs';
 
 /**
  * Pre-compute version entries with labels and URL templates.
  * Each entry's `url` still contains `{path}` for per-page resolution.
  *
- * @param {object} config
+ * @param {object} changelog
  * @param {string} pageURLBase
  * @returns {Array<{url: string, label: string, major: number}>}
  */
-export function buildVersionEntries(config, pageURLBase) {
-  return config.changelog.map(({ version, isLts, isCurrent }) => {
+export function buildVersionEntries(changelog, pageURLBase) {
+  return changelog.map(({ version, isLts, isCurrent }) => {
     let label = `v${getVersionFromSemVer(version)}`;
     const url = pageURLBase.replace('{version}', label);
     if (isLts) {
@@ -72,32 +73,31 @@ export function buildLanguageDisplayNameMap() {
  * @returns {string} JavaScript source code string with named exports
  */
 export default function createConfigSource(input) {
-  const config = getConfig('web');
+  const { version: configVersion, ...config } = getConfig('web');
 
-  const currentVersion = `v${config.version.version}`;
-  const templateVars = { ...config, version: currentVersion };
+  const version = `v${configVersion.version}`;
+  const editURL = populate(config.editURL, { ...config, version });
+  const pageURL = populate(config.pageURL, config);
 
-  // Partially populate URL templates: resolve config-level placeholders,
-  // leave {path} for per-page resolution by components
-  const editURL = populate(config.editURL, templateVars);
+  const exports = {
+    ...omitKeys(
+      config,
+      // These are keys that are large, and not needed by components, so we ignore them
+      ['changelog', 'index', 'imports', 'virtualImports']
+    ),
+    version,
+    versions: buildVersionEntries(config.changelog, pageURL),
+    editURL,
+    pages: buildPageList(input),
+  };
 
-  // Resolve the pageURL template once with config-level values, leaving
-  // {version} and {path} as the only remaining placeholders
-  // eslint-disable-next-line no-unused-vars
-  const { version, ...configWithoutVersion } = config;
-  const pageURLBase = populate(config.pageURL, configWithoutVersion);
+  const lines = Object.entries(exports).map(
+    ([k, v]) => `export const ${k} = ${JSON.stringify(v)};`
+  );
 
-  const versions = buildVersionEntries(config, pageURLBase);
-  const pages = buildPageList(input);
-  const shikiDisplayNameMap = buildLanguageDisplayNameMap();
+  lines.push(
+    `export const languageDisplayNameMap = new Map(${JSON.stringify(buildLanguageDisplayNameMap())});`
+  );
 
-  return [
-    `export const title = ${JSON.stringify(config.title)};`,
-    `export const repository = ${JSON.stringify(config.repository)};`,
-    `export const version = ${JSON.stringify(currentVersion)};`,
-    `export const versions = ${JSON.stringify(versions)};`,
-    `export const editURL = ${JSON.stringify(editURL)};`,
-    `export const pages = ${JSON.stringify(pages)};`,
-    `export const languageDisplayNameMap = new Map(${JSON.stringify(shikiDisplayNameMap)});`,
-  ].join('\n');
+  return lines.join('\n');
 }

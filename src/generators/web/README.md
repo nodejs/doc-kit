@@ -6,13 +6,16 @@ The `web` generator transforms JSX AST entries into complete web bundles, produc
 
 The `web` generator accepts the following configuration options:
 
-| Name           | Type     | Default                                       | Description                                                           |
-| -------------- | -------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `output`       | `string` | -                                             | The directory where HTML, JavaScript, and CSS files will be written   |
-| `templatePath` | `string` | `'template.html'`                             | Path to the HTML template file                                        |
-| `editURL`      | `string` | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                               |
-| `pageURL`      | `string` | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                             |
-| `imports`      | `object` | See below                                     | Object mapping `#theme/` aliases to component paths for customization |
+| Name             | Type     | Default                                       | Description                                                           |
+| ---------------- | -------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `output`         | `string` | -                                             | The directory where HTML, JavaScript, and CSS files will be written   |
+| `templatePath`   | `string` | `'template.html'`                             | Path to the HTML template file                                        |
+| `project`        | `string` | `'Node.js'`                                   | Project name used in page titles and the version selector             |
+| `title`          | `string` | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)     |
+| `editURL`        | `string` | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                               |
+| `pageURL`        | `string` | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                             |
+| `imports`        | `object` | See below                                     | Object mapping `#theme/` aliases to component paths for customization |
+| `virtualImports` | `object` | `{}`                                          | Additional virtual module mappings merged into the build              |
 
 #### Default `imports`
 
@@ -42,14 +45,16 @@ export default {
 The `web` generator provides a `#theme/config` virtual module that exposes pre-computed configuration as named exports. Any component (including custom overrides) can import the values it needs, and tree-shaking removes the rest.
 
 ```js
-import { title, repository, editURL } from '#theme/config';
+import { project, repository, editURL } from '#theme/config';
 ```
 
 #### Available exports
 
+All scalar (non-object) configuration values are automatically exported. The defaults include:
+
 | Export                   | Type                                            | Description                                                                                           |
 | ------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `title`                  | `string`                                        | Site title (e.g. `'Node.js'`)                                                                         |
+| `project`                | `string`                                        | Project name (e.g. `'Node.js'`)                                                                       |
 | `repository`             | `string`                                        | GitHub repository in `owner/repo` format                                                              |
 | `version`                | `string`                                        | Current version label (e.g. `'v22.x'`)                                                                |
 | `versions`               | `Array<{ url, label, major }>`                  | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use)   |

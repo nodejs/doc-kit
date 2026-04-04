@@ -1,10 +1,14 @@
 import { create, search, load } from '@orama/orama';
 import { useState, useEffect } from 'react';
 
+import { relative } from '../../../../utils/url.mjs';
+
 /**
  * Hook for initializing and managing Orama search database
+ *
+ * @param {string} pathname - The current page's path (e.g., '/api/fs')
  */
-export default () => {
+export default pathname => {
   const [client, setClient] = useState(null);
 
   useEffect(() => {
@@ -22,7 +26,7 @@ export default () => {
     setClient(db);
 
     // Load the search data
-    fetch('orama-db.json')
+    fetch(relative('/orama-db.json', pathname))
       .then(response => response.ok && response.json())
       .then(data => load(db, data));
   }, []);
