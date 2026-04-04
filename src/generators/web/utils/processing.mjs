@@ -9,6 +9,7 @@ import { createChunkedRequire } from './chunks.mjs';
 import createConfigSource from './config.mjs';
 import createASTBuilder from './generate.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 import { minifyHTML } from '../../../utils/html-minifier.mjs';
 import { relative } from '../../../utils/url.mjs';
 import { SPECULATION_RULES } from '../constants.mjs';
@@ -79,11 +80,12 @@ async function executeServerCode(serverCodeMap, requireFn, virtualImports) {
  * @param {string} template - The HTML template string for the output pages.
  */
 export async function processJSXEntries(entries, template) {
-  const { version } = getConfig('web');
+  const config = getConfig('web');
   const astBuilders = createASTBuilder();
   const requireFn = createRequire(import.meta.url);
   const virtualImports = {
     '#theme/config': createConfigSource(entries),
+    ...config.virtualImports,
   };
   // Step 1: Convert JSX AST to JavaScript
   const { serverCodeMap, clientCodeMap } = convertJSXToCode(
@@ -98,26 +100,26 @@ export async function processJSXEntries(entries, template) {
     bundleCode(clientCodeMap, virtualImports),
   ]);
 
-  const titleSuffix = `Node.js v${version.version} Documentation`;
+  const titleSuffix = populate(config.title, {
+    ...config,
+    version: config.version.version,
+  });
 
   // Step 3: Render final HTML pages
   const results = await Promise.all(
     entries.map(async ({ data: { api, path, heading } }) => {
-      const title = `${heading.data.name} | ${titleSuffix}`;
       const root = `${relative('/', path)}/`;
 
       // Replace template placeholders with actual content
-      const renderedHtml = template
-        .replace('{{title}}', title)
-        .replace('{{dehydrated}}', serverBundle.pages.get(`${api}.js`) ?? '')
-        .replace(
-          '{{importMap}}',
-          clientBundle.importMap?.replaceAll('/', root) ?? ''
-        )
-        .replace('{{entrypoint}}', `${api}.js?${randomUUID()}`)
-        .replace('{{speculationRules}}', SPECULATION_RULES)
-        .replace('{{ogTitle}}', title)
-        .replaceAll('{{root}}', root);
+      const renderedHtml = populate(template, {
+        title: `${heading.data.name} | ${titleSuffix}`,
+        dehydrated: serverBundle.pages.get(`${api}.js`) ?? '',
+        importMap: clientBundle.importMap?.replaceAll('/', root) ?? '',
+        entrypoint: `${api}.js?${randomUUID()}`,
+        speculationRules: SPECULATION_RULES,
+        root,
+        path,
+      });
 
       return { html: await minifyHTML(renderedHtml), path };
     })

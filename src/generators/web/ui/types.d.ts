@@ -1,4 +1,6 @@
+import { GlobalConfiguration } from '../../../utils/configuration/types';
 import { MetadataEntry } from '../../metadata/types';
+import { Configuration } from '../types';
 
 declare global {
   const SERVER: boolean;
@@ -6,8 +8,20 @@ declare global {
 }
 
 declare module '#theme/config' {
-  export const title: string;
-  export const repository: string;
+  // From global configuration
+  export const repository: GlobalConfiguration['repository'];
+  export const input: GlobalConfiguration['input'];
+  export const ignore: GlobalConfiguration['ignore'];
+  export const output: GlobalConfiguration['output'];
+  export const minify: GlobalConfiguration['minify'];
+  export const baseURL: GlobalConfiguration['baseURL'];
+  export const ref: GlobalConfiguration['ref'];
+
+  // From web configuration
+  export const templatePath: Configuration['templatePath'];
+  export const title: Configuration['title'];
+
+  // From config generation
   export const version: string;
   export const versions: Array<{
     url: string;
@@ -16,7 +30,7 @@ declare module '#theme/config' {
   }>;
   export const editURL: string;
   export const pages: Array<[string, string]>;
-  export const languageDisplayNameMap: Map<string, string>;
+  export const languageDisplayNameMap: Map<string[], string>;
 }
 
 // Omit Primitives from Metadata

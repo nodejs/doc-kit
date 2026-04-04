@@ -29,7 +29,8 @@ export default createLazyGenerator({
 
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.html'),
-    title: 'Node.js',
+    project: 'Node.js',
+    title: '{project} v{version} Documentation',
     editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
     pageURL: '{baseURL}/latest-{version}/api{path}.html',
     imports: {
@@ -40,5 +41,6 @@ export default createLazyGenerator({
       '#theme/Footer': join(import.meta.dirname, './ui/components/NoOp'),
       '#theme/Layout': join(import.meta.dirname, './ui/components/Layout'),
     },
+    virtualImports: {},
   },
 });
