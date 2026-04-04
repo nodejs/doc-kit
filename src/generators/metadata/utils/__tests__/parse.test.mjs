@@ -222,43 +222,6 @@ describe('parseApiDoc', () => {
     });
   });
 
-  describe('deprecation heading slugs', () => {
-    it('uses the DEP code as slug for headings in the deprecations doc', () => {
-      const tree = u('root', [
-        h('DEP0001: `http.OutgoingMessage.prototype.flush`', 3),
-      ]);
-      const [entry] = parseApiDoc({ path: '/deprecations', tree }, typeMap);
-
-      assert.strictEqual(entry.heading.data.slug, 'DEP0001');
-    });
-
-    it('uses the DEP code as slug regardless of the heading text that follows', () => {
-      const tree = u('root', [
-        h(
-          'DEP0190: spawning .bat and .cmd files with child_process.spawn() with shell option',
-          3
-        ),
-      ]);
-      const [entry] = parseApiDoc({ path: '/deprecations', tree }, typeMap);
-
-      assert.strictEqual(entry.heading.data.slug, 'DEP0190');
-    });
-
-    it('does not use the DEP code shortcut for non-deprecations docs', () => {
-      const tree = u('root', [h('DEP0190: some section heading', 3)]);
-      const [entry] = parseApiDoc({ path, tree }, typeMap);
-
-      assert.notStrictEqual(entry.heading.data.slug, 'DEP0190');
-    });
-
-    it('uses normal slug for non-DEP headings in the deprecations doc', () => {
-      const tree = u('root', [h('List of deprecated APIs', 2)]);
-      const [entry] = parseApiDoc({ path: '/deprecations', tree }, typeMap);
-
-      assert.strictEqual(entry.heading.data.slug, 'list-of-deprecated-apis');
-    });
-  });
-
   describe('document without headings', () => {
     it('produces one entry for content with no headings', () => {
       const tree = u('root', [

@@ -36,4 +36,36 @@ describe('createLegacySlugger', () => {
     assert.strictEqual(getLegacySlug('Hello', 'fs'), 'fs_hello_2');
     assert.strictEqual(getLegacySlug('World', 'fs'), 'fs_world');
   });
+
+  describe('deprecation headings', () => {
+    it('returns the DEP code for deprecation headings in the deprecations doc', () => {
+      const getLegacySlug = createLegacySlugger();
+      assert.strictEqual(
+        getLegacySlug(
+          'DEP0001: `http.OutgoingMessage.prototype.flush`',
+          'deprecations'
+        ),
+        'DEP0001'
+      );
+    });
+
+    it('returns the DEP code regardless of the description text', () => {
+      const getLegacySlug = createLegacySlugger();
+      assert.strictEqual(
+        getLegacySlug(
+          'DEP0190: spawning .bat and .cmd files with child_process.spawn() with shell option',
+          'deprecations'
+        ),
+        'DEP0190'
+      );
+    });
+
+    it('does not apply deprecation special-casing outside the deprecations doc', () => {
+      const getLegacySlug = createLegacySlugger();
+      assert.notStrictEqual(
+        getLegacySlug('DEP0190: some heading', 'child_process'),
+        'DEP0190'
+      );
+    });
+  });
 });

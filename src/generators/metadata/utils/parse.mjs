@@ -22,10 +22,7 @@ import {
 import { UNIST } from '../../../utils/queries/index.mjs';
 import { getRemark as remark } from '../../../utils/remark.mjs';
 import { relative } from '../../../utils/url.mjs';
-import {
-  DEPRECATION_HEADING_REGEX,
-  IGNORE_STABILITY_STEMS,
-} from '../constants.mjs';
+import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
 
 /**
  * This generator generates a flattened list of metadata entries from a API doc
@@ -90,16 +87,8 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
       heading: headingNode,
     });
 
-    // Generate slug and update heading data.
-    // For the deprecations API doc, headings like "DEP0001: some title" use
-    // just the deprecation code (e.g., "DEP0001") as the anchor to preserve
-    // compatibility with existing external links.
-    const depMatch =
-      api === 'deprecations' &&
-      DEPRECATION_HEADING_REGEX.exec(metadata.heading.data.text);
-    metadata.heading.data.slug = depMatch
-      ? depMatch[1]
-      : nodeSlugger.slug(metadata.heading.data.text);
+    // Generate slug and update heading data
+    metadata.heading.data.slug = nodeSlugger.slug(metadata.heading.data.text);
 
     // Find the next heading to determine section boundaries
     const nextHeadingNode =
