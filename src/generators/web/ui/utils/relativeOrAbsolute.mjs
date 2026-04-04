@@ -11,4 +11,6 @@ import { useAbsoluteURLs, baseURL } from '#theme/config';
  * @returns {string}
  */
 export const relativeOrAbsolute = (to, from) =>
-  useAbsoluteURLs ? new URL(`.${to}`, baseURL).href : relative(to, from);
+  useAbsoluteURLs
+    ? new URL(`.${to}`, baseURL.replace(/\/?$/, '/')).href
+    : relative(to, from);

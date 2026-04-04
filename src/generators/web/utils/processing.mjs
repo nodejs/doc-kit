@@ -125,7 +125,7 @@ export async function processJSXEntries(entries, template) {
   // Step 3: Render final HTML pages
   const results = await Promise.all(
     entries.map(async ({ data }) => {
-      const root = `${relativeOrAbsolute('/', data.path)}/`;
+      const root = relativeOrAbsolute('/', data.path);
 
       // Replace template placeholders with actual content
       const renderedHtml = populateWithEvaluation(template, {

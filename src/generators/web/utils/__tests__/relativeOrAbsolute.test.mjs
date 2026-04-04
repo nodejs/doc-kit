@@ -51,7 +51,7 @@ describe('relativeOrAbsolute (absolute mode)', () => {
 
   it('returns an absolute URL to root', () => {
     const result = relativeOrAbsolute('/', '/api/fs');
-    assert.strictEqual(result, 'https://nodejs.org/docs');
+    assert.strictEqual(result, 'https://nodejs.org/docs/');
   });
 
   it('returns an absolute URL for a page path', () => {
