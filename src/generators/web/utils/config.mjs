@@ -1,7 +1,6 @@
-'use strict';
-
 import { LANGS } from '@node-core/rehype-shiki';
 
+import { buildSidebarPages } from './pages.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import { populate } from '../../../utils/configuration/templates.mjs';
 import { getVersionFromSemVer } from '../../../utils/generators.mjs';
@@ -33,16 +32,12 @@ export function buildVersionEntries(config, pageURLBase) {
  * Pre-compute sorted page list for sidebar navigation.
  *
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input
- * @returns {Array<[string, string, string?]>}
+ * @returns {Array<[number, { heading: string, path: string, category?: string }]>}
  */
 export function buildPageList(input) {
   const headNodes = getSortedHeadNodes(input.map(({ data }) => data));
 
-  return headNodes.map(({ path, category, heading }) => [
-    heading.data.name,
-    path,
-    category,
-  ]);
+  return buildSidebarPages(headNodes);
 }
 
 /**

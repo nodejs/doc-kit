@@ -102,7 +102,7 @@ describe('buildVersionEntries', () => {
 });
 
 describe('buildPageList', () => {
-  it('returns sorted [name, path, category] tuples from input entries', () => {
+  it('returns sorted [weight, page] tuples from input entries', () => {
     const input = [
       makeEntry('http', 'HTTP', '/http'),
       makeEntry('fs', 'File System', '/fs'),
@@ -112,8 +112,11 @@ describe('buildPageList', () => {
 
     assert.equal(result.length, 2);
     // Sorted alphabetically by name
-    assert.deepStrictEqual(result[0], ['File System', '/fs', 'File System']);
-    assert.deepStrictEqual(result[1], ['HTTP', '/http', undefined]);
+    assert.deepStrictEqual(result[0], [
+      -1,
+      { heading: 'File System', path: '/fs', category: 'File System' },
+    ]);
+    assert.deepStrictEqual(result[1], [-1, { heading: 'HTTP', path: '/http' }]);
   });
 
   it('filters out entries whose heading depth is not 1', () => {
@@ -131,7 +134,41 @@ describe('buildPageList', () => {
     const result = buildPageList(input);
 
     assert.equal(result.length, 1);
-    assert.deepStrictEqual(result[0], ['File System', '/fs', 'File System']);
+    assert.deepStrictEqual(result[0], [
+      -1,
+      { heading: 'File System', path: '/fs', category: 'File System' },
+    ]);
+  });
+
+  it('prioritizes pages with explicit weight before default sorting', () => {
+    const input = [
+      {
+        data: {
+          api: 'http',
+          path: '/http',
+          heading: { depth: 1, data: { name: 'HTTP' } },
+          weight: 20,
+        },
+      },
+      {
+        data: {
+          api: 'fs',
+          path: '/fs',
+          category: 'File System',
+          heading: { depth: 1, data: { name: 'File System' } },
+          weight: '10',
+        },
+      },
+      makeEntry('buffer', 'Buffer', '/buffer'),
+    ];
+
+    const result = buildPageList(input);
+
+    assert.deepStrictEqual(result, [
+      [10, { heading: 'File System', path: '/fs', category: 'File System' }],
+      [20, { heading: 'HTTP', path: '/http' }],
+      [-1, { heading: 'Buffer', path: '/buffer' }],
+    ]);
   });
 });
 

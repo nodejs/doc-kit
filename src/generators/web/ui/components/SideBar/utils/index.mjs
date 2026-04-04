@@ -4,7 +4,7 @@ import { relative } from '../../../../../../utils/url.mjs';
  * Builds grouped sidebar navigation from categorized page entries.
  * Pages without a category are placed under the provided default group.
  *
- * @param {Array<[string, string, string?]>} pages - Array of page entries as [heading, path, category?]
+ * @param {Array<[number, { heading: string, path: string, category?: string }> >} pages
  * @param {{ path: string, basename: string }} metadata - Metadata for the current page, used to resolve links
  * @param {string} [defaultGroupName='Others'] - Name for the default group containing uncategorized pages
  * @returns {Array<{ groupName: string, items: Array<{ label: string, link: string }> }>}
@@ -53,19 +53,21 @@ export const buildSideBarGroups = (
 
 /**
  * Converts page entries to sidebar items with resolved links based on current page metadata.
- * @param {Array<[string, string, string?]>} pages
+ * @param {Array<[number, { heading: string, path: string, category?: string }> >} pages
  * @param {{ path: string, basename: string }} metadata
  * @returns {Array<{ label: string, link: string, category?: string }>}
  */
 export const getSidebarItems = (pages, metadata) =>
-  pages.map(([heading, path, category]) => ({
-    label: heading,
-    link:
-      metadata.path === path
-        ? `${metadata.basename}.html`
-        : `${relative(path, metadata.path)}.html`,
-    category,
-  }));
+  pages.map(([, { heading, path, category }]) => {
+    return {
+      label: heading,
+      link:
+        metadata.path === path
+          ? `${metadata.basename}.html`
+          : `${relative(path, metadata.path)}.html`,
+      category,
+    };
+  });
 
 /**
  * Extracts the major version number from a version string.

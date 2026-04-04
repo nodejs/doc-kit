@@ -1,5 +1,3 @@
-'use strict';
-
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -11,10 +9,10 @@ const {
 } = await import('../index.mjs');
 
 const pages = [
-  ['File System API', 'fs', 'File System'],
-  ['HTTP API', 'http', 'Networking'],
-  ['Path API', 'path', 'File System'],
-  ['Index', 'index'],
+  [1, { heading: 'File System API', path: 'fs', category: 'File System' }],
+  [2, { heading: 'HTTP API', path: 'http', category: 'Networking' }],
+  [3, { heading: 'Path API', path: 'path', category: 'File System' }],
+  [-1, { heading: 'Index', path: 'index' }],
 ];
 
 const versions = [
@@ -46,9 +44,9 @@ describe('buildSideBarGroups', () => {
 
   it('puts entries without category into an Others group at the end by default', () => {
     const uncategorizedPages = [
-      ['Buffer', 'buffer', 'Binary'],
-      ['Unknown', 'unknown'],
-      ['Config', 'config', ''],
+      [1, { heading: 'Buffer', path: 'buffer', category: 'Binary' }],
+      [-1, { heading: 'Unknown', path: 'unknown' }],
+      [-1, { heading: 'Config', path: 'config', category: '' }],
     ];
     const metadata = { path: 'buffer', basename: 'buffer' };
 
@@ -64,7 +62,7 @@ describe('buildSideBarGroups', () => {
   it('uses a custom default group name when provided', () => {
     const metadata = { path: 'unknown', basename: 'unknown' };
     const result = buildSideBarGroups(
-      [['Unknown', 'unknown']],
+      [[-1, { heading: 'Unknown', path: 'unknown' }]],
       metadata,
       'General'
     );
@@ -113,9 +111,59 @@ describe('getSidebarItems', () => {
     const metadata = { path: 'guide/fs', basename: 'fs' };
     const result = getSidebarItems(
       [
-        ['File System API', 'guide/fs', 'File System'],
-        ['HTTP API', 'guide/http', 'Networking'],
-        ['Child API', 'guide/sub/child'],
+        [
+          1,
+          {
+            heading: 'File System API',
+            path: 'guide/fs',
+            category: 'File System',
+          },
+        ],
+        [
+          2,
+          { heading: 'HTTP API', path: 'guide/http', category: 'Networking' },
+        ],
+        [-1, { heading: 'Child API', path: 'guide/sub/child' }],
+      ],
+      metadata
+    );
+
+    assert.deepStrictEqual(result, [
+      {
+        label: 'File System API',
+        link: 'fs.html',
+        category: 'File System',
+      },
+      {
+        label: 'HTTP API',
+        link: 'http.html',
+        category: 'Networking',
+      },
+      {
+        label: 'Child API',
+        link: 'sub/child.html',
+        category: undefined,
+      },
+    ]);
+  });
+
+  it('maps the new [weight, page] tuple shape', () => {
+    const metadata = { path: 'guide/fs', basename: 'fs' };
+    const result = getSidebarItems(
+      [
+        [
+          10,
+          {
+            heading: 'File System API',
+            path: 'guide/fs',
+            category: 'File System',
+          },
+        ],
+        [
+          20,
+          { heading: 'HTTP API', path: 'guide/http', category: 'Networking' },
+        ],
+        [-1, { heading: 'Child API', path: 'guide/sub/child' }],
       ],
       metadata
     );

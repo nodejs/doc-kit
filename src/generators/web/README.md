@@ -54,7 +54,7 @@ import { title, repository, editURL } from '#theme/config';
 | `version`                | `string`                       | Current version label (e.g. `'v22.x'`)                                                              |
 | `versions`               | `Array<{ url, label, major }>` | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use) |
 | `editURL`                | `string`                       | Partially populated "edit this page" URL template (only `{path}` remains)                           |
-| `pages`                  | `Array<[string, string]>`      | Sorted `[name, path]` tuples for sidebar navigation                                                 |
+| `pages`                  | `Array<[number, { heading, path, category? }]>` | Sorted `[weight, page]` tuples for sidebar navigation (explicit weights first, then default ordering) |
 | `languageDisplayNameMap` | `Map<string, string>`          | Shiki language alias → display name map for code blocks                                             |
 
 #### Usage in custom components
@@ -69,15 +69,18 @@ export default ({ metadata }) => (
   <nav>
     <p>Current: {version}</p>
     <ul>
-      {pages.map(([name, path]) => (
-        <li key={path}>
-          <a href={`${path}.html`}>{name}</a>
+      {pages.map(([weight, page]) => (
+        <li key={page.path} data-weight={weight}>
+          <a href={`${page.path}.html`}>{page.heading}</a>
         </li>
       ))}
     </ul>
   </nav>
 );
 ```
+
+If a page defines `weight` in frontmatter, lower values are listed first.
+Pages without `weight` use `-1` and keep the default upstream ordering.
 
 ### Layout props
 
