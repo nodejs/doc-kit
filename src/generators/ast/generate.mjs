@@ -41,6 +41,7 @@ export async function processChunk(inputSlice, itemIndices) {
       tree: remark().parse(value),
       // The path is the relative path minus the extension
       path: relativePath,
+      fullPath: path,
     });
   }
 
