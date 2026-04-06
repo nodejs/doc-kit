@@ -6,7 +6,7 @@ This is the Node.js API documentation generator (`@node-core/doc-kit`). It is a 
 
 ### Runtime
 
-- Requires **Node.js 24** (see `.nvmrc`). Use `nvm install 24 && nvm use 24` if not already active.
+- Requires the **Node.js LTS** version specified in `.nvmrc`. Use `nvm install --lts && nvm use --lts` if not already active.
 - Package manager is **npm** (lockfile: `package-lock.json`).
 
 ### Key commands
