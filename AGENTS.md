@@ -13,14 +13,14 @@ This is the Node.js API documentation generator (`@node-core/doc-kit`). It is a 
 
 All standard dev commands are in `package.json` `scripts` and documented in `CONTRIBUTING.md`:
 
-| Task | Command |
-|---|---|
-| Install deps | `npm install` |
-| Lint | `node --run lint` |
-| Format check | `node --run format` |
-| Tests | `node --run test` |
+| Task             | Command                    |
+| ---------------- | -------------------------- |
+| Install deps     | `npm install`              |
+| Lint             | `node --run lint`          |
+| Format check     | `node --run format`        |
+| Tests            | `node --run test`          |
 | Tests + coverage | `node --run test:coverage` |
-| Run CLI | `node bin/cli.mjs` |
+| Run CLI          | `node bin/cli.mjs`         |
 
 ### Running the tool locally
 
