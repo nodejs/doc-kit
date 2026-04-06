@@ -1,6 +1,6 @@
-import { relative } from '../../../../utils/url.mjs';
-
 import { useAbsoluteURLs, baseURL } from '#theme/config';
+
+import { relative } from '../../../../utils/url.mjs';
 
 /**
  * Returns an absolute URL (based on baseURL) or a relative URL,

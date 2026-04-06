@@ -1,14 +1,14 @@
 import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
+import { project, version, versions, pages } from '#theme/config';
+
 import styles from './index.module.css';
 import {
   buildSideBarGroups,
   getCompatibleVersions,
   redirect,
 } from './utils/index.mjs';
-
-import { project, version, versions, pages } from '#theme/config';
 
 /**
  * Sidebar component for MDX documentation with version selection and page navigation

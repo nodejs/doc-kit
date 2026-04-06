@@ -3,10 +3,11 @@ import NavBar from '@node-core/ui-components/Containers/NavBar';
 import styles from '@node-core/ui-components/Containers/NavBar/index.module.css';
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
+import { repository } from '#theme/config';
+
 import SearchBox from './SearchBox';
 import { useTheme } from '../hooks/useTheme.mjs';
 
-import { repository } from '#theme/config';
 import Logo from '#theme/Logo';
 
 /**

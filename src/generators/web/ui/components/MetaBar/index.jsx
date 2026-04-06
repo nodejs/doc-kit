@@ -3,9 +3,9 @@ import Badge from '@node-core/ui-components/Common/Badge';
 import MetaBar from '@node-core/ui-components/Containers/MetaBar';
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
-import styles from './index.module.css';
-
 import { editURL } from '#theme/config';
+
+import styles from './index.module.css';
 
 const iconMap = {
   JSON: CodeBracketIcon,
