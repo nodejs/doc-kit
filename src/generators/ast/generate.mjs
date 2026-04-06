@@ -35,11 +35,16 @@ export async function processChunk(inputSlice, itemIndices) {
         match => `[${match}](${STABILITY_INDEX_URL})`
       );
 
-    const relativePath = sep + withExt(relative(parent, path));
+    const strippedPath = withExt(relative(parent, path));
+    // Treat index files as the directory root (e.g. /index → /, /api/index → /api)
+    const relativePath =
+      strippedPath === 'index'
+        ? sep
+        : sep + strippedPath.replace(/(\/|^)index$/, '');
 
     results.push({
       tree: remark().parse(value),
-      // The path is the relative path minus the extension
+      // The path is the relative path minus the extension (and /index suffix)
       path: relativePath,
     });
   }
