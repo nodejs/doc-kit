@@ -6,16 +6,17 @@ The `web` generator transforms JSX AST entries into complete web bundles, produc
 
 The `web` generator accepts the following configuration options:
 
-| Name             | Type     | Default                                       | Description                                                           |
-| ---------------- | -------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `output`         | `string` | -                                             | The directory where HTML, JavaScript, and CSS files will be written   |
-| `templatePath`   | `string` | `'template.html'`                             | Path to the HTML template file                                        |
-| `project`        | `string` | `'Node.js'`                                   | Project name used in page titles and the version selector             |
-| `title`          | `string` | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)     |
-| `editURL`        | `string` | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                               |
-| `pageURL`        | `string` | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                             |
-| `imports`        | `object` | See below                                     | Object mapping `#theme/` aliases to component paths for customization |
-| `virtualImports` | `object` | `{}`                                          | Additional virtual module mappings merged into the build              |
+| Name              | Type      | Default                                       | Description                                                           |
+| ----------------- | --------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `output`          | `string`  | -                                             | The directory where HTML, JavaScript, and CSS files will be written   |
+| `templatePath`    | `string`  | `'template.html'`                             | Path to the HTML template file                                        |
+| `project`         | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector             |
+| `title`           | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)     |
+| `useAbsoluteURLs` | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`  |
+| `editURL`         | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                               |
+| `pageURL`         | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                             |
+| `imports`         | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization |
+| `virtualImports`  | `object`  | `{}`                                          | Additional virtual module mappings merged into the build              |
 
 #### Default `imports`
 
@@ -60,6 +61,8 @@ All scalar (non-object) configuration values are automatically exported. The def
 | `versions`               | `Array<{ url, label, major }>`                  | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use)   |
 | `editURL`                | `string`                                        | Partially populated "edit this page" URL template (only `{path}` remains)                             |
 | `pages`                  | `Array<[number, { heading, path, category? }]>` | Sorted `[weight, page]` tuples for sidebar navigation (explicit weights first, then default ordering) |
+| `useAbsoluteURLs`        | `boolean`                                       | Whether internal links use absolute URLs (mirrors config value)                                       |
+| `baseURL`                | `string`                                        | Base URL for the documentation site (used when `useAbsoluteURLs` is `true`)                           |
 | `languageDisplayNameMap` | `Map<string, string>`                           | Shiki language alias → display name map for code blocks                                               |
 
 #### Usage in custom components
@@ -99,3 +102,30 @@ The `Layout` component receives the following props:
 | `children`    | `ComponentChildren` | Processed page content                                                                                                            |
 
 Custom Layout components can use any combination of these props alongside `#theme/config` imports.
+
+### HTML template
+
+The HTML template file (set via `templatePath`) uses JavaScript template literal syntax (`${...}` placeholders) and is evaluated at build time with full expression support.
+
+#### Available template variables
+
+| Variable           | Type     | Description                                                       |
+| ------------------ | -------- | ----------------------------------------------------------------- |
+| `title`            | `string` | Fully resolved page title (e.g. `'File system \| Node.js v22.x'`) |
+| `dehydrated`       | `string` | Server-rendered HTML for the page content                         |
+| `importMap`        | `string` | JSON import map for client-side module resolution                 |
+| `entrypoint`       | `string` | Client-side entry point filename with cache-bust query            |
+| `speculationRules` | `string` | Speculation rules JSON for prefetching                            |
+| `root`             | `string` | Relative or absolute path to the site root                        |
+| `metadata`         | `object` | Full page metadata (frontmatter, path, heading, etc.)             |
+| `config`           | `object` | The resolved web generator configuration                          |
+
+Since the template supports arbitrary JS expressions, you can use conditionals and method calls:
+
+```html
+<title>${title}</title>
+<link rel="stylesheet" href="${root}styles.css" />
+<script type="importmap">
+  ${importMap}
+</script>
+```

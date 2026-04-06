@@ -1,7 +1,7 @@
 import { create, search, load } from '@orama/orama';
 import { useState, useEffect } from 'react';
 
-import { relative } from '../../../../utils/url.mjs';
+import { relativeOrAbsolute } from '../utils/relativeOrAbsolute.mjs';
 
 /**
  * Hook for initializing and managing Orama search database
@@ -26,7 +26,7 @@ export default pathname => {
     setClient(db);
 
     // Load the search data
-    fetch(relative('/orama-db.json', pathname))
+    fetch(relativeOrAbsolute('/orama-db.json', pathname))
       .then(response => response.ok && response.json())
       .then(data => load(db, data));
   }, []);

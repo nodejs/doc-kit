@@ -8,11 +8,28 @@ import bundleCode from './bundle.mjs';
 import { createChunkedRequire } from './chunks.mjs';
 import createConfigSource from './config.mjs';
 import createASTBuilder from './generate.mjs';
+import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import { populate } from '../../../utils/configuration/templates.mjs';
 import { minifyHTML } from '../../../utils/html-minifier.mjs';
-import { relative } from '../../../utils/url.mjs';
 import { SPECULATION_RULES } from '../constants.mjs';
+
+/**
+ * Populates a template string by evaluating it as a JavaScript template literal,
+ * allowing full JS expression syntax (e.g., ${if ...}, ${JSON.stringify(...)}).
+ *
+ * ONLY used for HTML template population. Do not use elsewhere.
+ *
+ * @param {string} template - The template string with ${...} placeholders
+ * @param {Record<string, unknown>} config - The values available in the template
+ * @returns {string} The populated template
+ */
+export const populateWithEvaluation = (template, config) => {
+  const keys = Object.keys(config);
+  const values = Object.values(config);
+  const fn = new Function(...keys, `return \`${template}\`;`);
+  return fn(...values);
+};
 
 /**
  * Converts JSX AST entries to server and client JavaScript code.
@@ -107,21 +124,25 @@ export async function processJSXEntries(entries, template) {
 
   // Step 3: Render final HTML pages
   const results = await Promise.all(
-    entries.map(async ({ data: { api, path, heading } }) => {
-      const root = `${relative('/', path)}/`;
+    entries.map(async ({ data }) => {
+      const unresolvedRoot = relativeOrAbsolute('/', data.path);
+      const root = unresolvedRoot.endsWith('/')
+        ? unresolvedRoot
+        : `${unresolvedRoot}/`;
 
       // Replace template placeholders with actual content
-      const renderedHtml = populate(template, {
-        title: `${heading.data.name} | ${titleSuffix}`,
-        dehydrated: serverBundle.pages.get(`${api}.js`) ?? '',
+      const renderedHtml = populateWithEvaluation(template, {
+        title: `${data.heading.data.name} | ${titleSuffix}`,
+        dehydrated: serverBundle.pages.get(`${data.api}.js`) ?? '',
         importMap: clientBundle.importMap?.replaceAll('/', root) ?? '',
-        entrypoint: `${api}.js?${randomUUID()}`,
+        entrypoint: `${data.api}.js?${randomUUID()}`,
         speculationRules: SPECULATION_RULES,
         root,
-        path,
+        metadata: data,
+        config,
       });
 
-      return { html: await minifyHTML(renderedHtml), path };
+      return { html: await minifyHTML(renderedHtml), path: data.path };
     })
   );
 

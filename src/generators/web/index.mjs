@@ -30,7 +30,8 @@ export default createLazyGenerator({
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.html'),
     project: 'Node.js',
-    title: '{project} v{version} Documentation',
+    title: '{project} {version} Documentation',
+    useAbsoluteURLs: false,
     editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
     pageURL: '{baseURL}/latest-{version}/api{path}.html',
     imports: {

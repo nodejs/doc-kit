@@ -8,8 +8,8 @@ import SearchResults from '@node-core/ui-components/Common/Search/Results';
 import SearchHit from '@node-core/ui-components/Common/Search/Results/Hit';
 
 import styles from './index.module.css';
-import { relative } from '../../../../../utils/url.mjs';
 import useOrama from '../../hooks/useOrama.mjs';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
 const SearchBox = ({ pathname }) => {
   const client = useOrama(pathname);
@@ -23,7 +23,7 @@ const SearchBox = ({ pathname }) => {
             <SearchHit
               document={{
                 ...hit.document,
-                href: relative(hit.document.href, pathname),
+                href: relativeOrAbsolute(hit.document.href, pathname),
               }}
             />
           )}

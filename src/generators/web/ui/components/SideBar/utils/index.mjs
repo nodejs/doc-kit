@@ -1,4 +1,4 @@
-import { relative } from '../../../../../../utils/url.mjs';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
 /**
  * Builds grouped sidebar navigation from categorized page entries.
@@ -64,7 +64,7 @@ export const getSidebarItems = (pages, metadata) =>
       link:
         metadata.path === path
           ? `${metadata.basename}.html`
-          : `${relative(path, metadata.path)}.html`,
+          : `${relativeOrAbsolute(path, metadata.path)}.html`,
       category,
     };
   });
