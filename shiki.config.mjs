@@ -6,7 +6,6 @@ import coffeeScriptLanguage from 'shiki/langs/coffeescript.mjs';
 import cPlusPlusLanguage from 'shiki/langs/cpp.mjs';
 import diffLanguage from 'shiki/langs/diff.mjs';
 import dockerLanguage from 'shiki/langs/docker.mjs';
-import gypLanguage from 'shiki/langs/gyp.mjs';
 import httpLanguage from 'shiki/langs/http.mjs';
 import javaScriptLanguage from 'shiki/langs/javascript.mjs';
 import jsonLanguage from 'shiki/langs/json.mjs';
@@ -42,7 +41,6 @@ export default {
     ...coffeeScriptLanguage,
     ...cmakeLanguage,
     ...pythonLanguage,
-    ...gypLanguage,
     { ...javaScriptLanguage[0], aliases: ['mjs', 'cjs', 'js'] },
   ],
 };
