@@ -86,6 +86,7 @@ export default function createConfigSource(input) {
       ['changelog', 'index', 'imports', 'virtualImports']
     ),
     version,
+    versionMajor: configVersion.major ?? null,
     versions: buildVersionEntries(config.changelog, pageURL),
     editURL,
     pages: buildPageList(input),

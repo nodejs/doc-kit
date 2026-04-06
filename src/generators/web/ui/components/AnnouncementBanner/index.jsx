@@ -5,6 +5,7 @@ import { loadBanners } from './loadBanners.mjs';
 
 import { remoteConfig, versionMajor } from '#theme/config';
 
+// TODO: Revisit SERVER global usage.
 const LazyBanners = SERVER
   ? null
   : lazy(async () => {

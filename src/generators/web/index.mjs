@@ -44,7 +44,5 @@ export default createLazyGenerator({
       '#theme/Layout': join(import.meta.dirname, './ui/components/Layout'),
     },
     virtualImports: {},
-    remoteConfig:
-      'https://raw.githubusercontent.com/nodejs/nodejs.org/main/apps/site/site.json',
   },
 });
