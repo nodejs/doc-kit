@@ -42,7 +42,8 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
   const nodeSlugger = createNodeSlugger();
 
   // Slug the API (We use a non-class slugger, since we are fairly certain that `path` is unique)
-  const api = slug(path.slice(1).replace(sep, '-'));
+  // When path is the root ('/'), the file is an index and the api identifier falls back to 'index'
+  const api = slug(path.slice(1).replace(sep, '-')) || 'index';
 
   // Get all Markdown Footnote definitions from the tree
   const markdownDefinitions = selectAll('definition', tree);
@@ -83,7 +84,7 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
     const metadata = /** @type {import('../types').MetadataEntry} */ ({
       api,
       path,
-      basename: basename(path),
+      basename: basename(path) || 'index',
       heading: headingNode,
     });
 
