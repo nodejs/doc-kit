@@ -7,7 +7,7 @@ import { isBannerActive } from '../../utils/banner.mjs';
  *
  * @param {string | undefined} remoteConfig
  * @param {number | null} versionMajor
- * @returns {Promise<import('./types.d.ts').BannerEntry[]>}
+ * @returns {Promise<Array<import('./types.d.ts').BannerEntry>>}
  */
 export const loadBanners = async (remoteConfig, versionMajor) => {
   if (!remoteConfig) {
