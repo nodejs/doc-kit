@@ -1,4 +1,4 @@
-import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
+import { relativeOrAbsolute } from '../../../utils/relativeOrAbsolute.mjs';
 
 /**
  * Builds grouped sidebar navigation from categorized page entries.
