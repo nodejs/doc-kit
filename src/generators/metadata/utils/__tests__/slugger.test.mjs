@@ -51,8 +51,8 @@ describe('slug', () => {
       assert.strictEqual(slug('-foo', identity), 'foo');
     });
 
-    it('removes multiple leading hyphens', () => {
-      assert.strictEqual(slug('--foo', identity), 'foo');
+    it('preserves double leading hyphens (CLI flag prefix)', () => {
+      assert.strictEqual(slug('--foo', identity), '--foo');
     });
 
     it('preserves an all-hyphen string', () => {
@@ -77,6 +77,16 @@ describe('slug', () => {
 
     it('does not fire on an all-hyphen string', () => {
       assert.strictEqual(slug('---', identity), '---');
+    });
+  });
+
+  describe('cli flag anchor preservation', () => {
+    it('preserves -- prefix for CLI flags', () => {
+      assert.strictEqual(slug('--permission', identity), '--permission');
+    });
+
+    it('preserves -- prefix for multi-word CLI flags', () => {
+      assert.strictEqual(slug('--allow-fs-read', identity), '--allow-fs-read');
     });
   });
 

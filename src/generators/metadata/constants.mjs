@@ -7,9 +7,9 @@ export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /node.js/i, to: 'nodejs' }, // Replace Node.js
   { from: /&/, to: '-and-' }, // Replace &
   { from: /[/,:;\\ ]/g, to: '-' }, // Replace /,:;\. and whitespace
-  { from: /^-+(?!-*$)/g, to: '' }, // Remove any leading hyphens
+  { from: /^-(?=[^-])/g, to: '' }, // Remove a single leading hyphen (preserves -- prefix for CLI flags)
   { from: /(?<!^-*)-+$/g, to: '' }, // Remove any trailing hyphens
-  { from: /^(?!-+$).*?(--+)/g, to: '-' }, // Replace multiple hyphens
+  { from: /^(?!-+$)[^-].*?(--+)/g, to: '-' }, // Replace multiple consecutive hyphens (not at start)
 ];
 
 // These are regular expressions used to determine if a given Markdown heading
