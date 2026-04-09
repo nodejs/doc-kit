@@ -15,8 +15,3 @@ export type RemoteConfig = {
 export type AnnouncementBannerProps = {
   banners: BannerEntry[];
 };
-
-export type RemoteLoadableBannerProps = {
-  remoteConfig: string;
-  versionMajor: number | null;
-};
