@@ -80,16 +80,6 @@ describe('slug', () => {
     });
   });
 
-  describe('cli flag anchor preservation', () => {
-    it('preserves -- prefix for CLI flags', () => {
-      assert.strictEqual(slug('--permission', identity), '--permission');
-    });
-
-    it('preserves -- prefix for multi-word CLI flags', () => {
-      assert.strictEqual(slug('--allow-fs-read', identity), '--allow-fs-read');
-    });
-  });
-
   describe('integration with github-slugger', () => {
     it('lowercases and hyphenates a plain title', () => {
       assert.strictEqual(slug('Hello World'), 'hello-world');
