@@ -27,7 +27,10 @@ export default pathname => {
       if (!loaded.current) {
         loaded.current = fetch(relativeOrAbsolute('/orama-db.json', pathname))
           .then(response => response.ok && response.json())
-          .then(data => load(db, data));
+          .then(data => load(db, data))
+          .catch(() => {
+            loaded.current = null;
+          });
       }
 
       return loaded.current;
