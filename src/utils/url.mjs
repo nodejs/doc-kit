@@ -1,7 +1,7 @@
 /**
  * Kind of like `path.posix.relative`, however, this functions more like a URL resolution
- * @param {string} from
  * @param {string} to
+ * @param {string} from
  * @returns {string}
  */
 export const relative = (to, from) => {
