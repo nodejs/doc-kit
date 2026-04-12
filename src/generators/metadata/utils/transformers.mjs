@@ -41,7 +41,7 @@ const splitByOuterSeparator = (str, separator) => {
     // Track depth using brackets and parentheses
     if (char === '<' || char === '(') {
       depth++;
-    } else if (char === '>' || char === ')') {
+    } else if ((char === '>' && str[i - 1] !== '=') || char === ')') {
       depth--;
     }
 
