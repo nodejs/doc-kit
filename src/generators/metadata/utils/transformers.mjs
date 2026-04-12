@@ -26,10 +26,6 @@ export const transformUnixManualToLink = (
  * @param {string} separator The separator to split by (e.g., '|', '&', ',', '=>')
  * @returns {string[]} The split pieces
  */
-
-/**
- *
- */
 const splitByOuterSeparator = (str, separator) => {
   const pieces = [];
   let current = '';
