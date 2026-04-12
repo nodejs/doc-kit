@@ -75,4 +75,27 @@ describe('transformTypeToReferenceLink', () => {
       '[`<Map>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type), [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt; & [`<Array>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)&gt;'
     );
   });
+
+  it('should transform a function returning a Generic type', () => {
+    strictEqual(
+      transformTypeToReferenceLink('(err: Error) => Promise<boolean>', {}),
+      '(err: Error) =&gt; [`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)&gt;'
+    );
+  });
+
+  it('should respect precedence: Unions (|) are weaker than Intersections (&)', () => {
+    strictEqual(
+      transformTypeToReferenceLink('string | number & boolean', {}),
+      '[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type) & [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)'
+    );
+  });
+
+  it('should handle extreme nested combinations of functions, generics, unions, and intersections', () => {
+    const input =
+      '(str: MyType) => Promise<Map<string, number & string>, Map<string | number>>';
+    const expected =
+      '(str: MyType) =&gt; [`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<Map>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type), [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type) & [`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)&gt;, [`<Map>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt;&gt;';
+
+    strictEqual(transformTypeToReferenceLink(input, {}), expected);
+  });
 });
