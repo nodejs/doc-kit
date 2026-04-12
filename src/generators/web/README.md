@@ -20,12 +20,14 @@ The `web` generator accepts the following configuration options:
 
 #### Default `imports`
 
-| Alias               | Default                                      | Description                                  |
-| ------------------- | -------------------------------------------- | -------------------------------------------- |
-| `#theme/Logo`       | `@node-core/ui-components/Common/NodejsLogo` | Logo rendered inside the navigation bar      |
-| `#theme/Navigation` | Built-in `NavBar` component                  | Top navigation bar                           |
-| `#theme/Sidebar`    | Built-in `SideBar` component                 | Sidebar with version selector and page links |
-| `#theme/Layout`     | Built-in `Layout` component                  | Outermost wrapper around the full page       |
+| Alias               | Default                                      | Description                                         |
+| ------------------- | -------------------------------------------- | --------------------------------------------------- |
+| `#theme/Logo`       | `@node-core/ui-components/Common/NodejsLogo` | Logo rendered inside the navigation bar             |
+| `#theme/Navigation` | Built-in `NavBar` component                  | Top navigation bar                                  |
+| `#theme/Sidebar`    | Built-in `SideBar` component                 | Sidebar with version selector and page links        |
+| `#theme/Metabar`    | Built-in `MetaBar` component                 | Metadata bar displayed alongside page content       |
+| `#theme/Footer`     | Built-in `NoOp` component (renders nothing)  | Optional footer rendered at the bottom of each page |
+| `#theme/Layout`     | Built-in `Layout` component                  | Outermost wrapper around the full page              |
 
 Override any alias in your config file to swap in a custom component:
 
