@@ -41,15 +41,70 @@ const splitByOuterSeparator = (str, separator) => {
   return pieces;
 };
 /**
+ * Safely removes outer parentheses from a type string if they wrap the entire string.
+ * This prevents "depth blindness" in the parser by unwrapping types like `(string | number)`
+ * into `string | number`, while safely ignoring disconnected groups like `(A) | (B)`.
+ *
+ * @param {string} typeString The type string to evaluate and potentially unwrap.
+ * @returns {string} The unwrapped type string, or the original string if not fully wrapped.
+ */
+export const stripOuterParentheses = typeString => {
+  let trimmed = typeString.trim();
+
+  if (trimmed.startsWith('(') && trimmed.endsWith(')')) {
+    let depth = 0;
+    let isValidWrapper = true;
+
+    // Iterate through the string, ignoring the last closing parenthesis
+    for (let i = 0; i < trimmed.length - 1; i++) {
+      if (trimmed[i] === '(') {
+        depth++;
+      } else if (trimmed[i] === ')') {
+        depth--;
+      }
+
+      // If depth hits 0 before the end, it means the parentheses don't wrap the whole string
+      if (depth === 0) {
+        isValidWrapper = false;
+        break;
+      }
+    }
+
+    if (isValidWrapper) {
+      return trimmed.slice(1, -1).trim();
+    }
+  }
+
+  return trimmed;
+};
+/**
  * Recursively parses advanced TypeScript types, including Unions, Intersections, Functions, and Nested Generics.
  * * @param {string} typeString The plain type string to evaluate
  * @param {Function} transformType The function used to resolve individual types into links
  * @returns {string|null} The formatted Markdown link(s), or null if the base type doesn't map
  */
 export const parseType = (typeString, transformType) => {
-  const trimmed = typeString.trim();
+  // Clean the string and strip unnecessary outer parentheses to prevent depth blindness (e.g., "(string | number)" -> "string | number")
+  const trimmed = stripOuterParentheses(typeString);
   if (!trimmed) {
     return null;
+  }
+
+  // Handle Functions (=>)
+  if (trimmed.includes('=>')) {
+    const parts = splitByOuterSeparator(trimmed, '=>');
+    if (parts.length > 1) {
+      const params = parts[0];
+
+      // Join the rest back together to handle higher-order functions
+      const returnType = parts.slice(1).join(' => ');
+
+      // Preserve the function signature, just link the return type for now
+      // (Mapping param types inside the signature string is complex and often unnecessary for simple docs)
+      const parsedReturn =
+        parseType(returnType, transformType) || `\`<${returnType}>\``;
+      return `${params} =&gt; ${parsedReturn}`;
+    }
   }
 
   // Handle Unions (|)
@@ -76,45 +131,39 @@ export const parseType = (typeString, transformType) => {
     }
   }
 
-  // Handle Functions (=>)
-  if (trimmed.includes('=>')) {
-    const parts = splitByOuterSeparator(trimmed, '=>');
-    if (parts.length === 2) {
-      const params = parts[0];
-      const returnType = parts[1];
+  // Handle Generics (Base<Inner, Inner>)
+  // Check if it's a generic wrapped in an array (e.g., Promise<string>[])
+  const isGenericArray = trimmed.endsWith('[]');
+  const genericTarget = isGenericArray ? trimmed.slice(0, -2).trim() : trimmed;
 
-      // Preserve the function signature, just link the return type for now
-      // (Mapping param types inside the signature string is complex and often unnecessary for simple docs)
-      const parsedReturn =
-        parseType(returnType, transformType) || `\`<${returnType}>\``;
-      return `${params} =&gt; ${parsedReturn}`;
-    }
-  }
+  if (genericTarget.includes('<') && genericTarget.endsWith('>')) {
+    const firstBracketIndex = genericTarget.indexOf('<');
+    const baseType = genericTarget.slice(0, firstBracketIndex).trim();
+    const innerType = genericTarget.slice(firstBracketIndex + 1, -1).trim();
 
-  // 3. Handle Generics (Base<Inner, Inner>)
-  if (trimmed.includes('<') && trimmed.endsWith('>')) {
-    const firstBracketIndex = trimmed.indexOf('<');
-    const baseType = trimmed.slice(0, firstBracketIndex).trim();
-    const innerType = trimmed.slice(firstBracketIndex + 1, -1).trim();
+    const cleanBaseType = baseType.replace(/\[\]$/, ''); // Just in case of Base[]<Inner>
+    const baseResult = transformType(cleanBaseType);
 
-    const baseResult = transformType(baseType.replace(/\[\]$/, ''));
     const baseFormatted = baseResult
-      ? `[\`<${baseType}>\`](${baseResult})`
-      : `\`<${baseType}>\``;
+      ? `[\`<${cleanBaseType}>\`](${baseResult})`
+      : `\`<${cleanBaseType}>\``;
 
-    // Split arguments safely by comma
     const innerArgs = splitByOuterSeparator(innerType, ',');
     const innerFormatted = innerArgs
       .map(arg => parseType(arg, transformType) || `\`<${arg}>\``)
       .join(', ');
 
-    return `${baseFormatted}&lt;${innerFormatted}&gt;`;
+    return `${baseFormatted}&lt;${innerFormatted}&gt;${isGenericArray ? '[]' : ''}`;
   }
 
   // Base Case: Plain Type (e.g., string, Buffer, Function)
-  const result = transformType(trimmed.replace(/\[\]$/, ''));
-  if (trimmed.length && result) {
-    return `[\`<${trimmed}>\`](${result})`;
+  // Preserve array notation for base types
+  const isArray = trimmed.endsWith('[]');
+  const cleanType = trimmed.replace(/\[\]$/, '');
+
+  const result = transformType(cleanType);
+  if (cleanType.length && result) {
+    return `[\`<${cleanType}>\`](${result})${isArray ? '[]' : ''}`;
   }
 
   return null;
