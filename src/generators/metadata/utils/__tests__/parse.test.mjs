@@ -220,6 +220,34 @@ describe('parseApiDoc', () => {
 
       assert.strictEqual(findLink(entry)?.url, 'events.html#some-section');
     });
+
+    it('strips subdirectory prefix from nested .md links', () => {
+      const tree = u('root', [
+        h('fs'),
+        u('paragraph', [
+          u('link', { url: 'namespaces/comparators.md' }, [
+            u('text', 'comparators'),
+          ]),
+        ]),
+      ]);
+      const [entry] = parseApiDoc({ path, tree }, typeMap);
+
+      assert.strictEqual(findLink(entry)?.url, 'comparators.html');
+    });
+
+    it('strips subdirectory prefix and preserves hash fragments', () => {
+      const tree = u('root', [
+        h('fs'),
+        u('paragraph', [
+          u('link', { url: 'namespaces/comparators.md#some-section' }, [
+            u('text', 'comparators'),
+          ]),
+        ]),
+      ]);
+      const [entry] = parseApiDoc({ path, tree }, typeMap);
+
+      assert.strictEqual(findLink(entry)?.url, 'comparators.html#some-section');
+    });
   });
 
   describe('document without headings', () => {
