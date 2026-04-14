@@ -90,23 +90,6 @@ export const parseType = (typeString, transformType) => {
     return null;
   }
 
-  // Handle Functions (=>)
-  if (trimmed.includes('=>')) {
-    const parts = splitByOuterSeparator(trimmed, '=>');
-    if (parts.length > 1) {
-      const params = parts[0];
-
-      // Join the rest back together to handle higher-order functions
-      const returnType = parts.slice(1).join(' => ');
-
-      // Preserve the function signature, just link the return type for now
-      // (Mapping param types inside the signature string is complex and often unnecessary for simple docs)
-      const parsedReturn =
-        parseType(returnType, transformType) || `\`<${returnType}>\``;
-      return `${params} =&gt; ${parsedReturn}`;
-    }
-  }
-
   // Handle Unions (|)
   if (trimmed.includes('|')) {
     const parts = splitByOuterSeparator(trimmed, '|');
@@ -128,6 +111,23 @@ export const parseType = (typeString, transformType) => {
         p => parseType(p, transformType) || `\`<${p}>\``
       );
       return resolvedParts.join(' & ');
+    }
+  }
+
+  // Handle Functions (=>)
+  if (trimmed.includes('=>')) {
+    const parts = splitByOuterSeparator(trimmed, '=>');
+    if (parts.length > 1) {
+      const params = parts[0];
+
+      // Join the rest back together to handle higher-order functions
+      const returnType = parts.slice(1).join(' => ');
+
+      // Preserve the function signature, just link the return type for now
+      // (Mapping param types inside the signature string is complex and often unnecessary for simple docs)
+      const parsedReturn =
+        parseType(returnType, transformType) || `\`<${returnType}>\``;
+      return `${params} =&gt; ${parsedReturn}`;
     }
   }
 
