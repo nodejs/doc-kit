@@ -58,7 +58,7 @@ export default ({ metadata }) => {
           values={compatibleVersions}
           inline={true}
           className={styles.select}
-          placeholder={version}
+          placeholder={`v${version.version}`}
           onChange={redirect}
         />
       </div>

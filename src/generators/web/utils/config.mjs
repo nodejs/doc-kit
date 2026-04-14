@@ -75,8 +75,11 @@ export function buildLanguageDisplayNameMap() {
 export default function createConfigSource(input) {
   const { version: configVersion, ...config } = getConfig('web');
 
-  const version = `v${configVersion.version}`;
-  const editURL = populate(config.editURL, { ...config, version });
+  const versionLabel = `v${configVersion.version}`;
+  const editURL = populate(config.editURL, {
+    ...config,
+    version: versionLabel,
+  });
   const pageURL = populate(config.pageURL, config);
 
   const exports = {
@@ -85,8 +88,7 @@ export default function createConfigSource(input) {
       // These are keys that are large, and not needed by components, so we ignore them
       ['changelog', 'index', 'imports', 'virtualImports']
     ),
-    version,
-    versionMajor: configVersion.major ?? null,
+    version: configVersion,
     versions: buildVersionEntries(config.changelog, pageURL),
     editURL,
     pages: buildPageList(input),

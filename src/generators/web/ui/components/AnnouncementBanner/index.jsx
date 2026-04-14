@@ -3,13 +3,13 @@ import { lazy, Suspense } from 'preact/compat';
 import AnnouncementBanner from './AnnouncementBanner.jsx';
 import { loadBanners } from './loadBanners.mjs';
 
-import { remoteConfig, versionMajor } from '#theme/config';
+import { remoteConfig, version } from '#theme/config';
 
 // TODO: Revisit SERVER global usage.
 const LazyBanners = SERVER
   ? null
   : lazy(async () => {
-      const active = await loadBanners(remoteConfig, versionMajor);
+      const active = await loadBanners(remoteConfig, version.major);
 
       if (!active.length) {
         return { default: () => null };
