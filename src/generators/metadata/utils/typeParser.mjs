@@ -48,7 +48,7 @@ const splitByOuterSeparator = (str, separator) => {
  * @param {string} typeString The type string to evaluate and potentially unwrap.
  * @returns {string} The unwrapped type string, or the original string if not fully wrapped.
  */
-export const stripOuterParentheses = typeString => {
+const stripOuterParentheses = typeString => {
   let trimmed = typeString.trim();
 
   if (trimmed.startsWith('(') && trimmed.endsWith(')')) {
