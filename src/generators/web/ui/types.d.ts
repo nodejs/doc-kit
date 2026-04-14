@@ -33,7 +33,7 @@ declare module '#theme/config' {
   export const editURL: string;
   export const pages: Array<[string, string]>;
   export const languageDisplayNameMap: Map<string[], string>;
-  export const remoteConfig: string;
+  export const remoteConfigUrl: string;
 }
 
 // Omit Primitives from Metadata
