@@ -17,6 +17,7 @@
     "test:ci": "c8 --reporter=lcov node --test --experimental-test-module-mocks \"src/**/*.test.mjs\" --test-reporter=@reporters/github --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml --test-reporter=spec --test-reporter-destination=stdout",
     "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots \"src/**/*.test.mjs\"",
     "test:watch": "node --test --experimental-test-module-mocks --watch \"src/**/*.test.mjs\"",
+    "test:e2e": "playwright test",
     "prepare": "husky || exit 0",
     "run": "node bin/cli.mjs",
     "watch": "node --watch bin/cli.mjs"
@@ -40,6 +41,7 @@
     "globals": "~17.4.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "@playwright/test": "^1.59.1",
     "prettier": "3.8.1"
   },
   "dependencies": {
