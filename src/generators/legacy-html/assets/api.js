@@ -32,7 +32,9 @@ const setupTheme = () => {
     document.documentElement.classList.add('dark-mode');
   }
 
-  if (!themeToggleButton) return;
+  if (!themeToggleButton) {
+    return;
+  }
 
   themeToggleButton.hidden = false;
 
@@ -68,7 +70,9 @@ const setupTheme = () => {
  */
 const setupPickers = () => {
   const pickers = document.querySelectorAll('.picker-header > a');
-  if (!pickers.length) return;
+  if (!pickers.length) {
+    return;
+  }
 
   const closeAllPickers = () => {
     pickers.forEach(picker => {
@@ -81,7 +85,9 @@ const setupPickers = () => {
   };
 
   const handleEscKey = e => {
-    if (e.key === 'Escape') closeAllPickers();
+    if (e.key === 'Escape') {
+      closeAllPickers();
+    }
   };
 
   pickers.forEach(picker => {
@@ -90,7 +96,9 @@ const setupPickers = () => {
 
     picker.addEventListener('click', e => {
       e.preventDefault();
-      if (picker.ariaExpanded === 'true') return;
+      if (picker.ariaExpanded === 'true') {
+        return;
+      }
 
       requestAnimationFrame(() => {
         picker.ariaExpanded = true;
@@ -108,7 +116,9 @@ const setupPickers = () => {
  */
 const setupStickyHeaders = () => {
   const header = document.querySelector('.header');
-  if (!header) return;
+  if (!header) {
+    return;
+  }
 
   let ignoreNextIntersection = false;
 
@@ -117,7 +127,9 @@ const setupStickyHeaders = () => {
       const currentPinned = header.classList.contains('is-pinned');
       const shouldPin = entries[0].intersectionRatio < 1;
 
-      if (currentPinned === shouldPin) return;
+      if (currentPinned === shouldPin) {
+        return;
+      }
       if (ignoreNextIntersection) {
         ignoreNextIntersection = false;
         return;
@@ -136,7 +148,9 @@ const setupStickyHeaders = () => {
  */
 const setupAltDocsLink = () => {
   const linkWrapper = document.getElementById('alt-docs');
-  if (!linkWrapper) return;
+  if (!linkWrapper) {
+    return;
+  }
 
   const updateHashes = () => {
     linkWrapper
@@ -153,7 +167,9 @@ const setupAltDocsLink = () => {
  */
 const setupFlavorToggles = () => {
   const toggles = document.querySelectorAll('.js-flavor-toggle');
-  if (!toggles.length) return;
+  if (!toggles.length) {
+    return;
+  }
 
   const isCustomFlavorEnabled = localStorage.getItem('customFlavor') === 'true';
 
@@ -220,4 +236,6 @@ function setupSidebarScroll() {
 
 // Initialize either on DOMContentLoaded or immediately if already loaded
 document.addEventListener('DOMContentLoaded', initFeatures);
-if (document.readyState !== 'loading') initFeatures();
+if (document.readyState !== 'loading') {
+  initFeatures();
+}
