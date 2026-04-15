@@ -97,7 +97,14 @@ const setupPickers = () => {
         parentNode.classList.add('expanded');
         window.addEventListener('click', closeAllPickers);
         window.addEventListener('keydown', handleEscKey);
-        parentNode.querySelector('.picker a').focus();
+        const firstLink = parentNode.querySelector('.picker a');
+        if (firstLink) {
+          try {
+            firstLink.focus({ preventScroll: true });
+          } catch {
+            firstLink.focus();
+          }
+        }
       });
     });
   });
