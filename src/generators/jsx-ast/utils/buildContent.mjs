@@ -90,6 +90,7 @@ export const createSourceLink = sourceLink => {
           {
             href: `${populate(GITHUB_BLOB_URL, config)}${sourceLink}`,
             target: '_blank',
+            rel: 'noopener noreferrer',
           },
           [
             sourceLink,
