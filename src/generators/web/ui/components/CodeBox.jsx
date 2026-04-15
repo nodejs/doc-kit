@@ -22,7 +22,7 @@ export default ({ className, ...props }) => {
 
   return (
     <BaseCodeBox
-      onCopy={navigator.clipboard?.writeText}
+      onCopy={text => navigator.clipboard?.writeText(text)}
       language={getLanguageDisplayName(language)}
       className={className}
       copyButtonLabel="Copy to clipboard"
