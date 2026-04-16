@@ -1,6 +1,7 @@
 import { GlobalConfiguration } from '../../../utils/configuration/types';
 import { MetadataEntry } from '../../metadata/types';
 import { Configuration } from '../types';
+import { SemVer } from 'semver';
 
 declare global {
   const SERVER: boolean;
@@ -23,7 +24,7 @@ declare module '#theme/config' {
   export const useAbsoluteURLs: Configuration['useAbsoluteURLs'];
 
   // From config generation
-  export const version: string;
+  export const version: SemVer;
   export const versions: Array<{
     url: string;
     label: string;
@@ -32,6 +33,7 @@ declare module '#theme/config' {
   export const editURL: string;
   export const pages: Array<[string, string]>;
   export const languageDisplayNameMap: Map<string[], string>;
+  export const remoteConfigUrl: string;
 }
 
 // Omit Primitives from Metadata

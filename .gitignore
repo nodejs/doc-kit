@@ -16,3 +16,7 @@ isolate-*
 
 # Node's Source Folder
 node
+
+# Playwright
+playwright-report/
+test-results/
