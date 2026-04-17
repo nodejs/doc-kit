@@ -1,5 +1,9 @@
+const openParentheses = ['<', '(', '{', '['];
+const closeParentheses = ['>', ')', '}', ']'];
+
 /**
- * Safely splits a string by a given set of separators at depth 0 (ignoring those inside < > or ( )).
+ * Safely splits a string by a given set of separators at depth 0
+ * (ignoring those inside < >, ( ), { }, or [ ]).
  *
  * @param {string} str The string to split
  * @param {string} separator The separator to split by (e.g., '|', '&', ',', '=>')
@@ -13,11 +17,14 @@ const splitByOuterSeparator = (str, separator) => {
   for (let i = 0; i < str.length; i++) {
     const char = str[i];
 
-    // Track depth using brackets and parentheses
-    if (char === '<' || char === '(') {
+    // Track depth using the global arrays
+    if (openParentheses.includes(char)) {
       depth++;
-    } else if ((char === '>' && str[i - 1] !== '=') || char === ')') {
-      depth--;
+    } else if (closeParentheses.includes(char)) {
+      // Small exception: don't decrease depth for the '>' in '=>'
+      if (!(char === '>' && str[i - 1] === '=')) {
+        depth--;
+      }
     }
 
     // Check for multi-character separators like '=>'
@@ -40,9 +47,10 @@ const splitByOuterSeparator = (str, separator) => {
   pieces.push(current.trim());
   return pieces;
 };
+
 /**
  * Safely removes outer parentheses from a type string if they wrap the entire string.
- * This prevents "depth blindness" in the parser by unwrapping types like `(string | number)`
+ * This prevents "depth blindness" in the parser by recursively unwrapping types like `(((string | number)))`
  * into `string | number`, while safely ignoring disconnected groups like `(A) | (B)`.
  *
  * @param {string} typeString The type string to evaluate and potentially unwrap.
@@ -51,16 +59,21 @@ const splitByOuterSeparator = (str, separator) => {
 const stripOuterParentheses = typeString => {
   let trimmed = typeString.trim();
 
+  // Only attempt to unwrap if it's enclosed in standard grouping parentheses
   if (trimmed.startsWith('(') && trimmed.endsWith(')')) {
     let depth = 0;
     let isValidWrapper = true;
 
     // Iterate through the string, ignoring the last closing parenthesis
     for (let i = 0; i < trimmed.length - 1; i++) {
-      if (trimmed[i] === '(') {
+      const char = trimmed[i];
+
+      if (openParentheses.includes(char)) {
         depth++;
-      } else if (trimmed[i] === ')') {
-        depth--;
+      } else if (closeParentheses.includes(char)) {
+        if (!(char === '>' && trimmed[i - 1] === '=')) {
+          depth--;
+        }
       }
 
       // If depth hits 0 before the end, it means the parentheses don't wrap the whole string
@@ -71,12 +84,80 @@ const stripOuterParentheses = typeString => {
     }
 
     if (isValidWrapper) {
-      return trimmed.slice(1, -1).trim();
+      const unwrapped = trimmed.slice(1, -1).trim();
+      // Keep stripping if there are multiple redundant layers
+      return stripOuterParentheses(unwrapped);
     }
   }
 
   return trimmed;
 };
+
+/**
+ * Parses the left side of an arrow function.
+ * @param {string} signature The left side of the arrow function
+ * @param {Function} transformType The resolver function
+ * @returns {string} The parsed signature with markdown links
+ */
+const parseFunctionSignature = (signature, transformType) => {
+  let trimmed = signature.trim();
+
+  // Safety fallback
+  if (!trimmed.endsWith(')')) {
+    return signature;
+  }
+
+  let depth = 0;
+  let openParenIndex = -1;
+
+  // Reverse walk to isolate parameters from prefix
+  for (let i = trimmed.length - 1; i >= 0; i--) {
+    const char = trimmed[i];
+
+    // Explicitly targeting normal parentheses for the argument wrapper
+    if (char === ')') {
+      depth++;
+    } else if (char === '(') {
+      depth--;
+    }
+
+    if (depth === 0) {
+      openParenIndex = i;
+      break;
+    }
+  }
+
+  if (openParenIndex === -1) {
+    return signature;
+  }
+
+  const prefix = trimmed.slice(0, openParenIndex);
+  const paramsString = trimmed.slice(openParenIndex + 1, -1);
+
+  if (!paramsString.trim()) {
+    return `${prefix}()`;
+  }
+
+  const args = splitByOuterSeparator(paramsString, ',');
+
+  const parsedArgs = args.map(arg => {
+    const colonParts = splitByOuterSeparator(arg, ':');
+
+    if (colonParts.length > 1) {
+      const paramName = colonParts[0];
+      const paramType = colonParts.slice(1).join(':');
+
+      const parsedType =
+        parseType(paramType, transformType) || `\`<${paramType}>\``;
+      return `${paramName}: ${parsedType}`;
+    }
+
+    return parseType(arg, transformType) || arg;
+  });
+
+  return `${prefix}(${parsedArgs.join(', ')})`;
+};
+
 /**
  * Recursively parses advanced TypeScript types, including Unions, Intersections, Functions, and Nested Generics.
  * * @param {string} typeString The plain type string to evaluate
@@ -84,7 +165,7 @@ const stripOuterParentheses = typeString => {
  * @returns {string|null} The formatted Markdown link(s), or null if the base type doesn't map
  */
 export const parseType = (typeString, transformType) => {
-  // Clean the string and strip unnecessary outer parentheses to prevent depth blindness (e.g., "(string | number)" -> "string | number")
+  // Clean the string and strip unnecessary outer parentheses to prevent depth blindness
   const trimmed = stripOuterParentheses(typeString);
   if (!trimmed) {
     return null;
@@ -118,16 +199,14 @@ export const parseType = (typeString, transformType) => {
   if (trimmed.includes('=>')) {
     const parts = splitByOuterSeparator(trimmed, '=>');
     if (parts.length > 1) {
-      const params = parts[0];
-
-      // Join the rest back together to handle higher-order functions
+      const signature = parts[0];
       const returnType = parts.slice(1).join(' => ');
 
-      // Preserve the function signature, just link the return type for now
-      // (Mapping param types inside the signature string is complex and often unnecessary for simple docs)
+      const parsedSignature = parseFunctionSignature(signature, transformType);
+
       const parsedReturn =
         parseType(returnType, transformType) || `\`<${returnType}>\``;
-      return `${params} =&gt; ${parsedReturn}`;
+      return `${parsedSignature} =&gt; ${parsedReturn}`;
     }
   }
 

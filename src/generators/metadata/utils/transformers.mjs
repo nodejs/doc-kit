@@ -31,7 +31,10 @@ export const transformUnixManualToLink = (
 export const transformTypeToReferenceLink = (type, record) => {
   // Removes the wrapping curly braces that wrap the type references
   // We keep the angle brackets `<>` intact here to parse Generics later
-  const typeInput = type.replace(/[{}]/g, '');
+  const typeInput = type
+    .trim()
+    .replace(/^\{(.*)\}$/, '$1')
+    .trim();
 
   /**
    * Handles the mapping (if there's a match) of the input text
