@@ -1,5 +1,7 @@
 'use strict';
 
+import { resolve, dirname, basename } from 'node:path';
+
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
 import readingTime from 'reading-time';
@@ -288,6 +290,59 @@ export const createDocumentLayout = (entries, metadata) =>
   ]);
 
 /**
+ * Checks if a given URL is a local asset path.
+ *
+ * @param {string} url - The URL or path to check.
+ * @returns {boolean} True if the asset is local, false otherwise.
+ */
+function isLocalAsset(url) {
+  if (!url || url.startsWith('//')) {
+    return false;
+  }
+
+  try {
+    new URL(url);
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Traverses the AST of markdown files to find local image references,
+ * rewrites their URLs to a relative assets folder, and collects their paths.
+ *
+ * @param {Array<import('../../metadata/types').MetadataEntry>} metadataEntries - API documentation metadata entries
+ * @returns {Map<string, string>} A Map containing source paths as keys and destination paths as values.
+ */
+function extractAssetsFromAST(metadataEntries) {
+  const assetsMap = new Map();
+  for (const entry of metadataEntries) {
+    if (!entry.content) {
+      continue;
+    }
+    visit(entry.content, 'image', imageNode => {
+      const originalUrl = imageNode.url;
+
+      if (isLocalAsset(originalUrl)) {
+        const sourceDir = entry.fullPath
+          ? dirname(entry.fullPath)
+          : process.cwd();
+        const sourcePath = resolve(sourceDir, originalUrl);
+        const fileName = basename(originalUrl);
+
+        assetsMap.set(sourcePath, fileName);
+
+        // Rewrite AST URL
+        imageNode.url = `/assets/${fileName}`;
+      }
+    });
+  }
+
+  return assetsMap;
+}
+
+/**
  * @typedef {import('estree').Node & { data: import('../../metadata/types').MetadataEntry }} JSXContent
  *
  * Transforms API metadata entries into processed MDX content
@@ -296,6 +351,9 @@ export const createDocumentLayout = (entries, metadata) =>
  * @returns {Promise<JSXContent>}
  */
 const buildContent = async (metadataEntries, head) => {
+  // First extract assets and rewrite URLs in the AST
+  const assetsMap = Object.fromEntries(extractAssetsFromAST(metadataEntries));
+
   // The metadata is the heading without the node children
   const metadata = omitKeys(head, [
     'content',
@@ -311,7 +369,7 @@ const buildContent = async (metadataEntries, head) => {
   const ast = await remark().run(root);
 
   // The final MDX content is the expression in the Program's first body node
-  return { ...ast.body[0].expression, data: head };
+  return { ...ast.body[0].expression, data: head, assetsMap };
 };
 
 export default buildContent;
