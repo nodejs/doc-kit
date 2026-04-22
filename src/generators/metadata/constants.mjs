@@ -56,8 +56,5 @@ export const DOC_API_HEADING_TYPES = [
   },
 ];
 
-// This regex is used to match basic TypeScript generic types (e.g., Promise<string>)
-export const TYPE_GENERIC_REGEX = /^([^<]+)<([^>]+)>$/;
-
 // This is the base URL of the Man7 documentation
 export const DOC_MAN_BASE_URL = 'http://man7.org/linux/man-pages/man';

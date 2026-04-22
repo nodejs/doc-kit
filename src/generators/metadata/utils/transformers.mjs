@@ -1,9 +1,6 @@
-import {
-  DOC_MAN_BASE_URL,
-  DOC_API_HEADING_TYPES,
-  TYPE_GENERIC_REGEX,
-} from '../constants.mjs';
+import { DOC_MAN_BASE_URL, DOC_API_HEADING_TYPES } from '../constants.mjs';
 import { slug } from './slugger.mjs';
+import { parseType } from './typeParser.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import BUILTIN_TYPE_MAP from '../maps/builtin.json' with { type: 'json' };
 import MDN_TYPE_MAP from '../maps/mdn.json' with { type: 'json' };
@@ -22,84 +19,7 @@ export const transformUnixManualToLink = (
 ) => {
   return `[\`${text}\`](${DOC_MAN_BASE_URL}${sectionNumber}/${command}.${sectionNumber}${sectionLetter}.html)`;
 };
-/**
- * Safely splits the string by `|` or `&` at the top level (ignoring those
- * inside `< >`), and returns both the pieces and the separator used.
- *
- * @param {string} str The type string to split
- * @returns {{ pieces: string[], separator: string }} The split pieces and the separator string used to join them (` | ` or ` & `)
- */
-const splitByOuterSeparator = str => {
-  const pieces = [];
-  let current = '';
-  let depth = 0;
-  let separator;
 
-  for (const char of str) {
-    if (char === '<') {
-      depth++;
-    } else if (char === '>') {
-      depth--;
-    } else if ((char === '|' || char === '&') && depth === 0) {
-      pieces.push(current);
-      current = '';
-      separator ??= ` ${char} `;
-      continue;
-    }
-    current += char;
-  }
-
-  pieces.push(current);
-  return { pieces, separator };
-};
-
-/**
- * Attempts to parse and format a basic Generic type (e.g., Promise<string>).
- * It also supports union and multi-parameter types within the generic brackets.
- *
- * @param {string} typePiece The plain type piece to be evaluated
- * @param {Function} transformType The function used to resolve individual types into links
- * @returns {string|null} The formatted Markdown link, or null if no match is found
- */
-const formatBasicGeneric = (typePiece, transformType) => {
-  const genericMatch = typePiece.match(TYPE_GENERIC_REGEX);
-
-  if (genericMatch) {
-    const baseType = genericMatch[1].trim();
-    const innerType = genericMatch[2].trim();
-
-    const baseResult = transformType(baseType.replace(/\[\]$/, ''));
-    const baseFormatted = baseResult
-      ? `[\`<${baseType}>\`](${baseResult})`
-      : `\`<${baseType}>\``;
-
-    // Split while capturing delimiters (| or ,) to preserve original syntax
-    const parts = innerType.split(/([|,])/);
-
-    const innerFormatted = parts
-      .map(part => {
-        const trimmed = part.trim();
-        // If it is a delimiter, return it as is
-        if (trimmed === '|') {
-          return ' | ';
-        }
-
-        if (trimmed === ',') {
-          return ', ';
-        }
-
-        const innerRes = transformType(trimmed.replace(/\[\]$/, ''));
-        return innerRes
-          ? `[\`<${trimmed}>\`](${innerRes})`
-          : `\`<${trimmed}>\``;
-      })
-      .join('');
-
-    return `${baseFormatted}&lt;${innerFormatted}&gt;`;
-  }
-
-  return null;
-};
 /**
  * This method replaces plain text Types within the Markdown content into Markdown links
  * that link to the actual relevant reference for such type (either internal or external link)
@@ -111,7 +31,10 @@ const formatBasicGeneric = (typePiece, transformType) => {
 export const transformTypeToReferenceLink = (type, record) => {
   // Removes the wrapping curly braces that wrap the type references
   // We keep the angle brackets `<>` intact here to parse Generics later
-  const typeInput = type.replace(/[{}]/g, '');
+  const typeInput = type
+    .trim()
+    .replace(/^\{(.*)\}$/, '$1')
+    .trim();
 
   /**
    * Handles the mapping (if there's a match) of the input text
@@ -150,32 +73,7 @@ export const transformTypeToReferenceLink = (type, record) => {
     return '';
   };
 
-  const { pieces: outerPieces, separator } = splitByOuterSeparator(typeInput);
-
-  const typePieces = outerPieces.map(piece => {
-    // This is the content to render as the text of the Markdown link
-    const trimmedPiece = piece.trim();
-
-    // 1. Attempt to format as a basic Generic type first
-    const genericMarkdown = formatBasicGeneric(trimmedPiece, transformType);
-    if (genericMarkdown) {
-      return genericMarkdown;
-    }
-
-    // 2. Fallback to the logic for plain types
-    // This is what we will compare against the API types mappings
-    // The ReGeX below is used to remove `[]` from the end of the type
-    const result = transformType(trimmedPiece.replace(/\[\]$/, ''));
-
-    // If we have a valid result and the piece is not empty, we return the Markdown link
-    if (trimmedPiece.length && result.length) {
-      return `[\`<${trimmedPiece}>\`](${result})`;
-    }
-  });
-
-  // Filter out pieces that we failed to map and then join the valid ones
-  // using the same separator that appeared in the original type string
-  const markdownLinks = typePieces.filter(Boolean).join(separator);
+  const markdownLinks = parseType(typeInput, transformType);
 
   // Return the replaced links or the original content if they all failed to be replaced
   // Note that if some failed to get replaced, only the valid ones will be returned
