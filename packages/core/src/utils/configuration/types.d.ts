@@ -8,17 +8,14 @@ export type Configuration = {
   // This is considered a "sorted" list of generators, in the sense that
   // if the last entry of this list contains a generated value, we will return
   // the value of the last generator in the list, if any.
-  target: Array<keyof AvailableGenerators>;
+  target: Array<string>;
 
   // The number of threads the process is allowed to use
   threads: number;
 
   // Number of items to process per worker thread
   chunkSize: number;
-} & {
-  [K in keyof AllGenerators]: GlobalConfiguration &
-    AllGenerators[K]['defaultConfiguration'];
-};
+} & Record<string, GlobalConfiguration & Record<string, unknown>>;
 
 export type GlobalConfiguration = {
   // The repository

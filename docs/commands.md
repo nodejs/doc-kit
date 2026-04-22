@@ -69,7 +69,7 @@ export default [
 
 ### Step 3: Update CLI Entry Point
 
-The CLI in `bin/cli.mjs` automatically loads commands from `bin/commands/index.mjs`, so no changes are needed there if you followed step 2.
+The CLI in `packages/core/bin/cli.mjs` automatically loads commands from `bin/commands/index.mjs`, so no changes are needed there if you followed step 2.
 
 ## Command Options
 

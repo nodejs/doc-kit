@@ -1,11 +1,9 @@
 import { Command, Option } from 'commander';
 
-import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
+import { resolveGeneratorGraph } from '../../src/loader.mjs';
 import { setConfig } from '../../src/utils/configuration/index.mjs';
 import { errorWrap } from '../utils.mjs';
-
-const { runGenerators } = createGenerator();
 
 /**
  * @typedef {Object} CLIOptions
@@ -31,11 +29,7 @@ export default new Command('generate')
   .addOption(
     new Option('-i, --input <patterns...>', 'Input file patterns (glob)')
   )
-  .addOption(
-    new Option('-t, --target <generator...>', 'Target generator(s)').choices(
-      Object.keys(publicGenerators)
-    )
-  )
+  .addOption(new Option('-t, --target <generator...>', 'Target generator(s)'))
   .addOption(
     new Option('--ignore <patterns...>', 'Ignore file patterns (glob)')
   )
@@ -61,7 +55,12 @@ export default new Command('generate')
 
   .action(
     errorWrap(async opts => {
-      const config = await setConfig(opts);
-      await runGenerators(config);
+      const targets = opts.target ?? [];
+      const loadedGenerators = await resolveGeneratorGraph(targets);
+
+      const config = await setConfig(opts, loadedGenerators);
+
+      const { runGenerators } = createGenerator(loadedGenerators);
+      await runGenerators(config, targets);
     })
   );

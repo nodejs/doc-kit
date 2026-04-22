@@ -1,31 +1,76 @@
 'use strict';
 
-import { GITHUB_BLOB_URL } from '../../utils/configuration/templates.mjs';
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { basename, join } from 'node:path';
+
+import { checkIndirectReferences } from './utils/checkIndirectReferences.mjs';
+import { extractExports } from './utils/extractExports.mjs';
+import { findDefinitions } from './utils/findDefinitions.mjs';
+import getConfig from '../../utils/configuration/index.mjs';
+import {
+  GITHUB_BLOB_URL,
+  populate,
+} from '../../utils/configuration/templates.mjs';
+import { withExt, writeFile } from '../../utils/file.mjs';
+
+export const name = 'api-links';
+export const dependsOn = '@node-core/doc-kit/generators/ast-js';
+export const defaultConfiguration = {
+  sourceURL: `${GITHUB_BLOB_URL}lib/{fileName}`,
+};
 
 /**
- * This generator is responsible for mapping publicly accessible functions in
- * Node.js to their source locations in the Node.js repository.
+ * Generates the `apilinks.json` file.
  *
- * This is a top-level generator. It takes in the raw AST tree of the JavaScript
- * source files. It outputs a `apilinks.json` file into the specified output
- * directory.
- *
- * @type {import('./types').Generator}
+ * @type {import('./types').Generator['generate']}
  */
-export default createLazyGenerator({
-  name: 'api-links',
+export async function generate(input) {
+  const config = getConfig('api-links');
+  /**
+   * @type Record<string, string>
+   */
+  const definitions = {};
 
-  version: '1.0.0',
+  input.forEach(program => {
+    /**
+     * Mapping of definitions to their line number
+     *
+     * @type {Record<string, number>}
+     * @example { 'someclass.foo': 10 }
+     */
+    const nameToLineNumberMap = {};
 
-  description:
-    'Creates a mapping of publicly accessible functions to their source locations in the Node.js repository.',
+    const fileName = basename(program.path);
+    const baseName = withExt(fileName);
 
-  // Unlike the rest of the generators, this utilizes Javascript sources being
-  // passed into the input field rather than Markdown.
-  dependsOn: 'ast-js',
+    const exports = extractExports(program, baseName, nameToLineNumberMap);
 
-  defaultConfiguration: {
-    sourceURL: `${GITHUB_BLOB_URL}lib/{fileName}`,
-  },
-});
+    findDefinitions(program, baseName, nameToLineNumberMap, exports);
+
+    checkIndirectReferences(program, exports, nameToLineNumberMap);
+
+    const fullGitUrl = populate(config.sourceURL, {
+      ...config,
+      fileName,
+    });
+
+    // Add the exports we found in this program to our output
+    Object.keys(nameToLineNumberMap).forEach(key => {
+      const lineNumber = nameToLineNumberMap[key];
+
+      definitions[key] = `${fullGitUrl}#L${lineNumber}`;
+    });
+  });
+
+  if (config.output) {
+    const out = join(config.output, 'apilinks.json');
+
+    await writeFile(
+      out,
+      config.minify
+        ? JSON.stringify(definitions)
+        : JSON.stringify(definitions, null, 2)
+    );
+  }
+
+  return definitions;
+}

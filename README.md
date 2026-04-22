@@ -68,7 +68,7 @@ Options:
   -v, --version <semver>     Target Node.js version (default: "v22.14.0")
   -c, --changelog <url>      Changelog URL or path (default: "https://raw.githubusercontent.com/nodejs/node/HEAD/CHANGELOG.md")
   --git-ref <url>            Git ref/commit URL (default: "https://github.com/nodejs/node/tree/HEAD")
-  -t, --target [modes...]    Target generator modes (choices: "json-simple", "legacy-html", "legacy-html-all", "man-page", "legacy-json", "legacy-json-all", "addon-verify", "api-links", "orama-db", "llms-txt")
+  -t, --target <generator...>  Target generator(s) (e.g. @node-core/doc-kit/generators/web)
   -h, --help                 display help for command
 ```
 
@@ -91,8 +91,8 @@ To generate a 1:1 match with the [legacy tooling](https://github.com/nodejs/node
 
 ```sh
 npx doc-kit generate \
-  -t legacy-html \
-  -t legacy-json \
+  -t @node-core/doc-kit/generators/legacy-html \
+  -t @node-core/doc-kit/generators/legacy-json \
   -i "path/to/node/doc/api/*.md" \
   -o out \
   --index path/to/node/doc/api/index.md
@@ -104,8 +104,8 @@ To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling
 
 ```sh
 npx doc-kit generate \
-  -t web \
-  -t orama-db \
+  -t @node-core/doc-kit/generators/web \
+  -t @node-core/doc-kit/generators/orama-db \
   -i "path/to/node/doc/api/*.md" \
   -o out \
   --index path/to/node/doc/api/index.md

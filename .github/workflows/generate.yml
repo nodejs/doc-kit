@@ -76,36 +76,36 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: man-page
+          - target: '@node-core/doc-kit/generators/man-page'
             input: './node/doc/api/cli.md'
 
-          - target: addon-verify
+          - target: '@node-core/doc-kit/generators/addon-verify'
             input: './node/doc/api/addons.md'
 
-          - target: api-links
+          - target: '@node-core/doc-kit/generators/api-links'
             input: './node/lib/*.js'
             compare: object-assertion
 
-          - target: orama-db
+          - target: '@node-core/doc-kit/generators/orama-db'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: json-simple
+          - target: '@node-core/doc-kit/generators/json-simple'
             input: './node/doc/api/*.md'
 
-          - target: legacy-json
+          - target: '@node-core/doc-kit/generators/legacy-json'
             input: './node/doc/api/*.md'
             compare: object-assertion
 
-          - target: legacy-html
+          - target: '@node-core/doc-kit/generators/legacy-html'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: web
+          - target: '@node-core/doc-kit/generators/web'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: llms-txt
+          - target: '@node-core/doc-kit/generators/llms-txt'
             input: './node/doc/api/*.md'
             compare: file-size
     steps:
@@ -140,10 +140,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create output directory
-        run: mkdir -p out/${{ matrix.target }}
+      - name: Get generator name
+        id: generator
+        run: echo "name=$(node -e "import('${{ matrix.target }}').then(m => console.log(m.name))")" >> "$GITHUB_OUTPUT"
 
-      - name: Generate ${{ matrix.target }}
+      - name: Create output directory
+        run: mkdir -p out/${{ steps.generator.outputs.name }}
+
+      - name: Generate ${{ steps.generator.outputs.name }}
         run: |
           node packages/core/bin/cli.mjs generate \
             -t ${{ matrix.target }} \
@@ -157,7 +161,7 @@ jobs:
         if: ${{ matrix.compare && needs.prepare.outputs.base-run }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: ${{ matrix.target }}
+          name: ${{ steps.generator.outputs.name }}
           path: base
           run-id: ${{ needs.prepare.outputs.base-run }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -169,8 +173,8 @@ jobs:
         run: |
           node scripts/comparators/${{ matrix.compare }}.mjs > out/comparison.txt
 
-      - name: Upload ${{ matrix.target }} artifacts
+      - name: Upload ${{ steps.generator.outputs.name }} artifacts
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: ${{ matrix.target }}
+          name: ${{ steps.generator.outputs.name }}
           path: out

@@ -24,22 +24,27 @@ Raw Markdown Files
   [web] - Generate HTML/CSS/JS bundles
 ```
 
-Each generator declares its dependency using the `dependsOn` field, allowing automatic pipeline construction.
+Each generator declares its dependency using the `dependsOn` export, allowing automatic pipeline construction.
 
 ## Generator Structure
 
-A generator is defined as a module exporting an object conforming to the `GeneratorMetadata` interface.
+A generator is a single module (`index.mjs`) that exports its metadata and logic as named exports:
+
+- `name` - The generator's short name (used for config keys and logging)
+- `generate` - The main generation function (required)
+- `processChunk` - Worker thread processing function (optional — presence enables parallel processing)
+- `dependsOn` - Import specifier of the dependency generator (optional)
+- `defaultConfiguration` - Default config values (optional)
 
 ## Creating a Basic Generator
 
-### Step 1: Create the Generator Files
+### Step 1: Create the Generator Directory
 
 Create a new directory in `src/generators/`:
 
 ```
 src/generators/my-format/
-├── index.mjs         # Generator metadata (required)
-├── generate.mjs      # Generator implementation (required)
+├── index.mjs         # Generator entry point (required)
 ├── constants.mjs     # Constants (optional)
 ├── types.d.ts        # TypeScript types (required)
 └── utils/            # Utility functions (optional)
@@ -67,50 +72,24 @@ export type Generator = GeneratorMetadata<
 >;
 ```
 
-### Step 3: Define Generator Metadata
+### Step 3: Implement the Generator
 
-Create the generator metadata in `index.mjs` using `createLazyGenerator`:
+Create `index.mjs` with your generator's metadata and logic:
 
 ```javascript
 // src/generators/my-format/index.mjs
-import { createLazyGenerator } from '../../utils/generators.mjs';
+'use strict';
 
-/**
- * Generates output in MyFormat.
- *
- * @type {import('./types').Generator}
- */
-export default createLazyGenerator({
-  name: 'my-format',
-
-  version: '1.0.0',
-
-  description: 'Generates documentation in MyFormat',
-
-  // This generator depends on the metadata generator
-  dependsOn: 'metadata',
-
-  defaultConfiguration: {
-    // If your generator supports a custom configuration, define the defaults here
-    myCustomOption: 'myDefaultValue',
-
-    // All generators support options in the GlobalConfiguration object
-    // To override the defaults, they can be specified here
-    ref: 'overriddenRef',
-  },
-});
-```
-
-### Step 4: Implement the Generator Logic
-
-Create the generator implementation in `generate.mjs`:
-
-```javascript
-// src/generators/my-format/generate.mjs
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import getConfig from '../../utils/configuration/index.mjs';
+
+export const name = 'my-format';
+export const dependsOn = '@node-core/doc-kit/generators/metadata';
+export const defaultConfiguration = {
+  myCustomOption: 'myDefaultValue',
+};
 
 /**
  * Main generation function
@@ -149,62 +128,22 @@ function transformToMyFormat(entries, version) {
 }
 ```
 
-### Step 5: Register the Generator
+### Step 4: Register the Generator
 
-Add your generator to the exports in `src/generators/index.mjs`:
-
-```javascript
-// For public generators (available via CLI)
-import myFormat from './my-format/index.mjs';
-
-export const publicGenerators = {
-  'json-simple': jsonSimple,
-  'my-format': myFormat, // Add this
-  // ... other generators
-};
-
-// For internal generators (used only as dependencies)
-const internalGenerators = {
-  ast,
-  metadata,
-  // ... internal generators
-};
-```
+Add an entry to the `exports` map in `packages/core/package.json`. If you follow the `index.mjs` convention, the wildcard pattern `"./generators/*": "./src/generators/*/index.mjs"` handles this automatically — no changes needed.
 
 ## Parallel Processing with Workers
 
-For generators processing large datasets, implement parallel processing using worker threads.
+For generators processing large datasets, implement parallel processing using worker threads. Export a `processChunk` function from your `index.mjs` — its presence automatically enables parallel processing.
 
 ### Implementing Worker-Based Processing
 
-First, define the generator metadata in `index.mjs`:
-
 ```javascript
 // src/generators/parallel-generator/index.mjs
-import { createLazyGenerator } from '../../utils/generators.mjs';
-
-/**
- * @type {import('./types').Generator}
- */
-export default createLazyGenerator({
-  name: 'parallel-generator',
-
-  version: '1.0.0',
-
-  description: 'Processes data in parallel',
-
-  dependsOn: 'metadata',
-
-  // Indicates this generator has a processChunk implementation
-  hasParallelProcessor: true,
-});
-```
-
-Then, implement both `processChunk` and `generate` in `generate.mjs`:
-
-```javascript
-// src/generators/parallel-generator/generate.mjs
 import getConfig from '../../utils/configuration/index.mjs';
+
+export const name = 'parallel-generator';
+export const dependsOn = '@node-core/doc-kit/generators/metadata';
 
 /**
  * Process a chunk of items in a worker thread.
@@ -232,7 +171,7 @@ export async function processChunk(fullInput, itemIndices, deps) {
  */
 export async function* generate(input, worker) {
   // Configuration for this generator is based on its name
-  const config = getConfig('my-format');
+  const config = getConfig('parallel-generator');
 
   // Prepare serializable dependencies
   const deps = {
@@ -271,34 +210,13 @@ Don't use workers when:
 
 ## Streaming Results
 
-Generators can yield results as they're produced using async generators.
-
-Define the generator metadata in `index.mjs`:
+Generators can yield results as they're produced using async generators. Export `processChunk` to enable parallel processing, then use `async function*` for `generate`:
 
 ```javascript
 // src/generators/streaming-generator/index.mjs
-import { createLazyGenerator } from '../../utils/generators.mjs';
+export const name = 'streaming-generator';
+export const dependsOn = '@node-core/doc-kit/generators/metadata';
 
-/**
- * @type {import('./types').Generator}
- */
-export default createLazyGenerator({
-  name: 'streaming-generator',
-
-  version: '1.0.0',
-
-  description: 'Streams results as they are ready',
-
-  dependsOn: 'metadata',
-
-  hasParallelProcessor: true,
-});
-```
-
-Implement the generator in `generate.mjs`:
-
-```javascript
-// src/generators/streaming-generator/generate.mjs
 /**
  * Process a chunk of data
  *
@@ -331,32 +249,13 @@ export async function* generate(input, worker) {
 
 ### Non-Streaming Generators
 
-Some generators must collect all input before processing.
-
-Generator metadata in `index.mjs`:
+Some generators must collect all input before processing:
 
 ```javascript
 // src/generators/batch-generator/index.mjs
-import { createLazyGenerator } from '../../utils/generators.mjs';
+export const name = 'batch-generator';
+export const dependsOn = '@node-core/doc-kit/generators/jsx-ast';
 
-/**
- * @type {import('./types').Generator}
- */
-export default createLazyGenerator({
-  name: 'batch-generator',
-
-  version: '1.0.0',
-
-  description: 'Requires all input at once',
-
-  dependsOn: 'jsx-ast',
-});
-```
-
-Implementation in `generate.mjs`:
-
-```javascript
-// src/generators/batch-generator/generate.mjs
 /**
  * Non-streaming - returns Promise instead of AsyncGenerator
  *
@@ -383,54 +282,33 @@ Use non-streaming when:
 
 ### Declaring Dependencies
 
-In `index.mjs`:
-
 ```javascript
-import { createLazyGenerator } from '../../utils/generators.mjs';
+// src/generators/my-generator/index.mjs
+export const name = 'my-generator';
+export const dependsOn = '@node-core/doc-kit/generators/metadata';
 
-export default createLazyGenerator({
-  name: 'my-generator',
-
-  dependsOn: 'metadata', // This generator requires metadata output
-
-  // ... other metadata
-});
-```
-
-In `generate.mjs`:
-
-```javascript
 export async function generate(input, worker) {
-  // input contains the output from 'metadata' generator
+  // input contains the output from the metadata generator
 }
 ```
 
 ### Dependency Chain Example
 
 ```javascript
-// Step 1: Parse markdown to AST
+// Step 1: Parse markdown to AST (no dependency)
 // src/generators/ast/index.mjs
-export default createLazyGenerator({
-  name: 'ast',
-  dependsOn: undefined,  // No dependency
-  // Processes raw markdown files
-});
+export const name = 'ast';
+// No dependsOn — processes raw markdown files
 
 // Step 2: Extract metadata from AST
 // src/generators/metadata/index.mjs
-export default createLazyGenerator({
-  name: 'metadata',
-  dependsOn: 'ast',  // Depends on AST
-  // Processes AST output
-});
+export const name = 'metadata';
+export const dependsOn = '@node-core/doc-kit/generators/ast';
 
 // Step 3: Generate HTML from metadata
 // src/generators/html-generator/index.mjs
-export default createLazyGenerator({
-  name: 'html-generator',
-  dependsOn: 'metadata',  // Depends on metadata
-  // Processes metadata output
-});
+export const name = 'html-generator';
+export const dependsOn = '@node-core/doc-kit/generators/metadata';
 ```
 
 ### Multiple Consumers
@@ -448,8 +326,6 @@ The framework ensures `metadata` runs once and its output is cached for all cons
 ## File Output
 
 ### Writing Output Files
-
-In `generate.mjs`:
 
 ```javascript
 import { mkdir, writeFile } from 'node:fs/promises';
