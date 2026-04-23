@@ -2,11 +2,12 @@
 
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import getConfig from '#core/utils/configuration/index.mjs';
 import { writeFile } from '#core/utils/file.mjs';
 
+import { ROOT } from '../../utils/web/constants.mjs';
 import createASTBuilder from '../../utils/web/generate.mjs';
 import { processJSXEntries } from '../../utils/web/processing.mjs';
 
@@ -17,11 +18,11 @@ export const defaultConfiguration = {
   title: 'Node.js',
   imports: {
     '#theme/Logo': '@node-core/ui-components/Common/NodejsLogo',
-    '#theme/Navigation': join(import.meta.dirname, './ui/components/NavBar'),
-    '#theme/Sidebar': join(import.meta.dirname, './ui/components/SideBar'),
-    '#theme/Metabar': join(import.meta.dirname, './ui/components/MetaBar'),
-    '#theme/Footer': join(import.meta.dirname, './ui/components/NoOp'),
-    '#theme/Layout': join(import.meta.dirname, './ui/components/Layout'),
+    '#theme/Navigation': resolve(ROOT, './ui/components/NavBar'),
+    '#theme/Sidebar': resolve(ROOT, './ui/components/SideBar'),
+    '#theme/Metabar': resolve(ROOT, './ui/components/MetaBar'),
+    '#theme/Footer': resolve(ROOT, './ui/components/NoOp'),
+    '#theme/Layout': resolve(ROOT, './ui/components/Layout'),
   },
 };
 

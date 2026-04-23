@@ -11,4 +11,4 @@ node packages/core/bin/cli.mjs generate \
 
 cp ./node/doc/api/*.md "./out"
 
-rm -rf node/
+# rm -rf node/

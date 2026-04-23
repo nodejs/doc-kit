@@ -7,7 +7,7 @@ import {
   getVersionFromSemVer,
 } from '#core/utils/generators.mjs';
 
-import toc from './toc.mjs';
+import { wrapToC } from './toc.mjs';
 
 /**
  * Builds the Dropdown for the current Table of Contents
@@ -113,7 +113,7 @@ const replaceTemplateValues = (
     .replace(/__FILENAME__/g, api)
     .replace('__SECTION__', section)
     .replace(/__VERSION__/g, `v${config.version.version}`)
-    .replace(/__TOC__/g, toc.wrapToC(tocContent))
+    .replace(/__TOC__/g, wrapToC(tocContent))
     .replace(/__GTOC__/g, nav)
     .replace('__CONTENT__', content)
     .replace(/__TOC_PICKER__/g, buildToC(tocContent))

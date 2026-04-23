@@ -18,4 +18,4 @@ jobs:
         with:
           ignore_words_list: crate,raison
           exclude_file: .gitignore
-          skip: package-lock.json, ./packages/core/src/generators/mandoc/template.1
+          skip: package-lock.json, ./packages/extras/src/generators/man-page/template.1
