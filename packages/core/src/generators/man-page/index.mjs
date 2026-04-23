@@ -1,87 +1,28 @@
 'use strict';
 
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import {
-  convertOptionToMandoc,
-  convertEnvVarToMandoc,
-} from './utils/converter.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { writeFile } from '../../utils/file.mjs';
-
-export const name = 'man-page';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
-export const defaultConfiguration = {
-  fileName: 'node.1',
-  cliOptionsHeaderSlug: 'options',
-  envVarsHeaderSlug: 'environment-variables-1',
-  templatePath: join(import.meta.dirname, 'template.1'),
-};
+import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
- * @param {Array<import('../metadata/types').MetadataEntry>} components
- * @param {number} start
- * @param {number} end
- * @param {(element: import('../metadata/types').MetadataEntry) => string} convert
- * @returns {string}
- */
-function extractMandoc(components, start, end, convert) {
-  return components
-    .slice(start, end)
-    .filter(({ heading }) => heading.depth === 3)
-    .map(convert)
-    .join('');
-}
-
-/**
- * Generates the Node.js man-page
+ * This generator generates a man page version of the CLI.md file.
+ * See https://man.openbsd.org/mdoc.7 for the formatting.
  *
- * @type {import('./types').Generator['generate']}
+ * @type {import('./types').Generator}
  */
-export async function generate(input) {
-  const config = getConfig('man-page');
+export default createLazyGenerator({
+  name: 'man-page',
 
-  // Find the appropriate headers
-  const optionsStart = input.findIndex(
-    ({ heading }) => heading.data.slug === config.cliOptionsHeaderSlug
-  );
+  version: '1.0.0',
 
-  const environmentStart = input.findIndex(
-    ({ heading }) => heading.data.slug === config.envVarsHeaderSlug
-  );
+  description: 'Generates the Node.js man-page.',
 
-  // The first header that is <3 in depth after environmentStart
-  const environmentEnd = input.findIndex(
-    ({ heading }, index) => heading.depth < 3 && index > environmentStart
-  );
+  dependsOn: 'metadata',
 
-  const output = {
-    // Extract the CLI options.
-    options: extractMandoc(
-      input,
-      optionsStart + 1,
-      environmentStart,
-      convertOptionToMandoc
-    ),
-    // Extract the environment variables.
-    env: extractMandoc(
-      input,
-      environmentStart + 1,
-      environmentEnd,
-      convertEnvVarToMandoc
-    ),
-  };
-
-  const template = await readFile(config.templatePath, 'utf-8');
-
-  const filledTemplate = template
-    .replace('__OPTIONS__', output.options)
-    .replace('__ENVIRONMENT__', output.env);
-
-  if (config.output) {
-    await writeFile(join(config.output, config.fileName), filledTemplate);
-  }
-
-  return filledTemplate;
-}
+  defaultConfiguration: {
+    fileName: 'node.1',
+    cliOptionsHeaderSlug: 'options',
+    envVarsHeaderSlug: 'environment-variables-1',
+    templatePath: join(import.meta.dirname, 'template.1'),
+  },
+});

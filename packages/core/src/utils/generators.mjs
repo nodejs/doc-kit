@@ -2,6 +2,8 @@
 
 import { coerce, major } from 'semver';
 
+import { lazy } from './misc.mjs';
+
 /**
  * Groups all the API metadata nodes by module (`api` property) so that we can process each different file
  * based on the module it belongs to.
@@ -133,3 +135,30 @@ export const legacyToJSON = (
         },
     ...args
   );
+
+/**
+ * Creates a generator with the provided metadata.
+ * @template T
+ * @param {T} metadata - The metadata object
+ * @returns {Promise<T>} The metadata object with generator methods
+ */
+export const createLazyGenerator = metadata => {
+  const generator = lazy(
+    () => import(`../generators/${metadata.name}/generate.mjs`)
+  );
+  return {
+    ...metadata,
+    /**
+     * Processes a chunk using the lazily-loaded generator.
+     * @param {...any} args - Arguments to pass to the processChunk method
+     * @returns {Promise<any>} Result from the generator's processChunk method
+     */
+    processChunk: async (...args) => (await generator()).processChunk(...args),
+    /**
+     * Generates output using the lazily-loaded generator.
+     * @param {...any} args - Arguments to pass to the generate method
+     * @returns {Promise<any>} Result from the generator's generate method
+     */
+    generate: async (...args) => (await generator()).generate(...args),
+  };
+};

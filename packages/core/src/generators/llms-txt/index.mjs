@@ -1,39 +1,27 @@
 'use strict';
 
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { buildApiDocLink } from './utils/buildApiDocLink.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { writeFile } from '../../utils/file.mjs';
-
-export const name = 'llms-txt';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
-export const defaultConfiguration = {
-  templatePath: join(import.meta.dirname, 'template.txt'),
-  pageURL: '{baseURL}/latest/api{path}.md',
-};
+import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
- * Generates a llms.txt file
+ * This generator generates a llms.txt file to provide information to LLMs at
+ * inference time
  *
- * @type {import('./types').Generator['generate']}
+ * @type {import('./types').Generator}
  */
-export async function generate(input) {
-  const config = getConfig('llms-txt');
+export default createLazyGenerator({
+  name: 'llms-txt',
 
-  const template = await readFile(config.templatePath, 'utf-8');
+  version: '1.0.0',
 
-  const apiDocsLinks = input
-    .filter(entry => entry.heading.depth === 1)
-    .map(entry => `- ${buildApiDocLink(entry, config)}`)
-    .join('\n');
+  description:
+    'Generates a llms.txt file to provide information to LLMs at inference time',
 
-  const filledTemplate = `${template}${apiDocsLinks}`;
+  dependsOn: 'metadata',
 
-  if (config.output) {
-    await writeFile(join(config.output, 'llms.txt'), filledTemplate);
-  }
-
-  return filledTemplate;
-}
+  defaultConfiguration: {
+    templatePath: join(import.meta.dirname, 'template.txt'),
+    pageURL: '{baseURL}/latest/api{path}.md',
+  },
+});

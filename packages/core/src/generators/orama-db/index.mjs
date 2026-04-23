@@ -1,62 +1,19 @@
 'use strict';
 
-import { join } from 'node:path';
+import { createLazyGenerator } from '../../utils/generators.mjs';
 
-import { create, save, insertMultiple } from '@orama/orama';
-
-import { SCHEMA } from './constants.mjs';
-import { buildHierarchicalTitle } from './utils/title.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { writeFile } from '../../utils/file.mjs';
-import { groupNodesByModule } from '../../utils/generators.mjs';
-import { transformNodeToString } from '../../utils/unist.mjs';
-
-export const name = 'orama-db';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
 /**
- * Generates the Orama database.
+ * This generator is responsible for generating the Orama database for the
+ * API docs. It is based on the legacy-json generator.
  *
- * @type {import('./types').Generator['generate']}
+ * @type {import('./types').Generator}
  */
-export async function generate(input) {
-  const config = getConfig('orama-db');
+export default createLazyGenerator({
+  name: 'orama-db',
 
-  const db = create({ schema: SCHEMA });
+  version: '1.0.0',
 
-  const apiGroups = groupNodesByModule(input);
+  description: 'Generates the Orama database for the API docs.',
 
-  // Process all API groups and flatten into a single document array
-  const documents = Array.from(apiGroups.values()).flatMap(headings =>
-    headings.map((entry, index) => {
-      const hierarchicalTitle = buildHierarchicalTitle(headings, index);
-
-      const paragraph = entry.content.children.find(
-        child => child.type === 'paragraph'
-      );
-
-      return {
-        title: hierarchicalTitle,
-        description: paragraph
-          ? transformNodeToString(paragraph, true)
-          : undefined,
-        href: `${entry.path.slice(1)}.html#${entry.heading.data.slug}`,
-        siteSection: headings[0].heading.data.name,
-      };
-    })
-  );
-
-  // Insert all documents
-  await insertMultiple(db, documents);
-
-  const result = save(db);
-
-  // Persist
-  if (config.output) {
-    await writeFile(
-      join(config.output, 'orama-db.json'),
-      config.minify ? JSON.stringify(result) : JSON.stringify(result, null, 2)
-    );
-  }
-
-  return result;
-}
+  dependsOn: 'metadata',
+});

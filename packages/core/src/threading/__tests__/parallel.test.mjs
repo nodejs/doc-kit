@@ -1,7 +1,6 @@
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
-import { loadGenerator } from '../../loader.mjs';
 import createWorkerPool from '../index.mjs';
 import createParallelWorker from '../parallel.mjs';
 
@@ -39,20 +38,10 @@ async function collectChunks(generator) {
   return chunks;
 }
 
-const metadataSpecifier = '@node-core/doc-kit/generators/metadata';
-const metadataGenerator = await loadGenerator(metadataSpecifier);
-const astJsSpecifier = '@node-core/doc-kit/generators/ast-js';
-const astJsGenerator = await loadGenerator(astJsSpecifier);
-
 describe('createParallelWorker', () => {
   it('should create a ParallelWorker with stream method', async () => {
     const pool = createWorkerPool(2);
-    const worker = createParallelWorker(
-      metadataSpecifier,
-      metadataGenerator,
-      pool,
-      { threads: 2 }
-    );
+    const worker = createParallelWorker('metadata', pool, { threads: 2 });
 
     ok(worker);
     strictEqual(typeof worker.stream, 'function');
@@ -62,7 +51,7 @@ describe('createParallelWorker', () => {
 
   it('should handle empty items array', async () => {
     const pool = createWorkerPool(2);
-    const worker = createParallelWorker(astJsSpecifier, astJsGenerator, pool, {
+    const worker = createParallelWorker('ast-js', pool, {
       threads: 2,
       chunkSize: 10,
     });
@@ -76,15 +65,10 @@ describe('createParallelWorker', () => {
 
   it('should distribute items to multiple worker threads', async () => {
     const pool = createWorkerPool(4);
-    const worker = createParallelWorker(
-      metadataSpecifier,
-      metadataGenerator,
-      pool,
-      {
-        threads: 4,
-        chunkSize: 1,
-      }
-    );
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 4,
+      chunkSize: 1,
+    });
 
     const mockInput = [
       {
@@ -118,15 +102,10 @@ describe('createParallelWorker', () => {
 
   it('should yield results as chunks complete', async () => {
     const pool = createWorkerPool(2);
-    const worker = createParallelWorker(
-      metadataSpecifier,
-      metadataGenerator,
-      pool,
-      {
-        threads: 2,
-        chunkSize: 1,
-      }
-    );
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 2,
+      chunkSize: 1,
+    });
 
     const mockInput = [
       {
@@ -148,15 +127,10 @@ describe('createParallelWorker', () => {
 
   it('should work with single thread and items', async () => {
     const pool = createWorkerPool(2);
-    const worker = createParallelWorker(
-      metadataSpecifier,
-      metadataGenerator,
-      pool,
-      {
-        threads: 2,
-        chunkSize: 5,
-      }
-    );
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 2,
+      chunkSize: 5,
+    });
 
     const mockInput = [
       {
@@ -175,15 +149,10 @@ describe('createParallelWorker', () => {
 
   it('should use sliceInput for metadata generator', async () => {
     const pool = createWorkerPool(2);
-    const worker = createParallelWorker(
-      metadataSpecifier,
-      metadataGenerator,
-      pool,
-      {
-        threads: 2,
-        chunkSize: 1,
-      }
-    );
+    const worker = createParallelWorker('metadata', pool, {
+      threads: 2,
+      chunkSize: 1,
+    });
 
     const mockInput = [
       {

@@ -1,7 +1,5 @@
+import { allGenerators } from '../generators/index.mjs';
 import { setConfig } from '../utils/configuration/index.mjs';
-
-/** @type {Map<string, Promise<{processChunk: Function}>>} */
-const generatorCache = new Map();
 
 /**
  * Processes a chunk of items using the specified generator's processChunk method.
@@ -11,7 +9,7 @@ const generatorCache = new Map();
  * @returns {Promise<unknown>} The processed result
  */
 export default async ({
-  generatorSpecifier,
+  generatorName,
   input,
   itemIndices,
   extra,
@@ -19,11 +17,7 @@ export default async ({
 }) => {
   await setConfig(configuration);
 
-  if (!generatorCache.has(generatorSpecifier)) {
-    generatorCache.set(generatorSpecifier, import(generatorSpecifier));
-  }
+  const generator = allGenerators[generatorName];
 
-  const { processChunk } = await generatorCache.get(generatorSpecifier);
-
-  return processChunk(input, itemIndices, extra);
+  return generator.processChunk(input, itemIndices, extra);
 };

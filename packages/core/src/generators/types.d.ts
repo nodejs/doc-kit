@@ -1,4 +1,12 @@
+import type { publicGenerators, allGenerators } from './index.mjs';
+
 declare global {
+  // Public generators exposed to the CLI
+  export type AvailableGenerators = typeof publicGenerators;
+
+  // All generators including internal ones (metadata, jsx-ast, ast-js)
+  export type AllGenerators = typeof allGenerators;
+
   /**
    * ParallelWorker interface for distributing work across Node.js worker threads.
    * Streams results as chunks complete, enabling pipeline parallelism.
@@ -20,7 +28,7 @@ declare global {
   }
 
   export interface ParallelTaskOptions {
-    generatorSpecifier: string;
+    generatorName: keyof AllGenerators;
     input: unknown[];
     itemIndices: number[];
   }
@@ -52,18 +60,40 @@ declare global {
     G extends Generate<any, any>,
     P extends ProcessChunk<any, any, any> | undefined = undefined,
   > = {
-    readonly defaultConfiguration?: C;
+    readonly defaultConfiguration: C;
 
-    // The name of the Generator
-    name: string;
+    // The name of the Generator. Must match the Key in AllGenerators
+    name: keyof AllGenerators;
+
+    version: string;
+
+    description: string;
+
+    hasParallelProcessor: boolean;
 
     /**
-     * The import specifier of the generator this one depends on.
-     * For example, '@node-core/doc-kit/generators/metadata'.
+     * The immediate generator that this generator depends on.
+     * For example, the `html` generator depends on the `react` generator.
      *
-     * If undefined, this is a top-level generator with no dependencies.
+     * If a given generator has no "before" generator, it will be considered a top-level
+     * generator, and run in parallel.
+     *
+     * Assume you pass to the `createGenerator`: ['json', 'html'] as the generators,
+     * this means both the 'json' and the 'html' generators will be executed and generate their
+     * own outputs in parallel. If the 'html' generator depends on the 'react' generator, then
+     * the 'react' generator will be executed first, then the 'html' generator.
+     *
+     * But both 'json' and 'html' generators will be executed in parallel.
+     *
+     * If you pass `createGenerator` with ['react', 'html'], the 'react' generator will be executed first,
+     * as it is a top level generator and then the 'html' generator would be executed after the 'react' generator.
+     *
+     * The 'ast' generator is the top-level parser for markdown files. It has no dependencies.
+     *
+     * The `ast-js` generator is the top-level parser for JavaScript files. It
+     * passes the ASTs for any JavaScript files given in the input.
      */
-    dependsOn?: string;
+    dependsOn: keyof AllGenerators | undefined;
 
     /**
      * Generators are abstract and the different generators have different sort of inputs and outputs.

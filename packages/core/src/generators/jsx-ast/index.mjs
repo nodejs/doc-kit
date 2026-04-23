@@ -1,79 +1,27 @@
-import { buildSideBarProps } from './utils/buildBarProps.mjs';
-import buildContent from './utils/buildContent.mjs';
-import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
+'use strict';
+
 import { GITHUB_EDIT_URL } from '../../utils/configuration/templates.mjs';
-import { groupNodesByModule } from '../../utils/generators.mjs';
-import { getRemarkRecma } from '../../utils/remark.mjs';
-import { relative } from '../../utils/url.mjs';
-
-export const name = 'jsx-ast';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
-export const defaultConfiguration = {
-  ref: 'main',
-  pageURL: '{baseURL}/latest-{version}/api{path}.html',
-  editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
-};
-
-const remarkRecma = getRemarkRecma();
+import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
- * Process a chunk of items in a worker thread.
- * Transforms metadata entries into JSX AST nodes.
+ * Generator for converting MDAST to JSX AST.
  *
- * Each item is a SlicedModuleInput containing the head node
- * and all entries for that module - no need to recompute grouping.
- *
- * @type {import('./types').Generator['processChunk']}
+ * @type {import('./types').Generator}
  */
-export async function processChunk(slicedInput, itemIndices, docPages) {
-  const results = [];
+export default createLazyGenerator({
+  name: 'jsx-ast',
 
-  for (const idx of itemIndices) {
-    const { head, entries } = slicedInput[idx];
+  version: '1.0.0',
 
-    const sideBarProps = buildSideBarProps(
-      head,
-      docPages.map(([heading, path]) => [
-        heading,
-        head.path === path
-          ? `${head.basename}.html`
-          : `${relative(path, head.path)}.html`,
-      ])
-    );
+  description: 'Generates JSX AST from the input MDAST',
 
-    const content = await buildContent(
-      entries,
-      head,
-      sideBarProps,
-      remarkRecma
-    );
+  dependsOn: 'metadata',
 
-    results.push(content);
-  }
+  defaultConfiguration: {
+    ref: 'main',
+    pageURL: '{baseURL}/latest-{version}/api{path}.html',
+    editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
+  },
 
-  return results;
-}
-
-/**
- * Generates a JSX AST
- *
- * @type {import('./types').Generator['generate']}
- */
-export async function* generate(input, worker) {
-  const groupedModules = groupNodesByModule(input);
-
-  const headNodes = getSortedHeadNodes(input);
-
-  const docPages = headNodes.map(node => [node.heading.data.name, node.path]);
-
-  // Create sliced input: each item contains head + its module's entries
-  // This avoids sending all 4700+ entries to every worker
-  const entries = headNodes.map(head => ({
-    head,
-    entries: groupedModules.get(head.api),
-  }));
-
-  for await (const chunkResult of worker.stream(entries, docPages)) {
-    yield chunkResult;
-  }
-}
+  hasParallelProcessor: true,
+});

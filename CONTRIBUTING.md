@@ -89,7 +89,7 @@ The steps below will give you a general idea of how to prepare your local enviro
    For fast iteration during development, target a single Markdown file instead of all API docs:
 
    ```bash
-   node packages/core/bin/cli.mjs generate \
+   node bin/cli.mjs generate \
      -t legacy-html \
      -i ../node/doc/api/fs.md \
      -o out \
@@ -110,7 +110,7 @@ The steps below will give you a general idea of how to prepare your local enviro
    Add `--log-level debug` before the `generate` subcommand to see the full pipeline trace:
 
    ```bash
-   node packages/core/bin/cli.mjs --log-level debug generate -t legacy-html -i ../node/doc/api/fs.md -o out
+   node bin/cli.mjs --log-level debug generate -t legacy-html -i ../node/doc/api/fs.md -o out
    ```
 
 > [!TIP]

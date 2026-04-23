@@ -3,7 +3,6 @@ import { describe, it, mock } from 'node:test';
 
 import { SemVer } from 'semver';
 
-import { loadGenerator } from '../../../../loader.mjs';
 import { setConfig } from '../../../../utils/configuration/index.mjs';
 import * as generatorsExports from '../../../../utils/generators.mjs';
 
@@ -31,19 +30,13 @@ const {
   buildSideBarProps,
 } = await import('../buildBarProps.mjs');
 
-const jsxAstSpecifier = '@node-core/doc-kit/generators/jsx-ast';
-const jsxAstGenerator = await loadGenerator(jsxAstSpecifier);
-
-await setConfig(
-  {
-    version: 'v17.0.0',
-    changelog: [
-      { version: new SemVer('16.0.0'), isLts: true, isCurrent: false },
-      { version: new SemVer('17.0.0'), isLts: false, isCurrent: true },
-    ],
-  },
-  new Map([[jsxAstSpecifier, jsxAstGenerator]])
-);
+await setConfig({
+  version: 'v17.0.0',
+  changelog: [
+    { version: new SemVer('16.0.0'), isLts: true, isCurrent: false },
+    { version: new SemVer('17.0.0'), isLts: false, isCurrent: true },
+  ],
+});
 
 describe('extractTextContent', () => {
   it('combines text and code node values from entries', () => {
