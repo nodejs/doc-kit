@@ -40,10 +40,18 @@ A generator is a single module (`index.mjs`) that exports its metadata and logic
 
 ### Step 1: Create the Generator Directory
 
-Create a new directory in `src/generators/`:
+Generators live inside one of the workspace packages under `packages/<package>/src/generators/`. The existing groupings are:
+
+- `@doc-kittens/legacy` — historical JSON/HTML formats
+- `@doc-kittens/internal` — `ast`, `ast-js`, `metadata` (foundational generators consumed by everything else)
+- `@doc-kittens/react` — React/JSX-based generators (`web`, `orama-db`, `jsx-ast`)
+- `@doc-kittens/website` — public website outputs (`sitemap`, `llms-txt`, `api-links`)
+- `@doc-kittens/extras` — specialised one-offs (`addon-verify`, `json-simple`, `man-page`)
+
+Place your new generator in the package whose theme it matches, or create a new workspace package if none fit.
 
 ```
-src/generators/my-format/
+packages/<package>/src/generators/my-format/
 ├── index.mjs         # Generator entry point (required)
 ├── constants.mjs     # Constants (optional)
 ├── types.d.ts        # TypeScript types (required)
@@ -77,16 +85,16 @@ export type Generator = GeneratorMetadata<
 Create `index.mjs` with your generator's metadata and logic:
 
 ```javascript
-// src/generators/my-format/index.mjs
+// packages/<package>/src/generators/my-format/index.mjs
 'use strict';
 
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import getConfig from '../../utils/configuration/index.mjs';
+import getConfig from '@node-core/doc-kit/src/utils/configuration/index.mjs';
 
 export const name = 'my-format';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
+export const dependsOn = '@doc-kittens/internal/metadata';
 export const defaultConfiguration = {
   myCustomOption: 'myDefaultValue',
 };
@@ -130,7 +138,7 @@ function transformToMyFormat(entries, version) {
 
 ### Step 4: Register the Generator
 
-Add an entry to the `exports` map in `packages/core/package.json`. If you follow the `index.mjs` convention, the wildcard pattern `"./generators/*": "./src/generators/*/index.mjs"` handles this automatically — no changes needed.
+Add a short subpath entry to the `exports` map in your package's `package.json`, e.g. `"./my-format": "./src/generators/my-format/index.mjs"`. The `./src/*` wildcard already exposes utilities and types under the longer path form for cross-package imports.
 
 ## Parallel Processing with Workers
 
@@ -139,11 +147,11 @@ For generators processing large datasets, implement parallel processing using wo
 ### Implementing Worker-Based Processing
 
 ```javascript
-// src/generators/parallel-generator/index.mjs
-import getConfig from '../../utils/configuration/index.mjs';
+// packages/<package>/src/generators/parallel-generator/index.mjs
+import getConfig from '@node-core/doc-kit/src/utils/configuration/index.mjs';
 
 export const name = 'parallel-generator';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
+export const dependsOn = '@doc-kittens/internal/metadata';
 
 /**
  * Process a chunk of items in a worker thread.
@@ -215,7 +223,7 @@ Generators can yield results as they're produced using async generators. Export 
 ```javascript
 // src/generators/streaming-generator/index.mjs
 export const name = 'streaming-generator';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
+export const dependsOn = '@doc-kittens/internal/metadata';
 
 /**
  * Process a chunk of data
@@ -254,7 +262,7 @@ Some generators must collect all input before processing:
 ```javascript
 // src/generators/batch-generator/index.mjs
 export const name = 'batch-generator';
-export const dependsOn = '@node-core/doc-kit/generators/jsx-ast';
+export const dependsOn = '@doc-kittens/react/jsx-ast';
 
 /**
  * Non-streaming - returns Promise instead of AsyncGenerator
@@ -285,7 +293,7 @@ Use non-streaming when:
 ```javascript
 // src/generators/my-generator/index.mjs
 export const name = 'my-generator';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
+export const dependsOn = '@doc-kittens/internal/metadata';
 
 export async function generate(input, worker) {
   // input contains the output from the metadata generator
@@ -303,12 +311,12 @@ export const name = 'ast';
 // Step 2: Extract metadata from AST
 // src/generators/metadata/index.mjs
 export const name = 'metadata';
-export const dependsOn = '@node-core/doc-kit/generators/ast';
+export const dependsOn = '@doc-kittens/internal/ast';
 
 // Step 3: Generate HTML from metadata
 // src/generators/html-generator/index.mjs
 export const name = 'html-generator';
-export const dependsOn = '@node-core/doc-kit/generators/metadata';
+export const dependsOn = '@doc-kittens/internal/metadata';
 ```
 
 ### Multiple Consumers

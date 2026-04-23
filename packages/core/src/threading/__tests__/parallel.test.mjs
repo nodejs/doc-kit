@@ -39,9 +39,9 @@ async function collectChunks(generator) {
   return chunks;
 }
 
-const metadataSpecifier = '@node-core/doc-kit/generators/metadata';
+const metadataSpecifier = '@doc-kittens/internal/metadata';
 const metadataGenerator = await loadGenerator(metadataSpecifier);
-const astJsSpecifier = '@node-core/doc-kit/generators/ast-js';
+const astJsSpecifier = '@doc-kittens/internal/ast-js';
 const astJsGenerator = await loadGenerator(astJsSpecifier);
 
 describe('createParallelWorker', () => {

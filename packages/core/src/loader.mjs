@@ -8,7 +8,7 @@ const cache = new Map();
  * Imports the single entry point which exports generate, processChunk,
  * name, dependsOn, and defaultConfiguration.
  *
- * @param {string} specifier - Full import specifier (e.g. '@node-core/doc-kit/generators/ast')
+ * @param {string} specifier - Full import specifier (e.g. '@doc-kittens/internal/ast')
  * @returns {Promise<object>} The loaded generator
  */
 export const loadGenerator = async specifier => {

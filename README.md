@@ -68,7 +68,7 @@ Options:
   -v, --version <semver>     Target Node.js version (default: "v22.14.0")
   -c, --changelog <url>      Changelog URL or path (default: "https://raw.githubusercontent.com/nodejs/node/HEAD/CHANGELOG.md")
   --git-ref <url>            Git ref/commit URL (default: "https://github.com/nodejs/node/tree/HEAD")
-  -t, --target <generator...>  Target generator(s) (e.g. @node-core/doc-kit/generators/web)
+  -t, --target <generator...>  Target generator(s) (e.g. @doc-kittens/react/web)
   -h, --help                 display help for command
 ```
 
@@ -87,12 +87,12 @@ Options:
 
 ### Legacy
 
-To generate a 1:1 match with the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the `legacy-html`, `legacy-json`, `legacy-html-all`, and `legacy-json-all` generators.
+To generate a 1:1 match with the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the generators from the [`@doc-kittens/legacy`](packages/legacy) package.
 
 ```sh
 npx doc-kit generate \
-  -t @node-core/doc-kit/generators/legacy-html \
-  -t @node-core/doc-kit/generators/legacy-json \
+  -t @doc-kittens/legacy/html \
+  -t @doc-kittens/legacy/json \
   -i "path/to/node/doc/api/*.md" \
   -o out \
   --index path/to/node/doc/api/index.md
@@ -104,8 +104,8 @@ To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling
 
 ```sh
 npx doc-kit generate \
-  -t @node-core/doc-kit/generators/web \
-  -t @node-core/doc-kit/generators/orama-db \
+  -t @doc-kittens/react/web \
+  -t @doc-kittens/react/orama-db \
   -i "path/to/node/doc/api/*.md" \
   -o out \
   --index path/to/node/doc/api/index.md

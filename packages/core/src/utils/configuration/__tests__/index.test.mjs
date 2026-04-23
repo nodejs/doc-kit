@@ -35,14 +35,14 @@ const {
 const createMockGenerators = () =>
   new Map([
     [
-      '@node-core/doc-kit/generators/json',
+      '@node-core/doc-kit/src/generators/json',
       { name: 'json', defaultConfiguration: { format: 'json' } },
     ],
     [
-      '@node-core/doc-kit/generators/html',
+      '@node-core/doc-kit/src/generators/html',
       { name: 'html', defaultConfiguration: { format: 'html' } },
     ],
-    ['@node-core/doc-kit/generators/markdown', { name: 'markdown' }],
+    ['@node-core/doc-kit/src/generators/markdown', { name: 'markdown' }],
   ]);
 
 // Helper to reset all mocks

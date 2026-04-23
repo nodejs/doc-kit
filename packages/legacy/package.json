@@ -1,0 +1,25 @@
+{
+  "name": "@doc-kittens/legacy",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Sphinx — Legacy documentation generators (JSON and HTML) for @doc-kittens",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs/doc-kit.git",
+    "directory": "packages/legacy"
+  },
+  "exports": {
+    "./json": "./src/generators/json/index.mjs",
+    "./json/all": "./src/generators/json-all/index.mjs",
+    "./html": "./src/generators/html/index.mjs",
+    "./html/all": "./src/generators/html-all/index.mjs",
+    "./src/*": "./src/*"
+  },
+  "imports": {
+    "#core/*": "@node-core/doc-kit/src/*"
+  },
+  "dependencies": {
+    "@node-core/doc-kit": "*",
+    "@doc-kittens/internal": "*"
+  }
+}

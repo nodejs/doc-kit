@@ -1,8 +1,8 @@
 node packages/core/bin/cli.mjs generate \
-  -t @node-core/doc-kit/generators/orama-db \
-  -t @node-core/doc-kit/generators/legacy-json \
-  -t @node-core/doc-kit/generators/llms-txt \
-  -t @node-core/doc-kit/generators/web \
+  -t @doc-kittens/react/orama-db \
+  -t @doc-kittens/legacy/json \
+  -t @doc-kittens/website/llms-txt \
+  -t @doc-kittens/react/web \
   -i "./node/doc/api/*.md" \
   -o "./out" \
   -c "./node/CHANGELOG.md" \

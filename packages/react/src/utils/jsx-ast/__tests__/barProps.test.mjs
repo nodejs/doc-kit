@@ -1,0 +1,175 @@
+import assert from 'node:assert/strict';
+import { describe, it, mock } from 'node:test';
+
+import { loadGenerator } from '#core/loader.mjs';
+import { setConfig } from '#core/utils/configuration/index.mjs';
+import * as generatorsExports from '#core/utils/generators.mjs';
+import { SemVer } from 'semver';
+
+mock.module('reading-time', {
+  defaultExport: () => ({ text: '5 min read' }),
+});
+
+mock.module('#core/utils/generators.mjs', {
+  namedExports: {
+    ...generatorsExports,
+    getCompatibleVersions: () => [
+      { version: '18.0.0', isLts: true, isCurrent: false },
+      { version: '19.0.0', isLts: false, isCurrent: true },
+    ],
+    leftHandAssign: Object.assign,
+    getVersionFromSemVer: version => `${version.major}.x`,
+    getVersionURL: (version, api) => `/api/${version}/${api}`,
+  },
+});
+
+const {
+  extractTextContent,
+  buildMetaBarProps,
+  formatVersionOptions,
+  buildSideBarProps,
+} = await import('../barProps.mjs');
+
+const jsxAstSpecifier = '@doc-kittens/react/jsx-ast';
+const jsxAstGenerator = await loadGenerator(jsxAstSpecifier);
+
+await setConfig(
+  {
+    version: 'v17.0.0',
+    changelog: [
+      { version: new SemVer('16.0.0'), isLts: true, isCurrent: false },
+      { version: new SemVer('17.0.0'), isLts: false, isCurrent: true },
+    ],
+  },
+  new Map([[jsxAstSpecifier, jsxAstGenerator]])
+);
+
+describe('extractTextContent', () => {
+  it('combines text and code node values from entries', () => {
+    const entries = [
+      {
+        content: {
+          type: 'root',
+          children: [
+            { type: 'text', value: 'Hello ' },
+            { type: 'code', value: 'world' },
+          ],
+        },
+      },
+      {
+        content: {
+          type: 'root',
+          children: [
+            { type: 'text', value: 'Another ' },
+            { type: 'code', value: 'example' },
+          ],
+        },
+      },
+    ];
+
+    const result = extractTextContent(entries);
+    assert.equal(result, 'Hello worldAnother example');
+  });
+});
+
+describe('buildMetaBarProps', () => {
+  it('creates meta bar properties from entries', () => {
+    const head = {
+      basename: 'fs',
+      path: '/fs',
+      added: 'v1.0.0',
+    };
+
+    const entries = [
+      {
+        content: {
+          type: 'root',
+          children: [{ type: 'text', value: 'Content' }],
+        },
+        heading: {
+          depth: 2,
+          data: {
+            text: 'Heading',
+            name: 'Heading',
+            slug: 'heading',
+            depth: 2,
+          },
+        },
+      },
+    ];
+
+    const result = buildMetaBarProps(head, entries);
+
+    assert.equal(result.addedIn, 'v1.0.0');
+    assert.equal(result.readingTime, '5 min read');
+    assert.deepEqual(result.viewAs, [
+      ['JSON', 'fs.json'],
+      ['MD', 'fs.md'],
+    ]);
+    assert.equal(
+      result.editThisPage,
+      'https://github.com/nodejs/node/edit/main/doc/api/fs.md'
+    );
+    assert.ok(Array.isArray(result.headings));
+  });
+
+  it('falls back to introduced_in if added is missing', () => {
+    const head = {
+      api: 'fs',
+      introduced_in: 'v2.0.0',
+    };
+
+    const entries = [];
+
+    const result = buildMetaBarProps(head, entries);
+    assert.equal(result.addedIn, 'v2.0.0');
+  });
+});
+
+describe('formatVersionOptions', () => {
+  it('formats version options with proper labels', () => {
+    const versions = [
+      { version: new SemVer('16.0.0'), isLts: true, isCurrent: false },
+      { version: new SemVer('17.0.0'), isLts: false, isCurrent: true },
+      { version: new SemVer('18.0.0'), isLts: false, isCurrent: false },
+    ];
+
+    const result = formatVersionOptions(versions, '/http');
+
+    assert.deepStrictEqual(result, [
+      {
+        value: 'https://nodejs.org/docs/latest-v16.x/api/http.html',
+        label: 'v16.x (LTS)',
+      },
+      {
+        value: 'https://nodejs.org/docs/latest-v17.x/api/http.html',
+        label: 'v17.x (Current)',
+      },
+      {
+        value: 'https://nodejs.org/docs/latest-v18.x/api/http.html',
+        label: 'v18.x',
+      },
+    ]);
+  });
+});
+
+describe('buildSideBarProps', () => {
+  it('creates sidebar properties with versions and navigation', () => {
+    const entry = {
+      path: 'http',
+      basename: 'http',
+      introduced_in: 'v0.10.0',
+    };
+
+    const docPages = [
+      ['HTTP', 'http.html'],
+      ['HTTPS', 'https.html'],
+    ];
+
+    const result = buildSideBarProps(entry, docPages);
+
+    assert.equal(result.currentVersion, 'v17.0.0');
+    assert.equal(result.pathname, 'http.html');
+    assert.deepEqual(result.docPages, docPages);
+  });
+});

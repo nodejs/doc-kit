@@ -100,17 +100,17 @@ Configurations are merged in the following order (earlier sources take precedenc
 
 CLI options map to configuration properties:
 
-| CLI Option             | Config Property    | Example                                              |
-| ---------------------- | ------------------ | ---------------------------------------------------- |
-| `--input <path>`       | `global.input`     | `--input src/`                                       |
-| `--output <path>`      | `global.output`    | `--output dist/`                                     |
-| `--ignore <pattern>`   | `global.ignore[]`  | `--ignore test/`                                     |
-| `--minify`             | `global.minify`    | `--minify`                                           |
-| `--git-ref <ref>`      | `global.ref`       | `--git-ref v20.0.0`                                  |
-| `--version <version>`  | `global.version`   | `--version 20.0.0`                                   |
-| `--changelog <url>`    | `global.changelog` | `--changelog https://...`                            |
-| `--index <url>`        | `global.index`     | `--index file://...`                                 |
-| `--type-map <map>`     | `metadata.typeMap` | `--type-map file://...`                              |
-| `--target <generator>` | `target`           | `--target @node-core/doc-kit/generators/legacy-json` |
-| `--threads <n>`        | `threads`          | `--threads 4`                                        |
-| `--chunk-size <n>`     | `chunkSize`        | `--chunk-size 10`                                    |
+| CLI Option             | Config Property    | Example                             |
+| ---------------------- | ------------------ | ----------------------------------- |
+| `--input <path>`       | `global.input`     | `--input src/`                      |
+| `--output <path>`      | `global.output`    | `--output dist/`                    |
+| `--ignore <pattern>`   | `global.ignore[]`  | `--ignore test/`                    |
+| `--minify`             | `global.minify`    | `--minify`                          |
+| `--git-ref <ref>`      | `global.ref`       | `--git-ref v20.0.0`                 |
+| `--version <version>`  | `global.version`   | `--version 20.0.0`                  |
+| `--changelog <url>`    | `global.changelog` | `--changelog https://...`           |
+| `--index <url>`        | `global.index`     | `--index file://...`                |
+| `--type-map <map>`     | `metadata.typeMap` | `--type-map file://...`             |
+| `--target <generator>` | `target`           | `--target @doc-kittens/legacy/json` |
+| `--threads <n>`        | `threads`          | `--threads 4`                       |
+| `--chunk-size <n>`     | `chunkSize`        | `--chunk-size 10`                   |

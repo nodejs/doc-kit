@@ -1,0 +1,31 @@
+{
+  "name": "@doc-kittens/internal",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Internal documentation generators (AST, AST-JS, metadata) for @doc-kittens",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs/doc-kit.git",
+    "directory": "packages/internal"
+  },
+  "exports": {
+    "./ast": "./src/generators/ast/index.mjs",
+    "./ast-js": "./src/generators/ast-js/index.mjs",
+    "./metadata": "./src/generators/metadata/index.mjs",
+    "./src/*": "./src/*"
+  },
+  "imports": {
+    "#core/*": "@node-core/doc-kit/src/*"
+  },
+  "dependencies": {
+    "@node-core/doc-kit": "*",
+    "acorn": "^8.16.0",
+    "github-slugger": "^2.0.0",
+    "unist-builder": "^4.0.0",
+    "unist-util-find-after": "^5.0.0",
+    "unist-util-remove": "^4.0.0",
+    "unist-util-select": "^5.1.0",
+    "unist-util-visit": "^5.1.0",
+    "yaml": "^2.8.3"
+  }
+}

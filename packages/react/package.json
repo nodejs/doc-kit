@@ -1,0 +1,49 @@
+{
+  "name": "@doc-kittens/react",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "React-based documentation generators (web, orama-db, jsx-ast) for @doc-kittens",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs/doc-kit.git",
+    "directory": "packages/react"
+  },
+  "exports": {
+    "./web": "./src/generators/web/index.mjs",
+    "./orama-db": "./src/generators/orama-db/index.mjs",
+    "./jsx-ast": "./src/generators/jsx-ast/index.mjs",
+    "./src/*": "./src/*"
+  },
+  "imports": {
+    "#core/*": "@node-core/doc-kit/src/*"
+  },
+  "dependencies": {
+    "@node-core/doc-kit": "*",
+    "@doc-kittens/internal": "*",
+    "@doc-kittens/legacy": "*",
+    "@heroicons/react": "^2.2.0",
+    "@node-core/rehype-shiki": "^1.4.1",
+    "@node-core/ui-components": "^1.6.3",
+    "@orama/orama": "^3.1.18",
+    "@orama/ui": "^1.5.4",
+    "@rollup/plugin-virtual": "^3.0.2",
+    "estree-util-to-js": "^2.0.0",
+    "hast-util-to-string": "^3.0.1",
+    "hastscript": "^9.0.1",
+    "lightningcss-wasm": "^1.32.0",
+    "mdast-util-slice-markdown": "^2.0.1",
+    "preact": "^10.29.0",
+    "preact-render-to-string": "^6.6.6",
+    "reading-time": "^1.5.0",
+    "recma-jsx": "^1.0.1",
+    "recma-stringify": "^1.0.0",
+    "rehype-raw": "^7.0.0",
+    "rehype-recma": "^1.0.0",
+    "rehype-stringify": "^10.0.1",
+    "rolldown": "^1.0.0-rc.10",
+    "semver": "^7.7.4",
+    "unified": "^11.0.5",
+    "unist-builder": "^4.0.0",
+    "unist-util-visit": "^5.1.0"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@doc-kittens/website",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Website-targeted documentation generators (sitemap, llms-txt, api-links) for @doc-kittens",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs/doc-kit.git",
+    "directory": "packages/website"
+  },
+  "exports": {
+    "./sitemap": "./src/generators/sitemap/index.mjs",
+    "./llms-txt": "./src/generators/llms-txt/index.mjs",
+    "./api-links": "./src/generators/api-links/index.mjs",
+    "./src/*": "./src/*"
+  },
+  "imports": {
+    "#core/*": "@node-core/doc-kit/src/*"
+  },
+  "dependencies": {
+    "@node-core/doc-kit": "*",
+    "@doc-kittens/internal": "*",
+    "estree-util-visit": "^2.0.0"
+  }
+}

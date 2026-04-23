@@ -12,7 +12,7 @@ export default defineConfig([
   {
     ignores: [
       'out/',
-      'packages/core/src/generators/api-links/__tests__/fixtures/',
+      'packages/website/src/utils/api-links/__tests__/fixtures/',
     ],
   },
   {
@@ -94,8 +94,8 @@ export default defineConfig([
   },
   {
     files: [
-      'packages/core/src/generators/legacy-html/assets/*.js',
-      'packages/core/src/generators/web/ui/**/*',
+      'packages/legacy/src/generators/html/assets/*.js',
+      'packages/react/src/generators/web/ui/**/*',
     ],
     languageOptions: {
       globals: {

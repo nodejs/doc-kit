@@ -90,7 +90,7 @@ The steps below will give you a general idea of how to prepare your local enviro
 
    ```bash
    node packages/core/bin/cli.mjs generate \
-     -t legacy-html \
+     -t @doc-kittens/legacy/html \
      -i ../node/doc/api/fs.md \
      -o out \
      --index ../node/doc/api/index.md \
@@ -110,7 +110,7 @@ The steps below will give you a general idea of how to prepare your local enviro
    Add `--log-level debug` before the `generate` subcommand to see the full pipeline trace:
 
    ```bash
-   node packages/core/bin/cli.mjs --log-level debug generate -t legacy-html -i ../node/doc/api/fs.md -o out
+   node packages/core/bin/cli.mjs --log-level debug generate -t @doc-kittens/legacy/html -i ../node/doc/api/fs.md -o out
    ```
 
 > [!TIP]
