@@ -10,10 +10,7 @@ export default defineConfig([
   importX.flatConfigs.recommended,
   react.configs.recommended,
   {
-    ignores: [
-      'out/',
-      'packages/core/src/generators/api-links/__tests__/fixtures/',
-    ],
+    ignores: ['out/', '**/fixtures/'],
   },
   {
     files: ['**/*.{mjs,jsx}'],
@@ -94,8 +91,8 @@ export default defineConfig([
   },
   {
     files: [
-      'packages/core/src/generators/legacy-html/assets/*.js',
-      'packages/core/src/generators/web/ui/**/*',
+      'packages/legacy/src/generators/html/assets/*.js',
+      'packages/react/src/utils/web/ui/**/*',
     ],
     languageOptions: {
       globals: {

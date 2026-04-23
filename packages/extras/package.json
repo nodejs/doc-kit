@@ -1,0 +1,27 @@
+{
+  "name": "@doc-kittens/extras",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Specialised documentation generators (addon-verify, json-simple, man-page) for @doc-kittens",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs/doc-kit.git",
+    "directory": "packages/extras"
+  },
+  "exports": {
+    "./addon-verify": "./src/generators/addon-verify/index.mjs",
+    "./json-simple": "./src/generators/json-simple/index.mjs",
+    "./man-page": "./src/generators/man-page/index.mjs",
+    "./src/*": "./src/*"
+  },
+  "imports": {
+    "#core/*": "@node-core/doc-kit/src/*"
+  },
+  "dependencies": {
+    "@node-core/doc-kit": "*",
+    "@doc-kittens/internal": "*",
+    "dedent": "^1.7.2",
+    "unist-util-remove": "^4.0.0",
+    "unist-util-visit": "^5.1.0"
+  }
+}

@@ -1,14 +1,14 @@
 npm-shrinkwrap.json
 
 # Tests files
-packages/core/src/generators/api-links/__tests__/fixtures/
+packages/website/src/generators/api-links/__tests__/fixtures/
 *.snapshot
 
 # Templates
-packages/core/src/generators/web/template.html
+packages/legacy/src/generators/web/template.html
 
 # Output
 out/
 
 # Generated Files
-packages/core/src/generators/metadata/maps/mdn.json
+packages/internal/src/generators/metadata/maps/mdn.json

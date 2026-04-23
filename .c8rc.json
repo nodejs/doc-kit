@@ -2,8 +2,8 @@
   "all": true,
   "exclude": [
     "**/fixtures",
-    "packages/core/src/generators/legacy-html/assets",
-    "packages/core/src/generators/web/ui",
+    "packages/legacy/src/generators/html/assets",
+    "packages/react/src/generators/web/ui",
     "**/*.d.ts"
   ]
 }

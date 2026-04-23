@@ -1,0 +1,80 @@
+import { GITHUB_EDIT_URL } from '#core/utils/configuration/templates.mjs';
+import { groupNodesByModule } from '#core/utils/generators.mjs';
+import { relative } from '#core/utils/url.mjs';
+
+import { buildSideBarProps } from '../../utils/jsx-ast/barProps.mjs';
+import buildContent from '../../utils/jsx-ast/content.mjs';
+import { getRemarkRecma } from '../../utils/jsx-ast/remark.mjs';
+import { getSortedHeadNodes } from '../../utils/jsx-ast/sortedHeadNodes.mjs';
+
+export const name = 'jsx-ast';
+export const dependsOn = '@doc-kittens/internal/metadata';
+export const defaultConfiguration = {
+  ref: 'main',
+  pageURL: '{baseURL}/latest-{version}/api{path}.html',
+  editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
+};
+
+const remarkRecma = getRemarkRecma();
+
+/**
+ * Process a chunk of items in a worker thread.
+ * Transforms metadata entries into JSX AST nodes.
+ *
+ * Each item is a SlicedModuleInput containing the head node
+ * and all entries for that module - no need to recompute grouping.
+ *
+ * @type {import('./types').Generator['processChunk']}
+ */
+export async function processChunk(slicedInput, itemIndices, docPages) {
+  const results = [];
+
+  for (const idx of itemIndices) {
+    const { head, entries } = slicedInput[idx];
+
+    const sideBarProps = buildSideBarProps(
+      head,
+      docPages.map(([heading, path]) => [
+        heading,
+        head.path === path
+          ? `${head.basename}.html`
+          : `${relative(path, head.path)}.html`,
+      ])
+    );
+
+    const content = await buildContent(
+      entries,
+      head,
+      sideBarProps,
+      remarkRecma
+    );
+
+    results.push(content);
+  }
+
+  return results;
+}
+
+/**
+ * Generates a JSX AST
+ *
+ * @type {import('./types').Generator['generate']}
+ */
+export async function* generate(input, worker) {
+  const groupedModules = groupNodesByModule(input);
+
+  const headNodes = getSortedHeadNodes(input);
+
+  const docPages = headNodes.map(node => [node.heading.data.name, node.path]);
+
+  // Create sliced input: each item contains head + its module's entries
+  // This avoids sending all 4700+ entries to every worker
+  const entries = headNodes.map(head => ({
+    head,
+    entries: groupedModules.get(head.api),
+  }));
+
+  for await (const chunkResult of worker.stream(entries, docPages)) {
+    yield chunkResult;
+  }
+}

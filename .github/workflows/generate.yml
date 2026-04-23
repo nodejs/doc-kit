@@ -56,7 +56,7 @@ jobs:
           echo "run_id=$ID" >> $GITHUB_OUTPUT
 
       - name: Download metadata artifact
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ steps.main.outputs.run_id }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: commit
@@ -64,7 +64,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - id: pr
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ steps.main.outputs.run_id }}
         run: |
           SHA=$(cat commit)
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
@@ -76,36 +76,36 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: '@node-core/doc-kit/generators/man-page'
+          - target: '@doc-kittens/extras/man-page'
             input: './node/doc/api/cli.md'
 
-          - target: '@node-core/doc-kit/generators/addon-verify'
+          - target: '@doc-kittens/extras/addon-verify'
             input: './node/doc/api/addons.md'
 
-          - target: '@node-core/doc-kit/generators/api-links'
+          - target: '@doc-kittens/website/api-links'
             input: './node/lib/*.js'
             compare: object-assertion
 
-          - target: '@node-core/doc-kit/generators/orama-db'
+          - target: '@doc-kittens/react/orama-db'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: '@node-core/doc-kit/generators/json-simple'
+          - target: '@doc-kittens/extras/json-simple'
             input: './node/doc/api/*.md'
 
-          - target: '@node-core/doc-kit/generators/legacy-json'
+          - target: '@doc-kittens/legacy/json'
             input: './node/doc/api/*.md'
             compare: object-assertion
 
-          - target: '@node-core/doc-kit/generators/legacy-html'
+          - target: '@doc-kittens/legacy/html'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: '@node-core/doc-kit/generators/web'
+          - target: '@doc-kittens/react/web'
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: '@node-core/doc-kit/generators/llms-txt'
+          - target: '@doc-kittens/website/llms-txt'
             input: './node/doc/api/*.md'
             compare: file-size
     steps:

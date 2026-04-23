@@ -1,0 +1,136 @@
+import { leftHandAssign } from '#core/utils/generators.mjs';
+import { QUERIES, UNIST } from '#core/utils/queries/index.mjs';
+import { transformNodesToString } from '#core/utils/unist.mjs';
+
+import {
+  DEFAULT_EXPRESSION,
+  LEADING_HYPHEN,
+  NAME_EXPRESSION,
+  TYPE_EXPRESSION,
+} from './constants.mjs';
+import parseSignature from './signature.mjs';
+
+/**
+ * Modifies type references in a string by replacing template syntax (`<...>`) with curly braces `{...}`
+ * and normalizing formatting.
+ * @param {string} string
+ * @returns {string}
+ */
+export const transformTypeReferences = string =>
+  string.replace(/`<([^>]+)>`/g, '{$1}').replaceAll('} | {', '|');
+
+/**
+ * Extracts the first capture group of `pattern` from `text`, stores it in
+ * `current[key]`, and returns the remainder of `text` with the match removed.
+ * Returns `text` unchanged when there is no match.
+ *
+ * @param {string} text
+ * @param {RegExp} pattern
+ * @param {string} key
+ * @param {Object} current
+ * @returns {string}
+ */
+export const extractPattern = (text, pattern, key, current) => {
+  const match = text.match(pattern)?.[1]?.trim().replace(/\.$/, '');
+
+  if (!match) {
+    return text;
+  }
+
+  current[key] = match;
+  return text.replace(pattern, '');
+};
+
+/**
+ * Parses a single list item node into a structured parameter descriptor.
+ *
+ * @param {import('@types/mdast').ListItem} child
+ * @returns {import('../../types').ParameterList}
+ */
+export const parseListItem = child => {
+  const current = {};
+
+  const subList = child.children.find(UNIST.isLooselyTypedList);
+
+  // Extract and clean raw text from the node, excluding nested lists
+  current.textRaw = transformTypeReferences(
+    transformNodesToString(child.children.filter(node => node !== subList))
+      .replace(/\s+/g, ' ')
+      .replace(/<!--.*?-->/gs, '')
+  );
+
+  let text = current.textRaw;
+
+  // Identify return items or extract key properties (name, type, default) from the text
+  const starter = text.match(QUERIES.typedListStarters);
+  if (starter) {
+    current.name =
+      starter[1] === 'Returns' ? 'return' : starter[1].toLowerCase();
+    text = text.slice(starter[0].length);
+  } else {
+    text = extractPattern(text, NAME_EXPRESSION, 'name', current);
+  }
+
+  text = extractPattern(text, TYPE_EXPRESSION, 'type', current);
+  text = extractPattern(text, DEFAULT_EXPRESSION, 'default', current);
+
+  // Set the remaining text as the description, removing any leading hyphen
+  current.desc = text.replace(LEADING_HYPHEN, '').trim() || undefined;
+
+  // Parse nested lists (options) recursively if present
+  if (subList) {
+    current.options = subList.children.map(parseListItem);
+  }
+
+  return current;
+};
+
+/**
+ * Parses the typed list for a section and populates the section's properties
+ * according to its type (method, property, event, etc.).
+ *
+ * @param {import('../../types').Section} section
+ * @param {import('@types/mdast').RootContent[]} nodes
+ */
+export const parseTypedList = (section, nodes) => {
+  const listIdx = nodes.findIndex(UNIST.isStronglyTypedList);
+  const list = nodes[listIdx];
+
+  const values = list ? list.children.map(parseListItem) : [];
+
+  let removeList = true;
+
+  // Update the section based on its type and parsed values
+  switch (section.type) {
+    case 'ctor':
+      // Constructors are their own signatures
+      leftHandAssign(section, parseSignature(section.textRaw, values));
+      break;
+
+    case 'classMethod':
+    case 'method':
+      // For methods and constructors, parse and attach signatures
+      section.signatures = [parseSignature(section.textRaw, values)];
+      break;
+
+    case 'property':
+      // For properties, update type and other details if values exist
+      if (values.length) {
+        delete values[0].name;
+        Object.assign(section, values[0]);
+      }
+      break;
+
+    case 'event':
+      // For events, assign parsed values as parameters
+      section.params = values;
+      break;
+
+    default:
+      removeList = false;
+  }
+
+  if (removeList && list) {
+    nodes.splice(listIdx, 1);
+  }
+};
