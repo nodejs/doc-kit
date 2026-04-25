@@ -13,6 +13,7 @@ import getConfig from '../../../utils/configuration/index.mjs';
 import { populate } from '../../../utils/configuration/templates.mjs';
 import { minifyHTML } from '../../../utils/html-minifier.mjs';
 import { SPECULATION_RULES } from '../constants.mjs';
+import { THEME_SCRIPT } from '../ui/theme-script.mjs';
 
 /**
  * Populates a template string by evaluating it as a JavaScript template literal,
@@ -138,6 +139,7 @@ export async function processJSXEntries(entries, template) {
         importMap: clientBundle.importMap?.replaceAll('/', root) ?? '',
         entrypoint: `${data.api}.js?${randomUUID()}`,
         speculationRules: SPECULATION_RULES,
+        themeScript: THEME_SCRIPT,
         root,
         metadata: data,
         config,
