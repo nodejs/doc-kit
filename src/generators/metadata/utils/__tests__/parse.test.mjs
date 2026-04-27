@@ -248,6 +248,29 @@ describe('parseApiDoc', () => {
 
       assert.strictEqual(findLink(entry)?.url, 'comparators.html#some-section');
     });
+
+    it('ignores .md full URLs with any protocol', () => {
+      const protocolLinks = [
+        'https://github.com/example/config.md',
+        'http://internal-server.com/docs.md',
+        'file:///C:/Shared/docs/readme.md',
+      ];
+
+      for (const url of protocolLinks) {
+        const tree = u('root', [
+          h('fs'),
+          u('paragraph', [u('link', { url }, [u('text', 'external link')])]),
+        ]);
+        const [entry] = parseApiDoc({ path, tree }, typeMap);
+
+        // Assert that the URL comes out exactly as it went in
+        assert.strictEqual(
+          findLink(entry)?.url,
+          url,
+          `Failed to ignore protocol: ${url}`
+        );
+      }
+    });
   });
 
   describe('document without headings', () => {
