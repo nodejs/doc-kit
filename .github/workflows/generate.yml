@@ -106,9 +106,6 @@ jobs:
             input: './node/doc/api/*.md'
             compare: file-size
 
-          - target: web-all
-            input: './node/doc/api/*.md'
-
           - target: llms-txt
             input: './node/doc/api/*.md'
             compare: file-size

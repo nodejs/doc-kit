@@ -19,6 +19,11 @@ export async function processChunk(slicedInput, itemIndices) {
 
     const content = await buildContent(entries, head);
 
+    // Preserve the raw section entries so downstream generators (e.g. `web`)
+    // can build synthetic pages (all.html, index.html) without recomputing
+    // metadata.
+    content.sectionEntries = entries;
+
     results.push(content);
   }
 

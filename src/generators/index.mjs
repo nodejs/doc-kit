@@ -16,7 +16,6 @@ import metadata from './metadata/index.mjs';
 import oramaDb from './orama-db/index.mjs';
 import sitemap from './sitemap/index.mjs';
 import web from './web/index.mjs';
-import webAll from './web-all/index.mjs';
 
 export const publicGenerators = {
   'json-simple': jsonSimple,
@@ -31,7 +30,6 @@ export const publicGenerators = {
   'llms-txt': llmsTxt,
   sitemap,
   web,
-  'web-all': webAll,
 };
 
 // These ones are special since they don't produce standard output,

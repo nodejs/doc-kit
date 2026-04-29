@@ -35,6 +35,9 @@ export default createLazyGenerator({
     editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
     pageURL: '{baseURL}/latest-{version}/api{path}.html',
     remoteConfigUrl: 'https://nodejs.org/site.json',
+    generateAllPage: true,
+    generateIndexPage: true,
+    generateNotFoundPage: true,
     imports: {
       '#theme/Logo': '@node-core/ui-components/Common/NodejsLogo',
       '#theme/Navigation': join(import.meta.dirname, './ui/components/NavBar'),

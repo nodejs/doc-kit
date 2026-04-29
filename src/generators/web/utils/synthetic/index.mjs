@@ -8,7 +8,7 @@ import { createSyntheticHead, wrapAsEntry } from './synthetic.mjs';
  * Builds the Stability Overview table from module heads that declare a
  * top-level stability index, mirroring the `legacy-html-all` overview.
  *
- * @param {Array<import('../../metadata/types').MetadataEntry>} headEntries
+ * @param {Array<import('../../../metadata/types').MetadataEntry>} headEntries
  */
 export const buildStabilityOverview = headEntries =>
   createElement('table', [
@@ -38,7 +38,7 @@ export const buildStabilityOverview = headEntries =>
 /**
  * Builds the page descriptor for `index.html`
  *
- * @param {Array<import('../../metadata/types').MetadataEntry>} entries
+ * @param {Array<import('../../../metadata/types').MetadataEntry>} entries
  */
 export const buildIndexPage = entries => {
   const head = createSyntheticHead('index', 'Index');
