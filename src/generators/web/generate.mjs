@@ -17,8 +17,15 @@ export async function generate(input) {
 
   const template = await readFile(config.templatePath, 'utf-8');
 
+  // The `web-all` generator re-generates `index.html` with a stability
+  // overview, so skip the synthetic `index` entry here.
+  //
+  // TODO(@avivkeller): Once this lands in core, remove the `index.html`
+  // page from Core, then remove this check.
+  const entries = input.filter(entry => entry.data.api !== 'index');
+
   // Process all entries: convert JSX to HTML/CSS/JS
-  const { results, css, chunks } = await processJSXEntries(input, template);
+  const { results, css, chunks } = await processJSXEntries(entries, template);
 
   // Process all entries together (required for code-split bundles)
   if (config.output) {

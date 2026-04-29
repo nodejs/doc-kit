@@ -3,45 +3,43 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { buildNotFoundPage } from './utils/404.mjs';
+import { buildAllPage } from './utils/all.mjs';
+import { buildIndexPage } from './utils/index.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
 import { writeFile } from '../../utils/file.mjs';
 import buildContent from '../jsx-ast/utils/buildContent.mjs';
 import { processJSXEntries } from '../web/utils/processing.mjs';
 
 /**
- * Generates a single `all.html` file containing every API documentation
- * module rendered through the `web` generator pipeline.
+ * Generates the `web-all` output: `all.html`, `index.html`, and `404.html`.
  *
  * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
   const config = getConfig('web-all');
-
   const template = await readFile(config.templatePath, 'utf-8');
 
-  // Match `legacy-html-all`: skip the synthetic `index` entries.
+  // Drop the synthetic `index` entry — we re-generate `index.html` ourselves.
   const entries = input.filter(entry => entry.api !== 'index');
 
-  // Build a single combined JSXContent that wraps every entry's content in
-  // one Layout component, mirroring how `jsx-ast` produces per-module pages.
-  const combined = await buildContent(entries, {
-    api: 'all',
-    path: '/all',
-    basename: 'all.html',
-    heading: {
-      type: 'heading',
-      depth: 1,
-      children: [{ type: 'text', value: 'All' }],
-      data: { name: 'All', text: 'All', slug: 'all' },
-    },
-  });
+  const pages = [
+    buildAllPage(entries),
+    buildIndexPage(entries),
+    buildNotFoundPage(),
+  ];
 
-  // Pass the original metadata entries as the sidebar source so `all.html`
-  // exposes the same navigation as the per-module pages produced by `web`.
+  const jsxContents = await Promise.all(
+    pages.map(({ head, entries: pageEntries }) =>
+      buildContent(pageEntries, head)
+    )
+  );
+
+  // Sidebar still needs to link to every module page produced by `web`.
   const sidebarEntries = entries.map(entry => ({ data: entry }));
 
   const { results, css, chunks } = await processJSXEntries(
-    [combined],
+    jsxContents,
     template,
     sidebarEntries
   );
@@ -58,5 +56,8 @@ export async function generate(input) {
     await writeFile(join(config.output, 'styles.css'), css, 'utf-8');
   }
 
-  return { html: results[0].html.toString(), css };
+  return {
+    html: results.map(({ html }) => html.toString()),
+    css,
+  };
 }

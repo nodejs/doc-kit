@@ -6,5 +6,5 @@ export type Configuration = {
 
 export type Generator = GeneratorMetadata<
   Configuration,
-  Generate<Array<MetadataEntry>, Promise<{ html: string; css: string }>>
+  Generate<Array<MetadataEntry>, Promise<{ html: Array<string>; css: string }>>
 >;

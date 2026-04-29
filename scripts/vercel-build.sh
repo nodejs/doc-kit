@@ -3,6 +3,7 @@ node bin/cli.mjs generate \
   -t legacy-json \
   -t llms-txt \
   -t web \
+  -t web-all \
   -i "./node/doc/api/*.md" \
   -o "./out" \
   -c "./node/CHANGELOG.md" \
