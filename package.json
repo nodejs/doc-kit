@@ -29,7 +29,7 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@playwright/test": "~1.59.1",
-    "@reporters/github": "~1.12.0",
+    "@reporters/github": "~1.13.1",
     "@types/mdast": "~4.0.4",
     "@types/node": "~24.10.1",
     "@types/semver": "~7.7.1",
