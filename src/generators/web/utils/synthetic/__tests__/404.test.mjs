@@ -24,6 +24,11 @@ describe('buildNotFoundPage', () => {
 
     assert.ok(paragraph, 'expected a paragraph node in the content tree');
     assert.match(paragraph.children[0].value, /could not be found/);
+
+    const link = paragraph.children.find(child => child.type === 'link');
+
+    assert.equal(link.url, 'index.html');
+    assert.equal(link.children[0].value, 'API index');
   });
 
   it('places the head heading at the start of the content tree', () => {

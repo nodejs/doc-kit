@@ -49,6 +49,10 @@ export const JSX_IMPORTS = {
     name: 'AlertBox',
     source: '@node-core/ui-components/Common/AlertBox',
   },
+  Badge: {
+    name: 'Badge',
+    source: '@node-core/ui-components/Common/Badge',
+  },
   Blockquote: {
     name: 'Blockquote',
     source: '@node-core/ui-components/Common/Blockquote',

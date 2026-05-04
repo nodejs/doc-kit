@@ -3,6 +3,25 @@
 import { h as createElement } from 'hastscript';
 
 import { createSyntheticHead, wrapAsEntry } from './synthetic.mjs';
+import { createJSXElement } from '../../../jsx-ast/utils/ast.mjs';
+import { JSX_IMPORTS } from '../../constants.mjs';
+
+const STABILITY_BADGE_KINDS = [
+  'error',
+  'warning',
+  'default',
+  'info',
+  'neutral',
+  'neutral',
+];
+
+/**
+ * Maps a Node.js stability index to a UI badge kind.
+ *
+ * @param {string} index
+ */
+const getStabilityBadgeKind = index =>
+  STABILITY_BADGE_KINDS[parseInt(index, 10)] ?? 'neutral';
 
 /**
  * Builds the Stability Overview table from module heads that declare a
@@ -28,7 +47,13 @@ export const buildStabilityOverview = headEntries =>
           ),
           createElement(
             'td',
-            `(${stability.data.index}) ${stability.data.description.split('. ')[0]}`
+            createJSXElement(JSX_IMPORTS.Badge.name, {
+              size: 'small',
+              kind: getStabilityBadgeKind(stability.data.index),
+              'aria-label': `Stability: ${stability.data.index}`,
+              children: stability.data.index,
+            }),
+            ` ${stability.data.description.split('. ')[0]}`
           ),
         ])
       )

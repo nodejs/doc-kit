@@ -37,13 +37,34 @@ describe('buildStabilityOverview', () => {
     assert.equal(findChild(table, 'tbody').children.length, 2);
   });
 
-  it('formats the stability cell as `(index) <first sentence>`', () => {
+  it('formats the stability cell with a colored badge and first sentence', () => {
     const table = buildStabilityOverview([fakeHead('fs', 'fs', 1)]);
 
     const row = findChild(table, 'tbody').children[0];
     const stabilityCell = row.children[1];
+    const badge = stabilityCell.children[0];
 
-    assert.equal(stabilityCell.children[0].value, '(1) fs stable');
+    assert.equal(badge.name, 'Badge');
+    assert.deepEqual(
+      badge.attributes.map(({ name, value }) => [name, value]),
+      [
+        ['size', 'small'],
+        ['kind', 'warning'],
+        ['aria-label', 'Stability: 1'],
+      ]
+    );
+    assert.equal(badge.children[0].value, '1');
+    assert.equal(stabilityCell.children[1].value, ' fs stable');
+  });
+
+  it('uses a default badge for stable entries', () => {
+    const table = buildStabilityOverview([fakeHead('fs', 'fs', 2)]);
+
+    const row = findChild(table, 'tbody').children[0];
+    const badge = row.children[1].children[0];
+    const kind = badge.attributes.find(attr => attr.name === 'kind');
+
+    assert.equal(kind.value, 'default');
   });
 
   it('builds a relative link to the module HTML page', () => {
