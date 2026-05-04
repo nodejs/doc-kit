@@ -6,17 +6,20 @@ The `web` generator transforms JSX AST entries into complete web bundles, produc
 
 The `web` generator accepts the following configuration options:
 
-| Name              | Type      | Default                                       | Description                                                           |
-| ----------------- | --------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `output`          | `string`  | -                                             | The directory where HTML, JavaScript, and CSS files will be written   |
-| `templatePath`    | `string`  | `'template.html'`                             | Path to the HTML template file                                        |
-| `project`         | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector             |
-| `title`           | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)     |
-| `useAbsoluteURLs` | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`  |
-| `editURL`         | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                               |
-| `pageURL`         | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                             |
-| `imports`         | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization |
-| `virtualImports`  | `object`  | `{}`                                          | Additional virtual module mappings merged into the build              |
+| Name                   | Type      | Default                                       | Description                                                           |
+| ---------------------- | --------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `output`               | `string`  | -                                             | The directory where HTML, JavaScript, and CSS files will be written   |
+| `templatePath`         | `string`  | `'template.html'`                             | Path to the HTML template file                                        |
+| `project`              | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector             |
+| `title`                | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)     |
+| `useAbsoluteURLs`      | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`  |
+| `editURL`              | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                               |
+| `pageURL`              | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                             |
+| `generateAllPage`      | `boolean` | `true`                                        | When `true`, emits `all.html` containing every module's content       |
+| `generateIndexPage`    | `boolean` | `true`                                        | When `true`, emits `index.html` with a stability overview             |
+| `generateNotFoundPage` | `boolean` | `true`                                        | When `true`, emits `404.html`                                         |
+| `imports`              | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization |
+| `virtualImports`       | `object`  | `{}`                                          | Additional virtual module mappings merged into the build              |
 
 #### Default `imports`
 
