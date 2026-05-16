@@ -10,5 +10,5 @@ export type Configuration = {
 
 export type Generator = GeneratorMetadata<
   Configuration,
-  Generate<Array<JSXContent>, AsyncGenerator<{ html: string; css: string }>>
+  Generate<Array<JSXContent>, Promise<Array<{ html: string; css: string }>>>
 >;

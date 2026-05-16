@@ -10,6 +10,9 @@ import { writeFile } from '../../utils/file.mjs';
 /**
  * Main generation function that processes JSX AST entries into web bundles.
  *
+ * Bundles all JSX AST entries in a single pass so shared component chunks and
+ * CSS are produced once.
+ *
  * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
@@ -17,22 +20,24 @@ export async function generate(input) {
 
   const template = await readFile(config.templatePath, 'utf-8');
 
-  // Process all entries: convert JSX to HTML/CSS/JS
-  const { results, css, chunks } = await processJSXEntries(input, template);
+  // Sidebar lists only the real module pages.
+  const sidebarEntries = input.filter(entry => entry.data.synthetic !== true);
 
-  // Process all entries together (required for code-split bundles)
+  const { results, css, chunks } = await processJSXEntries(
+    input,
+    template,
+    sidebarEntries
+  );
+
   if (config.output) {
-    // Write HTML files
     for (const { html, path } of results) {
       await writeFile(join(config.output, `${path}.html`), html, 'utf-8');
     }
 
-    // Write code-split JavaScript chunks
     for (const chunk of chunks) {
       await writeFile(join(config.output, chunk.fileName), chunk.code, 'utf-8');
     }
 
-    // Write CSS bundle
     await writeFile(join(config.output, 'styles.css'), css, 'utf-8');
   }
 

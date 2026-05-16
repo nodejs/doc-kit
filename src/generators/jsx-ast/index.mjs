@@ -18,6 +18,9 @@ export default createLazyGenerator({
 
   defaultConfiguration: {
     ref: 'main',
+    generateAllPage: true,
+    generateIndexPage: true,
+    generateNotFoundPage: true,
   },
 
   hasParallelProcessor: true,

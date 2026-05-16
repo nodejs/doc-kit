@@ -96,13 +96,18 @@ async function executeServerCode(serverCodeMap, requireFn, virtualImports) {
  *
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} entries - The JSX AST entries to process.
  * @param {string} template - The HTML template string for the output pages.
+ * @param {Array<{ data: import('../../metadata/types').MetadataEntry }>} [sidebarEntries] - Entries used to build the sidebar page list. Defaults to `entries`. Pass the full set when rendering a subset (e.g. the `all` page) so the sidebar still links to every module.
  */
-export async function processJSXEntries(entries, template) {
+export async function processJSXEntries(
+  entries,
+  template,
+  sidebarEntries = entries
+) {
   const config = getConfig('web');
   const astBuilders = createASTBuilder();
   const requireFn = createRequire(import.meta.url);
   const virtualImports = {
-    '#theme/config': createConfigSource(entries),
+    '#theme/config': createConfigSource(sidebarEntries),
     ...config.virtualImports,
   };
   // Step 1: Convert JSX AST to JavaScript
