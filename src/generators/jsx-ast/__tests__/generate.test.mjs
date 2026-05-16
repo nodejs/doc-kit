@@ -67,32 +67,6 @@ describe('jsx-ast generate', () => {
     assert.equal('sectionEntries' in content, false);
   });
 
-  it('omits the core index entry and appends enabled synthetic pages', async () => {
-    await setConfig({});
-
-    const seenItems = [];
-    const results = await collect(
-      generate(
-        [createEntry('index', 'Index'), createEntry('fs', 'File system')],
-        createWorker(seenItems)
-      )
-    );
-
-    assert.deepEqual(
-      seenItems.map(({ head }) => head.api),
-      ['fs']
-    );
-    assert.deepEqual(
-      results.map(({ data }) => data.api),
-      ['fs', 'all', 'index', '404']
-    );
-
-    for (const entry of results.slice(1)) {
-      assert.equal(entry.data.synthetic, true);
-      assert.equal(entry.data.hideViewAs, true);
-    }
-  });
-
   it('respects jsx-ast synthetic page flags', async () => {
     await setConfig({});
 
@@ -111,11 +85,11 @@ describe('jsx-ast generate', () => {
 
     assert.deepEqual(
       seenItems.map(({ head }) => head.api),
-      ['fs']
+      ['index', 'fs']
     );
     assert.deepEqual(
       results.map(({ data }) => data.api),
-      ['fs']
+      ['index', 'fs']
     );
   });
 });

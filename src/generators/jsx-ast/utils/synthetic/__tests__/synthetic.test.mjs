@@ -16,7 +16,6 @@ describe('createSyntheticHead', () => {
     const head = createSyntheticHead('index', 'Index');
 
     assert.equal(head.synthetic, true);
-    assert.equal(head.hideViewAs, true);
   });
 
   it('produces a depth-1 heading whose data is consistent with the name', () => {
@@ -66,6 +65,5 @@ describe('wrapAsEntry', () => {
     assert.equal(entry.path, head.path);
     assert.equal(entry.basename, head.basename);
     assert.equal(entry.synthetic, true);
-    assert.equal(entry.hideViewAs, true);
   });
 });

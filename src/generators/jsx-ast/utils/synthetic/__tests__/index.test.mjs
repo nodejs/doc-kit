@@ -29,7 +29,6 @@ describe('buildIndexPage', () => {
     assert.equal(head.basename, 'index');
     assert.equal(head.heading.data.name, 'Index');
     assert.equal(head.synthetic, true);
-    assert.equal(head.hideViewAs, true);
   });
 });
 
