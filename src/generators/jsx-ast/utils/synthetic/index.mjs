@@ -3,8 +3,8 @@
 import { h as createElement } from 'hastscript';
 
 import { createSyntheticHead, wrapAsEntry } from './synthetic.mjs';
-import { createJSXElement } from '../../../jsx-ast/utils/ast.mjs';
-import { JSX_IMPORTS } from '../../constants.mjs';
+import { JSX_IMPORTS } from '../../../web/constants.mjs';
+import { createJSXElement } from '../ast.mjs';
 
 const STABILITY_BADGE_KINDS = [
   'error',

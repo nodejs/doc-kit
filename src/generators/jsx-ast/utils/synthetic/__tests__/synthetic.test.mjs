@@ -12,6 +12,13 @@ describe('createSyntheticHead', () => {
     assert.equal(head.basename, 'all');
   });
 
+  it('marks synthetic heads so web UI can treat them differently', () => {
+    const head = createSyntheticHead('index', 'Index');
+
+    assert.equal(head.synthetic, true);
+    assert.equal(head.hideViewAs, true);
+  });
+
   it('produces a depth-1 heading whose data is consistent with the name', () => {
     const head = createSyntheticHead('index', 'Index');
 
@@ -58,5 +65,7 @@ describe('wrapAsEntry', () => {
     assert.equal(entry.api, head.api);
     assert.equal(entry.path, head.path);
     assert.equal(entry.basename, head.basename);
+    assert.equal(entry.synthetic, true);
+    assert.equal(entry.hideViewAs, true);
   });
 });

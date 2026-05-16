@@ -11,6 +11,8 @@ describe('buildNotFoundPage', () => {
     assert.equal(head.path, '/404');
     assert.equal(head.basename, '404');
     assert.equal(head.heading.data.name, 'Page Not Found');
+    assert.equal(head.synthetic, true);
+    assert.equal(head.hideViewAs, true);
   });
 
   it('produces a single synthetic entry with a not-found paragraph', () => {

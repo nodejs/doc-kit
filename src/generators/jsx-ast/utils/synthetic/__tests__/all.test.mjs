@@ -11,6 +11,8 @@ describe('buildAllPage', () => {
     assert.equal(head.path, '/all');
     assert.equal(head.basename, 'all');
     assert.equal(head.heading.data.name, 'All');
+    assert.equal(head.synthetic, true);
+    assert.equal(head.hideViewAs, true);
   });
 
   it('forwards the input entries as the page entries', () => {

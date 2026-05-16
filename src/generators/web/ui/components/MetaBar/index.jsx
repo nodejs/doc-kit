@@ -71,7 +71,7 @@ export default ({ metadata, headings = [], readingTime }) => {
       items={{
         'Reading Time': readingTime,
         'Added In': metadata.added ?? metadata.introduced_in,
-        'View As': (
+        'View As': !metadata.hideViewAs && (
           <ol>
             {viewAs.map(([viewTitle, path]) => {
               const Icon = iconMap[viewTitle];

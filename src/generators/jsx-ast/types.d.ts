@@ -3,8 +3,10 @@ import type { JSXContent } from './utils/buildContent.mjs';
 
 export type Generator = GeneratorMetadata<
   {
-    pageURL: string;
-    editURL: string;
+    ref: string;
+    generateAllPage: boolean;
+    generateIndexPage: boolean;
+    generateNotFoundPage: boolean;
   },
   Generate<Array<MetadataEntry>, AsyncGenerator<JSXContent>>,
   ProcessChunk<

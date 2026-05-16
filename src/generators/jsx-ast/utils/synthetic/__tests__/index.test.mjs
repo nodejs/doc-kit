@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { buildStabilityOverview } from '../index.mjs';
+import { buildIndexPage, buildStabilityOverview } from '../index.mjs';
 
 const fakeHead = (api, name, stabilityIndex, depth = 1) => ({
   api,
@@ -19,6 +19,19 @@ const fakeHead = (api, name, stabilityIndex, depth = 1) => ({
 
 const findChild = (node, tagName) =>
   node.children.find(child => child.tagName === tagName);
+
+describe('buildIndexPage', () => {
+  it('returns a synthetic `index` head with an "Index" heading', () => {
+    const { head } = buildIndexPage([]);
+
+    assert.equal(head.api, 'index');
+    assert.equal(head.path, '/index');
+    assert.equal(head.basename, 'index');
+    assert.equal(head.heading.data.name, 'Index');
+    assert.equal(head.synthetic, true);
+    assert.equal(head.hideViewAs, true);
+  });
+});
 
 describe('buildStabilityOverview', () => {
   it('renders a header row and one body row per entry', () => {

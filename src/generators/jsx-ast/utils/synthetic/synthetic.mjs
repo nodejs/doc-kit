@@ -14,6 +14,8 @@ export const createSyntheticHead = (api, name) => ({
   api,
   path: `/${api}`,
   basename: api,
+  synthetic: true,
+  hideViewAs: true,
   heading: {
     type: 'heading',
     depth: 1,
