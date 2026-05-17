@@ -65,9 +65,30 @@ describe('extractHeadings', () => {
 
     assert.equal(result.length, 2);
     assert.equal(result[0].slug, 'fs-readfile');
+    assert.equal(result[0].value, 'fs.readFile()');
     assert.equal(result[0].depth, 2);
     assert.equal(result[0].stability, 2);
     assert.equal(result[1].stability, 2);
+  });
+
+  it('keeps method table of contents labels compact', () => {
+    const entries = [
+      {
+        heading: {
+          depth: 3,
+          data: {
+            text: '`crypto.createHash(algorithm[, options])`',
+            name: 'createHash',
+            slug: 'crypto-createhash',
+            type: 'method',
+          },
+        },
+      },
+    ];
+
+    const [result] = extractHeadings(entries);
+
+    assert.equal(result.value, 'crypto.createHash()');
   });
 
   it('filters out entries with empty heading text', () => {

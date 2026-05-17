@@ -4,6 +4,23 @@ import { visit } from 'unist-util-visit';
 
 import { TOC_MAX_HEADING_DEPTH } from '../constants.mjs';
 
+const SHORT_SIGNATURE_TYPES = new Set(['classMethod', 'ctor', 'method']);
+
+/**
+ * Shortens method-like headings so the table of contents remains scannable.
+ * @param {import('../../metadata/types').HeadingData} data
+ */
+const formatCodeHeading = data => {
+  const code = data.text.match(/`([^`]+)`/)?.[1] ?? data.text;
+  const signatureStart = code.indexOf('(');
+
+  if (signatureStart === -1) {
+    return code.replace(/`/g, '').trim();
+  }
+
+  return `${code.slice(0, signatureStart).replace(/^new\s+/, '')}()`;
+};
+
 /**
  * Generate a combined plain text string from all MDAST entries for estimating reading time.
  *
@@ -40,13 +57,15 @@ const extractHeading = entry => {
   const heading =
     cliFlagOrEnv.length > 0
       ? cliFlagOrEnv.at(-1)[1]
-      : data.text
-          // Remove any containing code blocks
-          .replace(/`/g, '')
-          // Remove any prefixes (i.e. 'Class:')
-          .replace(/^[^:]+:/, '')
-          // Trim the remaining whitespace
-          .trim();
+      : SHORT_SIGNATURE_TYPES.has(data.type)
+        ? formatCodeHeading(data)
+        : data.text
+            // Remove any containing code blocks
+            .replace(/`/g, '')
+            // Remove any prefixes (i.e. 'Class:')
+            .replace(/^[^:]+:/, '')
+            // Trim the remaining whitespace
+            .trim();
 
   return {
     depth: entry.heading.depth,
