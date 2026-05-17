@@ -31,7 +31,7 @@ import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
  * @param {Record<string, string>} typeMap
  * @returns {Promise<Array<import('../types').MetadataEntry>>}
  */
-export const parseApiDoc = ({ path, tree }, typeMap) => {
+export const parseApiDoc = ({ path, tree, fullPath }, typeMap) => {
   /**
    * Collection of metadata entries for the file
    * @type {Array<import('../types').MetadataEntry>}
@@ -85,6 +85,7 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
       path,
       basename: basename(path),
       heading: headingNode,
+      fullPath,
     });
 
     // Generate slug and update heading data
