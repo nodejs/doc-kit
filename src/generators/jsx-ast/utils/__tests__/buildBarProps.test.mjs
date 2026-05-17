@@ -91,6 +91,50 @@ describe('extractHeadings', () => {
     assert.equal(result.value, 'crypto.createHash()');
   });
 
+  it('keeps full method labels when compact labels would collide', () => {
+    const entries = [
+      {
+        heading: {
+          depth: 3,
+          data: {
+            text: '`url.format(urlObject)`',
+            name: 'format',
+            slug: 'url-format-urlobject',
+            type: 'method',
+          },
+        },
+      },
+      {
+        heading: {
+          depth: 3,
+          data: {
+            text: '`url.format(urlString)`',
+            name: 'format',
+            slug: 'url-format-urlstring',
+            type: 'method',
+          },
+        },
+      },
+      {
+        heading: {
+          depth: 3,
+          data: {
+            text: '`url.parse(urlString)`',
+            name: 'parse',
+            slug: 'url-parse-urlstring',
+            type: 'method',
+          },
+        },
+      },
+    ];
+
+    const result = extractHeadings(entries);
+
+    assert.equal(result[0].value, 'url.format(urlObject)');
+    assert.equal(result[1].value, 'url.format(urlString)');
+    assert.equal(result[2].value, 'url.parse()');
+  });
+
   it('filters out entries with empty heading text', () => {
     const entries = [
       {
