@@ -5,11 +5,10 @@ export const IGNORE_STABILITY_STEMS = ['documentation'];
 // These are string replacements specific to Node.js API docs for anchor IDs
 export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /node.js/i, to: 'nodejs' }, // Replace Node.js
-  { from: /&/, to: '-and-' }, // Replace &
-  { from: /[/,:;\\ ]/g, to: '-' }, // Replace /,:;\. and whitespace
-  { from: /^-+(?!-*$)/g, to: '' }, // Remove any leading hyphens
+  { from: /&/g, to: '-and-', pre: true }, // Replace & before slugging (slugger removes it without a separator)
+  { from: /=/g, to: '-', pre: true }, // Replace = before slugging (slugger removes it without a separator)
+  { from: /[/,:;\\ ]/g, to: '-' }, // Replace /,:;\ and whitespace
   { from: /(?<!^-*)-+$/g, to: '' }, // Remove any trailing hyphens
-  { from: /^(?!-+$).*?(--+)/g, to: '-' }, // Replace multiple hyphens
 ];
 
 // These are regular expressions used to determine if a given Markdown heading

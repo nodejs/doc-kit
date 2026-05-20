@@ -30,10 +30,15 @@ const createNodeSlugger = () => {
  * @param {string} title
  * @param {typeof defaultSlugFn} slugFn
  */
-export const slug = (title, slugFn = defaultSlugFn) =>
-  DOC_API_SLUGS_REPLACEMENTS.reduce(
-    (piece, { from, to }) => piece.replace(from, to),
-    slugFn(title)
+export const slug = (title, slugFn = defaultSlugFn) => {
+  const preTitle = DOC_API_SLUGS_REPLACEMENTS.filter(r => r.pre).reduce(
+    (s, { from, to }) => s.replace(from, to),
+    title
   );
+  return DOC_API_SLUGS_REPLACEMENTS.filter(r => !r.pre).reduce(
+    (piece, { from, to }) => piece.replace(from, to),
+    slugFn(preTitle)
+  );
+};
 
 export default createNodeSlugger;
