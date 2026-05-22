@@ -1,7 +1,6 @@
 'use strict';
 
 import {
-  // buildToC,
   buildNavigation,
   buildVersions,
   buildGitHub,
