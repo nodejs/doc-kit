@@ -1,3 +1,7 @@
+// These openers/closers are used to determine if a type string is well-formed
+export const TYPE_OPENERS = new Set(['<', '(', '{', '[']);
+export const TYPE_CLOSERS = new Set(['>', ')', '}', ']']);
+
 // On "About this Documentation", we define the stability indices, and thus
 // we don't need to check it for stability references
 export const IGNORE_STABILITY_STEMS = ['documentation'];
