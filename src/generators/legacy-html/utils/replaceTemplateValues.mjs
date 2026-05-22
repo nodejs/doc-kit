@@ -26,14 +26,20 @@ export const replaceTemplateValues = (
   const redirectMeta =
     api === 'index' && config.indexRedirectURL
       ? `<script>
-      let p = window.location.pathname;
-      let t = "${config.indexRedirectURL}";
-      if (!p.endsWith('/') && !p.split('/').pop().includes('.') && !p.endsWith('/index')) {
-        t = p + '/' + t;
-      }
-      window.location.replace(t);
+      (function() {
+        let p = window.location.pathname;
+        let targetUrl = ${JSON.stringify(config.indexRedirectURL)};
+
+        const isAbsolute = targetUrl.startsWith('http://') || targetUrl.startsWith('https://');
+
+        if (!isAbsolute && !p.endsWith('/') && !p.split('/').pop().includes('.') && !p.endsWith('/index')) {
+          targetUrl = p + '/' + targetUrl;
+        }
+
+        window.location.replace(targetUrl);
+      })();
     </script>
-    <noscript><meta http-equiv="refresh" content="0; url=${config.indexRedirectURL}"></noscript>`
+    <noscript><meta http-equiv="refresh" content="0; url=${config.indexRedirectURL.replace(/"/g, '&quot;')}"></noscript>`
       : '';
 
   return apiTemplate
