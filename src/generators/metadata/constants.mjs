@@ -1,3 +1,7 @@
+// These openers/closers are used to determine if a type string is well-formed
+export const TYPE_OPENERS = new Set(['<', '(', '{', '[']);
+export const TYPE_CLOSERS = new Set(['>', ')', '}', ']']);
+
 // On "About this Documentation", we define the stability indices, and thus
 // we don't need to check it for stability references
 export const IGNORE_STABILITY_STEMS = ['documentation'];
@@ -55,9 +59,6 @@ export const DOC_API_HEADING_TYPES = [
     regex: new RegExp(`^\`${PROPERTY}\`$`, 'i'),
   },
 ];
-
-// This regex is used to match basic TypeScript generic types (e.g., Promise<string>)
-export const TYPE_GENERIC_REGEX = /^([^<]+)<([^>]+)>$/;
 
 // This is the base URL of the Man7 documentation
 export const DOC_MAN_BASE_URL = 'http://man7.org/linux/man-pages/man';
