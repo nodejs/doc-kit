@@ -44,19 +44,9 @@ describe('slug', () => {
     it('replaces semicolons with hyphens', () => {
       assert.strictEqual(slug('foo;bar', identity), 'foo-bar');
     });
-  });
 
-  describe('leading hyphen removal', () => {
-    it('removes a single leading hyphen', () => {
-      assert.strictEqual(slug('-foo', identity), 'foo');
-    });
-
-    it('removes multiple leading hyphens', () => {
-      assert.strictEqual(slug('--foo', identity), 'foo');
-    });
-
-    it('preserves an all-hyphen string', () => {
-      assert.strictEqual(slug('---', identity), '---');
+    it('replaces equals signs with hyphens', () => {
+      assert.strictEqual(slug('foo=bar', identity), 'foo-bar');
     });
   });
 
@@ -70,13 +60,23 @@ describe('slug', () => {
     });
   });
 
-  describe('consecutive hyphen replacement', () => {
-    it('replaces from start of string up to and including double-hyphen with a single hyphen', () => {
-      assert.strictEqual(slug('foo--bar', identity), '-bar');
+  describe('cli flag anchors', () => {
+    it('preserves -- prefix for CLI flags', () => {
+      assert.strictEqual(slug('--permission', identity), '--permission');
     });
 
-    it('does not fire on an all-hyphen string', () => {
-      assert.strictEqual(slug('---', identity), '---');
+    it('preserves -x, --long-form mixed flag headings', () => {
+      assert.strictEqual(
+        slug('-p---print-script', identity),
+        '-p---print-script'
+      );
+    });
+
+    it('handles = in flag values', () => {
+      assert.strictEqual(
+        slug('-c-condition---conditions=condition', identity),
+        '-c-condition---conditions-condition'
+      );
     });
   });
 
