@@ -30,7 +30,7 @@ export const replaceTemplateValues = (
         let p = window.location.pathname;
         let targetUrl = ${JSON.stringify(config.indexRedirectURL)};
 
-        const isAbsolute = targetUrl.startsWith('http://') || targetUrl.startsWith('https://');
+        const isAbsolute = targetUrl.startsWith('http://') || targetUrl.startsWith('https://') || targetUrl.startsWith('/');
 
         if (!isAbsolute && !p.endsWith('/') && !p.split('/').pop().includes('.') && !p.endsWith('/index')) {
           targetUrl = p + '/' + targetUrl;
