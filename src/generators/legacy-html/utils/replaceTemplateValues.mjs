@@ -1,6 +1,7 @@
 'use strict';
 
 import {
+  buildToC,
   buildNavigation,
   buildVersions,
   buildGitHub,
@@ -22,7 +23,22 @@ export const replaceTemplateValues = (
   config,
   { skipGitHub = false, skipGtocPicker = false } = {}
 ) => {
+  const redirectMeta =
+    api === 'index' && config.indexRedirectURL
+      ? `<script>
+      let p = window.location.pathname;
+      let t = "${config.indexRedirectURL}";
+      if (!p.endsWith('/') && !p.split('/').pop().includes('.') && !p.endsWith('/index')) {
+        t = p + '/' + t;
+      }
+      window.location.replace(t);
+    </script>
+    <noscript><meta http-equiv="refresh" content="0; url=${config.indexRedirectURL}"></noscript>`
+      : '';
+
   return apiTemplate
+    .replace('__REDIRECT__', redirectMeta)
+    .replace('__HOME_LINK__', config.indexRedirectURL || '/')
     .replace('__ID__', api)
     .replace(/__FILENAME__/g, api)
     .replace('__SECTION__', section)
@@ -30,6 +46,10 @@ export const replaceTemplateValues = (
     .replace(/__TOC__/g, tableOfContents.wrapToC(toc))
     .replace(/__GTOC__/g, nav)
     .replace('__CONTENT__', content)
+    .replace(
+      /__TOC_PICKER__/g,
+      config.indexRedirectURL && api === 'index' ? '' : buildToC(toc)
+    )
     .replace(/__GTOC_PICKER__/g, skipGtocPicker ? '' : buildNavigation(nav))
     .replace('__ALTDOCS__', buildVersions(path, added, config.changelog))
     .replace(

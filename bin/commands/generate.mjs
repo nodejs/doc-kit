@@ -56,6 +56,12 @@ export default new Command('generate')
   .addOption(new Option('-c, --changelog <url>', 'Changelog URL or path'))
   .addOption(new Option('--git-ref', 'Git ref URL'))
   .addOption(new Option('--index <url>', 'index.md URL or path'))
+  .addOption(
+    new Option(
+      '--index-redirect-url <url>',
+      'URL to redirect index.html to (legacy-html generator)'
+    )
+  )
   .addOption(new Option('--minify', 'Minify?'))
   .addOption(new Option('--type-map <url>', 'Type map URL or path'))
 

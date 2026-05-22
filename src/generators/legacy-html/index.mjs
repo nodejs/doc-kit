@@ -31,6 +31,7 @@ export default createLazyGenerator({
     ref: 'main',
     pageURL: '{baseURL}/latest-{version}/api{path}.html',
     editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
+    indexRedirectURL: '',
   },
 
   hasParallelProcessor: true,
