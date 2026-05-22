@@ -1,7 +1,7 @@
 'use strict';
 
 import {
-  buildToC,
+  // buildToC,
   buildNavigation,
   buildVersions,
   buildGitHub,
@@ -31,7 +31,6 @@ export const replaceTemplateValues = (
     .replace(/__TOC__/g, tableOfContents.wrapToC(toc))
     .replace(/__GTOC__/g, nav)
     .replace('__CONTENT__', content)
-    .replace(/__TOC_PICKER__/g, buildToC(toc))
     .replace(/__GTOC_PICKER__/g, skipGtocPicker ? '' : buildNavigation(nav))
     .replace('__ALTDOCS__', buildVersions(path, added, config.changelog))
     .replace(
