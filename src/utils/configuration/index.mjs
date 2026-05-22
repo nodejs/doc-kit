@@ -101,9 +101,11 @@ export const createConfigFromCLIOptions = options => ({
   target: options.target,
   threads: options.threads,
   chunkSize: options.chunkSize,
-  'legacy-html': {
-    indexRedirectURL: options.indexRedirectUrl,
-  },
+  ...(options.indexRedirectUrl && {
+    'legacy-html': {
+      indexRedirectURL: options.indexRedirectUrl,
+    },
+  }),
 });
 
 /**

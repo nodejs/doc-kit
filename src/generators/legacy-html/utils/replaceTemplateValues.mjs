@@ -38,8 +38,7 @@ export const replaceTemplateValues = (
 
         window.location.replace(targetUrl);
       })();
-    </script>
-    <noscript><meta http-equiv="refresh" content="0; url=${config.indexRedirectURL.replace(/"/g, '&quot;')}"></noscript>`
+    </script>`
       : '';
 
   return apiTemplate
