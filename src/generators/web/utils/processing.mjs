@@ -37,7 +37,8 @@ export const populateWithEvaluation = (template, config) => {
  */
 export const resolvePageRoot = data => {
   if (data.synthetic === true) {
-    return String(getConfig('web').baseURL).replace(/\/?$/, '/');
+    const { baseURL, useAbsoluteURLs } = getConfig('web');
+    return useAbsoluteURLs ? String(baseURL).replace(/\/?$/, '/') : '/';
   }
 
   const unresolvedRoot = relativeOrAbsolute('/', data.path);

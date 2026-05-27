@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { setConfig } from '../../../../utils/configuration/index.mjs';
+import {
+  default as getConfig,
+  setConfig,
+} from '../../../../utils/configuration/index.mjs';
 import { populateWithEvaluation, resolvePageRoot } from '../processing.mjs';
 
 await setConfig({
@@ -80,11 +83,23 @@ describe('resolvePageRoot', () => {
     assert.strictEqual(result, '../');
   });
 
-  it('uses the configured base URL for synthetic pages', () => {
+  it('uses the server root for synthetic pages', () => {
+    const result = resolvePageRoot({
+      path: '/404',
+      synthetic: true,
+    });
+    assert.strictEqual(result, '/');
+  });
+
+  it('uses the configured base URL for synthetic pages with absolute URLs', async () => {
+    getConfig('web').useAbsoluteURLs = true;
+
     const result = resolvePageRoot({
       path: '/404',
       synthetic: true,
     });
     assert.strictEqual(result, 'https://nodejs.org/docs/');
+
+    getConfig('web').useAbsoluteURLs = false;
   });
 });
