@@ -1,7 +1,22 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { populateWithEvaluation } from '../processing.mjs';
+import {
+  default as getConfig,
+  setConfig,
+} from '../../../../utils/configuration/index.mjs';
+import { populateWithEvaluation, resolvePageRoot } from '../processing.mjs';
+
+await setConfig({
+  version: 'v22.0.0',
+  changelog: [],
+  generators: {
+    web: {
+      useAbsoluteURLs: false,
+      baseURL: 'https://nodejs.org/docs',
+    },
+  },
+});
 
 describe('populateWithEvaluation', () => {
   it('substitutes simple ${variable} placeholders', () => {
@@ -59,5 +74,32 @@ describe('populateWithEvaluation', () => {
   it('handles numeric values', () => {
     const result = populateWithEvaluation('count: ${count}', { count: 42 });
     assert.strictEqual(result, 'count: 42');
+  });
+});
+
+describe('resolvePageRoot', () => {
+  it('keeps relative roots for regular pages', () => {
+    const result = resolvePageRoot({ path: '/api/fs' });
+    assert.strictEqual(result, '../');
+  });
+
+  it('uses the server root for synthetic pages', () => {
+    const result = resolvePageRoot({
+      path: '/404',
+      synthetic: true,
+    });
+    assert.strictEqual(result, '/');
+  });
+
+  it('uses the configured base URL for synthetic pages with absolute URLs', async () => {
+    getConfig('web').useAbsoluteURLs = true;
+
+    const result = resolvePageRoot({
+      path: '/404',
+      synthetic: true,
+    });
+    assert.strictEqual(result, 'https://nodejs.org/docs/');
+
+    getConfig('web').useAbsoluteURLs = false;
   });
 });

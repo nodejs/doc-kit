@@ -32,6 +32,20 @@ export const populateWithEvaluation = (template, config) => {
 };
 
 /**
+ * @param {import('../../metadata/types').MetadataEntry} data
+ * @returns {string}
+ */
+export const resolvePageRoot = data => {
+  if (data.synthetic === true) {
+    const { baseURL, useAbsoluteURLs } = getConfig('web');
+    return useAbsoluteURLs ? String(baseURL).replace(/\/?$/, '/') : '/';
+  }
+
+  const unresolvedRoot = relativeOrAbsolute('/', data.path);
+  return unresolvedRoot.endsWith('/') ? unresolvedRoot : `${unresolvedRoot}/`;
+};
+
+/**
  * Converts JSX AST entries to server and client JavaScript code.
  *
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} entries - JSX AST entries
@@ -131,10 +145,7 @@ export async function processJSXEntries(
   // Step 3: Render final HTML pages
   const results = await Promise.all(
     entries.map(async ({ data }) => {
-      const unresolvedRoot = relativeOrAbsolute('/', data.path);
-      const root = unresolvedRoot.endsWith('/')
-        ? unresolvedRoot
-        : `${unresolvedRoot}/`;
+      const root = resolvePageRoot(data);
 
       // Replace template placeholders with actual content
       const renderedHtml = populateWithEvaluation(template, {
