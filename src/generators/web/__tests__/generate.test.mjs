@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { setConfig } from '../../../utils/configuration/index.mjs';
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
-import { generate } from '../generate.mjs';
+import { copyAdditionalPaths, generate } from '../generate.mjs';
 
 const createEntry = (api, name) => {
   const heading = {
@@ -53,5 +56,25 @@ describe('web generate', () => {
     assert.doesNotMatch(notFoundResult.html, /View As/);
     assert.doesNotMatch(notFoundResult.html, /href=404\.json/);
     assert.doesNotMatch(notFoundResult.html, /href=404\.md/);
+  });
+
+  it('copies additional paths to the output directory', async () => {
+    const temp = await mkdtemp(join(tmpdir(), 'doc-kit-web-'));
+    const source = join(temp, 'assets');
+    const output = join(temp, 'output');
+
+    await mkdir(source);
+    await writeFile(join(source, 'logo.txt'), 'static asset');
+
+    try {
+      await copyAdditionalPaths([source], output);
+
+      assert.equal(
+        await readFile(join(output, 'assets', 'logo.txt'), 'utf-8'),
+        'static asset'
+      );
+    } finally {
+      await rm(temp, { recursive: true, force: true });
+    }
   });
 });

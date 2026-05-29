@@ -1,11 +1,24 @@
 'use strict';
 
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { cp, readFile } from 'node:fs/promises';
+import { basename, join } from 'node:path';
 
 import { processJSXEntries } from './utils/processing.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
 import { writeFile } from '../../utils/file.mjs';
+
+/**
+ * Copies configured static paths into the generator output directory.
+ *
+ * @param {Array<string>} paths
+ * @param {string} output
+ */
+export const copyAdditionalPaths = (paths, output) =>
+  Promise.all(
+    paths.map(path =>
+      cp(path, join(output, basename(path)), { recursive: true })
+    )
+  );
 
 /**
  * Main generation function that processes JSX AST entries into web bundles.
@@ -39,6 +52,8 @@ export async function generate(input) {
     }
 
     await writeFile(join(config.output, 'styles.css'), css, 'utf-8');
+
+    await copyAdditionalPaths(config.additionalPathsToCopy, config.output);
   }
 
   return results.map(({ html }) => ({ html: html.toString(), css }));

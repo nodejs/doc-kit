@@ -6,6 +6,7 @@ export type Configuration = {
   useAbsoluteURLs: boolean;
   imports: Record<string, string>;
   virtualImports: Record<string, string>;
+  additionalPathsToCopy: Array<string>;
 };
 
 export type Generator = GeneratorMetadata<

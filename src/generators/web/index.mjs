@@ -44,5 +44,6 @@ export default createLazyGenerator({
       '#theme/Layout': join(import.meta.dirname, './ui/components/Layout'),
     },
     virtualImports: {},
+    additionalPathsToCopy: [],
   },
 });
