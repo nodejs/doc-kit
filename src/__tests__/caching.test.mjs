@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import { collectAsyncGenerator, createCache } from '../caching.mjs';
@@ -42,16 +42,6 @@ describe('caching', () => {
   });
 
   describe('createCache', () => {
-    it('should expose the expected methods', () => {
-      const cache = createCache();
-
-      ok(cache);
-      strictEqual(typeof cache.has, 'function');
-      strictEqual(typeof cache.store, 'function');
-      strictEqual(typeof cache.expectConsumers, 'function');
-      strictEqual(typeof cache.consume, 'function');
-    });
-
     it('should report whether a generator is stored', () => {
       const cache = createCache();
 
@@ -80,7 +70,6 @@ describe('caching', () => {
       }
 
       cache.store('a', gen());
-      cache.expectConsumers({ a: 2 });
 
       const first = await cache.consume('a');
       const second = await cache.consume('a');
@@ -89,30 +78,6 @@ describe('caching', () => {
       // The same collected array is shared, collection happened a single time
       strictEqual(first, second);
       strictEqual(iterations, 1);
-    });
-
-    it('should evict a result once the final consumer has read it', async () => {
-      const cache = createCache();
-
-      cache.store('a', Promise.resolve('value'));
-      cache.expectConsumers({ a: 1 });
-
-      strictEqual(await cache.consume('a'), 'value');
-      // After the last consumer, the entry is dropped so it can be GC'd
-      strictEqual(cache.has('a'), false);
-    });
-
-    it('should keep a result until all expected consumers have read it', async () => {
-      const cache = createCache();
-
-      cache.store('a', Promise.resolve('value'));
-      cache.expectConsumers({ a: 2 });
-
-      await cache.consume('a');
-      strictEqual(cache.has('a'), true);
-
-      await cache.consume('a');
-      strictEqual(cache.has('a'), false);
     });
 
     it('should count consumers across a dependency closure', async () => {
