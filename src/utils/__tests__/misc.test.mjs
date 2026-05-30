@@ -3,7 +3,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { lazy, isPlainObject, omitKeys, deepMerge } from '../misc.mjs';
+import {
+  lazy,
+  isPlainObject,
+  isAsyncIterable,
+  omitKeys,
+  deepMerge,
+} from '../misc.mjs';
 
 describe('lazy', () => {
   it('should call the function only once and cache the result', () => {
@@ -35,6 +41,47 @@ describe('isPlainObject', () => {
     assert.strictEqual(isPlainObject(undefined), false);
     assert.strictEqual(isPlainObject(42), false);
     assert.strictEqual(isPlainObject('string'), false);
+  });
+});
+
+describe('isAsyncIterable', () => {
+  it('should return true for async generators', () => {
+    async function* asyncGen() {
+      yield 1;
+    }
+
+    assert.strictEqual(isAsyncIterable(asyncGen()), true);
+  });
+
+  it('should return true for objects with Symbol.asyncIterator', () => {
+    const asyncIterable = {
+      [Symbol.asyncIterator]() {
+        return { next: async () => ({ done: true, value: undefined }) };
+      },
+    };
+
+    assert.strictEqual(isAsyncIterable(asyncIterable), true);
+  });
+
+  it('should return false for regular generators', () => {
+    function* syncGen() {
+      yield 1;
+    }
+
+    assert.strictEqual(isAsyncIterable(syncGen()), false);
+  });
+
+  it('should return false for plain objects, arrays and primitives', () => {
+    assert.strictEqual(isAsyncIterable({}), false);
+    assert.strictEqual(isAsyncIterable([]), false);
+    assert.strictEqual(isAsyncIterable({ async: true }), false);
+    assert.strictEqual(isAsyncIterable(42), false);
+    assert.strictEqual(isAsyncIterable('string'), false);
+  });
+
+  it('should return false for null and undefined', () => {
+    assert.strictEqual(isAsyncIterable(null), false);
+    assert.strictEqual(isAsyncIterable(undefined), false);
   });
 });
 

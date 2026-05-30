@@ -252,25 +252,22 @@ export const transformHeadingNode = async (entry, node, index, parent) => {
  * @param {import('../../metadata/types').MetadataEntry} entry - The API metadata entry to process
  */
 export const processEntry = entry => {
-  // Deep copy content to avoid mutations on original
-  const content = structuredClone(entry.content);
-
   // Visit and transform stability nodes
-  visit(content, UNIST.isStabilityNode, transformStabilityNode);
+  visit(entry.content, UNIST.isStabilityNode, transformStabilityNode);
 
   // Visit and transform headings with metadata and links
-  visit(content, UNIST.isHeading, (...args) =>
+  visit(entry.content, UNIST.isHeading, (...args) =>
     transformHeadingNode(entry, ...args)
   );
 
   // Transform typed lists into property tables
   visit(
-    content,
+    entry.content,
     UNIST.isStronglyTypedList,
     (node, idx, parent) => (parent.children[idx] = createSignatureTable(node))
   );
 
-  return content;
+  return entry.content;
 };
 
 /**
