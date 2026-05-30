@@ -1,4 +1,5 @@
 'use strict';
+import { basename } from 'node:path/posix';
 
 import { SKIP } from 'unist-util-visit';
 
@@ -16,9 +17,13 @@ import { transformNodesToString } from '../../../utils/unist.mjs';
  * @param {import('@types/mdast').Link} node A Markdown link node
  */
 export const visitMarkdownLink = node => {
+  // REJECT PROTOCOLS: Catches http:, https:, mailto:, ftp:, file:, vscode:, etc.
+  if (/^[a-z]+:/i.test(node.url)) {
+    return [SKIP];
+  }
   node.url = node.url.replace(
     QUERIES.markdownUrl,
-    (_, filename, hash = '') => `${filename}.html${hash}`
+    (_, filename, hash = '') => `${basename(filename)}.html${hash}`
   );
 
   return [SKIP];
