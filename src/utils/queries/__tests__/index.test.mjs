@@ -33,6 +33,61 @@ describe('QUERIES', () => {
       strictEqual(QUERIES.standardYamlFrontmatter.test(content), false);
     });
   });
+
+  describe('normalizeTypes', () => {
+    it('matches basic types', () => {
+      const content = '{string}';
+      QUERIES.normalizeTypes.lastIndex = 0;
+      ok(QUERIES.normalizeTypes.test(content));
+    });
+
+    it('matches complex types with generics', () => {
+      const content1 = '{Readonly<object>}';
+      const content2 = '{Map<string, "ignore"|null>}';
+
+      QUERIES.normalizeTypes.lastIndex = 0;
+      ok(
+        QUERIES.normalizeTypes.test(content1),
+        'Should match Readonly<object>'
+      );
+      QUERIES.normalizeTypes.lastIndex = 0;
+      ok(QUERIES.normalizeTypes.test(content2), 'Should match Map<...>');
+    });
+
+    it('matches complex union types with parentheses', () => {
+      const content = '{(string|number)}';
+      QUERIES.normalizeTypes.lastIndex = 0;
+      ok(
+        QUERIES.normalizeTypes.test(content),
+        'Should match union with parentheses'
+      );
+    });
+  });
+
+  describe('linksWithTypes', () => {
+    it('matches basic type links', () => {
+      const content = '[`<string>`](https://mdn...)';
+      QUERIES.linksWithTypes.lastIndex = 0;
+      ok(QUERIES.linksWithTypes.test(content));
+    });
+
+    it('matches complex type links with generics', () => {
+      const content1 =
+        '[`<Readonly>`](https://mdn...)<[`<object>`](https://mdn...)>';
+      QUERIES.linksWithTypes.lastIndex = 0;
+      ok(
+        QUERIES.linksWithTypes.test(content1),
+        'Should match generic type link'
+      );
+    });
+
+    it('matches complex type links with unions', () => {
+      const content2 =
+        '<([`<string>`](https://mdn...)|[`<number>`](https://mdn...))>';
+      QUERIES.linksWithTypes.lastIndex = 0;
+      ok(QUERIES.linksWithTypes.test(content2), 'Should match union type link');
+    });
+  });
 });
 
 describe('UNIST', () => {
