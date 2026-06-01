@@ -5,7 +5,11 @@ import {
   default as getConfig,
   setConfig,
 } from '../../../../utils/configuration/index.mjs';
-import { populateWithEvaluation, resolvePageRoot } from '../processing.mjs';
+import {
+  buildHead,
+  populateWithEvaluation,
+  resolvePageRoot,
+} from '../processing.mjs';
 
 await setConfig({
   version: 'v22.0.0',
@@ -101,5 +105,59 @@ describe('resolvePageRoot', () => {
     assert.strictEqual(result, 'https://nodejs.org/docs/');
 
     getConfig('web').useAbsoluteURLs = false;
+  });
+});
+
+describe('buildHead', () => {
+  it('renders meta tags from attribute bags', () => {
+    const result = buildHead({
+      meta: [
+        { name: 'description', content: 'Docs' },
+        { property: 'og:type', content: 'website' },
+      ],
+      links: [],
+      html: [],
+    });
+
+    assert.match(result, /<meta name="description" content="Docs" \/>/);
+    assert.match(result, /<meta property="og:type" content="website" \/>/);
+  });
+
+  it('renders boolean attributes as valueless and omits nullish ones', () => {
+    const result = buildHead({
+      meta: [],
+      links: [
+        { rel: 'preconnect', href: 'https://a.example' },
+        { rel: 'preconnect', href: 'https://b.example', crossorigin: true },
+        { rel: 'icon', href: 'https://c.example', integrity: null },
+      ],
+      html: [],
+    });
+
+    // Two distinct preconnect tags prove arrays beat a `rel → href` map.
+    assert.match(
+      result,
+      /<link rel="preconnect" href="https:\/\/a\.example" \/>/
+    );
+    assert.match(
+      result,
+      /<link rel="preconnect" href="https:\/\/b\.example" crossorigin \/>/
+    );
+    // `integrity: null` is dropped entirely.
+    assert.match(result, /<link rel="icon" href="https:\/\/c\.example" \/>/);
+  });
+
+  it('appends raw HTML strings verbatim', () => {
+    const result = buildHead({
+      meta: [],
+      links: [],
+      html: ['<meta name="theme-color" content="#000" />'],
+    });
+
+    assert.match(result, /<meta name="theme-color" content="#000" \/>/);
+  });
+
+  it('returns an empty string when nothing is configured', () => {
+    assert.strictEqual(buildHead({ meta: [], links: [], html: [] }), '');
   });
 });

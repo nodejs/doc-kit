@@ -84,8 +84,17 @@ export default function createConfigSource(input) {
   const exports = {
     ...omitKeys(
       config,
-      // These are keys that are large, and not needed by components, so we ignore them
-      ['changelog', 'index', 'imports', 'virtualImports']
+      // These are keys that are large, build-time only (e.g. the document head
+      // and CSS options), or not serializable (e.g. `lightningcss` visitor
+      // functions), so they are never exposed to client components.
+      [
+        'changelog',
+        'index',
+        'imports',
+        'virtualImports',
+        'head',
+        'lightningcss',
+      ]
     ),
     version: configVersion,
     versions: buildVersionEntries(config.changelog, pageURL),

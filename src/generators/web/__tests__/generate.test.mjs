@@ -54,4 +54,33 @@ describe('web generate', () => {
     assert.doesNotMatch(notFoundResult.html, /href=404\.json/);
     assert.doesNotMatch(notFoundResult.html, /href=404\.md/);
   });
+
+  it('renders the configurable head without hardcoded defaults', async () => {
+    // `setConfig` resolves generator defaults; mutate the live config to apply
+    // per-generator overrides (the same object `getConfig('web')` returns).
+    const config = await setConfig({});
+    config.web.head = {
+      meta: [
+        { name: 'description', content: 'Custom project docs' },
+        { property: 'og:image', content: 'https://example.com/og.png' },
+      ],
+      links: [{ rel: 'icon', href: 'https://example.com/favicon.ico' }],
+      html: ['<meta name="theme-color" content="#abcdef" />'],
+    };
+
+    const fs = createEntry('fs', 'File system');
+    const [fsPage] = await generate([await buildContent([fs], fs)]);
+
+    assert.match(fsPage.html, /Custom project docs/);
+    assert.match(fsPage.html, /https:\/\/example\.com\/og\.png/);
+    assert.match(fsPage.html, /href=https:\/\/example\.com\/favicon\.ico/);
+    assert.match(fsPage.html, /content=#abcdef/);
+
+    // Project-branding `head` config no longer leaks Node.js defaults.
+    assert.doesNotMatch(fsPage.html, /nodejs\.org/);
+
+    // Structural/theme tags stay hardcoded in the template regardless.
+    assert.match(fsPage.html, /property=og:type content=website/);
+    assert.match(fsPage.html, /href=https:\/\/fonts\.googleapis\.com/);
+  });
 });
