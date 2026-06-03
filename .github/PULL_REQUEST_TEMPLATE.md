@@ -1,5 +1,5 @@
 <!--
-Please read the [Code of Conduct](https://github.com/nodejs/api-docs-tooling/blob/main/CODE_OF_CONDUCT.md) and the [Contributing Guidelines](https://github.com/nodejs/api-docs-tooling/blob/main/CONTRIBUTING.md) before opening a pull request.
+Please read the [Code of Conduct](https://github.com/nodejs/doc-kit/blob/main/CODE_OF_CONDUCT.md) and the [Contributing Guidelines](https://github.com/nodejs/doc-kit/blob/main/CONTRIBUTING.md) before opening a pull request.
 -->
 
 ## Description
@@ -25,7 +25,7 @@ Please follow this check list to ensure that you've followed all items before op
 You can check the items by adding an `x` between the brackets, like this: `[x]`
 -->
 
-- [ ] I have read the [Contributing Guidelines](https://github.com/nodejs/api-docs-tooling/blob/main/CONTRIBUTING.md) and made commit messages that follow the guideline.
+- [ ] I have read the [Contributing Guidelines](https://github.com/nodejs/doc-kit/blob/main/CONTRIBUTING.md) and made commit messages that follow the guideline.
 - [ ] I have run `node --run test` and all tests passed.
 - [ ] I have check code formatting with `node --run format` & `node --run lint`.
 - [ ] I've covered new added functionality with unit tests if necessary.
