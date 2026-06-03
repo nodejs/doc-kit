@@ -174,7 +174,7 @@ export const createSectionBuilder = () => {
    * @param {import('../types.d.ts').Section} parent - The parent section.
    */
   const handleEntry = (entry, parent) => {
-    const [headingNode, ...nodes] = structuredClone(entry.content.children);
+    const [headingNode, ...nodes] = entry.content.children;
     const section = createSection(entry, headingNode);
 
     parseStability(section, nodes, entry);
