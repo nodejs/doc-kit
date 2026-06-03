@@ -46,6 +46,40 @@ export const resolvePageRoot = data => {
 };
 
 /**
+ * Renders a self-closing HTML tag from an attribute bag.
+ *
+ * Boolean `true` renders a valueless attribute (e.g. `crossorigin`); `false`,
+ * `null`, and `undefined` are omitted; all other values are stringified.
+ *
+ * @param {string} tag - The tag name (e.g. `'meta'`, `'link'`).
+ * @param {Record<string, unknown>} attrs - Attribute name/value pairs.
+ * @returns {string} The rendered tag.
+ */
+const renderTag = (tag, attrs) => {
+  const rendered = Object.entries(attrs)
+    .filter(([, value]) => value != null && value !== false)
+    .map(([key, value]) => (value === true ? ` ${key}` : ` ${key}="${value}"`))
+    .join('');
+
+  return `<${tag}${rendered} />`;
+};
+
+/**
+ * Builds the configurable `<head>` markup shared by every page from the
+ * structured `head` config: `<meta>` tags, `<link>` tags, and raw HTML. None
+ * of the rendered content is project-specific beyond the configured values.
+ *
+ * @param {import('../types').Configuration['head']} head - The `head` config.
+ * @returns {string} The concatenated HTML for the document head.
+ */
+export const buildHead = ({ meta = [], links = [], html = [] }) =>
+  [
+    ...meta.map(attrs => renderTag('meta', attrs)),
+    ...links.map(attrs => renderTag('link', attrs)),
+    ...html,
+  ].join('\n  ');
+
+/**
  * Converts JSX AST entries to server and client JavaScript code.
  *
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} entries - JSX AST entries
@@ -142,6 +176,11 @@ export async function processJSXEntries(
     version: config.version.version,
   });
 
+  // Pre-render the configurable `<head>` markup once, since it is identical
+  // across every page. Computed here (rather than inline in the template) so
+  // template authors avoid nested template-literal escaping.
+  const head = buildHead(config.head);
+
   // Step 3: Render final HTML pages
   const results = await Promise.all(
     entries.map(async ({ data }) => {
@@ -157,6 +196,7 @@ export async function processJSXEntries(
         root,
         metadata: data,
         config,
+        head,
       });
 
       return { html: await minifyHTML(renderedHtml), path: data.path };
