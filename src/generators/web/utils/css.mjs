@@ -59,7 +59,10 @@ export default () => {
         }
 
         // Read the raw CSS file from disk
-        const source = await readFile(id, 'utf8');
+        const source = await (lightningcss.resolver?.read ?? readFile)(
+          id,
+          'utf8'
+        );
 
         // Use Lightning CSS to compile the file with CSS Modules enabled
         const { code, exports } = await bundleAsync({
