@@ -68,6 +68,7 @@ export default () => {
           code: Buffer.from(source),
           cssModules: id.endsWith('module.css'),
           resolver: {
+            ...lightningcss.resolver,
             /**
              * Resolve specifiers with Rolldown's resolution
              */
