@@ -6,19 +6,20 @@ The `web` generator transforms JSX AST entries into complete web bundles, produc
 
 The `web` generator accepts the following configuration options:
 
-| Name              | Type      | Default                                       | Description                                                           |
-| ----------------- | --------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `output`          | `string`  | -                                             | The directory where HTML, JavaScript, and CSS files will be written   |
-| `templatePath`    | `string`  | `'template.html'`                             | Path to the HTML template file                                        |
-| `project`         | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector             |
-| `title`           | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)     |
-| `useAbsoluteURLs` | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`  |
-| `editURL`         | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                               |
-| `pageURL`         | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                             |
-| `head`            | `object`  | See below                                     | Configurable `<meta>`, `<link>`, and raw markup for the document head |
-| `lightningcss`    | `object`  | `{}`                                          | Options spread into LightningCSS while bundling CSS (see below)       |
-| `imports`         | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization |
-| `virtualImports`  | `object`  | `{}`                                          | Additional virtual module mappings merged into the build              |
+| Name              | Type      | Default                                       | Description                                                              |
+| ----------------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------ |
+| `output`          | `string`  | -                                             | The directory where HTML, JavaScript, and CSS files will be written      |
+| `templatePath`    | `string`  | `'template.html'`                             | Path to the HTML template file                                           |
+| `project`         | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector                |
+| `title`           | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)        |
+| `useAbsoluteURLs` | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`     |
+| `editURL`         | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                                  |
+| `pageURL`         | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                                |
+| `head`            | `object`  | See below                                     | Configurable `<meta>`, `<link>`, and raw markup for the document head    |
+| `lightningcss`    | `object`  | `{}`                                          | Options spread into LightningCSS while bundling CSS (see below)          |
+| `imports`         | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization    |
+| `virtualImports`  | `object`  | `{}`                                          | Additional virtual module mappings merged into the build                 |
+| `rolldown`        | `object`  | `{}`                                          | Options merged into the Rolldown build — extra plugins, etc. (see below) |
 
 #### `head`
 
@@ -94,6 +95,63 @@ To apply more than one visitor, compose them with LightningCSS's
 `composeVisitors` helper and pass the result as `visitor`.
 
 [lightningcss]: https://lightningcss.dev/transforms.html
+
+#### Custom Rolldown options
+
+The `rolldown` object is merged into the [Rolldown][rolldown] `build` call used
+for **both** the client and server bundles, so you can register extra plugins,
+inject compile-time constants, add module aliases, or set any other Rolldown
+option. The same config is applied to both builds — branch inside a plugin (or
+read the `SERVER`/`CLIENT` defines) if you need per-target behavior.
+
+The merge follows these rules:
+
+- **`plugins`** are registered after the built-in virtual-module plugin (so
+  they see the in-memory entry modules) and before the CSS loader.
+- **`transform.define`** and **`resolve.alias`** are merged key-by-key, so you
+  can add entries without dropping the generator's. The built-in `SERVER`/
+  `CLIENT` defines and the `react`/`react-dom` → `preact/compat` aliases
+  (plus anything from `imports`) always win.
+- **All other options** (e.g. `output.minify`, `treeshake`, `external`,
+  `platform`, `logLevel`) override the generator's defaults.
+- **`input`** and the built-in plugins are managed by the generator and cannot
+  be overridden.
+
+> Functions (plugins, hooks, alias resolvers, etc.) are allowed here because the
+> `web` generator runs entirely on the main thread. Unlike the chunked
+> generators, its config is never serialized to a worker, so values that can't
+> be structured-cloned are safe. Keep this in mind if `web` ever gains parallel
+> processing: function-valued options would then need a serializable form.
+
+```js
+// doc-kit.config.mjs
+import myRolldownPlugin from './my-rolldown-plugin.mjs';
+
+export default {
+  web: {
+    rolldown: {
+      // Register additional plugins (run after the built-in ones).
+      plugins: [myRolldownPlugin()],
+
+      // Inject extra compile-time constants (merged with SERVER/CLIENT).
+      transform: {
+        define: {
+          'process.env.ANALYTICS_ID': JSON.stringify('UA-XXXXX'),
+        },
+      },
+
+      // Extend module resolution with custom aliases.
+      resolve: {
+        alias: {
+          '@components': './src/components',
+        },
+      },
+    },
+  },
+};
+```
+
+[rolldown]: https://rolldown.rs/
 
 #### Default `imports`
 

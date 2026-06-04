@@ -39,18 +39,24 @@ export default async function bundleCode(
 ) {
   const config = getConfig('web');
 
+  const { rolldown = {} } = config;
+
   const result = await build({
+    ...rolldown,
+
     // Entry points: array of virtual module names that the virtual plugin provides
     input: Array.from(codeMap.keys()),
 
     // Experimental features: import maps for client, none for server
     experimental: {
       chunkImportMap: !server,
+      ...rolldown.experimental,
     },
 
     checks: {
       // Disable plugin timing logs for cleaner output. This can be re-enabled for debugging performance issues.
       pluginTimings: false,
+      ...rolldown.checks,
     },
 
     // Output configuration
@@ -63,25 +69,33 @@ export default async function bundleCode(
       // Minify output only for browser builds to optimize file size.
       // Server builds are usually not minified to preserve stack traces and debuggability.
       minify: !server,
+
+      ...rolldown.output,
     },
 
     // Platform informs Rolldown of the environment-specific code behavior:
     // - 'node' enables things like `require`, and skips polyfills.
     // - 'browser' enables inlining of polyfills and uses native browser features.
-    platform: server ? 'node' : 'browser',
+    platform: rolldown.platform ?? (server ? 'node' : 'browser'),
 
     // External dependencies to exclude from bundling.
     // These are expected to be available at runtime in the server environment.
     // This reduces bundle size and avoids bundling shared server libs.
-    external: server
-      ? ['preact', 'preact-render-to-string', '@node-core/ui-components']
-      : [],
+    external:
+      rolldown.external ??
+      (server
+        ? ['preact', 'preact-render-to-string', '@node-core/ui-components']
+        : []),
 
     transform: {
+      ...rolldown.transform,
+
       // Inject global compile-time constants that will be replaced in code.
       // These are useful for tree-shaking and conditional branching.
       // Be sure to update type declarations (`types.d.ts`) if these change.
       define: {
+        ...rolldown.transform?.define,
+
         // Boolean flags used for conditional logic in source code:
         // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
         // These flags help split logic for server/client environments.
@@ -93,7 +107,7 @@ export default async function bundleCode(
       // JSX transformation configuration.
       // `'react-jsx'` enables the automatic JSX runtime, which doesn't require `import React`.
       // Since we're using Preact via aliasing, this setting works well with `preact/compat`.
-      jsx: 'react-jsx',
+      jsx: rolldown.transform?.jsx ?? 'react-jsx',
     },
 
     // Module resolution configuration.
@@ -101,17 +115,20 @@ export default async function bundleCode(
       // exports condition to use
       conditionNames: ['rolldown'],
 
+      // Tell the bundler where to find node_modules.
+      // We use our custom `NODE_MODULES`, and then the cwd's `node_modules`.
+      modules: [await getNodeModules(), 'node_modules'],
+
+      ...rolldown.resolve,
+
       // Alias react imports to preact/compat for smaller bundle sizes.
       // Explicit jsx-runtime aliases are required for the automatic JSX transform.
       alias: {
         react: 'preact/compat',
         'react-dom': 'preact/compat',
+        ...rolldown.resolve?.alias,
         ...config.imports,
       },
-
-      // Tell the bundler where to find node_modules.
-      // We use our custom `NODE_MODULES`, and then the cwd's `node_modules`.
-      modules: [await getNodeModules(), 'node_modules'],
     },
 
     // Array of plugins to apply during the build.
@@ -123,13 +140,15 @@ export default async function bundleCode(
         ...virtualImports,
       }),
 
+      ...(rolldown.plugins ?? []),
+
       // Load CSS imports via the custom plugin.
       // This plugin will collect imported CSS files and return them as `source` chunks.
       cssLoader(),
     ],
 
     // Enable tree-shaking to remove unused code
-    treeshake: true,
+    treeshake: rolldown.treeshake ?? true,
 
     // Return chunks in memory instead of writing to disk
     write: false,
