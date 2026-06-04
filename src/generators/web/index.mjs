@@ -86,5 +86,9 @@ export default createLazyGenerator({
       '#theme/Layout': join(import.meta.dirname, './ui/components/Layout'),
     },
     virtualImports: {},
+
+    // Options merged into the Rolldown build (client and server), e.g. extra
+    // `plugins`. See the README for the merge semantics.
+    rolldown: {},
   },
 });

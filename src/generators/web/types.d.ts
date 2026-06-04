@@ -1,4 +1,5 @@
 import type { BundleAsyncOptions, CustomAtRules } from 'lightningcss-wasm';
+import type { BuildOptions } from 'rolldown';
 
 import type { JSXContent } from '../jsx-ast/utils/buildContent.mjs';
 
@@ -33,6 +34,9 @@ export type Configuration = {
   >;
   imports: Record<string, string>;
   virtualImports: Record<string, string>;
+  // Options merged into the Rolldown build for the client and server bundles.
+  // See the web generator README for the merge semantics.
+  rolldown: Partial<BuildOptions>;
 };
 
 export type Generator = GeneratorMetadata<
