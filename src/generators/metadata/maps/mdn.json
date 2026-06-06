@@ -24,6 +24,7 @@
   "audionode": "https://developer.mozilla.org/docs/Web/API/AudioNode",
   "audioparam": "https://developer.mozilla.org/docs/Web/API/AudioParam",
   "audioparammap": "https://developer.mozilla.org/docs/Web/API/AudioParamMap",
+  "audioplaybackstats": "https://developer.mozilla.org/docs/Web/API/AudioPlaybackStats",
   "audioprocessingevent": "https://developer.mozilla.org/docs/Web/API/AudioProcessingEvent",
   "audioscheduledsourcenode": "https://developer.mozilla.org/docs/Web/API/AudioScheduledSourceNode",
   "audiosession": "https://developer.mozilla.org/docs/Web/API/AudioSession",
