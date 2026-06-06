@@ -1,7 +1,7 @@
 import { toString } from 'hast-util-to-string';
 import { visit } from 'unist-util-visit';
 
-import { TAG_TRANSFORMS } from '../constants.mjs';
+import { TAG_TRANSFORMS } from '../../constants.mjs';
 
 /**
  * Checks whether a HAST node is the generated GFM footnotes section.
