@@ -188,7 +188,9 @@ export async function processJSXEntries(
 
       // Replace template placeholders with actual content
       const renderedHtml = populateWithEvaluation(template, {
-        title: `${data.heading.data.name} | ${titleSuffix}`,
+        title: data.heading.data.name
+          ? `${data.heading.data.name} | ${titleSuffix}`
+          : titleSuffix,
         dehydrated: serverBundle.pages.get(`${data.api}.js`) ?? '',
         importMap: clientBundle.importMap?.replaceAll('/', root) ?? '',
         entrypoint: `${data.api}.js?${randomUUID()}`,
