@@ -1,7 +1,8 @@
 'use strict';
 
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { constants } from 'node:fs';
+import { readFile, stat, cp, copyFile, mkdir } from 'node:fs/promises';
+import { join, basename, dirname } from 'node:path';
 
 import { processJSXEntries } from './utils/processing.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
@@ -39,6 +40,38 @@ export async function generate(input) {
     }
 
     await writeFile(join(config.output, 'styles.css'), css, 'utf-8');
+
+    if (Array.isArray(config.pathsToCopy)) {
+      for (const item of config.pathsToCopy) {
+        const copyTasks =
+          typeof item === 'string'
+            ? [{ src: item, dest: join(config.output, basename(item)) }]
+            : Object.entries(item).map(([src, dest]) => ({
+                src,
+                dest: join(config.output, dest),
+              }));
+
+        for (const { src, dest } of copyTasks) {
+          try {
+            const fileStats = await stat(src);
+
+            if (fileStats.isDirectory()) {
+              await cp(src, dest, { recursive: true, force: true });
+            } else {
+              await mkdir(dirname(dest), { recursive: true });
+              await copyFile(src, dest, constants.COPYFILE_FICLONE);
+            }
+          } catch (err) {
+            if (err.code !== 'ENOENT') {
+              console.error(
+                `Failed to copy asset from ${src} to ${dest}:`,
+                err
+              );
+            }
+          }
+        }
+      }
+    }
   }
 
   return results.map(({ html }) => ({ html: html.toString(), css }));
