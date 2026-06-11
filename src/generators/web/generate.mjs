@@ -43,12 +43,15 @@ export async function generate(input) {
 
     if (Array.isArray(config.pathsToCopy)) {
       for (const item of config.pathsToCopy) {
+        if (!item) {
+          continue;
+        }
         const copyTasks =
           typeof item === 'string'
             ? [{ src: item, dest: join(config.output, basename(item)) }]
             : Object.entries(item).map(([src, dest]) => ({
                 src,
-                dest: join(config.output, dest),
+                dest: join(config.output, dest.replace(/^[/\\]+/, '')),
               }));
 
         for (const { src, dest } of copyTasks) {
