@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { setConfig } from '../../../utils/configuration/index.mjs';
@@ -6,10 +9,10 @@ import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
 import { generate } from '../generate.mjs';
 
-const createEntry = (api, name) => {
+const createEntry = (api, name, { depth = 1 } = {}) => {
   const heading = {
     type: 'heading',
-    depth: 1,
+    depth,
     children: [{ type: 'text', value: name }],
     data: { name, text: name, slug: api },
   };
@@ -82,5 +85,27 @@ describe('web generate', () => {
     // Structural/theme tags stay hardcoded in the template regardless.
     assert.match(fsPage.html, /property=og:type content=website/);
     assert.match(fsPage.html, /href=https:\/\/fonts\.googleapis\.com/);
+  });
+
+  it('hydrates active status for right-side table of contents links', async () => {
+    const output = await mkdtemp(join(tmpdir(), 'doc-kit-web-'));
+    const config = await setConfig({});
+    config.web.output = output;
+
+    try {
+      const fs = createEntry('fs', 'File system');
+      const readFileEntry = createEntry('fs-read-file', 'File system readFile', { depth: 2 });
+
+      await generate([await buildContent([fs, readFileEntry], fs)]);
+
+      const clientBundle = await readFile(join(output, 'fs.js'), 'utf8');
+
+      for (const token of ['data-active-heading', 'aria-current', 'hashchange', 'scroll']) {
+        assert.match(clientBundle, new RegExp(token));
+      }
+    } finally {
+      config.web.output = undefined;
+      await rm(output, { recursive: true, force: true });
+    }
   });
 });

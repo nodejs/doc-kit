@@ -9,3 +9,9 @@
   display: inline-block;
   margin-left: 0.25rem;
 }
+
+.activeHeading.activeHeading {
+  border-left: 0.25rem solid currentColor; padding-left: 0.4rem;
+  color: var(--color-green-700, #2c682c);
+  font-weight: 700; text-decoration-line: none;
+}
