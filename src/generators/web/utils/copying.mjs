@@ -2,7 +2,7 @@ import { constants } from 'node:fs';
 import { stat, cp, mkdir, copyFile } from 'node:fs/promises';
 import { join, basename, dirname } from 'node:path';
 
-import logger from '../../logger/index.mjs';
+import logger from '../../../logger/index.mjs';
 
 /**
  * Copies static directories/files defined in `pathsToCopy` to the output directory.
