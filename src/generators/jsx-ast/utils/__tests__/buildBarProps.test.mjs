@@ -65,9 +65,74 @@ describe('extractHeadings', () => {
 
     assert.equal(result.length, 2);
     assert.equal(result[0].slug, 'fs-readfile');
+    assert.equal(result[0].value, 'fs.readFile()');
     assert.equal(result[0].depth, 2);
     assert.equal(result[0].stability, 2);
     assert.equal(result[1].stability, 2);
+  });
+
+  it('keeps method table of contents labels compact', () => {
+    const entries = [
+      {
+        heading: {
+          depth: 3,
+          data: {
+            text: '`crypto.createHash(algorithm[, options])`',
+            name: 'createHash',
+            slug: 'crypto-createhash',
+            type: 'method',
+          },
+        },
+      },
+    ];
+
+    const [result] = extractHeadings(entries);
+
+    assert.equal(result.value, 'crypto.createHash()');
+  });
+
+  it('keeps full method labels when compact labels would collide', () => {
+    const entries = [
+      {
+        heading: {
+          depth: 3,
+          data: {
+            text: '`url.format(urlObject)`',
+            name: 'format',
+            slug: 'url-format-urlobject',
+            type: 'method',
+          },
+        },
+      },
+      {
+        heading: {
+          depth: 3,
+          data: {
+            text: '`url.format(urlString)`',
+            name: 'format',
+            slug: 'url-format-urlstring',
+            type: 'method',
+          },
+        },
+      },
+      {
+        heading: {
+          depth: 3,
+          data: {
+            text: '`url.parse(urlString)`',
+            name: 'parse',
+            slug: 'url-parse-urlstring',
+            type: 'method',
+          },
+        },
+      },
+    ];
+
+    const result = extractHeadings(entries);
+
+    assert.equal(result[0].value, 'url.format(urlObject)');
+    assert.equal(result[1].value, 'url.format(urlString)');
+    assert.equal(result[2].value, 'url.parse()');
   });
 
   it('filters out entries with empty heading text', () => {
