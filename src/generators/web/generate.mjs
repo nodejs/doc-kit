@@ -3,6 +3,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { copyStaticAssets } from './utils/copying.mjs';
 import { processJSXEntries } from './utils/processing.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
 import { writeFile } from '../../utils/file.mjs';
@@ -39,6 +40,8 @@ export async function generate(input) {
     }
 
     await writeFile(join(config.output, 'styles.css'), css, 'utf-8');
+
+    await copyStaticAssets(config);
   }
 
   return results.map(({ html }) => ({ html: html.toString(), css }));
