@@ -31,15 +31,15 @@ const walkAtDepthZero = (str, onToken) => {
   }
 };
 
-/** Format a known type as a Markdown link, or as a bare code span. */
+/** Resolve a bare type name to its inner rendering with URL */
 const formatType = (name, transformType) => {
   const url = transformType(name);
-  return url ? `[\`<${name}>\`](${url})` : `\`<${name}>\``;
+  return url ? `[${name}](${url})` : name;
 };
 
-/** Resolve a sub-expression recursively, falling back to a code span. */
+/** Resolve a sub-expression recursively, falling back to the bare text. */
 const resolveOr = (part, transformType) =>
-  parseType(part, transformType) || `\`<${part.trim()}>\``;
+  parseInner(part, transformType) ?? part.trim();
 
 /**
  * Splits `str` by `separator` at depth 0. `separator` is a single
@@ -75,8 +75,6 @@ const splitByOuterSeparator = (str, separator) => {
 const stripOuterParentheses = typeString => {
   let s = typeString.trim();
   while (s.length >= 2 && s.startsWith('(') && s.endsWith(')')) {
-    // The outer `(` matches the outer `)` if depth doesn't hit 0
-    // anywhere before the final character.
     let wrapsWhole = true;
     walkAtDepthZero(s.slice(0, -1), i => {
       if (i > 0) {
@@ -172,20 +170,18 @@ const parseFunctionSignature = (signature, transformType) => {
       const paramType = colonParts.slice(1).join(':');
       return `${paramName}: ${resolveOr(paramType, transformType)}`;
     }
-    return parseType(arg, transformType) || arg;
+    return parseInner(arg, transformType) ?? arg;
   });
 
   return `${prefix}(${parsedArgs.join(', ')})`;
 };
 
 /**
- * Recursively parses TypeScript types into Markdown links.
+ * Recursively parses a type into its inner rendering.
  *
- * @param {string} typeString The type string to evaluate.
- * @param {(name: string) => string | null | undefined} transformType Resolves a bare type name to a URL, or returns falsy.
- * @returns {string | null} Markdown for the type, or null when the base type doesn't resolve.
+ * @returns {string | null} Inner markup
  */
-export const parseType = (typeString, transformType) => {
+const parseInner = (typeString, transformType) => {
   const trimmed = stripOuterParentheses(typeString);
   if (!trimmed) {
     return null;
@@ -197,7 +193,7 @@ export const parseType = (typeString, transformType) => {
       const left = trimmed.slice(0, op.index).trim();
       const right = trimmed.slice(op.index + op.width).trim();
       const sig = parseFunctionSignature(left, transformType);
-      return `${sig} =&gt; ${resolveOr(right, transformType)}`;
+      return `${sig} => ${resolveOr(right, transformType)}`;
     }
 
     // Union / intersection
@@ -219,7 +215,7 @@ export const parseType = (typeString, transformType) => {
     const inner = splitByOuterSeparator(innerType, ',')
       .map(arg => resolveOr(arg, transformType))
       .join(', ');
-    return `${formatType(baseType, transformType)}&lt;${inner}&gt;${arrayTail}`;
+    return `${formatType(baseType, transformType)}<${inner}>${arrayTail}`;
   }
 
   // Plain base type.
@@ -232,5 +228,20 @@ export const parseType = (typeString, transformType) => {
     return null;
   }
 
-  return `[\`<${core}>\`](${url})${arrayTail}`;
+  return `${formatType(core, transformType)}${arrayTail}`;
+};
+
+/**
+ * Recursively parses TypeScript types into Markdown, wrapped in a code span.
+ *
+ * @param {string} typeString The type string to evaluate.
+ * @param {(name: string) => string | null | undefined} transformType Resolves a bare type name to a URL, or returns falsy.
+ * @returns {string | null} Markdown for the type, or null when the base type doesn't resolve.
+ */
+export const parseType = (typeString, transformType) => {
+  const inner = parseInner(typeString, transformType);
+  if (inner === null) {
+    return null;
+  }
+  return `<code><${inner}></code>`;
 };
