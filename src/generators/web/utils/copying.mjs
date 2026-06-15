@@ -1,6 +1,5 @@
-import { constants } from 'node:fs';
-import { stat, cp, mkdir, copyFile } from 'node:fs/promises';
-import { join, basename, dirname } from 'node:path';
+import { cp } from 'node:fs/promises';
+import { join, basename } from 'node:path';
 
 import logger from '../../../logger/index.mjs';
 
@@ -25,14 +24,7 @@ export async function copyStaticAssets(config) {
 
       for (const { src, dest } of copyTasks) {
         try {
-          const fileStats = await stat(src);
-
-          if (fileStats.isDirectory()) {
-            await cp(src, dest, { recursive: true, force: true });
-          } else {
-            await mkdir(dirname(dest), { recursive: true });
-            await copyFile(src, dest, constants.COPYFILE_FICLONE);
-          }
+          await cp(src, dest, { recursive: true, force: true });
         } catch (err) {
           if (err.code !== 'ENOENT') {
             logger.error(
