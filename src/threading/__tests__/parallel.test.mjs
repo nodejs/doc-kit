@@ -72,26 +72,24 @@ describe('createParallelWorker', () => {
 
     const mockInput = [
       {
-        file: { stem: 'test1', basename: 'test1.md' },
+        path: 'test1',
         tree: { type: 'root', children: [] },
       },
       {
-        file: { stem: 'test2', basename: 'test2.md' },
+        path: 'test2',
         tree: { type: 'root', children: [] },
       },
       {
-        file: { stem: 'test3', basename: 'test3.md' },
+        path: 'test3',
         tree: { type: 'root', children: [] },
       },
       {
-        file: { stem: 'test4', basename: 'test4.md' },
+        path: 'test4',
         tree: { type: 'root', children: [] },
       },
     ];
 
-    const chunks = await collectChunks(
-      worker.stream(mockInput, { typeMap: {} })
-    );
+    const chunks = await collectChunks(worker.stream(mockInput, {}));
 
     strictEqual(chunks.length, 4);
 
@@ -111,18 +109,16 @@ describe('createParallelWorker', () => {
 
     const mockInput = [
       {
-        file: { stem: 'test1', basename: 'test1.md' },
+        path: 'test1',
         tree: { type: 'root', children: [] },
       },
       {
-        file: { stem: 'test2', basename: 'test2.md' },
+        path: 'test2',
         tree: { type: 'root', children: [] },
       },
     ];
 
-    const chunks = await collectChunks(
-      worker.stream(mockInput, { typeMap: {} })
-    );
+    const chunks = await collectChunks(worker.stream(mockInput, {}));
 
     strictEqual(chunks.length, 2);
 
@@ -138,14 +134,12 @@ describe('createParallelWorker', () => {
 
     const mockInput = [
       {
-        file: { stem: 'test1', basename: 'test1.md' },
+        path: 'test1',
         tree: { type: 'root', children: [] },
       },
     ];
 
-    const chunks = await collectChunks(
-      worker.stream(mockInput, { typeMap: {} })
-    );
+    const chunks = await collectChunks(worker.stream(mockInput, {}));
 
     strictEqual(chunks.length, 1);
     ok(Array.isArray(chunks[0]));
@@ -162,18 +156,16 @@ describe('createParallelWorker', () => {
 
     const mockInput = [
       {
-        file: { stem: 'test1', basename: 'test1.md' },
+        path: 'test1',
         tree: { type: 'root', children: [] },
       },
       {
-        file: { stem: 'test2', basename: 'test2.md' },
+        path: 'test2',
         tree: { type: 'root', children: [] },
       },
     ];
 
-    const chunks = await collectChunks(
-      worker.stream(mockInput, { typeMap: {} })
-    );
+    const chunks = await collectChunks(worker.stream(mockInput, {}));
 
     strictEqual(chunks.length, 2);
 

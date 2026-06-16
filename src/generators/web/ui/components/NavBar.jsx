@@ -4,16 +4,16 @@ import styles from '@node-core/ui-components/Containers/NavBar/index.module.css'
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
 import SearchBox from './SearchBox';
-import { STATIC_DATA } from '../constants.mjs';
 import { useTheme } from '../hooks/useTheme.mjs';
 
-import Logo from '#config/Logo';
+import { repository } from '#theme/config';
+import Logo from '#theme/Logo';
 
 /**
  * NavBar component that displays the headings, search, etc.
  */
-export default () => {
-  const [theme, toggleTheme] = useTheme();
+export default ({ metadata }) => {
+  const [themePreference, setThemePreference] = useTheme();
 
   return (
     <NavBar
@@ -21,14 +21,14 @@ export default () => {
       sidebarItemTogglerAriaLabel="Toggle navigation menu"
       navItems={[]}
     >
-      <SearchBox />
+      <SearchBox pathname={metadata.path} />
       <ThemeToggle
-        onClick={toggleTheme}
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+        onChange={setThemePreference}
+        currentTheme={themePreference}
       />
       <a
-        href={`https://github.com/${STATIC_DATA.repository}`}
-        aria-label={`${STATIC_DATA.title} GitHub`}
+        href={`https://github.com/${repository}`}
+        aria-label={`View ${repository} on GitHub`}
         className={styles.ghIconWrapper}
       >
         <GitHubIcon />

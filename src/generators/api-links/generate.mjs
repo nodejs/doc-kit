@@ -1,16 +1,13 @@
 'use strict';
 
-import { writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
 import { checkIndirectReferences } from './utils/checkIndirectReferences.mjs';
 import { extractExports } from './utils/extractExports.mjs';
 import { findDefinitions } from './utils/findDefinitions.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
-import {
-  GITHUB_BLOB_URL,
-  populate,
-} from '../../utils/configuration/templates.mjs';
+import { populate } from '../../utils/configuration/templates.mjs';
+import { withExt, writeFile } from '../../utils/file.mjs';
 
 /**
  * Generates the `apilinks.json` file.
@@ -33,8 +30,8 @@ export async function generate(input) {
      */
     const nameToLineNumberMap = {};
 
-    // `http.js` -> `http`
-    const baseName = basename(program.path, '.js');
+    const fileName = basename(program.path);
+    const baseName = withExt(fileName);
 
     const exports = extractExports(program, baseName, nameToLineNumberMap);
 
@@ -42,7 +39,10 @@ export async function generate(input) {
 
     checkIndirectReferences(program, exports, nameToLineNumberMap);
 
-    const fullGitUrl = `${populate(GITHUB_BLOB_URL, config)}lib/${baseName}.js`;
+    const fullGitUrl = populate(config.sourceURL, {
+      ...config,
+      fileName,
+    });
 
     // Add the exports we found in this program to our output
     Object.keys(nameToLineNumberMap).forEach(key => {

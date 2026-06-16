@@ -13,7 +13,7 @@ export default defineConfig([
     ignores: ['out/', 'src/generators/api-links/__tests__/fixtures/'],
   },
   {
-    files: ['**/*.{mjs,jsx}'],
+    files: ['**/*.{mjs,jsx,js}'],
     plugins: { jsdoc },
     languageOptions: {
       ecmaVersion: 'latest',

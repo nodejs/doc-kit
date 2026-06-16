@@ -1,14 +1,9 @@
-import { transformNodesToString } from '../../../utils/unist.mjs';
-import {
-  DOC_MDN_BASE_URL_JS_GLOBALS,
-  DOC_MDN_BASE_URL_JS_PRIMITIVES,
-  DOC_TYPES_MAPPING_GLOBALS,
-  DOC_TYPES_MAPPING_OTHER,
-  DOC_TYPES_MAPPING_PRIMITIVES,
-  DOC_MAN_BASE_URL,
-  DOC_API_HEADING_TYPES,
-} from '../constants.mjs';
+import { DOC_MAN_BASE_URL, DOC_API_HEADING_TYPES } from '../constants.mjs';
 import { slug } from './slugger.mjs';
+import { parseType } from './typeParser.mjs';
+import { transformNodesToString } from '../../../utils/unist.mjs';
+import BUILTIN_TYPE_MAP from '../maps/builtin.json' with { type: 'json' };
+import MDN_TYPE_MAP from '../maps/mdn.json' with { type: 'json' };
 
 /**
  * @param {string} text The inner text
@@ -34,8 +29,12 @@ export const transformUnixManualToLink = (
  * @returns {string} The Markdown link as a string (formatted in Markdown)
  */
 export const transformTypeToReferenceLink = (type, record) => {
-  // Removes the wrapping tags that wrap the type references such as `<>` and `{}`
-  const typeInput = type.replace(/[{}<>]/g, '');
+  // Removes the wrapping curly braces that wrap the type references
+  // We keep the angle brackets `<>` intact here to parse Generics later
+  const typeInput = type
+    .trim()
+    .replace(/^\{(.*)\}$/, '$1')
+    .trim();
 
   /**
    * Handles the mapping (if there's a match) of the input text
@@ -45,28 +44,22 @@ export const transformTypeToReferenceLink = (type, record) => {
    * @returns {string} The reference URL or empty string if no match
    */
   const transformType = lookupPiece => {
-    // Transform JS primitive type references into Markdown links (MDN)
-    if (lookupPiece.toLowerCase() in DOC_TYPES_MAPPING_PRIMITIVES) {
-      const typeValue = DOC_TYPES_MAPPING_PRIMITIVES[lookupPiece.toLowerCase()];
-
-      return `${DOC_MDN_BASE_URL_JS_PRIMITIVES}#${typeValue}_type`;
-    }
-
-    // Transforms JS Global type references into Markdown links (MDN)
-    if (lookupPiece in DOC_TYPES_MAPPING_GLOBALS) {
-      return `${DOC_MDN_BASE_URL_JS_GLOBALS}${lookupPiece}`;
-    }
-
-    // Transform other external Web/JavaScript type references into Markdown links
-    // to diverse different external websites. These already are formatted as links
-    if (lookupPiece in DOC_TYPES_MAPPING_OTHER) {
-      return DOC_TYPES_MAPPING_OTHER[lookupPiece];
-    }
-
     // Transform Node.js type/module references into Markdown links
     // that refer to other API docs pages within the Node.js API docs
-    if (lookupPiece in record) {
+    if (record && lookupPiece in record) {
       return record[lookupPiece];
+    }
+
+    const key = lookupPiece.toLowerCase();
+
+    // Check in our built-in map (i.e. TC39 objects)
+    if (key in BUILTIN_TYPE_MAP) {
+      return BUILTIN_TYPE_MAP[key];
+    }
+
+    // Check in MDN
+    if (key in MDN_TYPE_MAP) {
+      return MDN_TYPE_MAP[key];
     }
 
     // Transform Node.js types like 'vm.Something'.
@@ -80,23 +73,7 @@ export const transformTypeToReferenceLink = (type, record) => {
     return '';
   };
 
-  const typePieces = typeInput.split('|').map(piece => {
-    // This is the content to render as the text of the Markdown link
-    const trimmedPiece = piece.trim();
-
-    // This is what we will compare against the API types mappings
-    // The ReGeX below is used to remove `[]` from the end of the type
-    const result = transformType(trimmedPiece.replace('[]', ''));
-
-    // If we have a valid result and the piece is not empty, we return the Markdown link
-    if (trimmedPiece.length && result.length) {
-      return `[\`<${trimmedPiece}>\`](${result})`;
-    }
-  });
-
-  // Filter out pieces that we failed to map and then join the valid ones
-  // into different links separated by a ` | `
-  const markdownLinks = typePieces.filter(Boolean).join(' | ');
+  const markdownLinks = parseType(typeInput, transformType);
 
   // Return the replaced links or the original content if they all failed to be replaced
   // Note that if some failed to get replaced, only the valid ones will be returned

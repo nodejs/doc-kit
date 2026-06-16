@@ -12,6 +12,8 @@ export interface TemplateValues {
 export type Generator = GeneratorMetadata<
   {
     templatePath: string;
+    pageURL: string;
+    editURL: string;
     additionalPathsToCopy: Array<string>;
   },
   Generate<Array<MetadataEntry>, AsyncGenerator<TemplateValues>>,

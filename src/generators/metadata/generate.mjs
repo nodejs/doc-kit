@@ -2,7 +2,7 @@
 
 import { parseApiDoc } from './utils/parse.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
-import { importFromURL } from '../../utils/url.mjs';
+import { loadFromURL } from '../../utils/loaders.mjs';
 
 /**
  * Process a chunk of API doc files in a worker thread.
@@ -28,7 +28,9 @@ export async function processChunk(fullInput, itemIndices, typeMap) {
 export async function* generate(inputs, worker) {
   const { metadata: config } = getConfig();
 
-  const typeMap = await importFromURL(config.typeMap);
+  const typeMap = config.typeMap
+    ? JSON.parse(await loadFromURL(config.typeMap))
+    : {};
 
   // Stream chunks as they complete - allows dependent generators
   // to start collecting/preparing while we're still processing

@@ -1,7 +1,7 @@
 import { stat, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { BASE, HEAD, TITLE } from './constants.mjs';
+import { BASE, HEAD, TITLE } from '../constants.mjs';
 
 const UNITS = ['B', 'KB', 'MB', 'GB'];
 

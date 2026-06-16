@@ -135,10 +135,9 @@ export const insertSignatureCodeBlock = ({ children }, { data }, idx) => {
  * Renders a table of properties based on parsed metadata from a Markdown list.
  *
  * @param {import('mdast').List} node
- * @param {import('unified').Processor} remark - The remark processor
  */
-export const createSignatureTable = (node, remark) => {
-  const items = parseListIntoProperties(node, remark);
+export const createSignatureTable = node => {
+  const items = parseListIntoProperties(node);
 
   return createJSXElement(JSX_IMPORTS.FunctionSignature.name, {
     title: items.length === 1 && 'kind' in items[0] ? null : 'Attributes',

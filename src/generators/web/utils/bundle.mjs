@@ -1,10 +1,27 @@
+import { resolve } from 'node:path';
+
 import virtual from '@rollup/plugin-virtual';
 import { build } from 'rolldown';
 
 import cssLoader from './css.mjs';
-import getStaticData from './data.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
-import { NODE_MODULES } from '../constants.mjs';
+import { lazy } from '../../../utils/misc.mjs';
+
+// Resolve node_modules relative to this package (doc-kit), not cwd.
+// We do this by finding where one of our dependencies (preact) is stored,
+// and using it's NODE_MODULES
+//
+// FIXME(@avivkeller): When our CI (in Node.js Core) supports v22.x,
+// this lazy-loading solution can be replaced by a simple import. For that
+// matter, glob can also be replaced in other files throughout this repo.
+const getNodeModules = lazy(async () => {
+  const { findPackageJSON } = await import('node:module');
+
+  return resolve(
+    findPackageJSON(new URL(import.meta.resolve('preact'))),
+    '../..'
+  );
+});
 
 /**
  * Asynchronously bundles JavaScript source code (and its CSS imports),
@@ -12,23 +29,34 @@ import { NODE_MODULES } from '../constants.mjs';
  *
  * @param {Map<string, string>} codeMap - Map of {fileName: code} for all builds.
  * @param {Object} [options] - Build configuration object.
+ * @param {Object} [virtualImports] - Virtual imports
  * @param {boolean} [options.server=false] - Whether this is a server-side build.
  */
-export default async function bundleCode(codeMap, { server = false } = {}) {
+export default async function bundleCode(
+  codeMap,
+  virtualImports = {},
+  { server = false } = {}
+) {
   const config = getConfig('web');
 
+  const { rolldown = {} } = config;
+
   const result = await build({
+    ...rolldown,
+
     // Entry points: array of virtual module names that the virtual plugin provides
     input: Array.from(codeMap.keys()),
 
     // Experimental features: import maps for client, none for server
     experimental: {
       chunkImportMap: !server,
+      ...rolldown.experimental,
     },
 
     checks: {
       // Disable plugin timing logs for cleaner output. This can be re-enabled for debugging performance issues.
       pluginTimings: false,
+      ...rolldown.checks,
     },
 
     // Output configuration
@@ -41,27 +69,32 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       // Minify output only for browser builds to optimize file size.
       // Server builds are usually not minified to preserve stack traces and debuggability.
       minify: !server,
+
+      ...rolldown.output,
     },
 
     // Platform informs Rolldown of the environment-specific code behavior:
     // - 'node' enables things like `require`, and skips polyfills.
     // - 'browser' enables inlining of polyfills and uses native browser features.
-    platform: server ? 'node' : 'browser',
+    platform: rolldown.platform ?? (server ? 'node' : 'browser'),
 
     // External dependencies to exclude from bundling.
     // These are expected to be available at runtime in the server environment.
     // This reduces bundle size and avoids bundling shared server libs.
-    external: server
-      ? ['preact', 'preact-render-to-string', '@node-core/ui-components']
-      : [],
+    external:
+      rolldown.external ??
+      (server
+        ? ['preact', 'preact-render-to-string', '@node-core/ui-components']
+        : []),
 
     transform: {
+      ...rolldown.transform,
+
       // Inject global compile-time constants that will be replaced in code.
       // These are useful for tree-shaking and conditional branching.
       // Be sure to update type declarations (`types.d.ts`) if these change.
       define: {
-        // Static data injected directly into the bundle (as a literal or serialized JSON).
-        __STATIC_DATA__: getStaticData(),
+        ...rolldown.transform?.define,
 
         // Boolean flags used for conditional logic in source code:
         // Example: `if (SERVER) {...}` or `if (CLIENT) {...}`
@@ -74,7 +107,7 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       // JSX transformation configuration.
       // `'react-jsx'` enables the automatic JSX runtime, which doesn't require `import React`.
       // Since we're using Preact via aliasing, this setting works well with `preact/compat`.
-      jsx: 'react-jsx',
+      jsx: rolldown.transform?.jsx ?? 'react-jsx',
     },
 
     // Module resolution configuration.
@@ -82,23 +115,32 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
       // exports condition to use
       conditionNames: ['rolldown'],
 
+      // Tell the bundler where to find node_modules.
+      // We use our custom `NODE_MODULES`, and then the cwd's `node_modules`.
+      modules: [await getNodeModules(), 'node_modules'],
+
+      ...rolldown.resolve,
+
       // Alias react imports to preact/compat for smaller bundle sizes.
       // Explicit jsx-runtime aliases are required for the automatic JSX transform.
       alias: {
         react: 'preact/compat',
         'react-dom': 'preact/compat',
+        ...rolldown.resolve?.alias,
         ...config.imports,
       },
-
-      // Tell the bundler where to find node_modules.
-      // We use our custom `NODE_MODULES`, and then the cwd's `node_modules`.
-      modules: [NODE_MODULES, 'node_modules'],
     },
 
     // Array of plugins to apply during the build.
     plugins: [
-      // Virtual plugin: provides in-memory modules from codeMap
-      virtual(Object.fromEntries(codeMap)),
+      // Virtual plugin: provides in-memory modules from codeMap,
+      // plus the #theme/config virtual module
+      virtual({
+        ...Object.fromEntries(codeMap),
+        ...virtualImports,
+      }),
+
+      ...(rolldown.plugins ?? []),
 
       // Load CSS imports via the custom plugin.
       // This plugin will collect imported CSS files and return them as `source` chunks.
@@ -106,7 +148,7 @@ export default async function bundleCode(codeMap, { server = false } = {}) {
     ],
 
     // Enable tree-shaking to remove unused code
-    treeshake: true,
+    treeshake: rolldown.treeshake ?? true,
 
     // Return chunks in memory instead of writing to disk
     write: false,

@@ -8,16 +8,18 @@ export const QUERIES = {
   // Fixes the references to Markdown pages into the API documentation
   markdownUrl: /^(?![+a-zA-Z]+:)([^#?]+)\.md(#.+)?$/,
   // ReGeX to match the {Type}<Type> (API type references)
-  normalizeTypes: /(\{|<)(?! )[^<({})>]+(?! )(\}|>)/g,
+  normalizeTypes: /(\{|<)(?! )[^{}]+(?! )(\}|>)/g,
   // ReGex to match the type API type references that got already parsed
   // so that they can be transformed into HTML links
-  linksWithTypes: /\[`<[^<({})>]+>`\]\((\S+)\)/g,
+  linksWithTypes: /\[`<[^{}]+>`\]\((\S+)\)/g,
   // ReGeX for handling Stability Indexes Metadata
   stabilityIndex: /^Stability: ([0-5](?:\.[0-3])?)(?:\s*-\s*)?(.*)$/s,
   // ReGeX for handling the Stability Index Prefix
   stabilityIndexPrefix: /Stability: ([0-5](?:\.[0-3])?)/,
   // ReGeX for retrieving the inner content from a YAML block
   yamlInnerContent: /^<!--[ ]?(?:YAML([\s\S]*?)|([ \S]*?))?[ ]?-->/,
+  // ReGeX for standard Markdown YAML frontmatter
+  standardYamlFrontmatter: /^---\r?\n([\s\S]*?)\r?\n---/,
   // ReGeX for finding references to Unix manuals
   unixManualPage: /\b([a-z.]+)\((\d)([a-z]?)\)/g,
   // ReGeX for determing a typed list's non-property names

@@ -28,7 +28,7 @@ mock.module('../../../parsers/markdown.mjs', {
   },
 });
 
-mock.module('../../url.mjs', {
+mock.module('../../loaders.mjs', {
   namedExports: { importFromURL: mockImportFromURL },
 });
 

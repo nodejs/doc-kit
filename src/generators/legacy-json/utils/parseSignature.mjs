@@ -190,7 +190,7 @@ export default (textRaw, markdownParameters) => {
    * @example `[sources[, options]]`
    */
   let [, declaredParameters] =
-    textRaw.substring(1, textRaw.length - 1).match(PARAM_EXPRESSION) || [];
+    textRaw.replace(/^`|`$/g, '').match(PARAM_EXPRESSION) || [];
 
   if (!declaredParameters) {
     return signature;

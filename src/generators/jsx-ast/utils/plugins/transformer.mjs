@@ -1,7 +1,24 @@
 import { toString } from 'hast-util-to-string';
 import { visit } from 'unist-util-visit';
 
-import { TAG_TRANSFORMS } from '../constants.mjs';
+import { TAG_TRANSFORMS } from '../../constants.mjs';
+
+/**
+ * Checks whether a HAST node is the generated GFM footnotes section.
+ * @param {import('hast').Element} node
+ */
+const isFootnotesSection = node =>
+  node?.type === 'element' &&
+  node.tagName === 'section' &&
+  (node.properties?.dataFootnotes !== undefined ||
+    node.properties?.className?.includes('footnotes'));
+
+/**
+ * Finds the generated page Layout node.
+ * @param {import('hast').Root} tree
+ */
+const findLayout = tree =>
+  tree.children.find(node => node.name === 'Layout' && node.children);
 
 /**
  * @template {import('unist').Node} T
@@ -43,14 +60,17 @@ const transformer = tree => {
     }
   });
 
-  // Are there footnotes?
-  if (tree.children.at(-1).tagName === 'section') {
-    const section = tree.children.pop();
-    // If so, move it into the proper location
-    // Root -> Article -> Main content
-    tree.children[2]?.children[1]?.children[0]?.children?.push(
-      ...section.children
-    );
+  const index = tree.children.findLastIndex(isFootnotesSection);
+
+  if (index !== -1) {
+    const [section] = tree.children.splice(index, 1);
+    const layout = findLayout(tree);
+
+    if (layout) {
+      layout.children.push(section);
+    } else {
+      tree.children.push(section);
+    }
   }
 };
 

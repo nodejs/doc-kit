@@ -1,6 +1,7 @@
 'use strict';
 
 import cLanguage from 'shiki/langs/c.mjs';
+import cmakeLanguage from 'shiki/langs/cmake.mjs';
 import coffeeScriptLanguage from 'shiki/langs/coffeescript.mjs';
 import cPlusPlusLanguage from 'shiki/langs/cpp.mjs';
 import diffLanguage from 'shiki/langs/diff.mjs';
@@ -9,6 +10,7 @@ import httpLanguage from 'shiki/langs/http.mjs';
 import javaScriptLanguage from 'shiki/langs/javascript.mjs';
 import jsonLanguage from 'shiki/langs/json.mjs';
 import powershellLanguage from 'shiki/langs/powershell.mjs';
+import pythonLanguage from 'shiki/langs/python.mjs';
 import shellScriptLanguage from 'shiki/langs/shellscript.mjs';
 import shellSessionLanguage from 'shiki/langs/shellsession.mjs';
 import typeScriptLanguage from 'shiki/langs/typescript.mjs';
@@ -37,6 +39,8 @@ export default {
     ...cLanguage,
     ...cPlusPlusLanguage,
     ...coffeeScriptLanguage,
+    ...cmakeLanguage,
+    ...pythonLanguage,
     { ...javaScriptLanguage[0], aliases: ['mjs', 'cjs', 'js'] },
   ],
 };

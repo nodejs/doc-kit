@@ -1,10 +1,11 @@
 'use strict';
 
+import { createCache } from './caching.mjs';
 import { allGenerators } from './generators/index.mjs';
 import logger from './logger/index.mjs';
-import { isAsyncGenerator, createStreamingCache } from './streaming.mjs';
 import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
+import { isAsyncIterable } from './utils/misc.mjs';
 import createProgressBar from './utils/progressBar.mjs';
 
 const generatorsLogger = logger.child('generators');
@@ -15,10 +16,9 @@ const generatorsLogger = logger.child('generators');
  * processing and streaming results.
  */
 const createGenerator = () => {
-  /** @type {{ [key: string]: Promise<unknown> | AsyncGenerator }} */
-  const cachedGenerators = {};
-
-  const streamingCache = createStreamingCache();
+  // Owns all caching: generator results, stream collection, and the
+  // consumer-count bookkeeping that drives eviction.
+  const cache = createCache();
 
   /** @type {import('piscina').Piscina} */
   let pool;
@@ -34,13 +34,7 @@ const createGenerator = () => {
       return undefined;
     }
 
-    const result = await cachedGenerators[dependsOn];
-
-    if (isAsyncGenerator(result)) {
-      return streamingCache.getOrCollect(dependsOn, result);
-    }
-
-    return result;
+    return cache.consume(dependsOn);
   };
 
   /**
@@ -50,7 +44,7 @@ const createGenerator = () => {
    * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
    */
   const scheduleGenerator = async (generatorName, configuration) => {
-    if (generatorName in cachedGenerators) {
+    if (cache.has(generatorName)) {
       return;
     }
 
@@ -58,7 +52,7 @@ const createGenerator = () => {
       allGenerators[generatorName];
 
     // Schedule dependency first
-    if (dependsOn && !(dependsOn in cachedGenerators)) {
+    if (dependsOn && !cache.has(dependsOn)) {
       await scheduleGenerator(dependsOn, configuration);
     }
 
@@ -68,26 +62,29 @@ const createGenerator = () => {
     });
 
     // Schedule the generator
-    cachedGenerators[generatorName] = (async () => {
-      const dependencyInput = await getDependencyInput(dependsOn);
+    cache.store(
+      generatorName,
+      (async () => {
+        const dependencyInput = await getDependencyInput(dependsOn);
 
-      generatorsLogger.debug(`Starting "${generatorName}"`);
+        generatorsLogger.debug(`Starting "${generatorName}"`);
 
-      // Create parallel worker for streaming generators
-      const worker = hasParallelProcessor
-        ? createParallelWorker(generatorName, pool, configuration)
-        : Promise.resolve(null);
+        // Create parallel worker for streaming generators
+        const worker = hasParallelProcessor
+          ? createParallelWorker(generatorName, pool, configuration)
+          : Promise.resolve(null);
 
-      const result = await generate(dependencyInput, await worker);
+        const result = await generate(dependencyInput, await worker);
 
-      // For streaming generators, "Completed" is logged when collection finishes
-      // (in streamingCache.getOrCollect), not here when the generator returns
-      if (!isAsyncGenerator(result)) {
-        generatorsLogger.debug(`Completed "${generatorName}"`);
-      }
+        // For streaming generators, "Completed" is logged when the cache
+        // finishes collecting, not here when the generator returns
+        if (!isAsyncIterable(result)) {
+          generatorsLogger.debug(`Completed "${generatorName}"`);
+        }
 
-      return result;
-    })();
+        return result;
+      })()
+    );
   };
 
   /**
@@ -104,6 +101,13 @@ const createGenerator = () => {
       threads,
     });
 
+    // Compute consumer counts up front so dependencies can be evicted as soon
+    // as their last consumer runs (must be ready before any generator starts).
+    cache.populateConsumerCounts(
+      generators,
+      name => allGenerators[name].dependsOn
+    );
+
     // Create worker pool
     pool = createWorkerPool(threads);
 
@@ -115,19 +119,17 @@ const createGenerator = () => {
     const progress = createProgressBar({ enabled: configuration.progress });
     progress.start(generators.length, 0, { phase: 'Starting...' });
 
-    // Start all collections in parallel (don't await sequentially)
-    const resultPromises = generators.map(async name => {
-      let result = await cachedGenerators[name];
+    // Start all collections in parallel (don't await sequentially). Consuming
+    // through the shared path lets the final read also trigger eviction.
+    const results = await Promise.all(
+      generators.map(async name => {
+        const result = await cache.consume(name);
 
-      if (isAsyncGenerator(result)) {
-        result = await streamingCache.getOrCollect(name, result);
-      }
+        progress.increment({ phase: name });
 
-      progress.increment({ phase: name });
-      return result;
-    });
-
-    const results = await Promise.all(resultPromises);
+        return result;
+      })
+    );
 
     await pool.destroy();
     progress.stop();

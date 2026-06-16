@@ -6,6 +6,7 @@ node bin/cli.mjs generate \
   -i "./node/doc/api/*.md" \
   -o "./out" \
   -c "./node/CHANGELOG.md" \
+  --type-map "./node/doc/type-map.json" \
   --index "./node/doc/api/index.md" \
   --log-level debug
 

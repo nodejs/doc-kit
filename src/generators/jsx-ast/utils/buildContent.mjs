@@ -2,12 +2,14 @@
 
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
+import readingTime from 'reading-time';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { createJSXElement } from './ast.mjs';
-import { buildMetaBarProps } from './buildBarProps.mjs';
+import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
+import { omitKeys } from '../../../utils/misc.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 import {
   STABILITY_LEVELS,
@@ -30,13 +32,13 @@ import {
   populate,
 } from '../../../utils/configuration/templates.mjs';
 import { UNIST } from '../../../utils/queries/index.mjs';
+import { getRemarkRecma as remark } from '../../../utils/remark.mjs';
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
  * @param {import('../../metadata/types').MetadataEntry} entry - The metadata entry
- * @param {import('unified').Processor} remark - The remark processor
  */
-export const gatherChangeEntries = (entry, remark) => {
+export const gatherChangeEntries = entry => {
   // Lifecycle changes (e.g., added, deprecated)
   const lifecycleChanges = Object.entries(LIFECYCLE_LABELS)
     .filter(([field]) => entry[field])
@@ -48,7 +50,8 @@ export const gatherChangeEntries = (entry, remark) => {
   // Explicit changes with parsed JSX labels
   const explicitChanges = (entry.changes || []).map(change => ({
     versions: enforceArray(change.version),
-    label: remark.runSync(remark.parse(change.description)).body[0].expression,
+    label: remark().runSync(remark().parse(change.description)).body[0]
+      .expression,
     url: change['pr-url'],
   }));
 
@@ -58,10 +61,9 @@ export const gatherChangeEntries = (entry, remark) => {
 /**
  * Creates a JSX ChangeHistory element or returns null if no changes.
  * @param {import('../../metadata/types').MetadataEntry} entry - The metadata entry
- * @param {import('unified').Processor} remark - The remark processor
  */
-export const createChangeElement = (entry, remark) => {
-  const changes = gatherChangeEntries(entry, remark);
+export const createChangeElement = entry => {
+  const changes = gatherChangeEntries(entry);
 
   if (!changes.length) {
     return null;
@@ -88,6 +90,7 @@ export const createSourceLink = sourceLink => {
           {
             href: `${populate(GITHUB_BLOB_URL, config)}${sourceLink}`,
             target: '_blank',
+            rel: 'noopener noreferrer',
           },
           [
             sourceLink,
@@ -197,22 +200,15 @@ const getLevelFromDeprecationType = typeText => {
 /**
  * Transforms a heading node by injecting metadata, source links, and signatures.
  * @param {import('../../metadata/types').MetadataEntry} entry - The API metadata entry
- * @param {import('unified').Processor} remark - The remark processor
  * @param {import('../../metadata/types').HeadingNode} node - The heading node to transform
  * @param {number} index - The index of the node in its parent's children array
  * @param {import('unist').Parent} parent - The parent node containing the heading
  */
-export const transformHeadingNode = async (
-  entry,
-  remark,
-  node,
-  index,
-  parent
-) => {
+export const transformHeadingNode = async (entry, node, index, parent) => {
   // Replace heading node with our enhanced heading element
   parent.children[index] = createHeadingElement(
     node,
-    createChangeElement(entry, remark)
+    createChangeElement(entry)
   );
 
   if (entry.api === 'deprecations' && node.depth === 3) {
@@ -254,64 +250,38 @@ export const transformHeadingNode = async (
 /**
  * Processes a single API documentation entry's content
  * @param {import('../../metadata/types').MetadataEntry} entry - The API metadata entry to process
- * @param {import('unified').Processor} remark - The remark processor
  */
-export const processEntry = (entry, remark) => {
-  // Deep copy content to avoid mutations on original
-  const content = structuredClone(entry.content);
-
+export const processEntry = entry => {
   // Visit and transform stability nodes
-  visit(content, UNIST.isStabilityNode, transformStabilityNode);
+  visit(entry.content, UNIST.isStabilityNode, transformStabilityNode);
 
   // Visit and transform headings with metadata and links
-  visit(content, UNIST.isHeading, (...args) =>
-    transformHeadingNode(entry, remark, ...args)
+  visit(entry.content, UNIST.isHeading, (...args) =>
+    transformHeadingNode(entry, ...args)
   );
 
   // Transform typed lists into property tables
   visit(
-    content,
+    entry.content,
     UNIST.isStronglyTypedList,
-    (node, idx, parent) =>
-      (parent.children[idx] = createSignatureTable(node, remark))
+    (node, idx, parent) => (parent.children[idx] = createSignatureTable(node))
   );
 
-  return content;
+  return entry.content;
 };
 
 /**
  * Builds the overall document layout tree
  * @param {Array<import('../../metadata/types').MetadataEntry>} entries - API documentation metadata entries
- * @param {ReturnType<import('./buildBarProps.mjs').buildSideBarProps>} sideBarProps - Props for the sidebar component
- * @param {ReturnType<buildMetaBarProps>} metaBarProps - Props for the meta bar component
- * @param {import('unified').Processor} remark - The remark processor
+ * @param {Object} metadata - Raw page metadata from the head entry
  */
-export const createDocumentLayout = (
-  entries,
-  sideBarProps,
-  metaBarProps,
-  remark
-) =>
+export const createDocumentLayout = (entries, metadata) =>
   createTree('root', [
-    createJSXElement(JSX_IMPORTS.NavBar.name),
-    createJSXElement(JSX_IMPORTS.Article.name, {
-      children: [
-        createJSXElement(JSX_IMPORTS.SideBar.name, sideBarProps),
-        createElement('div', [
-          createElement('div', [
-            createJSXElement(JSX_IMPORTS.TableOfContents.name, {
-              headings: metaBarProps.headings,
-              summaryTitle: 'On this page',
-            }),
-            createElement('br'),
-            createElement(
-              'main',
-              entries.map(entry => processEntry(entry, remark))
-            ),
-          ]),
-          createJSXElement(JSX_IMPORTS.MetaBar.name, metaBarProps),
-        ]),
-      ],
+    createJSXElement(JSX_IMPORTS.Layout.name, {
+      metadata,
+      headings: extractHeadings(entries),
+      readingTime: readingTime(extractTextContent(entries)).text,
+      children: entries.map(processEntry),
     }),
   ]);
 
@@ -321,24 +291,22 @@ export const createDocumentLayout = (
  * Transforms API metadata entries into processed MDX content
  * @param {Array<import('../../metadata/types').MetadataEntry>} metadataEntries - API documentation metadata entries
  * @param {import('../../metadata/types').MetadataEntry} head - Main API metadata entry with version information
- * @param {Object} sideBarProps - Props for the sidebar component
- * @param {import('unified').Processor} remark - Remark processor instance for markdown processing
  * @returns {Promise<JSXContent>}
  */
-const buildContent = async (metadataEntries, head, sideBarProps, remark) => {
-  // Build props for the MetaBar from head and entries
-  const metaBarProps = buildMetaBarProps(head, metadataEntries);
+const buildContent = async (metadataEntries, head) => {
+  // The metadata is the heading without the node children
+  const metadata = omitKeys(head, [
+    'content',
+    'heading',
+    'stability',
+    'changes',
+  ]);
 
   // Create root document AST with all layout components and processed content
-  const root = createDocumentLayout(
-    metadataEntries,
-    sideBarProps,
-    metaBarProps,
-    remark
-  );
+  const root = createDocumentLayout(metadataEntries, metadata);
 
   // Run remark processor to transform AST (parse markdown, plugins, etc.)
-  const ast = await remark.run(root);
+  const ast = await remark().run(root);
 
   // The final MDX content is the expression in the Program's first body node
   return { ...ast.body[0].expression, data: head };

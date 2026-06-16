@@ -7,6 +7,7 @@ Thank you for your interest in contributing to the `@node-core/doc-kit` project!
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Setting Up Your Development Environment](#setting-up-your-development-environment)
+  - [Running the Tool Locally](#running-the-tool-locally)
 - [Development Workflow](#development-workflow)
   - [Making Changes](#making-changes)
   - [Submitting Your Changes](#submitting-your-changes)
@@ -67,6 +68,53 @@ The steps below will give you a general idea of how to prepare your local enviro
    ```bash
    npm install
    ```
+
+### Running the Tool Locally
+
+`doc-kit` generates documentation from the Markdown API docs in the [Node.js repository](https://github.com/nodejs/node). To run the tool locally, you need a copy of those source files.
+
+1. **Get the Node.js API docs (sparse checkout)**
+
+   You only need a few directories from the Node.js repo. A sparse checkout avoids downloading the entire repository:
+
+   ```bash
+   git clone --depth 1 --sparse https://github.com/nodejs/node.git ../node
+   cd ../node
+   git sparse-checkout set doc/api lib CHANGELOG.md
+   cd ../doc-kit
+   ```
+
+2. **Run the tool against a single file**
+
+   For fast iteration during development, target a single Markdown file instead of all API docs:
+
+   ```bash
+   node bin/cli.mjs generate \
+     -t legacy-html \
+     -i ../node/doc/api/fs.md \
+     -o out \
+     --index ../node/doc/api/index.md \
+     -c ../node/CHANGELOG.md
+   ```
+
+   The three flags `-i` (input), `-t` (target generator), and `-o` (output directory) are effectively required. Without them the tool either crashes or silently does nothing.
+
+3. **View the generated output**
+
+   ```bash
+   npx serve out
+   ```
+
+4. **Use debug logging**
+
+   Add `--log-level debug` before the `generate` subcommand to see the full pipeline trace:
+
+   ```bash
+   node bin/cli.mjs --log-level debug generate -t legacy-html -i ../node/doc/api/fs.md -o out
+   ```
+
+> [!TIP]
+> See the [README](README.md) for the full list of available generators and CLI options.
 
 ## Development Workflow
 

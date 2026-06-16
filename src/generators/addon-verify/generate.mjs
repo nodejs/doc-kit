@@ -1,6 +1,6 @@
 'use strict';
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { visit } from 'unist-util-visit';
@@ -13,6 +13,7 @@ import {
   normalizeSectionName,
 } from './utils/section.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile } from '../../utils/file.mjs';
 
 /**
  * Generates a file list from code blocks.

@@ -1,5 +1,6 @@
 'use strict';
 
+import { GITHUB_BLOB_URL } from '../../utils/configuration/templates.mjs';
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -23,4 +24,8 @@ export default createLazyGenerator({
   // Unlike the rest of the generators, this utilizes Javascript sources being
   // passed into the input field rather than Markdown.
   dependsOn: 'ast-js',
+
+  defaultConfiguration: {
+    sourceURL: `${GITHUB_BLOB_URL}lib/{fileName}`,
+  },
 });

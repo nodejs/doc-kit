@@ -5,6 +5,8 @@ export interface ProgramExports {
 }
 
 export type Generator = GeneratorMetadata<
-  {},
+  {
+    sourceURL: string;
+  },
   Generate<undefined, Promise<Record<string, string>>>
 >;

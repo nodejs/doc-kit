@@ -7,10 +7,7 @@ import {
   buildGitHub,
 } from './buildDropdowns.mjs';
 import tableOfContents from './tableOfContents.mjs';
-import {
-  GITHUB_EDIT_URL,
-  populate,
-} from '../../../utils/configuration/templates.mjs';
+import { populate } from '../../../utils/configuration/templates.mjs';
 
 /**
  * Replaces the template values in the API template with the given values.
@@ -22,7 +19,7 @@ import {
  */
 export const replaceTemplateValues = (
   apiTemplate,
-  { api, added, section, toc, nav, content },
+  { path, api, added, section, toc, nav, content },
   config,
   { skipGitHub = false, skipGtocPicker = false } = {}
 ) => {
@@ -36,11 +33,11 @@ export const replaceTemplateValues = (
     .replace('__CONTENT__', content)
     .replace(/__TOC_PICKER__/g, buildToC(toc))
     .replace(/__GTOC_PICKER__/g, skipGtocPicker ? '' : buildNavigation(nav))
-    .replace('__ALTDOCS__', buildVersions(api, added, config.changelog))
+    .replace('__ALTDOCS__', buildVersions(path, added, config.changelog))
     .replace(
       '__EDIT_ON_GITHUB__',
       skipGitHub
         ? ''
-        : buildGitHub(`${populate(GITHUB_EDIT_URL, config)}${api}.md`)
+        : buildGitHub(populate(config.editURL, { ...config, path }))
     );
 };

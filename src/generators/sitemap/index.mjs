@@ -15,4 +15,9 @@ export default createLazyGenerator({
   description: 'Generates a sitemap.xml file for search engine optimization',
 
   dependsOn: 'metadata',
+
+  defaultConfiguration: {
+    indexURL: '{baseURL}/latest/api/',
+    pageURL: '{indexURL}{path}.html',
+  },
 });

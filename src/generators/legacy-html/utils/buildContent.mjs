@@ -5,12 +5,14 @@ import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
 import buildExtraContent from './buildExtraContent.mjs';
+import { createLegacySlugger } from './slugger.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import {
   GITHUB_BLOB_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
 import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
+import { getRemarkRehypeWithShiki as remark } from '../../../utils/remark.mjs';
 
 /**
  * Builds a Markdown heading for a given node
@@ -20,12 +22,14 @@ import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
  * @param {import('unist').Parent} parent The parent node of the current node
  * @returns {import('hast').Element} The HTML AST tree of the heading content
  */
-const buildHeading = ({ data, children, depth }, index, parent) => {
+const buildHeading = ({ data, children, depth }, index, parent, legacySlug) => {
   // Creates the heading element with the heading text and the link to the heading
   const headingElement = createElement(`h${depth + 1}`, [
     // The inner Heading markdown content is still using Remark nodes, and they need
     // to be converted into Rehype nodes
     ...children,
+    // Legacy anchor alias to preserve old external links
+    createElement('span', createElement(`a#${legacySlug}`)),
     // Creates the element that references the link to the heading
     // (The `#` anchor on the right of each Heading section)
     createElement(
@@ -84,13 +88,9 @@ const buildHtmlTypeLink = node => {
  * Creates a history table row.
  *
  * @param {import('../../metadata/types').ChangeEntry} change
- * @param {import('unified').Processor} remark
  */
-const createHistoryTableRow = (
-  { version: changeVersions, description },
-  remark
-) => {
-  const descriptionNode = remark.parse(description);
+const createHistoryTableRow = ({ version: changeVersions, description }) => {
+  const descriptionNode = remark().parse(description);
 
   return createElement('tr', [
     createElement(
@@ -105,10 +105,9 @@ const createHistoryTableRow = (
  * Builds the Metadata Properties into content
  *
  * @param {import('../../metadata/types').MetadataEntry} node The node to build the properties from
- * @param {import('unified').Processor} remark The Remark instance to be used to process changes table
  * @returns {import('unist').Parent} The HTML AST tree of the properties content
  */
-const buildMetadataElement = (node, remark) => {
+const buildMetadataElement = node => {
   const config = getConfig('legacy-html');
 
   const metadataElement = createElement('div.api_metadata');
@@ -187,9 +186,7 @@ const buildMetadataElement = (node, remark) => {
   if (typeof node.changes !== 'undefined' && node.changes.length) {
     // Maps the changes into a `tr` element with the version and the description
     // An array containing hast nodes for the history entries if any
-    const historyEntries = node.changes.map(change =>
-      createHistoryTableRow(change, remark)
-    );
+    const historyEntries = node.changes.map(createHistoryTableRow);
 
     const historyDetailsElement = createElement('details.changelog', [
       createElement('summary', 'History'),
@@ -217,44 +214,49 @@ const buildMetadataElement = (node, remark) => {
  *
  * @param {Array<import('../../metadata/types').MetadataEntry>} headNodes The API metadata Nodes that are considered the "head" of each module
  * @param {Array<import('../../metadata/types').MetadataEntry>} metadataEntries The API metadata Nodes to be transformed into HTML content
- * @param {import('unified').Processor} remark The Remark instance to be used to process
  */
-export default (headNodes, metadataEntries, remark) => {
+export default (headNodes, metadataEntries) => {
+  const getLegacySlug = createLegacySlugger();
+
   // Creates the root node for the content
   const parsedNodes = createTree(
     'root',
     // Parses the metadata pieces of each node and the content
     metadataEntries.map(entry => {
-      // Deep clones the content nodes to avoid affecting upstream nodes
-      const content = structuredClone(entry.content);
-
       // Parses the Heading nodes into Heading elements
-      visit(content, UNIST.isHeading, buildHeading);
+      visit(entry.content, UNIST.isHeading, (node, index, parent) =>
+        buildHeading(
+          node,
+          index,
+          parent,
+          getLegacySlug(node.data.text, entry.api)
+        )
+      );
 
       // Parses the Blockquotes into Stability elements
       // This is treated differently as we want to preserve the position of a Stability Index
       // within the content, so we can't just remove it and append it to the metadata
-      visit(content, UNIST.isStabilityNode, buildStability);
+      visit(entry.content, UNIST.isStabilityNode, buildStability);
 
       // Parses the type references that got replaced into Markdown links (raw)
       // into actual HTML links, these then get parsed into HAST nodes on `runSync`
-      visit(content, UNIST.isHtmlWithType, buildHtmlTypeLink);
+      visit(entry.content, UNIST.isHtmlWithType, buildHtmlTypeLink);
 
       // Splits the content into the Heading node and the rest of the content
-      const [headingNode, ...restNodes] = content.children;
+      const [headingNode, ...restNodes] = entry.content.children;
 
       // Concatenates all the strings and parses with remark into an AST tree
       return createElement('section', [
         headingNode,
-        buildMetadataElement(entry, remark),
+        buildMetadataElement(entry),
         buildExtraContent(headNodes, entry),
         ...restNodes,
       ]);
     })
   );
 
-  const processedNodes = remark.runSync(parsedNodes);
+  const processedNodes = remark().runSync(parsedNodes);
 
   // Stringifies the processed nodes to return the final Markdown content
-  return remark.stringify(processedNodes);
+  return remark().stringify(processedNodes);
 };

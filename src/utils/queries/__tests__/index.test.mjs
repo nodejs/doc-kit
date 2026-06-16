@@ -1,9 +1,94 @@
-import { strictEqual } from 'node:assert';
+import { strictEqual, ok } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import { u as createTree } from 'unist-builder';
 
-import { UNIST } from '../index.mjs';
+import { QUERIES, UNIST } from '../index.mjs';
+
+describe('QUERIES', () => {
+  describe('standardYamlFrontmatter', () => {
+    it('matches standard YAML frontmatter at the beginning of the text', () => {
+      const content = '---\nintroduced_in: v1.0.0\ntype: module\n---';
+      ok(QUERIES.standardYamlFrontmatter.test(content));
+
+      const match = QUERIES.standardYamlFrontmatter.exec(content);
+      strictEqual(match[1], 'introduced_in: v1.0.0\ntype: module');
+    });
+
+    it('matches standard YAML frontmatter with Windows line endings (CRLF)', () => {
+      const content = '---\r\nintroduced_in: v1.0.0\r\n---';
+      ok(QUERIES.standardYamlFrontmatter.test(content));
+
+      const match = QUERIES.standardYamlFrontmatter.exec(content);
+      strictEqual(match[1], 'introduced_in: v1.0.0');
+    });
+
+    it('does not match horizontal rules or dashes not at the start of the string', () => {
+      const content = '# Hello\n\n---\n\nSome text';
+      strictEqual(QUERIES.standardYamlFrontmatter.test(content), false);
+    });
+
+    it('does not match unclosed frontmatter blocks', () => {
+      const content = '---\nintroduced_in: v1.0.0\nSome text...';
+      strictEqual(QUERIES.standardYamlFrontmatter.test(content), false);
+    });
+  });
+
+  describe('normalizeTypes', () => {
+    it('matches basic types', () => {
+      const content = '{string}';
+      QUERIES.normalizeTypes.lastIndex = 0;
+      ok(QUERIES.normalizeTypes.test(content));
+    });
+
+    it('matches complex types with generics', () => {
+      const content1 = '{Readonly<object>}';
+      const content2 = '{Map<string, "ignore"|null>}';
+
+      QUERIES.normalizeTypes.lastIndex = 0;
+      ok(
+        QUERIES.normalizeTypes.test(content1),
+        'Should match Readonly<object>'
+      );
+      QUERIES.normalizeTypes.lastIndex = 0;
+      ok(QUERIES.normalizeTypes.test(content2), 'Should match Map<...>');
+    });
+
+    it('matches complex union types with parentheses', () => {
+      const content = '{(string|number)}';
+      QUERIES.normalizeTypes.lastIndex = 0;
+      ok(
+        QUERIES.normalizeTypes.test(content),
+        'Should match union with parentheses'
+      );
+    });
+  });
+
+  describe('linksWithTypes', () => {
+    it('matches basic type links', () => {
+      const content = '[`<string>`](https://mdn...)';
+      QUERIES.linksWithTypes.lastIndex = 0;
+      ok(QUERIES.linksWithTypes.test(content));
+    });
+
+    it('matches complex type links with generics', () => {
+      const content1 =
+        '[`<Readonly>`](https://mdn...)<[`<object>`](https://mdn...)>';
+      QUERIES.linksWithTypes.lastIndex = 0;
+      ok(
+        QUERIES.linksWithTypes.test(content1),
+        'Should match generic type link'
+      );
+    });
+
+    it('matches complex type links with unions', () => {
+      const content2 =
+        '<([`<string>`](https://mdn...)|[`<number>`](https://mdn...))>';
+      QUERIES.linksWithTypes.lastIndex = 0;
+      ok(QUERIES.linksWithTypes.test(content2), 'Should match union type link');
+    });
+  });
+});
 
 describe('UNIST', () => {
   describe('isStronglyTypedList', () => {

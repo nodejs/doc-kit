@@ -20,6 +20,27 @@ export const isPlainObject = value =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
 /**
+ * Checks if a value is an async generator/iterable.
+ * @param {unknown} obj - Value to check
+ * @returns {obj is AsyncGenerator} True if the value is an async iterable
+ */
+export const isAsyncIterable = obj =>
+  obj !== null &&
+  typeof obj === 'object' &&
+  typeof obj[Symbol.asyncIterator] === 'function';
+
+/**
+ * Returns a shallow copy of `obj` without the specified keys.
+ * @param {Record<string, any>} obj
+ * @param {string[]} keys - Keys to exclude
+ * @returns {Record<string, any>}
+ */
+export const omitKeys = (obj, keys = []) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([key]) => !keys.includes(key))
+  );
+
+/**
  * Recursively merges multiple objects deeply.
  * @template T
  * @param {...T} objects - Any number of objects to merge

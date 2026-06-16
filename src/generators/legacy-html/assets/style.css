@@ -540,7 +540,7 @@ tt,
 }
 
 pre {
-  padding: 1rem;
+  padding: 1rem 1rem 0.5rem;
   vertical-align: top;
   border-radius: 4px;
   margin: 1rem;
@@ -1014,8 +1014,24 @@ kbd {
   filter: invert(1);
 }
 
+.code-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgb(128 128 128 / 20%);
+}
+
+.code-language {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  opacity: 0.6;
+}
+
 .copy-button {
-  float: right;
   outline: none;
   font-size: 10px;
   color: #fff;
@@ -1028,7 +1044,6 @@ kbd {
   text-transform: uppercase;
   font-weight: 700;
   padding: 0 0.5rem;
-  margin-right: 0.2rem;
   height: 1.5rem;
   transition-property:
     background-color, border-color, color, box-shadow, filter;
@@ -1132,7 +1147,7 @@ kbd {
     border-bottom: 1px solid var(--color-text-primary);
   }
 
-  .js-flavor-toggle ~ :not(.copy-button) {
+  .js-flavor-toggle ~ :not(.code-toolbar) {
     display: block !important;
     background-position: top right;
     background-size: 142px 20px;
@@ -1147,7 +1162,7 @@ kbd {
     background-image: url('./js-flavor-esm.svg');
   }
 
-  .copy-button {
+  .code-toolbar {
     display: none;
   }
 }

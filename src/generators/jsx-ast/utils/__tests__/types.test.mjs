@@ -1,19 +1,23 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it, mock } from 'node:test';
 
-import {
+// Mock remark
+mock.module('../../../../utils/remark.mjs', {
+  namedExports: {
+    getRemarkRecma: () => ({
+      runSync: () => ({
+        body: [{ expression: 'mock-expression' }],
+      }),
+    }),
+  },
+});
+
+const {
   classifyTypeNode,
   extractPropertyName,
   extractTypeAnnotations,
   parseListIntoProperties,
-} from '../types.mjs';
-
-// Mock remark processor for tests
-const remark = {
-  runSync: () => ({
-    body: [{ expression: 'mock-expression' }],
-  }),
-};
+} = await import('../types.mjs');
 
 describe('classifyTypeNode', () => {
   it('returns 2 for union separator text node', () => {
@@ -183,7 +187,7 @@ describe('extractTypeAnnotations', () => {
       { type: 'text', value: ' description follows' },
     ];
 
-    const result = extractTypeAnnotations(nodes, remark);
+    const result = extractTypeAnnotations(nodes);
 
     assert.strictEqual(result, 'mock-expression');
     assert.strictEqual(nodes.length, 1);
@@ -204,7 +208,7 @@ describe('extractTypeAnnotations', () => {
       { type: 'text', value: ' description' },
     ];
 
-    const result = extractTypeAnnotations(nodes, remark);
+    const result = extractTypeAnnotations(nodes);
 
     assert.strictEqual(result, 'mock-expression');
     assert.strictEqual(nodes.length, 1);
@@ -220,7 +224,7 @@ describe('extractTypeAnnotations', () => {
       { type: 'text', value: ' | ' },
     ];
 
-    const result = extractTypeAnnotations(nodes, remark);
+    const result = extractTypeAnnotations(nodes);
 
     assert.strictEqual(result, 'mock-expression');
     assert.strictEqual(nodes.length, 0);
@@ -232,7 +236,7 @@ describe('extractTypeAnnotations', () => {
       { type: 'emphasis', children: [{ type: 'text', value: 'emphasized' }] },
     ];
 
-    const result = extractTypeAnnotations(nodes, remark);
+    const result = extractTypeAnnotations(nodes);
 
     assert.strictEqual(result, undefined);
     assert.strictEqual(nodes.length, 2);
@@ -248,7 +252,7 @@ describe('extractTypeAnnotations', () => {
       { type: 'text', value: ' | ' }, // This shouldn't be consumed
     ];
 
-    const result = extractTypeAnnotations(nodes, remark);
+    const result = extractTypeAnnotations(nodes);
 
     assert.strictEqual(result, 'mock-expression');
     assert.strictEqual(nodes.length, 2);
@@ -259,7 +263,7 @@ describe('extractTypeAnnotations', () => {
   it('handles empty nodes array', () => {
     const nodes = [];
 
-    const result = extractTypeAnnotations(nodes, remark);
+    const result = extractTypeAnnotations(nodes);
 
     assert.strictEqual(result, undefined);
     assert.strictEqual(nodes.length, 0);
@@ -275,7 +279,7 @@ describe('extractTypeAnnotations', () => {
       { type: 'text', value: ' description' },
     ];
 
-    const result = extractTypeAnnotations(nodes, remark);
+    const result = extractTypeAnnotations(nodes);
 
     assert.strictEqual(result, 'mock-expression');
     assert.strictEqual(nodes.length, 1);
@@ -300,7 +304,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, [
       {
@@ -333,7 +337,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, [
       {
@@ -362,7 +366,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, [
       {
@@ -388,7 +392,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, [
       {
@@ -416,7 +420,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, [
       {
@@ -460,7 +464,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, [
       {
@@ -507,7 +511,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, [
       {
@@ -542,7 +546,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, [
       {
@@ -561,7 +565,7 @@ describe('parseListIntoProperties', () => {
       children: [],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
 
     assert.deepStrictEqual(result, []);
   });
@@ -605,7 +609,7 @@ describe('parseListIntoProperties', () => {
       ],
     };
 
-    const result = parseListIntoProperties(node, remark);
+    const result = parseListIntoProperties(node);
     assert.deepStrictEqual(result, [
       {
         children: [

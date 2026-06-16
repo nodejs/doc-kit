@@ -1,10 +1,12 @@
 'use strict';
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createPageSitemapEntry } from './utils/createPageSitemapEntry.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { populate } from '../../utils/configuration/templates.mjs';
+import { writeFile } from '../../utils/file.mjs';
 
 /**
  * Generates a sitemap.xml file
@@ -28,9 +30,9 @@ export async function generate(entries) {
 
   const apiPages = entries
     .filter(entry => entry.heading.depth === 1)
-    .map(entry => createPageSitemapEntry(entry, config.baseURL, lastmod));
+    .map(entry => createPageSitemapEntry(entry, config, lastmod));
 
-  const { href: loc } = new URL('latest/api/', config.baseURL);
+  const loc = populate(config.indexURL, config);
 
   /**
    * @typedef {import('./types').SitemapEntry}

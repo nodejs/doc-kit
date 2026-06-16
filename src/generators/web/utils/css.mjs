@@ -2,6 +2,8 @@ import { readFile } from 'node:fs/promises';
 
 import { bundleAsync } from 'lightningcss-wasm';
 
+import getConfig from '../../../utils/configuration/index.mjs';
+
 // Since we use rolldown to bundle multiple times,
 // we re-use a lot of CSS files, so there is no
 // need to re-transpile.
@@ -20,6 +22,10 @@ const fileCache = new Map();
  */
 export default () => {
   const cssChunks = new Set();
+
+  // User-supplied LightningCSS options (e.g. `visitor`, `customAtRules`),
+  // spread into every bundle call below.
+  const { lightningcss = {} } = getConfig('web');
 
   return {
     name: 'css-loader', // Required plugin name for debugging
@@ -53,14 +59,19 @@ export default () => {
         }
 
         // Read the raw CSS file from disk
-        const source = await readFile(id, 'utf8');
+        const source = await (lightningcss.resolver?.read ?? readFile)(
+          id,
+          'utf8'
+        );
 
         // Use Lightning CSS to compile the file with CSS Modules enabled
         const { code, exports } = await bundleAsync({
+          ...lightningcss,
           filename: id,
           code: Buffer.from(source),
           cssModules: id.endsWith('module.css'),
           resolver: {
+            ...lightningcss.resolver,
             /**
              * Resolve specifiers with Rolldown's resolution
              */

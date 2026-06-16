@@ -12,8 +12,6 @@ on:
 
 permissions:
   contents: read
-  # For npm OIDC (https://docs.npmjs.com/trusted-publishers)
-  id-token: write
 
 env:
   COMMIT_SHA: ${{ github.sha }}
@@ -26,9 +24,12 @@ jobs:
       should_publish: ${{ steps.check.outputs.should_publish }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
 
       - name: Verify commit authenticity
         env:
@@ -58,6 +59,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           fetch-depth: 2 # Need at least 2 commits to detect changes between commits
 
       - name: Check if we should publish
@@ -75,6 +77,9 @@ jobs:
     needs: prepare
     runs-on: ubuntu-latest
     if: needs.prepare.outputs.should_publish == 'true'
+    permissions:
+      # For npm OIDC (https://docs.npmjs.com/trusted-publishers)
+      id-token: write
     steps:
       - uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
         with:
@@ -95,5 +100,5 @@ jobs:
             :bust_in_silhouette: *Published by*: ${{ github.triggering_actor }}
             :octocat: *Commit*: <https://github.com/${{ github.repository }}/commit/${{ env.COMMIT_SHA }}|${{ env.COMMIT_SHA }}>
           SLACK_USERNAME: nodejs-bot
-          SLACK_CHANNEL: nodejs-web-infra
+          SLACK_CHANNEL: nodejs-web-infra-alerts
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
