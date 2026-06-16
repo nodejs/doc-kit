@@ -15,7 +15,8 @@ import { unified } from 'unified';
 import syntaxHighlighter, { highlighter } from './highlighter.mjs';
 import { lazy } from './misc.mjs';
 import { AST_NODE_TYPES } from '../generators/jsx-ast/constants.mjs';
-import transformElements from '../generators/jsx-ast/utils/transformer.mjs';
+import transformAlerts from '../generators/jsx-ast/utils/plugins/alerts.mjs';
+import transformElements from '../generators/jsx-ast/utils/plugins/transformer.mjs';
 
 const passThrough = ['element', ...Object.values(AST_NODE_TYPES.MDX)];
 
@@ -71,6 +72,7 @@ const singletonShiki = await rehypeShikiji({ highlighter });
 export const getRemarkRecma = lazy(() =>
   unified()
     .use(remarkParse)
+    .use(transformAlerts)
     // We make Rehype ignore existing HTML nodes, and JSX nodes
     // as these are nodes we manually created during the generation process
     // We also allow dangerous HTML to be passed through, since we have HTML within our Markdown

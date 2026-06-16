@@ -2,9 +2,9 @@ import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
-import { relative } from '../../../../../utils/url.mjs';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
-import { title, version, versions, pages } from '#theme/config';
+import { project, version, versions, pages } from '#theme/config';
 
 /**
  * Extracts the major version number from a version string.
@@ -41,7 +41,7 @@ export default ({ metadata }) => {
     link:
       metadata.path === path
         ? `${metadata.basename}.html`
-        : `${relative(path, metadata.path)}.html`,
+        : `${relativeOrAbsolute(path, metadata.path)}.html`,
   }));
 
   return (
@@ -54,11 +54,11 @@ export default ({ metadata }) => {
     >
       <div>
         <Select
-          label={`${title} version`}
+          label={`${project} version`}
           values={compatibleVersions}
           inline={true}
           className={styles.select}
-          placeholder={version}
+          placeholder={`v${version.version}`}
           onChange={redirect}
         />
       </div>

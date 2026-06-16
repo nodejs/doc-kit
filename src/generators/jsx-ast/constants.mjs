@@ -13,7 +13,29 @@ export const ALERT_LEVELS = {
   WARNING: 'warning',
   INFO: 'info',
   SUCCESS: 'success',
+  NEUTRAL: 'neutral',
 };
+
+/**
+ * Maps GitHub alert keywords (used in `> [!NOTE]`-style blockquotes) to their
+ * corresponding AlertBox levels.
+ *
+ * @see https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
+ */
+export const GITHUB_ALERT_TYPES = {
+  NOTE: ALERT_LEVELS.NEUTRAL,
+  TIP: ALERT_LEVELS.SUCCESS,
+  IMPORTANT: ALERT_LEVELS.INFO,
+  WARNING: ALERT_LEVELS.WARNING,
+  CAUTION: ALERT_LEVELS.DANGER,
+};
+
+// Matches a GitHub alert marker (e.g. `[!NOTE]`) at the very start of a
+// blockquote, consuming any trailing inline whitespace and the line break
+// that separates the marker from the alert's body.
+export const ALERT_MARKER = new RegExp(
+  `^\\[!(${Object.keys(GITHUB_ALERT_TYPES).join('|')})\\][^\\S\\n]*\\n?`
+);
 
 export const STABILITY_LEVELS = [
   ALERT_LEVELS.DANGER, // (0) Deprecated

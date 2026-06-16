@@ -32,6 +32,7 @@ export const getDefaultConfig = lazy(() =>
           repository: 'nodejs/node',
           ref: 'HEAD',
         }),
+        pathsToCopy: ['assets', 'public', 'static'],
       },
 
       // The number of wasm memory instances is severely limited on

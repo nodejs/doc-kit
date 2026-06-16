@@ -9,7 +9,7 @@ import { SKIP, visit } from 'unist-util-visit';
 import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
-import { extractPrimitives } from '../../../utils/misc.mjs';
+import { omitKeys } from '../../../utils/misc.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 import {
   STABILITY_LEVELS,
@@ -90,6 +90,7 @@ export const createSourceLink = sourceLink => {
           {
             href: `${populate(GITHUB_BLOB_URL, config)}${sourceLink}`,
             target: '_blank',
+            rel: 'noopener noreferrer',
           },
           [
             sourceLink,
@@ -251,25 +252,22 @@ export const transformHeadingNode = async (entry, node, index, parent) => {
  * @param {import('../../metadata/types').MetadataEntry} entry - The API metadata entry to process
  */
 export const processEntry = entry => {
-  // Deep copy content to avoid mutations on original
-  const content = structuredClone(entry.content);
-
   // Visit and transform stability nodes
-  visit(content, UNIST.isStabilityNode, transformStabilityNode);
+  visit(entry.content, UNIST.isStabilityNode, transformStabilityNode);
 
   // Visit and transform headings with metadata and links
-  visit(content, UNIST.isHeading, (...args) =>
+  visit(entry.content, UNIST.isHeading, (...args) =>
     transformHeadingNode(entry, ...args)
   );
 
   // Transform typed lists into property tables
   visit(
-    content,
+    entry.content,
     UNIST.isStronglyTypedList,
     (node, idx, parent) => (parent.children[idx] = createSignatureTable(node))
   );
 
-  return content;
+  return entry.content;
 };
 
 /**
@@ -296,7 +294,13 @@ export const createDocumentLayout = (entries, metadata) =>
  * @returns {Promise<JSXContent>}
  */
 const buildContent = async (metadataEntries, head) => {
-  const metadata = extractPrimitives(head);
+  // The metadata is the heading without the node children
+  const metadata = omitKeys(head, [
+    'content',
+    'heading',
+    'stability',
+    'changes',
+  ]);
 
   // Create root document AST with all layout components and processed content
   const root = createDocumentLayout(metadataEntries, metadata);

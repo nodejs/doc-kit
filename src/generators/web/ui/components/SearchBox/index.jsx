@@ -9,16 +9,24 @@ import SearchHit from '@node-core/ui-components/Common/Search/Results/Hit';
 
 import styles from './index.module.css';
 import useOrama from '../../hooks/useOrama.mjs';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
-const SearchBox = () => {
-  const client = useOrama();
+const SearchBox = ({ pathname }) => {
+  const client = useOrama(pathname);
 
   return (
     <SearchModal client={client} placeholder="Start typing...">
       <div className={styles.searchResultsContainer}>
         <SearchResults
           noResultsTitle="No results found for"
-          onHit={hit => <SearchHit document={hit.document} />}
+          onHit={hit => (
+            <SearchHit
+              document={{
+                ...hit.document,
+                href: relativeOrAbsolute(hit.document.href, pathname),
+              }}
+            />
+          )}
         />
       </div>
 

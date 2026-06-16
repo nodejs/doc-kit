@@ -61,7 +61,6 @@ export const coerceSemVer = version => {
  *
  * @param {string | import('semver').SemVer} introduced
  * @param {Array<import('../parsers/types').ReleaseEntry>} releases
- * @param {Boolean} [includeNonMajor=false]
  * @returns {Array<import('../parsers/types').ReleaseEntry>}
  */
 export const getCompatibleVersions = (introduced, releases) => {

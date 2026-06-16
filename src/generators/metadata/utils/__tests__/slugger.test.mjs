@@ -25,8 +25,8 @@ describe('slug', () => {
   });
 
   describe('special character to hyphen replacement', () => {
-    it('replaces underscores with hyphens', () => {
-      assert.strictEqual(slug('foo_bar', identity), 'foo-bar');
+    it('preserves underscores', () => {
+      assert.strictEqual(slug('foo_bar', identity), 'foo_bar');
     });
 
     it('replaces forward slashes with hyphens', () => {
@@ -51,8 +51,8 @@ describe('slug', () => {
       assert.strictEqual(slug('-foo', identity), 'foo');
     });
 
-    it('removes multiple leading hyphens', () => {
-      assert.strictEqual(slug('--foo', identity), 'foo');
+    it('preserves multiple leading hyphens', () => {
+      assert.strictEqual(slug('--permission', identity), '--permission');
     });
 
     it('preserves an all-hyphen string', () => {
@@ -78,6 +78,10 @@ describe('slug', () => {
     it('does not fire on an all-hyphen string', () => {
       assert.strictEqual(slug('---', identity), '---');
     });
+
+    it('does not collapse leading double hyphen flags', () => {
+      assert.strictEqual(slug('--allow-fs-read', identity), '--allow-fs-read');
+    });
   });
 
   describe('integration with github-slugger', () => {
@@ -85,8 +89,8 @@ describe('slug', () => {
       assert.strictEqual(slug('Hello World'), 'hello-world');
     });
 
-    it('converts underscored names to hyphenated slugs', () => {
-      assert.strictEqual(slug('child_process'), 'child-process');
+    it('preserves underscores in module names', () => {
+      assert.strictEqual(slug('child_process'), 'child_process');
     });
 
     it('handles titles with no special characters', () => {

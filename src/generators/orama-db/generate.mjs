@@ -37,7 +37,7 @@ export async function generate(input) {
         description: paragraph
           ? transformNodeToString(paragraph, true)
           : undefined,
-        href: `${entry.path.slice(1)}.html#${entry.heading.data.slug}`,
+        href: `${entry.path}.html#${entry.heading.data.slug}`,
         siteSection: headings[0].heading.data.name,
       };
     })

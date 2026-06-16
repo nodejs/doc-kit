@@ -8,10 +8,10 @@ export const QUERIES = {
   // Fixes the references to Markdown pages into the API documentation
   markdownUrl: /^(?![+a-zA-Z]+:)([^#?]+)\.md(#.+)?$/,
   // ReGeX to match the {Type}<Type> (API type references)
-  normalizeTypes: /(\{|<)(?! )[^<({})>]+(?! )(\}|>)/g,
+  normalizeTypes: /(\{|<)(?! )[^{}]+(?! )(\}|>)/g,
   // ReGex to match the type API type references that got already parsed
   // so that they can be transformed into HTML links
-  linksWithTypes: /\[`<[^<({})>]+>`\]\((\S+)\)/g,
+  linksWithTypes: /\[`<[^{}]+>`\]\((\S+)\)/g,
   // ReGeX for handling Stability Indexes Metadata
   stabilityIndex: /^Stability: ([0-5](?:\.[0-3])?)(?:\s*-\s*)?(.*)$/s,
   // ReGeX for handling the Stability Index Prefix

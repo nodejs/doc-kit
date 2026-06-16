@@ -36,4 +36,28 @@ describe('createLegacySlugger', () => {
     assert.strictEqual(getLegacySlug('Hello', 'fs'), 'fs_hello_2');
     assert.strictEqual(getLegacySlug('World', 'fs'), 'fs_world');
   });
+
+  describe('deprecation headings', () => {
+    it('returns the DEP code for a deprecation heading', () => {
+      const getLegacySlug = createLegacySlugger();
+      assert.strictEqual(
+        getLegacySlug(
+          'DEP0001: `http.OutgoingMessage.prototype.flush`',
+          'deprecations'
+        ),
+        'DEP0001'
+      );
+    });
+
+    it('returns the DEP code regardless of the description text', () => {
+      const getLegacySlug = createLegacySlugger();
+      assert.strictEqual(
+        getLegacySlug(
+          'DEP0190: spawning .bat and .cmd files with child_process.spawn() with shell option',
+          'deprecations'
+        ),
+        'DEP0190'
+      );
+    });
+  });
 });

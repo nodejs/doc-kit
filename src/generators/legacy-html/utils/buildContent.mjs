@@ -223,11 +223,8 @@ export default (headNodes, metadataEntries) => {
     'root',
     // Parses the metadata pieces of each node and the content
     metadataEntries.map(entry => {
-      // Deep clones the content nodes to avoid affecting upstream nodes
-      const content = structuredClone(entry.content);
-
       // Parses the Heading nodes into Heading elements
-      visit(content, UNIST.isHeading, (node, index, parent) =>
+      visit(entry.content, UNIST.isHeading, (node, index, parent) =>
         buildHeading(
           node,
           index,
@@ -239,14 +236,14 @@ export default (headNodes, metadataEntries) => {
       // Parses the Blockquotes into Stability elements
       // This is treated differently as we want to preserve the position of a Stability Index
       // within the content, so we can't just remove it and append it to the metadata
-      visit(content, UNIST.isStabilityNode, buildStability);
+      visit(entry.content, UNIST.isStabilityNode, buildStability);
 
       // Parses the type references that got replaced into Markdown links (raw)
       // into actual HTML links, these then get parsed into HAST nodes on `runSync`
-      visit(content, UNIST.isHtmlWithType, buildHtmlTypeLink);
+      visit(entry.content, UNIST.isHtmlWithType, buildHtmlTypeLink);
 
       // Splits the content into the Heading node and the rest of the content
-      const [headingNode, ...restNodes] = content.children;
+      const [headingNode, ...restNodes] = entry.content.children;
 
       // Concatenates all the strings and parses with remark into an AST tree
       return createElement('section', [

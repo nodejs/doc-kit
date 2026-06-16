@@ -71,7 +71,7 @@ export default ({ metadata, headings = [], readingTime }) => {
       items={{
         'Reading Time': readingTime,
         'Added In': metadata.added ?? metadata.introduced_in,
-        'View As': (
+        'View As': !metadata.synthetic && (
           <ol>
             {viewAs.map(([viewTitle, path]) => {
               const Icon = iconMap[viewTitle];
@@ -88,7 +88,7 @@ export default ({ metadata, headings = [], readingTime }) => {
             })}
           </ol>
         ),
-        Contribute: (
+        Contribute: !metadata.synthetic && (
           <>
             <GitHubIcon className="fill-neutral-700 dark:fill-neutral-100" />
 

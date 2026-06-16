@@ -35,8 +35,8 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
     const { head, nodes, headNodes } = slicedInput[idx];
 
     const nav = navigation.replace(
-      `class="nav-${head.api}`,
-      `class="nav-${head.api} active`
+      `class="nav-${head.api}"`,
+      `class="nav-${head.api} active"`
     );
 
     const toc = String(

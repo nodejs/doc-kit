@@ -3,7 +3,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { lazy, isPlainObject, extractPrimitives, deepMerge } from '../misc.mjs';
+import {
+  lazy,
+  isPlainObject,
+  isAsyncIterable,
+  omitKeys,
+  deepMerge,
+} from '../misc.mjs';
 
 describe('lazy', () => {
   it('should call the function only once and cache the result', () => {
@@ -38,52 +44,72 @@ describe('isPlainObject', () => {
   });
 });
 
-describe('extractPrimitives', () => {
-  it('should keep string, number, boolean, and null values', () => {
-    const obj = { a: 'hello', b: 42, c: true, d: null };
-    assert.deepStrictEqual(extractPrimitives(obj), {
-      a: 'hello',
-      b: 42,
-      c: true,
-      d: null,
-    });
+describe('isAsyncIterable', () => {
+  it('should return true for async generators', () => {
+    async function* asyncGen() {
+      yield 1;
+    }
+
+    assert.strictEqual(isAsyncIterable(asyncGen()), true);
   });
 
-  it('should remove object and function values', () => {
-    const obj = {
-      name: 'test',
-      nested: { foo: 'bar' },
-      fn: () => {},
-      count: 5,
+  it('should return true for objects with Symbol.asyncIterator', () => {
+    const asyncIterable = {
+      [Symbol.asyncIterator]() {
+        return { next: async () => ({ done: true, value: undefined }) };
+      },
     };
-    const result = extractPrimitives(obj);
-    assert.deepStrictEqual(result, { name: 'test', count: 5 });
+
+    assert.strictEqual(isAsyncIterable(asyncIterable), true);
   });
 
-  it('should keep arrays of primitives', () => {
-    const obj = { tags: ['a', 'b'], name: 'test' };
-    assert.deepStrictEqual(extractPrimitives(obj), {
-      tags: ['a', 'b'],
-      name: 'test',
-    });
+  it('should return false for regular generators', () => {
+    function* syncGen() {
+      yield 1;
+    }
+
+    assert.strictEqual(isAsyncIterable(syncGen()), false);
   });
 
-  it('should remove arrays containing objects', () => {
-    const obj = { items: [{ id: 1 }], name: 'test' };
-    assert.deepStrictEqual(extractPrimitives(obj), { name: 'test' });
+  it('should return false for plain objects, arrays and primitives', () => {
+    assert.strictEqual(isAsyncIterable({}), false);
+    assert.strictEqual(isAsyncIterable([]), false);
+    assert.strictEqual(isAsyncIterable({ async: true }), false);
+    assert.strictEqual(isAsyncIterable(42), false);
+    assert.strictEqual(isAsyncIterable('string'), false);
   });
 
-  it('should keep undefined values', () => {
-    const obj = { a: undefined, b: 'yes' };
-    const result = extractPrimitives(obj);
-    assert.strictEqual('a' in result, true);
-    assert.strictEqual(result.a, undefined);
-    assert.strictEqual(result.b, 'yes');
+  it('should return false for null and undefined', () => {
+    assert.strictEqual(isAsyncIterable(null), false);
+    assert.strictEqual(isAsyncIterable(undefined), false);
+  });
+});
+
+describe('omitKeys', () => {
+  it('should return all properties when no keys are excluded', () => {
+    const obj = { a: 'hello', b: 42, c: true };
+    assert.deepStrictEqual(omitKeys(obj), { a: 'hello', b: 42, c: true });
   });
 
-  it('should return an empty object when all values are non-primitive', () => {
-    const obj = { a: {}, b: [{ x: 1 }], c: () => {} };
-    assert.deepStrictEqual(extractPrimitives(obj), {});
+  it('should omit specified keys', () => {
+    const obj = { a: 1, b: 2, c: 3 };
+    assert.deepStrictEqual(omitKeys(obj, ['a', 'c']), { b: 2 });
+  });
+
+  it('should ignore keys that do not exist', () => {
+    const obj = { a: 1, b: 2 };
+    assert.deepStrictEqual(omitKeys(obj, ['z']), { a: 1, b: 2 });
+  });
+
+  it('should return an empty object when all keys are excluded', () => {
+    const obj = { a: 1, b: 2 };
+    assert.deepStrictEqual(omitKeys(obj, ['a', 'b']), {});
+  });
+
+  it('should preserve any value type', () => {
+    const fn = () => {};
+    const obj = { a: fn, b: new Map(), c: null, d: [1, 2] };
+    assert.deepStrictEqual(omitKeys(obj, ['b']), { a: fn, c: null, d: [1, 2] });
   });
 });
 
