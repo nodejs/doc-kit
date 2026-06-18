@@ -1,10 +1,10 @@
 'use strict';
 
-import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createSectionBuilder } from './utils/buildSection.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
+import { writeFile, withExt } from '../../utils/file.mjs';
 import { groupNodesByModule, legacyToJSON } from '../../utils/generators.mjs';
 
 const buildSection = createSectionBuilder();
@@ -42,6 +42,10 @@ export async function* generate(input, worker) {
 
   const headNodes = input.filter(node => node.heading.depth === 1);
 
+  // Map each section's `api` slug back to its source path so the output keeps
+  // the input directory structure instead of flattening into the root.
+  const pathByApi = new Map(headNodes.map(({ api, path }) => [api, path]));
+
   // Create sliced input: each item contains head + its module's entries
   // This avoids sending all 4900+ entries to every worker
   const entries = headNodes.map(head => ({
@@ -52,7 +56,10 @@ export async function* generate(input, worker) {
   for await (const chunkResult of worker.stream(entries)) {
     if (config.output) {
       for (const section of chunkResult) {
-        const out = join(config.output, `${section.api}.json`);
+        const out = join(
+          config.output,
+          withExt(pathByApi.get(section.api), 'json')
+        );
 
         await writeFile(
           out,
