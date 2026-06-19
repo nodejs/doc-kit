@@ -222,6 +222,34 @@ describe('parseApiDoc', () => {
     });
   });
 
+  describe('MDX mode', () => {
+    it('defaults the mdx flag to false on entries', () => {
+      const tree = u('root', [h('fs')]);
+      const [entry] = parseApiDoc({ path, tree }, typeMap);
+
+      assert.strictEqual(entry.mdx, false);
+    });
+
+    it('propagates the mdx flag onto entries', () => {
+      const tree = u('root', [h('fs')]);
+      const [entry] = parseApiDoc({ path, tree, mdx: true }, typeMap);
+
+      assert.strictEqual(entry.mdx, true);
+    });
+
+    it('skips {type} reference transformation in MDX mode', () => {
+      // In MDX, a bare `{string}` is a real expression node, not a type
+      // annotation, so it must be left untouched (no link generated).
+      const tree = u('root', [
+        h('fs'),
+        u('paragraph', [u('text', '{string}')]),
+      ]);
+      const [entry] = parseApiDoc({ path, tree, mdx: true }, typeMap);
+
+      assert.strictEqual(findLink(entry), undefined);
+    });
+  });
+
   describe('document without headings', () => {
     it('produces one entry for content with no headings', () => {
       const tree = u('root', [
