@@ -260,12 +260,15 @@ export const processEntry = entry => {
     transformHeadingNode(entry, ...args)
   );
 
-  // Transform typed lists into property tables
-  visit(
-    entry.content,
-    UNIST.isStronglyTypedList,
-    (node, idx, parent) => (parent.children[idx] = createSignatureTable(node))
-  );
+  // Transform typed lists into property tables. Skipped for MDX pages, whose
+  // lists are authored prose rather than API type signatures.
+  if (!entry.mdx) {
+    visit(
+      entry.content,
+      UNIST.isStronglyTypedList,
+      (node, idx, parent) => (parent.children[idx] = createSignatureTable(node))
+    );
+  }
 
   return entry.content;
 };

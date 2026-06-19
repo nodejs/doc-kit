@@ -27,11 +27,11 @@ import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
 /**
  * This generator generates a flattened list of metadata entries from a API doc
  *
- * @param {{ tree: import('mdast.Root') } & import('../types').MetadataEntry} input
+ * @param {{ tree: import('mdast.Root'), mdx?: boolean } & import('../types').MetadataEntry} input
  * @param {Record<string, string>} typeMap
  * @returns {Promise<Array<import('../types').MetadataEntry>>}
  */
-export const parseApiDoc = ({ path, tree }, typeMap) => {
+export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
   /**
    * Collection of metadata entries for the file
    * @type {Array<import('../types').MetadataEntry>}
@@ -83,6 +83,7 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
     const metadata = /** @type {import('../types').MetadataEntry} */ ({
       api,
       path,
+      mdx,
       basename: basename(path),
       heading: headingNode,
     });
@@ -116,10 +117,13 @@ export const parseApiDoc = ({ path, tree }, typeMap) => {
       metadata.heading.data.type = metadata.type;
     }
 
-    // Process type references
-    visit(subTree, UNIST.isTextWithType, (node, _, parent) =>
-      visitTextWithTypeNode(node, parent, relativeTypeMap)
-    );
+    // Process type references. Skipped for MDX, where bare `<...>`/`{...}` are
+    // real JSX/expression nodes (not type annotations) and must not be rewritten.
+    if (!mdx) {
+      visit(subTree, UNIST.isTextWithType, (node, _, parent) =>
+        visitTextWithTypeNode(node, parent, relativeTypeMap)
+      );
+    }
 
     // Process Unix manual references
     visit(subTree, UNIST.isTextWithUnixManual, (node, _, parent) =>

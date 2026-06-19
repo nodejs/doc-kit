@@ -108,6 +108,27 @@ export const AST_NODE_TYPES = {
      * @see https://github.com/syntax-tree/mdast-util-mdx-jsx#mdxjsxattributevalueexpression
      */
     JSX_ATTRIBUTE_EXPRESSION: 'mdxJsxAttributeValueExpression',
+
+    /**
+     * Block-level expression (e.g. a standalone `{1 + 1}` in MDX)
+     *
+     * @see https://github.com/syntax-tree/mdast-util-mdx-expression#mdxflowexpression
+     */
+    FLOW_EXPRESSION: 'mdxFlowExpression',
+
+    /**
+     * Text-level expression (e.g. an inline `{value}` in MDX)
+     *
+     * @see https://github.com/syntax-tree/mdast-util-mdx-expression#mdxtextexpression
+     */
+    TEXT_EXPRESSION: 'mdxTextExpression',
+
+    /**
+     * ESM `import`/`export` statement embedded in MDX
+     *
+     * @see https://github.com/syntax-tree/mdast-util-mdxjs-esm#mdxjsesm
+     */
+    ESM: 'mdxjsEsm',
   },
   ESTREE: {
     /**

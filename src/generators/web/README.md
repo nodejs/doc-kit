@@ -19,6 +19,7 @@ The `web` generator accepts the following configuration options:
 | `lightningcss`    | `object`  | `{}`                                          | Options spread into LightningCSS while bundling CSS (see below)          |
 | `imports`         | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization    |
 | `virtualImports`  | `object`  | `{}`                                          | Additional virtual module mappings merged into the build                 |
+| `components`      | `object`  | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below) |
 | `rolldown`        | `object`  | `{}`                                          | Options merged into the Rolldown build — extra plugins, etc. (see below) |
 
 #### `head`
@@ -176,6 +177,56 @@ export default {
     },
   },
 };
+```
+
+### `components`
+
+`components` registers custom JSX components so they can be used directly in
+content (see [JSX-in-MDX](#jsx-in-mdx) below). Each entry maps a JSX tag name to
+an import descriptor (`{ name, source, isDefaultExport? }`, the same shape as the
+built-in `JSX_IMPORTS`). A `Tag: 'source'` string shorthand expands to
+`{ name: Tag, source }` with a default export. Registered components are merged
+with the built-ins, and a matching `imports` alias resolves the `source` to a
+real module path:
+
+```js
+// doc-kit.config.mjs
+export default {
+  web: {
+    components: {
+      // Shorthand — equivalent to { name: 'Hero', source: '#theme/Hero' }
+      Hero: '#theme/Hero',
+      // Full descriptor
+      Stats: { name: 'Stats', source: '#theme/Stats' },
+    },
+    imports: {
+      '#theme/Hero': './src/components/Hero.jsx',
+      '#theme/Stats': './src/components/Stats.jsx',
+    },
+  },
+};
+```
+
+### JSX-in-MDX
+
+By default every input file is parsed as Markdown, where bare `<` and `{` are
+treated literally (Node.js core docs use `<string>`-style type annotations). To
+author real JSX — `<Hero />`, `{expression}` — use an **`.mdx`** file, or set
+`mdx: true` in a file's `---` frontmatter (frontmatter wins, so `mdx: false`
+opts a `.mdx` file back out). MDX files are parsed with `remark-mdx` and skip the
+API-doc type/signature parsing; headings, frontmatter, TOC, and sidebar still
+work. Reference any component registered via `components`:
+
+```mdx
+---
+title: Welcome
+---
+
+# Welcome
+
+<Hero title="Node.js" />
+
+There are {stats.length} APIs documented.
 ```
 
 ### `#theme/config` virtual module

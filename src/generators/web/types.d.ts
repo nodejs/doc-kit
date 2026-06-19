@@ -10,6 +10,14 @@ export type TagAttributes = Record<
   string | number | boolean | null | undefined
 >;
 
+// Describes how a JSX component is imported. Mirrors the `JSXImportConfig`
+// JSDoc typedef in `constants.mjs`.
+export type JSXImportConfig = {
+  name: string;
+  source: string;
+  isDefaultExport?: boolean;
+};
+
 export type HeadConfig = {
   // `<meta>` tags, each an attribute bag (e.g. `{ name, content }`).
   meta: Array<TagAttributes>;
@@ -34,6 +42,11 @@ export type Configuration = {
   >;
   imports: Record<string, string>;
   virtualImports: Record<string, string>;
+  // Maps a JSX tag name to its import, enabling JSX-in-MDX. The string shorthand
+  // `Tag: 'source'` expands to `{ name: Tag, source }`. Merged with the built-in
+  // `JSX_IMPORTS`. Pair each entry with a matching `imports` alias to resolve the
+  // `source` to a real module path.
+  components: Record<string, JSXImportConfig | string>;
   // Options merged into the Rolldown build for the client and server bundles.
   // See the web generator README for the merge semantics.
   rolldown: Partial<BuildOptions>;
