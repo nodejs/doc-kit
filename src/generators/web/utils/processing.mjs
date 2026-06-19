@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 
-import { jsx, toJs } from 'estree-util-to-js';
 import { transform } from 'lightningcss-wasm';
 
 import bundleCode from './bundle.mjs';
@@ -81,31 +80,37 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
   ].join('\n  ');
 
 /**
- * Converts JSX AST entries to server and client JavaScript code.
+ * Creates an accumulator that wraps per-page JSX code into server and client
+ * programs one at a time. The JSX AST has already been serialized to a code
+ * string upstream (in the `jsx-ast` worker), so the heavy AST never reaches
+ * the main thread — only the code string and page metadata stream in here.
  *
- * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} entries - JSX AST entries
- * @param {function} buildServerProgram - Wraps code for server execution
- * @param {function} buildClientProgram - Wraps code for client hydration
- * @returns {{serverCodeMap: Map<string, string>, clientCodeMap: Map<string, string>}}
+ * @returns {{ add: (item: { data: import('../../metadata/types').MetadataEntry, code: string }) => void, serverCodeMap: Map<string, string>, clientCodeMap: Map<string, string> }}
  */
-function convertJSXToCode(entries, { buildServerProgram, buildClientProgram }) {
+export function createCodeConverter() {
+  const { buildServerProgram, buildClientProgram } = createASTBuilder();
+
   const serverCodeMap = new Map();
   const clientCodeMap = new Map();
 
-  for (const entry of entries) {
-    const fileName = `${entry.data.api}.jsx`;
+  return {
+    /**
+     * Records the server/client programs for a single page's JSX code.
+     *
+     * @param {{ data: import('../../metadata/types').MetadataEntry, code: string }} item
+     */
+    add: ({ data, code }) => {
+      const fileName = `${data.api}.jsx`;
 
-    // Convert AST to JavaScript string with JSX syntax
-    const { value: code } = toJs(entry, { handlers: jsx });
+      // Prepare code for server-side execution (wrapped for SSR)
+      serverCodeMap.set(fileName, buildServerProgram(code));
 
-    // Prepare code for server-side execution (wrapped for SSR)
-    serverCodeMap.set(fileName, buildServerProgram(code));
-
-    // Prepare code for client-side execution (wrapped for hydration)
-    clientCodeMap.set(fileName, buildClientProgram(code));
-  }
-
-  return { serverCodeMap, clientCodeMap };
+      // Prepare code for client-side execution (wrapped for hydration)
+      clientCodeMap.set(fileName, buildClientProgram(code));
+    },
+    serverCodeMap,
+    clientCodeMap,
+  };
 }
 
 /**
@@ -141,32 +146,34 @@ async function executeServerCode(serverCodeMap, requireFn, virtualImports) {
 }
 
 /**
- * Processes JSX AST entries into complete HTML pages, client JS bundles, and CSS.
+ * Bundles pre-converted JSX code into complete HTML pages, client JS bundles,
+ * and CSS. Conversion (JSX AST → code) happens upstream via
+ * {@link createCodeConverter} so the heavy ASTs are already discarded; this
+ * step needs every entry together for code-splitting and the shared sidebar.
  *
- * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} entries - The JSX AST entries to process.
- * @param {string} template - The HTML template string for the output pages.
- * @param {Array<{ data: import('../../metadata/types').MetadataEntry }>} [sidebarEntries] - Entries used to build the sidebar page list. Defaults to `entries`. Pass the full set when rendering a subset (e.g. the `all` page) so the sidebar still links to every module.
+ * @param {object} params
+ * @param {Map<string, string>} params.serverCodeMap - Server-side code per page.
+ * @param {Map<string, string>} params.clientCodeMap - Client-side code per page.
+ * @param {Array<import('../../metadata/types').MetadataEntry>} params.datas - Per-page metadata, in render order.
+ * @param {Array<{ data: import('../../metadata/types').MetadataEntry }>} params.sidebarEntries - Entries used to build the sidebar page list (real module pages only).
+ * @param {string} params.template - The HTML template string for the output pages.
  */
-export async function processJSXEntries(
-  entries,
+export async function processBundles({
+  serverCodeMap,
+  clientCodeMap,
+  datas,
+  sidebarEntries,
   template,
-  sidebarEntries = entries
-) {
+}) {
   const config = getConfig('web');
-  const astBuilders = createASTBuilder();
   const requireFn = createRequire(import.meta.url);
   const virtualImports = {
     '#theme/config': createConfigSource(sidebarEntries),
     ...config.virtualImports,
   };
-  // Step 1: Convert JSX AST to JavaScript
-  const { serverCodeMap, clientCodeMap } = convertJSXToCode(
-    entries,
-    astBuilders
-  );
 
-  // Step 2: Bundle server and client code in parallel
-  // Both need all entries for code-splitting, but are independent of each other
+  // Bundle server and client code in parallel. Both need all entries for
+  // code-splitting, but are independent of each other.
   const [serverBundle, clientBundle] = await Promise.all([
     executeServerCode(serverCodeMap, requireFn, virtualImports),
     bundleCode(clientCodeMap, virtualImports),
@@ -182,9 +189,9 @@ export async function processJSXEntries(
   // template authors avoid nested template-literal escaping.
   const head = buildHead(config.head);
 
-  // Step 3: Render final HTML pages
+  // Render final HTML pages
   const results = await Promise.all(
-    entries.map(async ({ data }) => {
+    datas.map(async data => {
       const root = resolvePageRoot(data);
 
       // Replace template placeholders with actual content

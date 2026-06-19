@@ -13,8 +13,11 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  * - Client-side JavaScript with code splitting
  * - Bundled CSS styles
  *
- * Note: This generator does NOT support streaming/chunked processing because
- * processJSXEntries needs all entries together to generate code-split bundles.
+ * `jsx-ast` serializes each page's JSX AST to a `code` string inside its worker,
+ * so this generator only ever handles small `{ data, code }` items — the heavy
+ * ASTs (notably the giant `all` page) never reach the main thread. Bundling and
+ * rendering run once over the accumulated code, since code-splitting and the
+ * sidebar need every entry together.
  *
  * @type {import('./types').Generator}
  */
