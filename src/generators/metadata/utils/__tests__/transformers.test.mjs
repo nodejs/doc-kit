@@ -55,10 +55,13 @@ describe('transformTypeToReferenceLink', () => {
     );
   });
 
-  it('should handle outer unions with generics like {Promise<string|number> | boolean}', () => {
+  it('should handle outer unions with generics like {Promise<string|number> | Iterable<boolean>}', () => {
     strictEqual(
-      transformTypeToReferenceLink('{Promise<string|number> | boolean}', {}),
-      '[`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt; | [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)'
+      transformTypeToReferenceLink(
+        '{Promise<string|number> | Iterable<boolean>}',
+        {}
+      ),
+      '[`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt; | [`<Iterable>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)&lt;[`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)&gt;'
     );
   });
 
@@ -105,7 +108,7 @@ describe('transformTypeToReferenceLink', () => {
       '(cb: ([first, second]: string[]) => void) => ({ id, name }: User) => boolean';
 
     const expected =
-      '(cb: ([first, second]: [`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)[]) =&gt; `<void>`) =&gt; ({ id, name }: [`<User>`](userLink)) =&gt; [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)';
+      '(cb: ([first, second]: [`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)[]) =&gt; [`<void>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/void)) =&gt; ({ id, name }: [`<User>`](userLink)) =&gt; [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)';
 
     strictEqual(
       transformTypeToReferenceLink(input, { User: 'userLink' }),
