@@ -1,5 +1,7 @@
 {
   "asynciterable": "https://tc39.github.io/ecma262/#sec-asynciterable-interface",
+  "iterable": "https://developer.mozilla.org/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol",
+  "void": "https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/void",
   "module namespace object": "https://tc39.github.io/ecma262/#sec-module-namespace-exotic-objects",
   "null": "https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#null_type",
   "undefined": "https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#undefined_type",
