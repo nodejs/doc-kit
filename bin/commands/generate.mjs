@@ -60,7 +60,13 @@ export default new Command('generate')
   .addOption(new Option('--type-map <url>', 'Type map URL or path'))
 
   .action(
-    errorWrap(async opts => {
+    errorWrap(async (opts, command) => {
+      // Running `generate` with no arguments or config has nothing to do, so
+      // show the help output instead of failing later with an opaque error.
+      if (Object.keys(opts).length === 0) {
+        command.help();
+      }
+
       const config = await setConfig(opts);
       await runGenerators(config);
     })
