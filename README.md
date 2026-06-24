@@ -71,7 +71,6 @@ Options:
   -h, --help                 display help for command
 ```
 
-
 ## Examples
 
 ### Legacy
