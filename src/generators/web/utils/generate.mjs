@@ -1,6 +1,19 @@
 import { resolve } from 'node:path';
 
+import getConfig from '../../../utils/configuration/index.mjs';
 import { JSX_IMPORTS, ROOT } from '../constants.mjs';
+
+/**
+ * Normalizes a `components` config entry into the `JSXImportConfig` shape.
+ * Accepts either the full descriptor or the `Tag: 'source'` string shorthand.
+ *
+ * @param {[string, import('../constants.mjs').JSXImportConfig | string]} entry
+ * @returns {import('../constants.mjs').JSXImportConfig}
+ */
+const normalizeComponent = ([tag, value]) =>
+  typeof value === 'string'
+    ? { name: tag, source: value }
+    : { name: tag, isDefaultExport: true, ...value };
 
 /**
  * Creates an ES Module `import` statement as a string, based on parameters.
@@ -40,11 +53,16 @@ export const createImportDeclaration = (
  * - `buildServerProgram`: Wraps component for server-side rendering
  */
 export default () => {
+  // User-configured components (for JSX-in-MDX), merged with the built-ins.
+  const { components } = getConfig('web');
+
   // Generate import statements for all JSX components
   // TODO: Optimize by conditionally including server-only or client-only imports
-  const baseImports = Object.values(JSX_IMPORTS).map(
-    ({ name, source, isDefaultExport = true }) =>
-      createImportDeclaration(name, source, isDefaultExport)
+  const baseImports = [
+    ...Object.values(JSX_IMPORTS),
+    ...Object.entries(components).map(normalizeComponent),
+  ].map(({ name, source, isDefaultExport = true }) =>
+    createImportDeclaration(name, source, isDefaultExport)
   );
 
   /**

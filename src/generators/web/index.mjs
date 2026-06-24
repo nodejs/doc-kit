@@ -90,6 +90,10 @@ export default createLazyGenerator({
     },
     virtualImports: {},
 
+    // Maps JSX tag names to component imports for JSX-in-MDX. Empty by default;
+    // see the web generator README for the shape and shorthand.
+    components: {},
+
     // Options merged into the Rolldown build (client and server), e.g. extra
     // `plugins`. See the README for the merge semantics.
     rolldown: {},
