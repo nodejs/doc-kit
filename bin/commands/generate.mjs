@@ -2,7 +2,10 @@ import { Command, Option } from 'commander';
 
 import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
-import { setConfig } from '../../src/utils/configuration/index.mjs';
+import {
+  assertRunnableOptions,
+  setConfig,
+} from '../../src/utils/configuration/index.mjs';
 import { errorWrap } from '../utils.mjs';
 
 const { runGenerators } = createGenerator();
@@ -61,6 +64,8 @@ export default new Command('generate')
 
   .action(
     errorWrap(async opts => {
+      assertRunnableOptions(opts);
+
       const config = await setConfig(opts);
       await runGenerators(config);
     })

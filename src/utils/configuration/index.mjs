@@ -105,6 +105,21 @@ export const createConfigFromCLIOptions = options => ({
 });
 
 /**
+ * Asserts that the CLI was given somewhere to read generator targets from:
+ * either explicit `--target` flags or a `--config-file` that supplies them.
+ *
+ * @param {import('../../../bin/commands/generate.mjs').CLIOptions} options - User-provided options
+ */
+export const assertRunnableOptions = options => {
+  if (!options.target && !options.configFile) {
+    throw new Error(
+      'Either `--target` or `--config-file` must be provided. ' +
+        'Run `doc-kit generate --help` for usage.'
+    );
+  }
+};
+
+/**
  * Creates a complete run configuration by merging config file, user options, and defaults.
  * Processes and validates configuration values including version coercion, changelog parsing,
  * and constraint enforcement for threads and chunk size.
@@ -113,15 +128,6 @@ export const createConfigFromCLIOptions = options => ({
  * @returns {Promise<import('./types').Configuration>} The configuration
  */
 export const createRunConfiguration = async options => {
-  // Generating requires somewhere to read targets from: either explicit
-  // `--target` flags or a `--config-file` that supplies them.
-  if (!options.target && !options.configFile) {
-    throw new Error(
-      'Either `--target` or `--config-file` must be provided. ' +
-        'Run `doc-kit generate --help` for usage.'
-    );
-  }
-
   const config = await loadConfigFile(options.configFile);
   config.target &&= enforceArray(config.target);
 
