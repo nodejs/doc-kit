@@ -49,7 +49,6 @@ Options:
 
 Commands:
   generate [options]  Generate API docs
-  interactive         Launch guided CLI wizard
   help [command]      display help for command
 ```
 
@@ -72,16 +71,6 @@ Options:
   -h, --help                 display help for command
 ```
 
-### `interactive`
-
-```
-Usage: @node-core/doc-kit interactive [options]
-
-Launch guided CLI wizard
-
-Options:
-  -h, --help  display help for command
-```
 
 ## Examples
 
