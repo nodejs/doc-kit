@@ -126,6 +126,26 @@ describe('config.mjs', () => {
   });
 
   describe('createRunConfiguration', () => {
+    it('should throw when neither target nor config file is provided', async () => {
+      await assert.rejects(
+        () => createRunConfiguration({}),
+        /Either `--target` or `--config-file` must be provided/
+      );
+      assert.strictEqual(mockImportFromURL.mock.calls.length, 0);
+    });
+
+    it('should not throw when only a target is provided', async () => {
+      await assert.doesNotReject(() =>
+        createRunConfiguration({ target: ['json'] })
+      );
+    });
+
+    it('should not throw when only a config file is provided', async () => {
+      await assert.doesNotReject(() =>
+        createRunConfiguration({ configFile: 'config.mjs' })
+      );
+    });
+
     it('should merge config sources in correct order', async () => {
       mockImportFromURL.mock.mockImplementationOnce(async () =>
         createMockConfig({ global: { input: 'custom-src/' } })
@@ -173,6 +193,7 @@ describe('config.mjs', () => {
 
     it('should enforce minimum constraints', async () => {
       const config = await createRunConfiguration({
+        target: ['json'],
         threads: -5,
         chunkSize: 0,
       });
@@ -183,6 +204,7 @@ describe('config.mjs', () => {
 
     it('should work without config file', async () => {
       const config = await createRunConfiguration({
+        target: ['json'],
         version: '20.0.0',
         threads: 4,
       });
@@ -212,7 +234,11 @@ describe('config.mjs', () => {
 
   describe('setConfig and getConfig', () => {
     it('should persist config across calls', async () => {
-      const config = await setConfig({ version: '20.0.0', threads: 2 });
+      const config = await setConfig({
+        target: ['json'],
+        version: '20.0.0',
+        threads: 2,
+      });
       const retrieved = getConfig();
 
       assert.strictEqual(config, retrieved);
