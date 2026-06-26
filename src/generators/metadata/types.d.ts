@@ -91,6 +91,11 @@ export interface HeadingData extends Data {
   slug: string;
   /** Optional type classification */
   type?: HeadingType;
+  /**
+   * Marks the 2nd..nth heading of an overloaded function so it can be dropped
+   * from the ToC while still rendering on the page.
+   */
+  isOverload?: boolean;
 }
 
 /**

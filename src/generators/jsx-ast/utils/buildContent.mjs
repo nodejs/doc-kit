@@ -8,6 +8,7 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
+import { annotateOverloads } from './overloads.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
 import { omitKeys } from '../../../utils/misc.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
@@ -278,8 +279,12 @@ export const processEntry = entry => {
  * @param {Array<import('../../metadata/types').MetadataEntry>} entries - API documentation metadata entries
  * @param {Object} metadata - Raw page metadata from the head entry
  */
-export const createDocumentLayout = (entries, metadata) =>
-  createTree('root', [
+export const createDocumentLayout = (entries, metadata) => {
+  // Collapse overloaded function headings into one stable ToC entry, tagging the
+  // underlying headings with compact anchors / overload flags read just below.
+  annotateOverloads(entries);
+
+  return createTree('root', [
     createJSXElement(JSX_IMPORTS.Layout.name, {
       metadata,
       headings: extractHeadings(entries),
@@ -287,6 +292,7 @@ export const createDocumentLayout = (entries, metadata) =>
       children: entries.map(processEntry),
     }),
   ]);
+};
 
 /**
  * @typedef {import('estree').Node & { data: import('../../metadata/types').MetadataEntry }} JSXContent
