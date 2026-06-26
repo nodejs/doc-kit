@@ -193,11 +193,14 @@ export async function processBundles({
   const results = await Promise.all(
     datas.map(async data => {
       const root = resolvePageRoot(data);
+      const title = data.title ?? data.heading.data.name;
 
       // Replace template placeholders with actual content
       const renderedHtml = populateWithEvaluation(template, {
-        title: data.heading.data.name
-          ? `${data.heading.data.name} | ${titleSuffix}`
+        title: title
+          ? titleSuffix
+            ? `${title} | ${titleSuffix}`
+            : title
           : titleSuffix,
         dehydrated: serverBundle.pages.get(`${data.api}.js`) ?? '',
         importMap: clientBundle.importMap?.replaceAll('/', root) ?? '',
