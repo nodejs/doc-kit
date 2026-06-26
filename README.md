@@ -49,7 +49,6 @@ Options:
 
 Commands:
   generate [options]  Generate API docs
-  interactive         Launch guided CLI wizard
   help [command]      display help for command
 ```
 
@@ -70,17 +69,6 @@ Options:
   --git-ref <url>            Git ref/commit URL (default: "https://github.com/nodejs/node/tree/HEAD")
   -t, --target [modes...]    Target generator modes (choices: "json-simple", "legacy-html", "legacy-html-all", "man-page", "legacy-json", "legacy-json-all", "addon-verify", "api-links", "orama-db", "llms-txt")
   -h, --help                 display help for command
-```
-
-### `interactive`
-
-```
-Usage: @node-core/doc-kit interactive [options]
-
-Launch guided CLI wizard
-
-Options:
-  -h, --help  display help for command
 ```
 
 ## Examples

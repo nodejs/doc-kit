@@ -15,7 +15,7 @@ interface Command {
 
 Each command consists of:
 
-- **name**: The command name used in the CLI (e.g., `generate`, `interactive`)
+- **name**: The command name used in the CLI (e.g., `generate`)
 - **description**: A short description shown in help text
 - **options**: An object mapping option names to their definitions
 - **action**: The async function that executes when the command is run
@@ -57,12 +57,10 @@ Add your command to the exports in `bin/commands/index.mjs`:
 
 ```javascript
 import generate from './generate.mjs';
-import interactive from './interactive.mjs';
 import myCommand from './my-command.mjs'; // Add this
 
 export default [
   generate,
-  interactive,
   myCommand, // Add this
 ];
 ```
@@ -79,7 +77,6 @@ Options define the flags and parameters your command accepts. Each option has:
 interface Option {
   flags: string[]; // CLI flags (e.g., ['-i', '--input <value>'])
   desc: string; // Description for help text
-  prompt?: PromptConfig; // Interactive mode configuration
 }
 ```
 
@@ -185,39 +182,4 @@ prompt: {
     { label: 'Choice B', value: 'b' },
   ],
 }
-```
-
-## Interactive Prompts
-
-The `interactive` command automatically uses the `prompt` configuration from your options. When users run:
-
-```bash
-doc-kit interactive
-```
-
-They'll be prompted to select a command, then guided through all required options.
-
-### Prompt Configuration
-
-- **message**: Question to ask the user
-- **type**: Input type (`text`, `confirm`, `select`, `multiselect`)
-- **required**: Whether the field must have a value
-- **initialValue**: Default value
-- **variadic**: Whether multiple values can be entered (for `text` type)
-- **options**: Choices for `select`/`multiselect` types
-
-### Making Options Interactive-Friendly
-
-Always provide helpful messages and sensible defaults:
-
-```javascript
-threads: {
-  flags: ['-p', '--threads <number>'],
-  desc: 'Number of threads to use (minimum: 1)',
-  prompt: {
-    type: 'text',
-    message: 'How many threads to allow',
-    initialValue: String(cpus().length),  // Smart default
-  },
-},
 ```
