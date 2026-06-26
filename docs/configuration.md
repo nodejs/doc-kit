@@ -3,6 +3,8 @@
 `doc-kit`'s CLI supports a `--config-file` option, allowing for custom configuration files to be passed.
 These configuration files must be loadable via a `import()` call, so usually JSON or JavaScript files with default exports.
 
+By convention, this file is usually named `doc-kit.config.mjs` or `doc-kit.config.json`.
+
 ## Configuration File Format
 
 Configuration files can be either:
