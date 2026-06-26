@@ -83,4 +83,71 @@ describe('extractHeadings', () => {
     const result = extractHeadings(entries);
     assert.equal(result.length, 0);
   });
+
+  it('labels callables with the bare name instead of the full signature', () => {
+    const entries = [
+      {
+        heading: {
+          depth: 2,
+          data: {
+            text: 'fs.read(fd, buffer, offset, length, position, callback)',
+            name: 'fs.read',
+            slug: 'fsreadfd',
+            type: 'method',
+          },
+        },
+      },
+      {
+        heading: {
+          depth: 2,
+          data: {
+            text: 'new Buffer(size)',
+            name: 'Buffer',
+            slug: 'new-buffersize',
+            type: 'ctor',
+          },
+        },
+      },
+    ];
+
+    const result = extractHeadings(entries);
+
+    assert.equal(result[0].value, 'fs.read');
+    assert.equal(result[1].value, 'new Buffer');
+  });
+
+  it('drops overload headings and links to the first signature', () => {
+    const entries = [
+      {
+        heading: {
+          depth: 2,
+          data: {
+            text: 'fs.read(fd)',
+            name: 'fs.read',
+            slug: 'fsreadfd',
+            type: 'method',
+          },
+        },
+      },
+      {
+        heading: {
+          depth: 2,
+          data: {
+            text: 'fs.read(fd, options)',
+            name: 'fs.read',
+            slug: 'fsreadoptions',
+            type: 'method',
+            isOverload: true,
+          },
+        },
+      },
+    ];
+
+    const result = extractHeadings(entries);
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0].slug, 'fsreadfd');
+    assert.equal(result[0].data.id, 'fsreadfd');
+    assert.equal(result[0].value, 'fs.read');
+  });
 });
