@@ -64,9 +64,9 @@ export default new Command('generate')
 
   .action(
     errorWrap(async opts => {
-      assertRunnableOptions(opts);
-
       const config = await setConfig(opts);
+      assertRunnableOptions(config);
+
       await runGenerators(config);
     })
   );
