@@ -1,0 +1,74 @@
+name: Release
+
+# This workflow drives releases with Changesets.
+#
+# On every push to `main` it runs `changesets/action`, which behaves in one of two ways:
+#   * If there are pending changeset files, it opens/updates a "Version Packages" PR that bumps the
+#     version and writes CHANGELOG.md.
+#   * If there are no pending changesets (i.e. the "Version Packages" PR was just merged), it runs
+#     `changeset publish`, which publishes to npm (via npm OIDC trusted publishing), creates the git
+#     tag, and cuts a GitHub Release.
+
+on:
+  push:
+    # For security reasons, this should never be set to anything but `main`
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # commit the version bump, push the git tag, create the GitHub Release
+      pull-requests: write # open/update the "Version Packages" PR
+      # For npm OIDC (https://docs.npmjs.com/trusted-publishers)
+      id-token: write
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          # `audit` (not `block`) because the publish step reaches many endpoints (npm registry,
+          # sigstore provenance, the GitHub API, git push, Slack); a wrong allowlist would break a
+          # release. Egress is still recorded for review.
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # Changesets needs full history (and credentials) to push the version branch and tags.
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
+        with:
+          use-version-file: true
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        with:
+          version: node --run changeset:version
+          publish: node --run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify
+        if: steps.changesets.outputs.published == 'true'
+        uses: rtCamp/action-slack-notify@e31e87e03dd19038e411e38ae27cbad084a90661 # 2.3.3
+        env:
+          SLACK_COLOR: '#43853D'
+          SLACK_ICON: https://github.com/nodejs.png?size=48
+          SLACK_TITLE: ':rocket: Package Published: @node-core/doc-kit'
+          SLACK_MESSAGE: |
+            :package: *Package*: `@node-core/doc-kit` (<https://www.npmjs.com/package/@node-core/doc-kit|View on npm>)
+            :bust_in_silhouette: *Published by*: ${{ github.triggering_actor }}
+            :octocat: *Commit*: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+          SLACK_USERNAME: nodejs-bot
+          SLACK_CHANNEL: nodejs-web-infra-alerts
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}

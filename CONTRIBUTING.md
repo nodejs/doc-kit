@@ -10,6 +10,7 @@ Thank you for your interest in contributing to the `@node-core/doc-kit` project!
   - [Running the Tool Locally](#running-the-tool-locally)
 - [Development Workflow](#development-workflow)
   - [Making Changes](#making-changes)
+  - [Adding a Changeset](#adding-a-changeset)
   - [Submitting Your Changes](#submitting-your-changes)
 - [Writing Tests](#writing-tests)
   - [Test File Organization](#test-file-organization)
@@ -22,6 +23,7 @@ Thank you for your interest in contributing to the `@node-core/doc-kit` project!
 - [Code Quality](#code-quality)
   - [Linting and Formatting](#linting-and-formatting)
   - [Pre-commit Hooks](#pre-commit-hooks)
+- [Releasing](#releasing)
 - [Commit Guidelines](#commit-guidelines)
 - [Developer's Certificate of Origin 1.1](#developers-certificate-of-origin-11)
 
@@ -150,6 +152,34 @@ The steps below will give you a general idea of how to prepare your local enviro
    node --run format
    node --run lint
    ```
+
+### Adding a Changeset
+
+This project uses [Changesets][] to manage versioning, the changelog, and npm releases. Any change
+that affects published behaviour should include a changeset so it shows up in `CHANGELOG.md` and
+triggers a release.
+
+1. **Create a changeset**
+
+   ```bash
+   node --run changeset
+   ```
+
+   You'll be prompted for the bump type and a short summary:
+   - **patch** — bug fixes and other backwards-compatible changes
+   - **minor** — new, backwards-compatible features
+   - **major** — breaking changes
+
+   The summary becomes the changelog entry, so write it for users of the package.
+
+2. **Commit the generated file**
+
+   This writes a Markdown file under `.changeset/`. Commit it alongside your code changes so it
+   lands with your Pull Request.
+
+> [!NOTE]
+> Changes that don't affect the published package (e.g. tests, CI, or internal docs) don't need a
+> changeset. See [Releasing](#releasing) for what happens to changesets after they're merged.
 
 ### Submitting Your Changes
 
@@ -303,6 +333,21 @@ You can bypass pre-commit hooks if necessary (not recommended):
 git commit -m "describe your changes" --no-verify
 ```
 
+## Releasing
+
+Releases are automated with [Changesets][] and require no manual version bumps — maintainers never
+edit the `version` field in `package.json` by hand.
+
+When changesets land on `main`, the [`Release` workflow](.github/workflows/release.yml) opens (or
+updates) a **"Version Packages"** Pull Request that consumes the pending changeset files, bumps the
+version in `package.json`, and writes the corresponding `CHANGELOG.md` entries.
+
+To ship a release, a maintainer merges that "Version Packages" PR. The same workflow then:
+
+- publishes `@node-core/doc-kit` to npm (via [npm trusted publishing][] — no token required),
+- creates the matching `v<x.y.z>` git tag, and
+- cuts a GitHub Release from the changelog.
+
 ## Commit Guidelines
 
 This project follows the [Conventional Commits][] specification.
@@ -327,6 +372,8 @@ By contributing to this project, I certify that:
   with this project or the open source license(s) involved.
 ```
 
+[Changesets]: https://github.com/changesets/changesets
 [Conventional Commits]: https://www.conventionalcommits.org/
 [Git]: https://git-scm.com/downloads
 [Husky]: https://typicode.github.io/husky/
+[npm trusted publishing]: https://docs.npmjs.com/trusted-publishers

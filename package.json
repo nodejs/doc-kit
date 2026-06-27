@@ -20,13 +20,18 @@
     "test:e2e": "playwright test",
     "prepare": "husky || exit 0",
     "run": "node bin/cli.mjs",
-    "watch": "node --watch bin/cli.mjs"
+    "watch": "node --watch bin/cli.mjs",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "release": "changeset publish"
   },
   "main": "./src/index.mjs",
   "bin": {
     "doc-kit": "./bin/cli.mjs"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "~1.60.0",
     "@reporters/github": "~2.0.0",
