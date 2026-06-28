@@ -60,7 +60,7 @@ jobs:
 
       - name: Notify
         if: steps.changesets.outputs.published == 'true'
-        uses: rtCamp/action-slack-notify@33ca3be66c6f378fe1610fd1d5258632dbed5e58 # 2.4.0
+        uses: rtCamp/action-slack-notify@33ca3be66c6f378fe1610fd1d5258632dbed5e58 # v2.4.0
         env:
           SLACK_COLOR: '#43853D'
           SLACK_ICON: https://github.com/nodejs.png?size=48
