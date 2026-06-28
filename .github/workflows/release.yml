@@ -17,9 +17,17 @@ on:
 permissions:
   contents: read
 
+# Serialize releases. `cancel-in-progress: false` so a mid-publish run is never
+# killed by a newer push.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Never attempt to publish from forks (no trusted-publisher match / secrets).
+    if: github.repository == 'nodejs/doc-kit'
     permissions:
       contents: write # commit the version bump, push the git tag, create the GitHub Release
       pull-requests: write # open/update the "Version Packages" PR
