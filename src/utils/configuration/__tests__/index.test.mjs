@@ -33,6 +33,7 @@ mock.module('../../loaders.mjs', {
 });
 
 const {
+  assertRunnableOptions,
   loadConfigFile,
   createConfigFromCLIOptions,
   createRunConfiguration,
@@ -122,6 +123,28 @@ describe('config.mjs', () => {
       assert.ok(config.metadata);
       assert.strictEqual(config.global.input, undefined);
       assert.strictEqual(config.threads, undefined);
+    });
+  });
+
+  describe('assertRunnableOptions', () => {
+    it('should throw when target is missing', () => {
+      assert.throws(
+        () => assertRunnableOptions({ global: { input: 'src/' } }),
+        /Both a `target` and an `input` must be provided/
+      );
+    });
+
+    it('should throw when input is missing', () => {
+      assert.throws(
+        () => assertRunnableOptions({ target: ['json'], global: {} }),
+        /Both a `target` and an `input` must be provided/
+      );
+    });
+
+    it('should not throw when both target and input are provided', () => {
+      assert.doesNotThrow(() =>
+        assertRunnableOptions({ target: ['json'], global: { input: 'src/' } })
+      );
     });
   });
 
