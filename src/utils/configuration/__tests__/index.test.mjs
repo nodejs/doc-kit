@@ -127,20 +127,23 @@ describe('config.mjs', () => {
   });
 
   describe('assertRunnableOptions', () => {
-    it('should throw when neither target nor config file is provided', () => {
+    it('should throw when target is missing', () => {
       assert.throws(
-        () => assertRunnableOptions({}),
-        /Either `--target` or `--config-file` must be provided/
+        () => assertRunnableOptions({ global: { input: 'src/' } }),
+        /Both a `target` and an `input` must be provided/
       );
     });
 
-    it('should not throw when a target is provided', () => {
-      assert.doesNotThrow(() => assertRunnableOptions({ target: ['json'] }));
+    it('should throw when input is missing', () => {
+      assert.throws(
+        () => assertRunnableOptions({ target: ['json'], global: {} }),
+        /Both a `target` and an `input` must be provided/
+      );
     });
 
-    it('should not throw when a config file is provided', () => {
+    it('should not throw when both target and input are provided', () => {
       assert.doesNotThrow(() =>
-        assertRunnableOptions({ configFile: 'config.mjs' })
+        assertRunnableOptions({ target: ['json'], global: { input: 'src/' } })
       );
     });
   });

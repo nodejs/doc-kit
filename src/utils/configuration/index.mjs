@@ -105,15 +105,18 @@ export const createConfigFromCLIOptions = options => ({
 });
 
 /**
- * Asserts that the CLI was given somewhere to read generator targets from:
- * either explicit `--target` flags or a `--config-file` that supplies them.
+ * Asserts that the resolved configuration has everything needed to run:
+ * at least one generator `target` and an `input` to read source files from.
+ * These may come from CLI flags or a config file; by this point both sources
+ * have been merged, so we validate the result rather than the raw options.
  *
- * @param {import('../../../bin/commands/generate.mjs').CLIOptions} options - User-provided options
+ * @param {import('./types').Configuration} config - The merged configuration
  */
-export const assertRunnableOptions = options => {
-  if (!options.target && !options.configFile) {
+export const assertRunnableOptions = config => {
+  if (!config.target || !config.global?.input) {
     throw new Error(
-      'Either `--target` or `--config-file` must be provided. ' +
+      'Both a `target` and an `input` must be provided, either via ' +
+        '`--target`/`--input` or a `--config-file`. ' +
         'Run `doc-kit generate --help` for usage.'
     );
   }
