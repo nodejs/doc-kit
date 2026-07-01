@@ -6,6 +6,7 @@ import logger from './logger/index.mjs';
 import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
+import createProgressBar from './utils/progressBar.mjs';
 
 const generatorsLogger = logger.child('generators');
 
@@ -89,7 +90,7 @@ const createGenerator = () => {
   /**
    * Runs all requested generators with their dependencies.
    *
-   * @param {import('./utils/configuration/types').Configuration} options - Runtime options
+   * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
    * @returns {Promise<unknown[]>} Results of all requested generators
    */
   const runGenerators = async configuration => {
@@ -115,13 +116,23 @@ const createGenerator = () => {
       await scheduleGenerator(name, configuration);
     }
 
+    const progress = createProgressBar({ enabled: configuration.progress });
+    progress.start(generators.length, 0, { phase: 'Starting...' });
+
     // Start all collections in parallel (don't await sequentially). Consuming
     // through the shared path lets the final read also trigger eviction.
     const results = await Promise.all(
-      generators.map(name => cache.consume(name))
+      generators.map(async name => {
+        const result = await cache.consume(name);
+
+        progress.increment({ phase: name });
+
+        return result;
+      })
     );
 
     await pool.destroy();
+    progress.stop();
 
     return results;
   };
