@@ -9,6 +9,10 @@ export const relative = (to, from) => {
     return to;
   }
 
+  if (to.startsWith('#') || to.startsWith('?')) {
+    return to;
+  }
+
   const a = to.split('/').filter(Boolean);
   const b = from.split('/').slice(0, -1).filter(Boolean);
 
