@@ -45,4 +45,23 @@ describe('buildNotFoundPage', () => {
     assert.deepEqual(a.head, b.head);
     assert.equal(a.entries.length, b.entries.length);
   });
+
+  it('honors custom text and link configuration', () => {
+    const { entries } = buildNotFoundPage({
+      notFoundText: 'Nothing here. Go back to the ',
+      notFoundLinkUrl: 'home.html',
+      notFoundLinkText: 'homepage',
+    });
+
+    const paragraph = entries[0].content.children.find(
+      child => child.type === 'paragraph'
+    );
+
+    assert.equal(paragraph.children[0].value, 'Nothing here. Go back to the ');
+
+    const link = paragraph.children.find(child => child.type === 'link');
+
+    assert.equal(link.url, 'home.html');
+    assert.equal(link.children[0].value, 'homepage');
+  });
 });

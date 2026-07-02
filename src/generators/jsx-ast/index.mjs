@@ -1,5 +1,6 @@
 'use strict';
 
+import { NOT_FOUND_DEFAULTS } from './utils/synthetic/404.mjs';
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -21,6 +22,7 @@ export default createLazyGenerator({
     generateAllPage: true,
     generateIndexPage: true,
     generateNotFoundPage: true,
+    ...NOT_FOUND_DEFAULTS,
   },
 
   hasParallelProcessor: true,

@@ -7,6 +7,9 @@ export type Generator = GeneratorMetadata<
     generateAllPage: boolean;
     generateIndexPage: boolean;
     generateNotFoundPage: boolean;
+    notFoundText: string;
+    notFoundLinkUrl: string;
+    notFoundLinkText: string;
   },
   Generate<Array<MetadataEntry>, AsyncGenerator<JSXContent>>,
   ProcessChunk<

@@ -22,7 +22,7 @@ const buildSyntheticDescriptors = input => {
   return [
     config.generateAllPage && buildAllPage(input),
     config.generateIndexPage && buildIndexPage(input),
-    config.generateNotFoundPage && buildNotFoundPage(),
+    config.generateNotFoundPage && buildNotFoundPage(config),
   ].filter(Boolean);
 };
 
