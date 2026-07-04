@@ -105,6 +105,24 @@ export const createConfigFromCLIOptions = options => ({
 });
 
 /**
+ * Asserts that the resolved configuration has everything needed to run:
+ * at least one generator `target` and an `input` to read source files from.
+ * These may come from CLI flags or a config file; by this point both sources
+ * have been merged, so we validate the result rather than the raw options.
+ *
+ * @param {import('./types').Configuration} config - The merged configuration
+ */
+export const assertRunnableOptions = config => {
+  if (!config.target || !config.global?.input) {
+    throw new Error(
+      'Both a `target` and an `input` must be provided, either via ' +
+        '`--target`/`--input` or a `--config-file`. ' +
+        'Run `doc-kit generate --help` for usage.'
+    );
+  }
+};
+
+/**
  * Creates a complete run configuration by merging config file, user options, and defaults.
  * Processes and validates configuration values including version coercion, changelog parsing,
  * and constraint enforcement for threads and chunk size.

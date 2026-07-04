@@ -54,6 +54,10 @@ Commands:
 
 ### `generate`
 
+You must provide either `--target` (one or more generators to run) or
+`--config-file` (which supplies the targets). Running `generate` without either
+exits with an error pointing you to the help output.
+
 ```
 Usage: @node-core/doc-kit generate [options]
 
