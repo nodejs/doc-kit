@@ -5,6 +5,7 @@ import { h as createElement } from 'hastscript';
 import { createSyntheticHead, wrapAsEntry } from './synthetic.mjs';
 import { JSX_IMPORTS } from '../../../web/constants.mjs';
 import { createJSXElement } from '../ast.mjs';
+import { getSortedHeadNodes } from '../getSortedHeadNodes.mjs';
 
 const STABILITY_BADGE_KINDS = [
   'error',
@@ -67,7 +68,7 @@ export const buildStabilityOverview = headEntries =>
  */
 export const buildIndexPage = entries => {
   const head = createSyntheticHead('index', 'Index');
-  const moduleEntries = entries.filter(entry => entry.heading.depth === 1);
+  const moduleEntries = getSortedHeadNodes(entries);
 
   return {
     head,

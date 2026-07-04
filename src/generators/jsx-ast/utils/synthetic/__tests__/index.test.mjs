@@ -30,6 +30,22 @@ describe('buildIndexPage', () => {
     assert.equal(head.heading.data.name, 'Index');
     assert.equal(head.synthetic, true);
   });
+
+  it('sorts the stability overview rows alphabetically by API name', () => {
+    const { entries } = buildIndexPage([
+      fakeHead('fs', 'fs', 2),
+      fakeHead('assert', 'assert', 2),
+      fakeHead('crypto', 'crypto', 2),
+    ]);
+
+    const table = findChild(entries[0].content, 'table');
+    const rows = findChild(table, 'tbody').children;
+    const names = rows.map(
+      row => row.children[0].children[0].children[0].value
+    );
+
+    assert.deepEqual(names, ['assert', 'crypto', 'fs']);
+  });
 });
 
 describe('buildStabilityOverview', () => {
