@@ -206,6 +206,14 @@ export const parseType = (typeString, transformType) => {
     return parts.map(p => resolveOr(p, transformType)).join(joiner);
   }
 
+  const PREFIXES = ['typeof ', 'keyof ', 'readonly ', 'unique '];
+  for (const prefix of PREFIXES) {
+    if (trimmed.startsWith(prefix)) {
+      const rest = trimmed.slice(prefix.length).trim();
+      return `${prefix.trim()} ${resolveOr(rest, transformType)}`;
+    }
+  }
+
   // Strip a trailing `[]` for now; reapply on the way out.
   const isArray = trimmed.endsWith('[]');
   const core = isArray ? trimmed.slice(0, -2).trim() : trimmed;
