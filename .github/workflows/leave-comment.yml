@@ -13,6 +13,10 @@ permissions:
 jobs:
   aggregate:
     name: Aggregate Comparison Results
+    # Only pull_request-triggered runs have a PR to comment on; runs triggered
+    # by a plain push to main (e.g. after a merge) have none, and attempting
+    # to comment in that case fails with "No issue/pull request in input".
+    if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
