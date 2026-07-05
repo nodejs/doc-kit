@@ -1,4 +1,4 @@
-import { TYPE_OPENERS, TYPE_CLOSERS } from '../constants.mjs';
+import { TYPE_OPENERS, TYPE_CLOSERS, PREFIXES } from '../constants.mjs';
 
 /** True when the `>` at `i` is the tail of `=>` and shouldn't pop depth. */
 const isArrowTail = (str, i) => str[i] === '>' && str[i - 1] === '=';
@@ -206,7 +206,6 @@ export const parseType = (typeString, transformType) => {
     return parts.map(p => resolveOr(p, transformType)).join(joiner);
   }
 
-  const PREFIXES = ['typeof ', 'keyof ', 'readonly ', 'unique '];
   for (const prefix of PREFIXES) {
     if (trimmed.startsWith(prefix)) {
       const rest = trimmed.slice(prefix.length).trim();
