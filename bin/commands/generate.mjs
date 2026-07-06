@@ -6,6 +6,7 @@ import {
   assertRunnableOptions,
   setConfig,
 } from '../../src/utils/configuration/index.mjs';
+import createProgressBar from '../../src/utils/progress-bar.mjs';
 import { errorWrap } from '../utils.mjs';
 
 const { runGenerators } = createGenerator();
@@ -67,6 +68,14 @@ export default new Command('generate')
       const config = await setConfig(opts);
       assertRunnableOptions(config);
 
-      await runGenerators(config);
+      const progressBar = createProgressBar();
+
+      progressBar.start(config.target.length);
+
+      await runGenerators(config, {
+        onGeneratorComplete: progressBar.increment,
+      });
+
+      progressBar.stop();
     })
   );

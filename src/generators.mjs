@@ -90,9 +90,12 @@ const createGenerator = () => {
    * Runs all requested generators with their dependencies.
    *
    * @param {import('./utils/configuration/types').Configuration} options - Runtime options
+   * @param {Object} [callbacks] - Optional lifecycle callbacks
+   * @param {(name: string) => void} [callbacks.onGeneratorComplete] - Called once per
+   * requested generator (not its dependencies) as soon as its result is ready
    * @returns {Promise<unknown[]>} Results of all requested generators
    */
-  const runGenerators = async configuration => {
+  const runGenerators = async (configuration, { onGeneratorComplete } = {}) => {
     const { target: generators, threads } = configuration;
 
     generatorsLogger.debug(`Starting pipeline`, {
@@ -118,7 +121,13 @@ const createGenerator = () => {
     // Start all collections in parallel (don't await sequentially). Consuming
     // through the shared path lets the final read also trigger eviction.
     const results = await Promise.all(
-      generators.map(name => cache.consume(name))
+      generators.map(name =>
+        cache.consume(name).then(result => {
+          onGeneratorComplete?.(name);
+
+          return result;
+        })
+      )
     );
 
     await pool.destroy();

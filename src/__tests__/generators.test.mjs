@@ -122,6 +122,19 @@ describe('createGenerator orchestration', () => {
     ]);
   });
 
+  it('calls onGeneratorComplete once per requested target, not per dependency', async () => {
+    const { runGenerators } = createGenerator();
+
+    const completed = [];
+
+    await runGenerators(
+      { target: ['gen-a', 'gen-b'], threads: 1 },
+      { onGeneratorComplete: name => completed.push(name) }
+    );
+
+    assert.deepStrictEqual(completed.sort(), ['gen-a', 'gen-b']);
+  });
+
   it('does not re-run a target that is also another target dependency', async () => {
     const { runGenerators } = createGenerator();
 
