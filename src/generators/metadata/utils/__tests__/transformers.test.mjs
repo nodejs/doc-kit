@@ -93,6 +93,24 @@ describe('transformTypeToReferenceLink', () => {
     );
   });
 
+  it('should correctly extract TS prefix operators and link the underlying type', () => {
+    strictEqual(
+      transformTypeToReferenceLink('typeof Compiler', {
+        Compiler: '/api/Compiler',
+      }),
+      'typeof [`<Compiler>`](/api/Compiler)'
+    );
+  });
+
+  it('should not incorrectly strip prefixes if they are part of the type name (word boundary)', () => {
+    strictEqual(
+      transformTypeToReferenceLink('typeofSomething', {
+        typeofSomething: '/api/typeofSomething',
+      }),
+      '[`<typeofSomething>`](/api/typeofSomething)'
+    );
+  });
+
   it('should handle extreme nested combinations of functions, arrays, generics, unions, and intersections', () => {
     const input =
       '(str: string[]) => Promise<Map<string, number & string>, Map<string | number>>';
