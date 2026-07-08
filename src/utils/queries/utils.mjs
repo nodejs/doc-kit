@@ -27,11 +27,8 @@ export const isTypedList = list => {
     return 2;
   }
 
-  // Direct type link: <Type>
-  if (
-    firstNode.type === 'link' &&
-    firstNode.children?.[0]?.value?.startsWith('<')
-  ) {
+  // Direct type annotation: {Type}
+  if (firstNode.type === 'typeAnnotation') {
     return 2;
   }
 

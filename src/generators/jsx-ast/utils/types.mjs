@@ -7,30 +7,6 @@ import { DEFAULT_EXPRESSION } from '../../legacy-json/constants.mjs';
 import { TRIMMABLE_PADDING_REGEX } from '../constants.mjs';
 
 /**
- * Checks if the node is a union separator (`' | '`) or a type reference
- * (a link wrapping `<Type>` inline code).
- *
- * @param {import('mdast').Node} node
- * @returns {0 | 1 | 2} 0 = not type-related, 1 = type ref, 2 = union separator
- */
-export const classifyTypeNode = node => {
-  if (node.type === 'text' && node.value === ' | ') {
-    return 2;
-  }
-
-  const child = node.children?.[0];
-  if (
-    node.type === 'link' &&
-    child?.type === 'inlineCode' &&
-    child.value?.startsWith('<')
-  ) {
-    return 1;
-  }
-
-  return 0;
-};
-
-/**
  * Removes and returns the leading node if it's blank text.
  *
  * @param {Array<import('mdast').PhrasingContent>} nodes
@@ -84,31 +60,18 @@ export const extractPropertyName = (nodes, current) => {
 };
 
 /**
- * Consumes consecutive type-annotation nodes (type refs and union
- * separators) from the front of `nodes` and updates the current object.
+ * Consumes a leading type annotation from the front of `nodes` and compiles
+ * it to a JSX expression (unions live inside a single annotation).
  *
  * @param {Array<import('mdast').PhrasingContent>} nodes
  */
-export const extractTypeAnnotations = nodes => {
-  const types = [];
-
-  while (nodes.length) {
-    const kind = classifyTypeNode(nodes[0]);
-    if (kind === 0) {
-      break;
-    }
-
-    types.push(nodes.shift());
-
-    // A union separator implies another type follows
-    if (kind === 2 && nodes.length) {
-      types.push(nodes.shift());
-    }
+export const extractTypeAnnotation = nodes => {
+  if (nodes[0]?.type !== 'typeAnnotation') {
+    return undefined;
   }
 
-  if (types.length > 0) {
-    return remark().runSync(createTree('root', types)).body[0].expression;
-  }
+  return remark().runSync(createTree('root', [nodes.shift()])).body[0]
+    .expression;
 };
 
 /**
@@ -126,7 +89,7 @@ export const parseListIntoProperties = node =>
     // Strip stale whitespace left over after name extraction
     shiftIfBlankText(children);
 
-    current.type = extractTypeAnnotations(children);
+    current.type = extractTypeAnnotation(children);
 
     if (children.length > 0) {
       children[0].value &&= children[0].value.replace(

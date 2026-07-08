@@ -1,34 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  transformTypeReferences,
-  extractPattern,
-  parseListItem,
-  parseList,
-} from '../parseList.mjs';
+import { extractPattern, parseListItem, parseList } from '../parseList.mjs';
 
 const validTypedList = [
   { type: 'inlineCode', value: 'option' }, // inline code
   { type: 'text', value: ' ' }, // space
-  {
-    type: 'link',
-    children: [{ type: 'text', value: '<boolean>' }], // link with < value
-  },
+  { type: 'typeAnnotation', value: 'boolean' },
   { type: 'text', value: ' option description' },
 ];
-
-describe('transformTypeReferences', () => {
-  it('replaces template syntax with curly braces', () => {
-    const result = transformTypeReferences('`<string>`');
-    assert.equal(result, '{string}');
-  });
-
-  it('normalizes multiple types', () => {
-    const result = transformTypeReferences('`<string>` | `<number>`');
-    assert.equal(result, '{string|number}');
-  });
-});
 
 describe('extractPattern', () => {
   it('extracts pattern and removes from text', () => {
@@ -64,14 +44,81 @@ describe('parseListItem', () => {
       children: [
         {
           type: 'paragraph',
-          children: [{ type: 'text', value: 'param {string} description' }],
+          children: [
+            { type: 'inlineCode', value: 'param' },
+            { type: 'text', value: ' ' },
+            { type: 'typeAnnotation', value: 'string' },
+            { type: 'text', value: ' description' },
+          ],
         },
       ],
     };
 
     const result = parseListItem(child);
-    assert.equal(typeof result, 'object');
-    assert.ok(result.textRaw);
+    assert.equal(result.textRaw, '`param` {string} description');
+    assert.equal(result.name, 'param');
+    assert.equal(result.type, 'string');
+    assert.equal(result.desc, 'description');
+  });
+
+  it('keeps union types verbatim', () => {
+    const child = {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'inlineCode', value: 'data' },
+            { type: 'text', value: ' ' },
+            { type: 'typeAnnotation', value: 'Buffer | string' },
+            { type: 'text', value: ' the data' },
+          ],
+        },
+      ],
+    };
+
+    const result = parseListItem(child);
+    assert.equal(result.textRaw, '`data` {Buffer | string} the data');
+    assert.equal(result.type, 'Buffer | string');
+  });
+
+  it('handles nested braces in types', () => {
+    const child = {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'inlineCode', value: 'maps' },
+            { type: 'text', value: ' ' },
+            { type: 'typeAnnotation', value: 'Record<string, {a: number}>' },
+            { type: 'text', value: ' the maps' },
+          ],
+        },
+      ],
+    };
+
+    const result = parseListItem(child);
+    assert.equal(result.type, 'Record<string, {a: number}>');
+    assert.equal(result.desc, 'the maps');
+  });
+
+  it('does not mistake a prose annotation for the type', () => {
+    const child = {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'inlineCode', value: 'param' },
+            { type: 'text', value: ' see also ' },
+            { type: 'typeAnnotation', value: 'string' },
+            { type: 'text', value: ' values' },
+          ],
+        },
+      ],
+    };
+
+    const result = parseListItem(child);
+    assert.equal(result.type, undefined);
+    assert.equal(result.desc, 'see also {string} values');
   });
 
   it('identifies return items', () => {
@@ -86,6 +133,29 @@ describe('parseListItem', () => {
 
     const result = parseListItem(child);
     assert.equal(result.name, 'return');
+  });
+
+  it('extracts the default value', () => {
+    const child = {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'inlineCode', value: 'flag' },
+            { type: 'text', value: ' ' },
+            { type: 'typeAnnotation', value: 'boolean' },
+            { type: 'text', value: ' turns it on. ' },
+            { type: 'strong', children: [{ type: 'text', value: 'Default:' }] },
+            { type: 'text', value: ' ' },
+            { type: 'inlineCode', value: 'false' },
+          ],
+        },
+      ],
+    };
+
+    const result = parseListItem(child);
+    assert.equal(result.type, 'boolean');
+    assert.equal(result.default, '`false`');
   });
 });
 
@@ -110,6 +180,7 @@ describe('parseList', () => {
 
     parseList(section, nodes);
     assert.ok(section.textRaw);
+    assert.equal(section.type, 'boolean');
   });
 
   it('processes event sections', () => {

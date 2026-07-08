@@ -12,89 +12,8 @@ mock.module('../../../../utils/remark.mjs', {
   },
 });
 
-const {
-  classifyTypeNode,
-  extractPropertyName,
-  extractTypeAnnotations,
-  parseListIntoProperties,
-} = await import('../types.mjs');
-
-describe('classifyTypeNode', () => {
-  it('returns 2 for union separator text node', () => {
-    const node = { type: 'text', value: ' | ' };
-    assert.strictEqual(classifyTypeNode(node), 2);
-  });
-
-  it('returns 1 for type reference link with angle bracket inline code', () => {
-    const node = {
-      type: 'link',
-      children: [{ type: 'inlineCode', value: '<Type>' }],
-    };
-    assert.strictEqual(classifyTypeNode(node), 1);
-  });
-
-  it('returns 1 for type reference with complex angle bracket content', () => {
-    const node = {
-      type: 'link',
-      children: [{ type: 'inlineCode', value: '<Promise<string>>' }],
-    };
-    assert.strictEqual(classifyTypeNode(node), 1);
-  });
-
-  it('returns 0 for regular text node', () => {
-    const node = { type: 'text', value: 'regular text' };
-    assert.strictEqual(classifyTypeNode(node), 0);
-  });
-
-  it('returns 0 for link without inline code child', () => {
-    const node = {
-      type: 'link',
-      children: [{ type: 'text', value: 'regular link' }],
-    };
-    assert.strictEqual(classifyTypeNode(node), 0);
-  });
-
-  it('returns 0 for link with inline code not starting with angle bracket', () => {
-    const node = {
-      type: 'link',
-      children: [{ type: 'inlineCode', value: 'regularCode' }],
-    };
-    assert.strictEqual(classifyTypeNode(node), 0);
-  });
-
-  it('returns 0 for node without children', () => {
-    const node = { type: 'link' };
-    assert.strictEqual(classifyTypeNode(node), 0);
-  });
-
-  it('returns 0 for node with empty children array', () => {
-    const node = { type: 'link', children: [] };
-    assert.strictEqual(classifyTypeNode(node), 0);
-  });
-
-  it('returns 0 for different text values', () => {
-    const node1 = { type: 'text', value: '|' };
-    const node2 = { type: 'text', value: ' |' };
-    const node3 = { type: 'text', value: '| ' };
-
-    assert.strictEqual(classifyTypeNode(node1), 0);
-    assert.strictEqual(classifyTypeNode(node2), 0);
-    assert.strictEqual(classifyTypeNode(node3), 0);
-  });
-
-  it('returns 0 for non-link, non-text nodes', () => {
-    const nodes = [
-      { type: 'paragraph' },
-      { type: 'emphasis' },
-      { type: 'strong' },
-      { type: 'inlineCode' },
-    ];
-
-    nodes.forEach(node => {
-      assert.strictEqual(classifyTypeNode(node), 0);
-    });
-  });
-});
+const { extractPropertyName, extractTypeAnnotation, parseListIntoProperties } =
+  await import('../types.mjs');
 
 describe('extractPropertyName', () => {
   it('extracts name from inline code and removes it from nodes', () => {
@@ -177,113 +96,66 @@ describe('extractPropertyName', () => {
   });
 });
 
-describe('extractTypeAnnotations', () => {
-  it('extracts single type reference and returns expression', () => {
+describe('extractTypeAnnotation', () => {
+  it('extracts a leading type annotation and returns its expression', () => {
     const nodes = [
-      {
-        type: 'link',
-        children: [{ type: 'inlineCode', value: '<string>' }],
-      },
+      { type: 'typeAnnotation', value: 'string' },
       { type: 'text', value: ' description follows' },
     ];
 
-    const result = extractTypeAnnotations(nodes);
+    const result = extractTypeAnnotation(nodes);
 
     assert.strictEqual(result, 'mock-expression');
     assert.strictEqual(nodes.length, 1);
     assert.strictEqual(nodes[0].value, ' description follows');
   });
 
-  it('extracts union types with separator', () => {
+  it('extracts union types written as one annotation', () => {
     const nodes = [
-      {
-        type: 'link',
-        children: [{ type: 'inlineCode', value: '<string>' }],
-      },
-      { type: 'text', value: ' | ' },
-      {
-        type: 'link',
-        children: [{ type: 'inlineCode', value: '<number>' }],
-      },
+      { type: 'typeAnnotation', value: 'string|number' },
       { type: 'text', value: ' description' },
     ];
 
-    const result = extractTypeAnnotations(nodes);
+    const result = extractTypeAnnotation(nodes);
 
     assert.strictEqual(result, 'mock-expression');
     assert.strictEqual(nodes.length, 1);
     assert.strictEqual(nodes[0].value, ' description');
   });
 
-  it('handles union separator at end without following type', () => {
-    const nodes = [
-      {
-        type: 'link',
-        children: [{ type: 'inlineCode', value: '<string>' }],
-      },
-      { type: 'text', value: ' | ' },
-    ];
-
-    const result = extractTypeAnnotations(nodes);
-
-    assert.strictEqual(result, 'mock-expression');
-    assert.strictEqual(nodes.length, 0);
-  });
-
-  it('returns undefined when no type annotations found', () => {
+  it('returns undefined when no type annotation leads', () => {
     const nodes = [
       { type: 'text', value: 'regular text' },
-      { type: 'emphasis', children: [{ type: 'text', value: 'emphasized' }] },
+      { type: 'typeAnnotation', value: 'string' },
     ];
 
-    const result = extractTypeAnnotations(nodes);
+    const result = extractTypeAnnotation(nodes);
 
     assert.strictEqual(result, undefined);
     assert.strictEqual(nodes.length, 2);
   });
 
-  it('stops extraction at first non-type node', () => {
+  it('consumes only the leading annotation', () => {
     const nodes = [
-      {
-        type: 'link',
-        children: [{ type: 'inlineCode', value: '<string>' }],
-      },
+      { type: 'typeAnnotation', value: 'string' },
       { type: 'emphasis', children: [{ type: 'text', value: 'not a type' }] },
-      { type: 'text', value: ' | ' }, // This shouldn't be consumed
+      { type: 'typeAnnotation', value: 'number' },
     ];
 
-    const result = extractTypeAnnotations(nodes);
+    const result = extractTypeAnnotation(nodes);
 
     assert.strictEqual(result, 'mock-expression');
     assert.strictEqual(nodes.length, 2);
     assert.strictEqual(nodes[0].type, 'emphasis');
-    assert.strictEqual(nodes[1].value, ' | ');
   });
 
   it('handles empty nodes array', () => {
     const nodes = [];
 
-    const result = extractTypeAnnotations(nodes);
+    const result = extractTypeAnnotation(nodes);
 
     assert.strictEqual(result, undefined);
     assert.strictEqual(nodes.length, 0);
-  });
-
-  it('processes complex union types with multiple separators', () => {
-    const nodes = [
-      { type: 'link', children: [{ type: 'inlineCode', value: '<string>' }] },
-      { type: 'text', value: ' | ' },
-      { type: 'link', children: [{ type: 'inlineCode', value: '<number>' }] },
-      { type: 'text', value: ' | ' },
-      { type: 'link', children: [{ type: 'inlineCode', value: '<boolean>' }] },
-      { type: 'text', value: ' description' },
-    ];
-
-    const result = extractTypeAnnotations(nodes);
-
-    assert.strictEqual(result, 'mock-expression');
-    assert.strictEqual(nodes.length, 1);
-    assert.strictEqual(nodes[0].value, ' description');
   });
 });
 
@@ -317,7 +189,7 @@ describe('parseListIntoProperties', () => {
     ]);
   });
 
-  it('parses property with type annotations', () => {
+  it('parses property with a type annotation', () => {
     const node = {
       children: [
         {
@@ -325,10 +197,7 @@ describe('parseListIntoProperties', () => {
             {
               children: [
                 { type: 'inlineCode', value: 'prop' },
-                {
-                  type: 'link',
-                  children: [{ type: 'inlineCode', value: '<string>' }],
-                },
+                { type: 'typeAnnotation', value: 'string' },
                 { type: 'text', value: ' description' },
               ],
             },
@@ -404,7 +273,6 @@ describe('parseListIntoProperties', () => {
   });
 
   it('trims padding from description text', () => {
-    // Mock TRIMMABLE_PADDING_REGEX
     const node = {
       children: [
         {
@@ -578,10 +446,7 @@ describe('parseListIntoProperties', () => {
             {
               children: [
                 { type: 'inlineCode', value: 'config' },
-                {
-                  type: 'link',
-                  children: [{ type: 'inlineCode', value: '<Object>' }],
-                },
+                { type: 'typeAnnotation', value: 'Object' },
                 { type: 'text', value: ' configuration object' },
               ],
             },
@@ -593,10 +458,7 @@ describe('parseListIntoProperties', () => {
                     {
                       children: [
                         { type: 'inlineCode', value: 'timeout' },
-                        {
-                          type: 'link',
-                          children: [{ type: 'inlineCode', value: '<number>' }],
-                        },
+                        { type: 'typeAnnotation', value: 'number' },
                         { type: 'text', value: ' timeout in milliseconds' },
                       ],
                     },

@@ -49,6 +49,10 @@ export function convertNodeToMandoc(node, isListItem = false) {
       // Format inline code using Mandoc's bold markup (\\fB ... \\fR).
       return `\\fB${escapeText()}\\fR`;
 
+    case 'typeAnnotation':
+      // Type annotations render like inline code, in their `{...}` form.
+      return `\\fB{${escapeText()}}\\fR`;
+
     case 'strong':
       // Format inline code + strong using Mandoc's bold markup (\\fB ... \\fR).
       return `\\fB${convertChildren()}\\fR`;

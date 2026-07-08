@@ -2,10 +2,7 @@
 
 import { SKIP } from 'unist-util-visit';
 
-import {
-  transformTypeToReferenceLink,
-  transformUnixManualToLink,
-} from './transformers.mjs';
+import { transformUnixManualToLink } from './transformers.mjs';
 import { extractYamlContent, parseYAMLIntoMetadata } from './yaml.mjs';
 import { QUERIES } from '../../../utils/queries/index.mjs';
 import { getRemark as remark } from '../../../utils/remark.mjs';
@@ -53,20 +50,6 @@ const updateReferences = (query, transformer, node, parent) => {
 
   return [SKIP];
 };
-
-/**
- * Updates type references to be markdown links
- * @param {import('@types/mdast').Text} node The text node
- * @param {import('@types/mdast').Parent} parent The parent node
- * @param {Record<string, string>} typeMap The type mapping
- */
-export const visitTextWithTypeNode = (node, parent, typeMap) =>
-  updateReferences(
-    QUERIES.normalizeTypes,
-    type => transformTypeToReferenceLink(type, typeMap),
-    node,
-    parent
-  );
 
 /**
  * Updates unix manual references to be markdown links

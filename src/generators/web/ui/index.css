@@ -117,4 +117,20 @@ main {
       }
     }
   }
+
+  code.type {
+    /* Inline type annotations - one highlighted fragment per type */
+    padding: 0 calc(var(--spacing, 0.25rem) * 1);
+    border-radius: calc(var(--spacing, 0.25rem) * 1);
+
+    .type-link {
+      /* Links keep their token color; underline marks the affordance */
+      color: inherit;
+      text-decoration: underline dotted;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }

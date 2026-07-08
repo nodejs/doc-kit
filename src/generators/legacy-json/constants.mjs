@@ -1,9 +1,6 @@
 // Grabs a method's name
 export const NAME_EXPRESSION = /^['`"]?([^'`": {]+)['`"]?\s*:?\s*/;
 
-// Denotes a method's type
-export const TYPE_EXPRESSION = /^\{([^}]+)\}\s*/;
-
 // Checks if there's a leading hyphen
 export const LEADING_HYPHEN = /^-\s*/;
 

@@ -1,6 +1,7 @@
 'use strict';
 
 import { parseApiDoc } from './utils/parse.mjs';
+import { createTypeResolver } from './utils/resolveTypes.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
 import { loadFromURL } from '../../utils/loaders.mjs';
 
@@ -11,10 +12,12 @@ import { loadFromURL } from '../../utils/loaders.mjs';
  * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(fullInput, itemIndices, typeMap) {
+  const typeResolver = await createTypeResolver();
+
   const results = [];
 
   for (const idx of itemIndices) {
-    results.push(...parseApiDoc(fullInput[idx], typeMap));
+    results.push(...parseApiDoc(fullInput[idx], typeMap, typeResolver));
   }
 
   return results;

@@ -6,9 +6,11 @@ import { describe, it } from 'node:test';
 import { u } from 'unist-builder';
 
 import { parseApiDoc } from '../parse.mjs';
+import { createTypeResolver } from '../resolveTypes.mjs';
 
 const path = 'fs';
 const typeMap = {};
+const typeResolver = await createTypeResolver();
 
 const h = (text, depth = 1) => u('heading', { depth }, [u('text', text)]);
 const yaml = content => u('html', `<!-- YAML\n${content}\n-->`);
@@ -182,16 +184,39 @@ describe('parseApiDoc', () => {
   });
 
   describe('type references', () => {
-    it('transforms {type} references into links', () => {
+    const findAnnotation = entry => {
+      const paragraph = entry.content.children.find(
+        n => n.type === 'paragraph'
+      );
+      return paragraph?.children?.find(n => n.type === 'typeAnnotation');
+    };
+
+    it('resolves typeAnnotation nodes into links', () => {
       const tree = u('root', [
         h('fs'),
-        u('paragraph', [u('text', '{string}')]),
+        u('paragraph', [u('typeAnnotation', 'string')]),
       ]);
-      const [entry] = parseApiDoc({ path, tree }, typeMap);
+      const [entry] = parseApiDoc({ path, tree }, typeMap, typeResolver);
+      const annotation = findAnnotation(entry);
 
-      assert.ok(
-        findLink(entry) !== undefined,
-        'expected a link node from type reference transformation'
+      assert.strictEqual(annotation.data.links.length, 1);
+      assert.strictEqual(annotation.data.links[0].text, 'string');
+    });
+
+    it('makes typeMap links relative to the current document', () => {
+      const tree = u('root', [
+        h('fs'),
+        u('paragraph', [u('typeAnnotation', 'Buffer')]),
+      ]);
+      const [entry] = parseApiDoc(
+        { path, tree },
+        { Buffer: 'buffer.html#class-buffer' },
+        typeResolver
+      );
+
+      assert.strictEqual(
+        findAnnotation(entry).data.links[0].href,
+        'buffer.html#class-buffer'
       );
     });
   });
@@ -237,16 +262,27 @@ describe('parseApiDoc', () => {
       assert.strictEqual(entry.mdx, true);
     });
 
-    it('skips {type} reference transformation in MDX mode', () => {
-      // In MDX, a bare `{string}` is a real expression node, not a type
-      // annotation, so it must be left untouched (no link generated).
+    it('skips type annotation resolution in MDX mode', () => {
+      // MDX trees never contain typeAnnotation nodes in production (there,
+      // `{...}` is a real expression) — but even if one appears, the
+      // resolution pass must not run.
       const tree = u('root', [
         h('fs'),
-        u('paragraph', [u('text', '{string}')]),
+        u('paragraph', [u('typeAnnotation', 'string')]),
       ]);
-      const [entry] = parseApiDoc({ path, tree, mdx: true }, typeMap);
+      const [entry] = parseApiDoc(
+        { path, tree, mdx: true },
+        typeMap,
+        typeResolver
+      );
+      const paragraph = entry.content.children.find(
+        n => n.type === 'paragraph'
+      );
+      const annotation = paragraph?.children?.find(
+        n => n.type === 'typeAnnotation'
+      );
 
-      assert.strictEqual(findLink(entry), undefined);
+      assert.strictEqual(annotation.data, undefined);
     });
   });
 

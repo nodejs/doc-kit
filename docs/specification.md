@@ -98,15 +98,9 @@ in the relevant section.
   - [7.6. Placement](#76-placement)
 - [8. Type Annotations](#8-type-annotations)
   - [8.1. Syntax](#81-syntax)
-  - [8.2. Primitive Types](#82-primitive-types)
-  - [8.3. Global Types](#83-global-types)
-  - [8.4. Custom Types](#84-custom-types)
-  - [8.5. Compound Types](#85-compound-types)
-    - [8.5.1. Union Types](#851-union-types)
-    - [8.5.2. Array Types](#852-array-types)
-    - [8.5.3. Generic Types](#853-generic-types)
-  - [8.6. Resolution Order](#86-resolution-order)
-  - [8.7. Unresolved Types](#87-unresolved-types)
+  - [8.2. Parsing](#82-parsing)
+  - [8.3. Resolution](#83-resolution)
+  - [8.4. Rendering](#84-rendering)
 - [9. Typed Parameter Lists](#9-typed-parameter-lists)
   - [9.1. Identification](#91-identification)
   - [9.2. Item Structure](#92-item-structure)
@@ -178,9 +172,10 @@ providing version-history and classification metadata for the enclosing
 the compact `key=value` pattern, providing [document][term-document]-level or
 [section][term-section]-level metadata. See [§6.2][§6.2].
 
-**Type annotation.** A reference to a type enclosed in `{curly braces}` within
-a [typed list][term-typed-list] item, or in prose, that is resolved to a
-hyperlink. See [§8][§8].
+**Type annotation.** A [TypeScript][typescript] type expression enclosed in
+balanced `{curly braces}` within a [typed list][term-typed-list] item, or in
+prose. It is rendered as a single code fragment whose type names are resolved
+to hyperlinks. See [§8][§8].
 
 ---
 
@@ -844,91 +839,61 @@ A [stability indicator][term-stability] on the depth-1 heading applies to the
 
 ### 8.1. Syntax
 
-[Type annotations][term-type-annotation] are enclosed in curly braces, such as
-`{Type}`. They appear in two contexts:
+A [type annotation][term-type-annotation] is any balanced `{curly brace}`
+span in text. The content between the braces is a [TypeScript][typescript]
+type expression — anything valid on the right-hand side of a TypeScript
+`type X = ...` alias.
 
-- **In [typed parameter lists][§9]:** as part of item structure.
-- **In prose text:** as inline references.
+Annotations appear both in [typed parameter lists][§9] (as part of item
+structure) and in prose text (as inline references); both forms are parsed
+and rendered identically.
 
-Both forms are auto-linked to documentation for the referenced type (see
-[§8.6][§8.6]).
+### 8.2. Parsing
 
-### 8.2. Primitive Types
+Implementations MUST parse each annotation whose value is not a whole-value
+[map match][§8.3] under the TypeScript type grammar. Implementations SHOULD
+collect every annotation in a [document][term-document] and parse them in a
+single batch.
 
-Primitive types use lowercase names: `string`, `number`, `boolean`, `bigint`,
-`symbol`, `null`, `undefined`, `integer`.
+An annotation that fails to parse MUST produce a warning identifying the
+source location, and MUST be rendered as plain, unlinked code.
 
-These MUST be resolved to documentation for JavaScript primitive data types.
+### 8.3. Resolution
 
-### 8.3. Global Types
+Each annotation resolves to a set of hyperlinks:
 
-JavaScript built-in globals use PascalCase: `Array`, `Object`, `Function`,
-`Promise`, `Error`, `RegExp`, `Map`, `Set`, `Date`, `Uint8Array`, `Buffer`,
-and others.
+1. **Whole-value lookup.** If the entire annotation value matches a type-map
+   entry verbatim, the whole annotation becomes a single link. This permits
+   display-name keys that are not valid TypeScript identifiers (e.g.
+   `zlib options`).
+2. **Identifier resolution.** Otherwise, every type name in the parsed
+   expression resolves individually: keyword types (`string`, `number`,
+   `boolean`, ...), type-reference names, qualified names (`vm.Module`),
+   `typeof` targets, and `import('mod').X` qualifiers. Structural names —
+   function parameter names, object property keys — are never resolved.
 
-These MUST be resolved to documentation for JavaScript global objects.
+Each name resolves through the following tiers; the first match wins:
 
-### 8.4. Custom Types
-
-Types not in the primitive or global sets are resolved via a configurable type
-map provided to the toolchain. The type map associates type names with
-documentation URLs. An example type-map is available for viewing [here][nodejs-typemap].
-
-### 8.5. Compound Types
-
-#### 8.5.1. Union Types
-
-Multiple types are separated by `|` (pipe):
-
-```
-{string|Buffer|URL}
-```
-
-Spaces around the pipe are OPTIONAL. Both `{string|Buffer}` and
-`{string | Buffer}` MUST be accepted.
-
-#### 8.5.2. Array Types
-
-The `[]` suffix denotes an array of the base type:
-
-```
-{string[]}
-{Buffer[]}
-```
-
-#### 8.5.3. Generic Types
-
-Generic types use angle brackets:
-
-```
-{Promise<string>}
-{Map<string, number>}
-```
-
-The outer type and each inner type parameter are resolved independently. Inner
-types MAY include [unions][§8.5.1]:
-
-```
-{Promise<string|Buffer>}
-```
-
-### 8.6. Resolution Order
-
-Types are resolved in the following order. The first tier that produces a
-match terminates resolution.
-
-1. JavaScript primitives (see [§8.2][§8.2]).
-2. JavaScript built-in globals (see [§8.3][§8.3]).
-3. Implementation-defined external type mappings.
-4. Custom type map entries (see [§8.4][§8.4]).
-5. Dotted-name heuristic: types containing `.` are split on the first `.` to
+1. The configurable type map provided to the toolchain, which associates
+   names with documentation URLs. An example type map is available for
+   viewing [here][nodejs-typemap].
+2. JavaScript primitives and built-in (TC39) globals, matched
+   case-insensitively: `string`, `number`, `boolean`, `bigint`, `symbol`,
+   `null`, `undefined`, `integer`, `Array`, `Object`, `Function`, `Promise`,
+   and others.
+3. Web platform APIs documented on MDN, matched case-insensitively.
+4. Dotted-name heuristic: names containing `.` are split on the first `.` to
    derive a module name and member identifier, producing a cross-document
    link of the form `<module>.md#<identifier>`.
 
-### 8.7. Unresolved Types
+A name that no tier resolves stays plain — this is not an error.
 
-If a type cannot be resolved through any tier, it WILL be rendered as
-unlinked formatted text.
+### 8.4. Rendering
+
+The whole annotation renders as ONE inline code fragment. Each resolved name
+becomes a hyperlink spanning exactly its character range within the fragment;
+unresolved names remain plain text inside it. Implementations MAY
+syntax-highlight the fragment as TypeScript.
 
 ---
 
@@ -945,10 +910,9 @@ its first item matches any of these conditions:
 
 1. It begins with text matching one of the [special prefixes][§9.3]
    (`Returns:`, `Extends:`, `Type:`).
-2. It begins with a [type-reference][§8] link (a link whose label is a type
-   annotation such as `{Type}`).
+2. It begins with a [type annotation][§8].
 3. It begins with an inline code span (the parameter name) followed by a
-   space and then a [type-reference][§8] link.
+   space and then a [type annotation][§8].
 
 ### 9.2. Item Structure
 
@@ -964,7 +928,8 @@ The components, in order, are:
 2. **Parameter name** - A backtick code span. REQUIRED for parameter items;
    absent for [`Returns:`][§9.3.1], [`Type:`][§9.3.3], and
    [`Extends:`][§9.3.2] items.
-3. **[Type annotation][§8]** - A `{Type}` reference. OPTIONAL.
+3. **[Type annotation][§8]** - A single `{...}` TypeScript type expression
+   (a union belongs inside it, e.g. `{string|Buffer}`). OPTIONAL.
 4. **Description** - Free-form prose. OPTIONAL.
 5. **[Default value][§9.5]** - The exact pattern `**Default:** \`value\``.
    OPTIONAL.
@@ -1106,9 +1071,9 @@ documentation by conforming implementations.
 
 ### 11.5. Type Auto-Linking
 
-[Type annotations][term-type-annotation] in prose text matching the
-`{Type}` pattern ([§8.1][§8.1]) are automatically converted to hyperlinks
-following the [resolution order][§8.6].
+[Type annotations][term-type-annotation] in prose text ([§8.1][§8.1]) are
+parsed ([§8.2][§8.2]), resolved ([§8.3][§8.3]), and rendered ([§8.4][§8.4])
+exactly like annotations in [typed parameter lists][§9].
 
 ### 11.6. Link Reference Definitions
 
@@ -1132,6 +1097,7 @@ of the [document][term-document], after all content
 [rfc-8174]: https://www.rfc-editor.org/rfc/rfc8174
 [yaml-1.2]: https://yaml.org/spec/1.2.2/
 [semver]: https://semver.org/
+[typescript]: https://www.typescriptlang.org/
 [nodejs-typemap]: https://github.com/nodejs/node/blob/main/doc/type-map.json
 
 <!-- CommonMark spec sections -->
@@ -1187,11 +1153,9 @@ of the [document][term-document], after all content
 [§7.3]: #73-sub-levels
 [§8]: #8-type-annotations
 [§8.1]: #81-syntax
-[§8.2]: #82-primitive-types
-[§8.3]: #83-global-types
-[§8.4]: #84-custom-types
-[§8.5.1]: #851-union-types
-[§8.6]: #86-resolution-order
+[§8.2]: #82-parsing
+[§8.3]: #83-resolution
+[§8.4]: #84-rendering
 [§9]: #9-typed-parameter-lists
 [§9.3]: #93-special-prefixes
 [§9.3.1]: #931-returns
