@@ -1,8 +1,8 @@
-## `ast-js` Generator
+# `ast-js` Generator
 
 The `ast-js` generator parses JavaScript source files into AST (Abstract Syntax Tree) representations using the Acorn parser.
 
-### Configuring
+## Configuring
 
 The `ast-js` generator accepts the following configuration options:
 

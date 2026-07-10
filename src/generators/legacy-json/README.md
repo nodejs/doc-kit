@@ -1,8 +1,8 @@
-## `legacy-json` Generator
+# `legacy-json` Generator
 
 The `legacy-json` generator creates legacy JSON files for the API documentation for retro-compatibility with the previous documentation format.
 
-### Configuring
+## Configuring
 
 The `legacy-json` generator accepts the following configuration options:
 

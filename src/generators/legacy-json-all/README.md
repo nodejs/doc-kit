@@ -1,8 +1,8 @@
-## `legacy-json-all` Generator
+# `legacy-json-all` Generator
 
 The `legacy-json-all` generator consolidates data from the `legacy-json` generator into a single `all.json` file containing all API modules.
 
-### Configuring
+## Configuring
 
 The `legacy-json-all` generator accepts the following configuration options:
 

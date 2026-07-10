@@ -1,8 +1,8 @@
-## `legacy-html-all` Generator
+# `legacy-html-all` Generator
 
 The `legacy-html-all` generator creates a single `all.html` file containing all API documentation modules in one file, based on the output from the `legacy-html` generator.
 
-### Configuring
+## Configuring
 
 The `legacy-html-all` generator accepts the following configuration options:
 

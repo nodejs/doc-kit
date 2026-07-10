@@ -1,8 +1,8 @@
-## `sitemap` Generator
+# `sitemap` Generator
 
 The `sitemap` generator creates a `sitemap.xml` file for search engine optimization (SEO), listing all API documentation pages.
 
-### Configuring
+## Configuring
 
 The `sitemap` generator accepts the following configuration options:
 
