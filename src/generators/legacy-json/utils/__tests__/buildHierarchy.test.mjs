@@ -5,14 +5,17 @@ import { findParent, buildHierarchy } from '../buildHierarchy.mjs';
 
 describe('findParent', () => {
   it('finds parent with lower depth', () => {
-    const entries = [{ heading: { depth: 1 } }, { heading: { depth: 2 } }];
-    const parent = findParent(entries[1], entries, 0);
-    assert.equal(parent, entries[0]);
+    const nodes = [
+      { entry: { heading: { depth: 1 } }, children: [] },
+      { entry: { heading: { depth: 2 } }, children: [] },
+    ];
+    const parent = findParent(nodes[1].entry, nodes, 0);
+    assert.equal(parent, nodes[0]);
   });
 
   it('throws when no parent exists', () => {
-    const entries = [{ heading: { depth: 2 } }];
-    assert.throws(() => findParent(entries[0], entries, -1));
+    const nodes = [{ entry: { heading: { depth: 2 } }, children: [] }];
+    assert.throws(() => findParent(nodes[0].entry, nodes, -1));
   });
 });
 
@@ -25,6 +28,8 @@ describe('buildHierarchy', () => {
     const entries = [{ heading: { depth: 1 } }, { heading: { depth: 1 } }];
     const result = buildHierarchy(entries);
     assert.equal(result.length, 2);
+    assert.equal(result[0].entry, entries[0]);
+    assert.equal(result[1].entry, entries[1]);
   });
 
   it('nests children under parents', () => {
@@ -32,8 +37,8 @@ describe('buildHierarchy', () => {
     const result = buildHierarchy(entries);
 
     assert.equal(result.length, 1);
-    assert.equal(result[0].hierarchyChildren.length, 1);
-    assert.equal(result[0].hierarchyChildren[0], entries[1]);
+    assert.equal(result[0].children.length, 1);
+    assert.equal(result[0].children[0].entry, entries[1]);
   });
 
   it('handles multiple levels', () => {
@@ -45,6 +50,6 @@ describe('buildHierarchy', () => {
     const result = buildHierarchy(entries);
 
     assert.equal(result.length, 1);
-    assert.equal(result[0].hierarchyChildren[0].hierarchyChildren.length, 1);
+    assert.equal(result[0].children[0].children.length, 1);
   });
 });

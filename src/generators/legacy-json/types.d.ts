@@ -2,14 +2,18 @@ import { ListItem } from '@types/mdast';
 import { MetadataEntry } from '../metadata/types';
 
 /**
- * Represents an entry in a hierarchical structure, extending from MetadataEntry.
- * It includes children entries organized in a hierarchy.
+ * A node in the entry hierarchy.
  */
-export interface HierarchizedEntry extends MetadataEntry {
+export interface HierarchizedEntry {
   /**
-   * List of child entries that are part of this entry's hierarchy.
+   * The metadata entry this node wraps.
    */
-  hierarchyChildren: MetadataEntry[];
+  entry: MetadataEntry;
+
+  /**
+   * Child nodes nested under this entry, based on heading depth.
+   */
+  children: HierarchizedEntry[];
 }
 
 /**
