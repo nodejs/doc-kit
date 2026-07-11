@@ -38,6 +38,7 @@ export default createLazyGenerator({
     editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
     pageURL: '{baseURL}/latest-{version}/api{path}.html',
     remoteConfigUrl: 'https://nodejs.org/site.json',
+    showSearchBar: undefined,
 
     // Project-specific document `<head>` contents. `meta` and `links` are
     // arrays of attribute bags (boolean `true` renders a valueless attribute,

@@ -45,6 +45,23 @@ const createEntry = (api, name) => {
 };
 
 describe('web generate', () => {
+  it('only renders search when the Orama database is generated', async () => {
+    await setConfig({ target: ['web'] });
+    const fs = createEntry('fs', 'File system');
+    const input = [toCodeItem(await buildContent([fs], fs))];
+
+    const [withoutOrama] = await generate(input, undefined, {
+      target: ['web'],
+    });
+    assert.doesNotMatch(withoutOrama.html, /Start typing/);
+
+    await setConfig({ target: ['web', 'orama-db'] });
+    const [withOrama] = await generate(input, undefined, {
+      target: ['web', 'orama-db'],
+    });
+    assert.match(withOrama.html, /Start typing/);
+  });
+
   it('omits View As links for synthetic pages only', async () => {
     await setConfig({});
 

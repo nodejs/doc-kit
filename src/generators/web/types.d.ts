@@ -31,6 +31,7 @@ export type Configuration = {
   templatePath: string;
   title: string;
   useAbsoluteURLs: boolean;
+  showSearchBar?: boolean;
   head: HeadConfig;
   // Options spread into LightningCSS while bundling CSS. `filename`, `code`,
   // `cssModules`, and `resolver` are managed by the generator and ignored here.

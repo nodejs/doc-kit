@@ -6,7 +6,7 @@ import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 import SearchBox from './SearchBox';
 import { useTheme } from '../hooks/useTheme.mjs';
 
-import { repository } from '#theme/config';
+import { repository, searchEnabled } from '#theme/config';
 import Logo from '#theme/Logo';
 
 /**
@@ -21,7 +21,7 @@ export default ({ metadata }) => {
       sidebarItemTogglerAriaLabel="Toggle navigation menu"
       navItems={[]}
     >
-      <SearchBox pathname={metadata.path} />
+      {searchEnabled && <SearchBox pathname={metadata.path} />}
       <ThemeToggle
         onChange={setThemePreference}
         currentTheme={themePreference}

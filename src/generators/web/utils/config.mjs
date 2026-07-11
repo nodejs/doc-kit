@@ -70,9 +70,10 @@ export function buildLanguageDisplayNameMap() {
  * per-page resolution by components).
  *
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input - JSX AST entries with .data metadata
+ * @param {boolean} searchEnabled - Whether the search control is enabled
  * @returns {string} JavaScript source code string with named exports
  */
-export default function createConfigSource(input) {
+export default function createConfigSource(input, searchEnabled) {
   const { version: configVersion, ...config } = getConfig('web');
 
   const editURL = populate(config.editURL, {
@@ -97,6 +98,7 @@ export default function createConfigSource(input) {
       ]
     ),
     version: configVersion,
+    searchEnabled,
     versions: buildVersionEntries(config.changelog, pageURL),
     editURL,
     pages: buildPageList(input),

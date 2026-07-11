@@ -18,7 +18,7 @@ import { writeFile } from '../../utils/file.mjs';
  *
  * @type {import('./types').Generator['generate']}
  */
-export async function generate(input) {
+export async function generate(input, _worker, { target = [] } = {}) {
   const config = getConfig('web');
 
   const template = await readFile(config.templatePath, 'utf-8');
@@ -46,6 +46,7 @@ export async function generate(input) {
     datas,
     sidebarEntries,
     template,
+    searchEnabled: config.showSearchBar ?? target.includes('orama-db'),
   });
 
   if (config.output) {

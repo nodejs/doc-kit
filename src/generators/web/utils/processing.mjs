@@ -157,6 +157,7 @@ async function executeServerCode(serverCodeMap, requireFn, virtualImports) {
  * @param {Array<import('../../metadata/types').MetadataEntry>} params.datas - Per-page metadata, in render order.
  * @param {Array<{ data: import('../../metadata/types').MetadataEntry }>} params.sidebarEntries - Entries used to build the sidebar page list (real module pages only).
  * @param {string} params.template - The HTML template string for the output pages.
+ * @param {boolean} params.searchEnabled - Whether to render the search control.
  */
 export async function processBundles({
   serverCodeMap,
@@ -164,11 +165,12 @@ export async function processBundles({
   datas,
   sidebarEntries,
   template,
+  searchEnabled,
 }) {
   const config = getConfig('web');
   const requireFn = createRequire(import.meta.url);
   const virtualImports = {
-    '#theme/config': createConfigSource(sidebarEntries),
+    '#theme/config': createConfigSource(sidebarEntries, searchEnabled),
     ...config.virtualImports,
   };
 

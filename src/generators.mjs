@@ -73,7 +73,9 @@ const createGenerator = () => {
           ? createParallelWorker(generatorName, pool, configuration)
           : Promise.resolve(null);
 
-        const result = await generate(dependencyInput, await worker);
+        const result = await generate(dependencyInput, await worker, {
+          target: configuration.target,
+        });
 
         // For streaming generators, "Completed" is logged when the cache
         // finishes collecting, not here when the generator returns

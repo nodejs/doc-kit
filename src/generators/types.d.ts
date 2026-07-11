@@ -40,7 +40,8 @@ declare global {
    */
   export type Generate<I, O> = (
     input: I,
-    worker: ParallelWorker
+    worker: ParallelWorker,
+    context: { target: string[] }
   ) => O extends AsyncGenerator ? O : Promise<O>;
 
   /**
