@@ -10,6 +10,9 @@ src/generators/web/template.html
 # Output
 out/
 
+# Docs-site content, assembled by scripts/build-docs-content.mjs
+www/content/
+
 # Generated Files
 src/generators/metadata/maps/mdn.json
 

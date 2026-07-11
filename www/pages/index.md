@@ -1,17 +1,18 @@
 # doc-kit
 
+doc-kit is not a general-purpose Markdown-to-output tool to structurally
+transform API documentation.
+
 `@node-core/doc-kit` is the documentation toolchain behind the Node.js API
-reference. It reads API-shaped Markdown and emits HTML, JSON, man pages,
-search indexes, and `llms.txt`.
+reference, found at https://nodejs.org/docs/latest/api/. This site is built by
+doc-kit, from its own repository. The pages you are reading were produced by the
+`web` generator.
 
-This site is built by doc-kit, from doc-kit's own repository. The pages you are
-reading were produced by the `web` generator.
+## `doc-kit` is a pipeline, not a Markdown converter
 
-## It is a pipeline, not a Markdown converter
-
-doc-kit is not a general-purpose Markdown-to-HTML tool. Input is parsed once
-into a structured model of an API, and from that single model many output
-generators fan out — you run any subset of them in one command:
+doc-kit parses Markdown source files once, emitting output according to
+configured generators. You run any subset of them in one command, customize
+their logic, or even build your own generator.
 
 ```
 Raw Markdown Files
