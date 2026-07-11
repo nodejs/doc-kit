@@ -6,14 +6,14 @@ import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 import SearchBox from './SearchBox';
 import { useTheme } from '../hooks/useTheme.mjs';
 
-import { repository } from '#theme/config';
+import { hasSearch, repository } from '#theme/config';
 import Logo from '#theme/Logo';
 
 /**
  * NavBar component that displays the headings, search, etc.
  */
 export default ({ metadata }) => {
-  const [themePreference, setThemePreference] = useTheme();
+  const [themePreference, setThemePreference] = useState();
 
   return (
     <NavBar
@@ -21,7 +21,7 @@ export default ({ metadata }) => {
       sidebarItemTogglerAriaLabel="Toggle navigation menu"
       navItems={[]}
     >
-      <SearchBox pathname={metadata.path} />
+      {hasSearch && <SearchBox pathname={metadata.path} />}
       <ThemeToggle
         onChange={setThemePreference}
         currentTheme={themePreference}
