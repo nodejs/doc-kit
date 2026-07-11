@@ -79,6 +79,7 @@ opens straight from disk.
 
 - [Configuration](./configuration.html) — move these flags into
   `doc-kit.config.mjs`.
-- [The input specification](./specification.html) — the full Markdown contract.
-- [`web` generator](./generator-web.html) — theming, `head`, and custom
-  components.
+- [Customize the `web` generator](./generator-web.html) — theming, `head`, and
+  custom templating
+- [Read the full input specification](./specification.html) — the full Markdown
+  contract. components.
