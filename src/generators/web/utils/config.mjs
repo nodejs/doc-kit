@@ -100,6 +100,10 @@ export default function createConfigSource(input) {
     versions: buildVersionEntries(config.changelog, pageURL),
     editURL,
     pages: buildPageList(input),
+    // Only the `web` generator's own bundle should ever render the search
+    // bar; if `orama-db` wasn't also requested, there's no search index for
+    // it to query, so the search box would render but silently do nothing.
+    hasSearch: (getConfig().target ?? []).includes('orama-db'),
   };
 
   const lines = Object.entries(exports).map(
