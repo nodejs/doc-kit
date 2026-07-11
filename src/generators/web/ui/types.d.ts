@@ -22,6 +22,7 @@ declare module '#theme/config' {
   export const templatePath: Configuration['templatePath'];
   export const title: Configuration['title'];
   export const useAbsoluteURLs: Configuration['useAbsoluteURLs'];
+  export const showSearchBar: boolean;
 
   // From config generation
   export const version: SemVer;

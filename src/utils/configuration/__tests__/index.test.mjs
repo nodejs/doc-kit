@@ -18,6 +18,7 @@ mock.module('../../../generators/index.mjs', {
       json: { defaultConfiguration: { format: 'json' } },
       html: { defaultConfiguration: { format: 'html' } },
       markdown: {},
+      web: { defaultConfiguration: {} },
     },
   },
 });
@@ -230,6 +231,36 @@ describe('config.mjs', () => {
       assert.ok(config.json);
       assert.ok(config.html);
       assert.ok(config.markdown);
+    });
+
+    it('should show web search by default only when orama-db is targeted', async () => {
+      const withOrama = await createRunConfiguration({
+        target: ['web', 'orama-db'],
+      });
+      assert.strictEqual(withOrama.web.showSearchBar, true);
+
+      const withoutOrama = await createRunConfiguration({ target: ['web'] });
+      assert.strictEqual(withoutOrama.web.showSearchBar, false);
+    });
+
+    it('should preserve explicit web search visibility overrides', async () => {
+      mockImportFromURL.mock.mockImplementationOnce(async () =>
+        createMockConfig({ web: { showSearchBar: true } })
+      );
+      const forcedOn = await createRunConfiguration({
+        configFile: 'config.mjs',
+        target: ['web'],
+      });
+      assert.strictEqual(forcedOn.web.showSearchBar, true);
+
+      mockImportFromURL.mock.mockImplementationOnce(async () =>
+        createMockConfig({ web: { showSearchBar: false } })
+      );
+      const forcedOff = await createRunConfiguration({
+        configFile: 'config.mjs',
+        target: ['web', 'orama-db'],
+      });
+      assert.strictEqual(forcedOff.web.showSearchBar, false);
     });
   });
 

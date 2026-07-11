@@ -133,6 +133,7 @@ export const assertRunnableOptions = config => {
 export const createRunConfiguration = async options => {
   const config = await loadConfigFile(options.configFile);
   config.target &&= enforceArray(config.target);
+  const configuredShowSearchBar = config.web?.showSearchBar;
 
   // Merge with defaults
   const merged = deepMerge(
@@ -140,6 +141,11 @@ export const createRunConfiguration = async options => {
     createConfigFromCLIOptions(options),
     getDefaultConfig()
   );
+
+  // Search is available by default when the pipeline builds an Orama database,
+  // while an explicit web-generator option can force it on or off.
+  merged.web.showSearchBar =
+    configuredShowSearchBar ?? enforceArray(merged.target).includes('orama-db');
 
   // These need to be coerced
   merged.threads = Math.max(merged.threads, 1);

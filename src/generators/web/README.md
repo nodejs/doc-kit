@@ -13,6 +13,7 @@ The `web` generator accepts the following configuration options:
 | `project`         | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector                                                   |
 | `title`           | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)                                           |
 | `useAbsoluteURLs` | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`                                        |
+| `showSearchBar`   | `boolean` | Whether `orama-db` is targeted                | Explicitly show or hide the navigation search bar                                                           |
 | `editURL`         | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                                                                     |
 | `pageURL`         | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                                                                   |
 | `remoteConfigUrl` | `string`  | `'https://nodejs.org/site.json'`              | URL fetched client-side at runtime for remote site config (currently used to power the announcement banner) |

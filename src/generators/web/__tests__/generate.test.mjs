@@ -45,6 +45,19 @@ const createEntry = (api, name) => {
 };
 
 describe('web generate', () => {
+  it('renders the search bar only when it is enabled', async () => {
+    const config = await setConfig({ target: ['web'] });
+    const fs = createEntry('fs', 'File system');
+    const input = [toCodeItem(await buildContent([fs], fs))];
+
+    const [withoutSearch] = await generate(input);
+    assert.doesNotMatch(withoutSearch.html, /Start typing/);
+
+    config.web.showSearchBar = true;
+    const [withSearch] = await generate(input);
+    assert.match(withSearch.html, /Start typing/);
+  });
+
   it('omits View As links for synthetic pages only', async () => {
     await setConfig({});
 
