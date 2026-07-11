@@ -12,6 +12,7 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
+import { visit } from 'unist-util-visit';
 
 import syntaxHighlighter, { highlighter } from './highlighter.mjs';
 import { lazy } from './misc.mjs';
@@ -20,6 +21,35 @@ import transformAlerts from '../generators/jsx-ast/utils/plugins/alerts.mjs';
 import transformElements from '../generators/jsx-ast/utils/plugins/transformer.mjs';
 
 const passThrough = ['element', ...Object.values(AST_NODE_TYPES.MDX)];
+const codeMetaProperty = 'codeMeta';
+
+/**
+ * Stores fenced code metadata on properties before rehypeRaw reparses the tree.
+ */
+const preserveCodeMeta = () => tree => {
+  visit(tree, 'element', node => {
+    const meta = node.data?.meta;
+
+    if (node.tagName === 'code' && typeof meta === 'string') {
+      node.properties ||= {};
+      node.properties[codeMetaProperty] = meta;
+    }
+  });
+};
+
+/**
+ * Restores fenced code metadata so the Shiki plugin can read displayName.
+ */
+const restoreCodeMeta = () => tree => {
+  visit(tree, 'element', node => {
+    const meta = node.properties?.[codeMetaProperty];
+
+    if (node.tagName === 'code' && typeof meta === 'string') {
+      node.data = { ...node.data, meta };
+      delete node.properties[codeMetaProperty];
+    }
+  });
+};
 
 /**
  * Retrieves an instance of Remark configured to parse GFM (GitHub Flavored Markdown)
@@ -91,8 +121,10 @@ export const getRemarkRecma = lazy(() =>
     // We also allow dangerous HTML to be passed through, since we have HTML within our Markdown
     // and we trust the sources of the Markdown files
     .use(remarkRehype, { allowDangerousHtml: true, passThrough })
+    .use(preserveCodeMeta)
     // Any `raw` HTML in the markdown must be converted to AST in order for Recma to understand it
     .use(rehypeRaw, { passThrough })
+    .use(restoreCodeMeta)
     .use(() => singletonShiki)
     .use(transformElements)
     .use(rehypeRecma)
