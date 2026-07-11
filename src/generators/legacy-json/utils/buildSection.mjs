@@ -32,8 +32,8 @@ export const promoteMiscChildren = (section, parent) => {
  */
 export const createSectionBuilder = () => {
   /**
-   * Creates metadata from a hierarchized entry.
-   * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry to create metadata from.
+   * Creates metadata from a metadata entry.
+   * @param {import('../../metadata/types').MetadataEntry} entry - The entry to create metadata from.
    * @returns {import('../types.d.ts').Meta | undefined} The created metadata, or undefined if all fields are empty.
    */
   const createMeta = ({
@@ -73,7 +73,7 @@ export const createSectionBuilder = () => {
 
   /**
    * Creates a section from an entry and its heading.
-   * @param {import('../types.d.ts').HierarchizedEntry} entry - The AST entry.
+   * @param {import('../../metadata/types').MetadataEntry} entry - The AST entry.
    * @param {import('../../metadata/types').HeadingNode} head - The head node of the entry.
    * @returns {import('../types.d.ts').Section} The created section.
    */
@@ -98,7 +98,7 @@ export const createSectionBuilder = () => {
    * Parses stability metadata and adds it to the section.
    * @param {import('../types.d.ts').Section} section - The section to update.
    * @param {Array} nodes - The remaining AST nodes.
-   * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry providing stability information.
+   * @param {import('../../metadata/types').MetadataEntry} entry - The entry providing stability information.
    */
   const parseStability = (section, nodes, { stability, content }) => {
     if (stability) {
@@ -161,26 +161,18 @@ export const createSectionBuilder = () => {
   };
 
   /**
-   * Processes children of a given entry and updates the section.
-   * @param {import('../types.d.ts').HierarchizedEntry} entry - The current entry.
-   * @param {import('../types.d.ts').Section} section - The current section.
-   */
-  const handleChildren = ({ hierarchyChildren }, section) =>
-    hierarchyChildren?.forEach(child => handleEntry(child, section));
-
-  /**
-   * Handles an entry and updates the parent section.
-   * @param {import('../types.d.ts').HierarchizedEntry} entry - The entry to process.
+   * Handles a hierarchy node and updates the parent section.
+   * @param {import('../types.d.ts').HierarchizedEntry} node - The hierarchy node to process.
    * @param {import('../types.d.ts').Section} parent - The parent section.
    */
-  const handleEntry = (entry, parent) => {
+  const handleEntry = ({ entry, children }, parent) => {
     const [headingNode, ...nodes] = entry.content.children;
     const section = createSection(entry, headingNode);
 
     parseStability(section, nodes, entry);
     parseList(section, nodes);
     addDescription(section, nodes);
-    handleChildren(entry, section);
+    children.forEach(child => handleEntry(child, section));
     addAdditionalMetadata(section, parent, headingNode);
     addToParent(section, parent);
     promoteMiscChildren(section, parent);
@@ -200,7 +192,7 @@ export const createSectionBuilder = () => {
       source: `doc/api/${head.api}.md`,
     };
 
-    buildHierarchy(entries).forEach(entry => handleEntry(entry, rootModule));
+    buildHierarchy(entries).forEach(node => handleEntry(node, rootModule));
 
     return rootModule;
   };

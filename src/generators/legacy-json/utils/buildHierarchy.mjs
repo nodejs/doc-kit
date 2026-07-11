@@ -1,12 +1,12 @@
 /**
- * Recursively finds the most suitable parent entry for a given `entry` based on heading depth.
+ * Recursively finds the most suitable parent node for a given `entry` based on heading depth.
  *
  * @param {import('../../metadata/types').MetadataEntry} entry
- * @param {import('../../metadata/types').MetadataEntry[]} entries
+ * @param {Array<import('../types.d.ts').HierarchizedEntry>} nodes
  * @param {number} startIdx
  * @returns {import('../types.d.ts').HierarchizedEntry}
  */
-export function findParent(entry, entries, startIdx) {
+export function findParent(entry, nodes, startIdx) {
   // Base case: if we're at the beginning of the list, no valid parent exists.
   if (startIdx < 0) {
     throw new Error(
@@ -14,17 +14,15 @@ export function findParent(entry, entries, startIdx) {
     );
   }
 
-  const candidateParent = entries[startIdx];
-  const candidateDepth = candidateParent.heading.depth;
+  const candidateParent = nodes[startIdx];
 
   // If we find a suitable parent, return it.
-  if (candidateDepth < entry.heading.depth) {
-    candidateParent.hierarchyChildren ??= [];
+  if (candidateParent.entry.heading.depth < entry.heading.depth) {
     return candidateParent;
   }
 
   // Recurse upwards to find a suitable parent.
-  return findParent(entry, entries, startIdx - 1);
+  return findParent(entry, nodes, startIdx - 1);
 }
 
 /**
@@ -37,11 +35,9 @@ export function findParent(entry, entries, startIdx) {
  *
  * If depth <= 1, it's a top-level element (aka a root).
  *
- * If it's depth is greater than the previous entry's depth, it's a child of
- * the previous entry. Otherwise (if it's less than or equal to the previous
- * entry's depth), we need to find the entry that it was the greater than. We
- * can do this by just looping through entries in reverse starting at the
- * current index - 1.
+ * Otherwise, its parent is the nearest earlier entry with a lower depth,
+ * found by looping through entries in reverse starting at the current
+ * index - 1.
  *
  * @param {Array<import('../../metadata/types').MetadataEntry>} entries
  * @returns {Array<import('../types.d.ts').HierarchizedEntry>}
@@ -49,29 +45,21 @@ export function findParent(entry, entries, startIdx) {
 export function buildHierarchy(entries) {
   const roots = [];
 
+  // Wrapper nodes, index-aligned with `entries`.
+  const nodes = entries.map(entry => ({ entry, children: [] }));
+
   // Main loop to construct the hierarchy.
-  for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i];
-    const currentDepth = entry.heading.depth;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
 
     // Top-level entries are added directly to roots.
-    if (currentDepth <= 1) {
-      roots.push(entry);
+    if (node.entry.heading.depth <= 1) {
+      roots.push(node);
       continue;
     }
 
     // For non-root entries, find the appropriate parent.
-    const previousEntry = entries[i - 1];
-    const previousDepth = previousEntry.heading.depth;
-
-    if (currentDepth > previousDepth) {
-      previousEntry.hierarchyChildren ??= [];
-      previousEntry.hierarchyChildren.push(entry);
-    } else {
-      // Use recursive helper to find the nearest valid parent.
-      const parent = findParent(entry, entries, i - 2);
-      parent.hierarchyChildren.push(entry);
-    }
+    findParent(node.entry, nodes, i - 1).children.push(node);
   }
 
   return roots;
