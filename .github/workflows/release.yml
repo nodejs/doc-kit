@@ -34,25 +34,12 @@ jobs:
       # For npm OIDC (https://docs.npmjs.com/trusted-publishers)
       id-token: write
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
-        with:
-          # `audit` (not `block`) because the publish step reaches many endpoints (npm registry,
-          # sigstore provenance, the GitHub API, git push, Slack); a wrong allowlist would break a
-          # release. Egress is still recorded for review.
-          egress-policy: audit
-
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          # Changesets needs full history (and credentials) to push the version branch and tags.
-          fetch-depth: 0
-
       - name: Setup environment
         uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
         with:
           use-version-file: true
           registry-url: 'https://registry.npmjs.org'
+          fetch-depth: 0
 
       - name: Create Release Pull Request or Publish
         id: changesets
