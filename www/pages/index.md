@@ -1,7 +1,7 @@
 # `doc-kit`
 
 `doc-kit` is an opinionated Markdown parsing tool to structurally transform API
-documentation. It;s the documentation toolchain behind the Node.js API
+documentation. It's the documentation toolchain behind the Node.js API
 reference, found at https://nodejs.org/docs/latest/api/. This site is built by
 `doc-kit`, from its own repository. The pages you are reading were produced by
 the `web` generator.
