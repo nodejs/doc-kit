@@ -43,7 +43,8 @@ npx doc-kit generate \
   -o out
 ```
 
-Open `out/all.html` in a browser. You'll notice the Node.js branding, however, that's fully customizable via [a configuration file][].
+Open `out/all.html` in a browser. You'll notice the Node.js branding, however,
+that's fully customizable via [a configuration file][].
 
 ## Render the modern site
 
@@ -90,8 +91,8 @@ import { join } from 'node:path';
 /** @type {import('@node-core/doc-kit/src/utils/configuration/types').Configuration} */
 export default {
   web: {
-    project: "My Project", // Project name used in page titles and the version selector
-    remoteConfigUrl: "", // Suppress the Node.js default that sets the top banner based on Node.js news.
+    project: 'My Project', // Project name used in page titles and the version selector
+    remoteConfigUrl: '', // Suppress the Node.js default that sets the top banner based on Node.js news.
     head: {
       html: [
         // re-write the brand color for effect
@@ -114,7 +115,7 @@ export default {
     // export default Logo = () =>
     //   <svg height="30" width="30" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--color-brand-400)"/></svg>;
     imports: {
-      "#theme/Logo": join(import.meta.dirname, './logo.jsx'),
+      '#theme/Logo': join(import.meta.dirname, './logo.jsx'),
     },
   },
 };
