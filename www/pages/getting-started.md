@@ -4,6 +4,8 @@ This page takes you from an empty directory to a rendered documentation page.
 
 ## Install
 
+From an initialized npm project, run this in your terminal.
+
 ```bash
 npm install --save-dev @node-core/doc-kit
 ```
@@ -41,12 +43,12 @@ npx doc-kit generate \
   -o out
 ```
 
-Open `out/all.html`.
+Open `out/all.html` in a browser. You'll notice the Node.js branding.
 
 ## Render the modern site
 
 The `web` target produces the server-rendered, client-hydrated site that
-nodejs.org uses — and that this site is built with:
+[nodejs.org](https://nodejs.org) uses — and that this site is built with:
 
 ```bash
 npx doc-kit generate \
@@ -65,21 +67,67 @@ npx doc-kit generate -t web -t orama-db -i "docs/*.md" -o out
 
 The `web` output uses import maps and client-side hydration, so it must be
 served over HTTP — opening the files directly with `file://` will not work. Any
-static server does; for example:
+static server will do the trick; for example:
 
 ```bash
-npx serve out
+npx serve out -p 3000
 ```
 
 Then open the printed URL (usually <http://localhost:3000>). The
 `legacy-html-all` output from earlier has no such requirement — `out/all.html`
 opens straight from disk.
 
+## Customize the `web` generator output
+
+The power of the `web` generator comes from its customization hooks. Let's walk
+through a couple quick changes.
+
+Create a `doc-kit.config.mjs` file at the root of the project.
+
+```json
+import { join } from 'node:path';
+
+/** @type {import('@node-core/doc-kit/src/utils/configuration/types').Configuration} */
+export default {
+  web: {
+    project: "My Project", // Project name used in page titles and the version selector
+    remoteConfigUrl: "", // Suppress the Node.js default that sets the top banner based on Node.js news.
+    head: {
+      html: [
+        // re-write the brand color for effect
+        `<style>
+          :root {
+            --color-brand-100: #f7f1fb;
+            --color-brand-200: #ead9fb;
+            --color-brand-300: #dbbdf9;
+            --color-brand-400: #c79bf2;
+            --color-brand-600: #9756d6;
+            --color-brand-700: #7d3cbe;
+            --color-brand-800: #642b9e;
+            --color-brand-900: #361b52;
+          }
+        </style>`,
+      ],
+    },
+    // use a custom logo instead of the Node.js logo
+    // our logo.jsx file like this, just for the demo
+    // export default Logo = () =>
+    //   <svg height="30" width="30" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--color-brand-400)"/></svg>;
+    imports: {
+      "#theme/Logo": join(import.meta.dirname, './logo.jsx'),
+    },
+  },
+};
+```
+
+Re-build the project, serve, and you'll see how quickly you can change the
+experience, preserving core functionality.
+
 ## Next steps
 
-- [Configuration](./configuration.html) — move these flags into
-  `doc-kit.config.mjs`.
-- [Customize the `web` generator](./generator-web.html) — theming, `head`, and
-  custom templating
-- [Read the full input specification](./specification.html) — the full Markdown
+- Explore [Configuration](./configuration) — consider moving your `-t` target
+  flags into a `doc-kit.config.mjs` file.
+- [Further customize the `web` generator](./generator-web) — check out more
+  customization options
+- [Read the full input specification](./specification) — the full Markdown
   contract. components.

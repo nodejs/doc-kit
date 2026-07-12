@@ -1,16 +1,18 @@
-# doc-kit
+# `doc-kit`
 
-doc-kit is not a general-purpose Markdown-to-output tool to structurally
-transform API documentation.
-
-`@node-core/doc-kit` is the documentation toolchain behind the Node.js API
+`doc-kit` is an opinionated Markdown parsing tool to structurally transform API
+documentation. It;s the documentation toolchain behind the Node.js API
 reference, found at https://nodejs.org/docs/latest/api/. This site is built by
-doc-kit, from its own repository. The pages you are reading were produced by the
-`web` generator.
+`doc-kit`, from its own repository. The pages you are reading were produced by
+the `web` generator.
+
+> 📣 `doc-kit` is in beta. We'd like feedback within the
+> [issue log](https://github.com/nodejs/doc-kit/issues) or by visiting the
+> [#nodejs-website Slack Channel](https://openjs-foundation.slack.com/archives/CVAMEJ4UV).
 
 ## `doc-kit` is a pipeline, not a Markdown converter
 
-doc-kit parses Markdown source files once, emitting output according to
+`doc-kit` parses Markdown source files once, emitting output according to
 configured generators. You run any subset of them in one command, customize
 their logic, or even build your own generator.
 
@@ -36,7 +38,7 @@ Only some of these are things you ask for by name. `ast`, `metadata`, and
 them, and they are not valid `-t` targets. Everything in the fan-out below
 `metadata` is a target you can pass to `-t`, and passing several at once reuses
 the one shared parse rather than repeating it. The full list is in the
-[generators reference](./generator-web.html).
+[generators reference](./generator-web).
 
 ## The input contract
 
@@ -48,11 +50,11 @@ important rule:
 > page's identity — its sidebar label and its output filename. A file without
 > one produces no page at all, and the build still exits `0`.
 
-See [the specification](./specification.html) for the full input format.
+See [the specification](./specification) for the full input format.
 
-## Start here
+## What's next
 
-- [Getting started](./getting-started.html) — render your first document.
-- [Commands](./commands.html) — the `doc-kit` CLI surface.
-- [Configuration](./configuration.html) — `doc-kit.config.mjs` reference.
-- [Creating generators](./generators.html) — extend the pipeline.
+- [Getting started](./getting-started) — render your first document.
+- [Commands](./commands) — the `doc-kit` CLI surface.
+- [Configuration](./configuration) — `doc-kit.config.mjs` reference.
+- [Creating generators](./generators) — extend the pipeline.
