@@ -8,7 +8,8 @@ the `web` generator.
 
 > 📣 `doc-kit` is in beta. We'd like feedback within the
 > [issue log](https://github.com/nodejs/doc-kit/issues) or by visiting the
-> [#nodejs-website Slack Channel](https://openjs-foundation.slack.com/archives/CVAMEJ4UV).
+> [#nodejs-website Slack Channel](https://openjs-foundation.slack.com/archives/CVAMEJ4UV)
+> on [the OpenJS Slack](http://slack.openjsf.org/).
 
 ## `doc-kit` is a pipeline, not a Markdown converter
 
