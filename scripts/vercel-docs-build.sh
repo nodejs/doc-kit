@@ -6,4 +6,4 @@ node scripts/build-docs-content.mjs
 
 node bin/cli.mjs generate \
   --config-file ./www/doc-kit.config.mjs \
-  --log-level info
+  --log-level debug
