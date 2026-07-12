@@ -58,3 +58,13 @@ See [the specification](./specification) for the full input format.
 - [Commands](./commands) — the `doc-kit` CLI surface.
 - [Configuration](./configuration) — `doc-kit.config.mjs` reference.
 - [Creating generators](./generators) — extend the pipeline.
+
+## Showcase
+
+A couple places `doc-kit` is already in use. Feel free to PR yours.
+
+- <https://nodejs.org/api> - `legacy-json`
+- <https://beta.docs.nodejs.org/> - `web`
+- <https://nodejs.org/learn> - `web`
+- <https://webpack-doc-kit.vercel.app/> - `web`
+- <https://undici-website.vercel.app/> - `web`
