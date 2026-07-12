@@ -67,4 +67,4 @@ A couple places `doc-kit` is already in use. Feel free to PR yours.
 - <https://beta.docs.nodejs.org/> - `web`
 - <https://nodejs.org/learn> - `web`
 - <https://webpack-doc-kit.vercel.app/> - `web`
-- <https://undici-website.vercel.app/> - `web`
+- <https://undici.nodejs.org/> - `web`
