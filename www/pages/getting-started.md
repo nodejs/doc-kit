@@ -84,7 +84,7 @@ through a couple quick changes.
 
 Create a `doc-kit.config.mjs` file at the root of the project.
 
-```json
+```mjs
 import { join } from 'node:path';
 
 /** @type {import('@node-core/doc-kit/src/utils/configuration/types').Configuration} */
