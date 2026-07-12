@@ -43,7 +43,7 @@ npx doc-kit generate \
   -o out
 ```
 
-Open `out/all.html` in a browser. You'll notice the Node.js branding.
+Open `out/all.html` in a browser. You'll notice the Node.js branding, however, that's fully customizable via [a configuration file][].
 
 ## Render the modern site
 
