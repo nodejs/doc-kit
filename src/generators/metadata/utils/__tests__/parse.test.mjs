@@ -6,11 +6,9 @@ import { describe, it } from 'node:test';
 import { u } from 'unist-builder';
 
 import { parseApiDoc } from '../parse.mjs';
-import { createTypeResolver } from '../resolveTypes.mjs';
 
 const path = 'fs';
 const typeMap = {};
-const typeResolver = await createTypeResolver();
 
 const h = (text, depth = 1) => u('heading', { depth }, [u('text', text)]);
 const yaml = content => u('html', `<!-- YAML\n${content}\n-->`);
@@ -196,7 +194,7 @@ describe('parseApiDoc', () => {
         h('fs'),
         u('paragraph', [u('typeAnnotation', 'string')]),
       ]);
-      const [entry] = parseApiDoc({ path, tree }, typeMap, typeResolver);
+      const [entry] = parseApiDoc({ path, tree }, typeMap);
       const annotation = findAnnotation(entry);
 
       assert.strictEqual(annotation.data.links.length, 1);
@@ -210,8 +208,7 @@ describe('parseApiDoc', () => {
       ]);
       const [entry] = parseApiDoc(
         { path, tree },
-        { Buffer: 'buffer.html#class-buffer' },
-        typeResolver
+        { Buffer: 'buffer.html#class-buffer' }
       );
 
       assert.strictEqual(
@@ -270,11 +267,7 @@ describe('parseApiDoc', () => {
         h('fs'),
         u('paragraph', [u('typeAnnotation', 'string')]),
       ]);
-      const [entry] = parseApiDoc(
-        { path, tree, mdx: true },
-        typeMap,
-        typeResolver
-      );
+      const [entry] = parseApiDoc({ path, tree, mdx: true }, typeMap);
       const paragraph = entry.content.children.find(
         n => n.type === 'paragraph'
       );

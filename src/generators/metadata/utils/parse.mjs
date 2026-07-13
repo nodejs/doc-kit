@@ -22,20 +22,16 @@ import { UNIST } from '../../../utils/queries/index.mjs';
 import { getRemark as remark } from '../../../utils/remark.mjs';
 import { relative } from '../../../utils/url.mjs';
 import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
+import { resolveTypeAnnotations } from './resolveTypes.mjs';
 
 /**
  * This generator generates a flattened list of metadata entries from a API doc
  *
  * @param {{ tree: import('mdast.Root'), mdx?: boolean } & import('../types').MetadataEntry} input
  * @param {Record<string, string>} typeMap
- * @param {Awaited<ReturnType<import('./resolveTypes.mjs').createTypeResolver>>} [typeResolver]
  * @returns {Array<import('../types').MetadataEntry>}
  */
-export const parseApiDoc = (
-  { path, tree, mdx = false },
-  typeMap,
-  typeResolver
-) => {
+export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
   /**
    * Collection of metadata entries for the file
    * @type {Array<import('../types').MetadataEntry>}
@@ -71,7 +67,7 @@ export const parseApiDoc = (
   // per file). MDX trees never contain `typeAnnotation` nodes — there,
   // `{...}` is a real expression — so this is skipped.
   if (!mdx) {
-    typeResolver?.resolveTypeAnnotations(tree, relativeTypeMap, path);
+    resolveTypeAnnotations(tree, relativeTypeMap, path);
   }
 
   // Handles the normalisation URLs that reference to API doc files with .md extension
