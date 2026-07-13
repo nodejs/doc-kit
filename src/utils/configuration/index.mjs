@@ -18,12 +18,13 @@ import { deepMerge, lazy } from '../misc.mjs';
 export const getDefaultConfig = lazy(config =>
   Object.keys(allGenerators).reduce(
     (acc, k) => {
-      if ('defaultConfiguration' in allGenerators[k]) {
-        acc[k] =
-          typeof allGenerators[k].defaultConfiguration === 'function'
+      acc[k] =
+        'defaultConfiguration' in allGenerators[k]
+          ? typeof allGenerators[k].defaultConfiguration === 'function'
             ? allGenerators[k].defaultConfiguration(config)
-            : allGenerators[k].defaultConfiguration;
-      }
+            : allGenerators[k].defaultConfiguration
+          : {};
+
       return acc;
     },
     /** @type {import('./types').Configuration} */ ({
