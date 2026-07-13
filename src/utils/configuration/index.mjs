@@ -15,10 +15,15 @@ import { deepMerge, lazy } from '../misc.mjs';
 /**
  * Get's the default configuration
  */
-export const getDefaultConfig = lazy(() =>
+export const getDefaultConfig = lazy(config =>
   Object.keys(allGenerators).reduce(
     (acc, k) => {
-      acc[k] = allGenerators[k].defaultConfiguration ?? {};
+      if ('defaultConfiguration' in allGenerators[k]) {
+        acc[k] =
+          typeof allGenerators[k].defaultConfiguration === 'function'
+            ? allGenerators[k].defaultConfiguration(config)
+            : allGenerators[k].defaultConfiguration;
+      }
       return acc;
     },
     /** @type {import('./types').Configuration} */ ({
@@ -138,7 +143,7 @@ export const createRunConfiguration = async options => {
   const merged = deepMerge(
     config,
     createConfigFromCLIOptions(options),
-    getDefaultConfig()
+    getDefaultConfig(config)
   );
 
   // These need to be coerced
