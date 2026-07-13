@@ -1,4 +1,4 @@
-name: Release
+name: Publish
 
 # This workflow drives releases with Changesets.
 #
@@ -24,7 +24,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-latest
     # Never attempt to publish from forks (no trusted-publisher match / secrets).
     if: github.repository == 'nodejs/doc-kit'

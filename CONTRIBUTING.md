@@ -338,7 +338,7 @@ git commit -m "describe your changes" --no-verify
 Releases are automated with [Changesets][] and require no manual version bumps — maintainers never
 edit the `version` field in `package.json` by hand.
 
-When changesets land on `main`, the [`Release` workflow](.github/workflows/release.yml) opens (or
+When changesets land on `main`, the [`Publish` workflow](.github/workflows/publish.yml) opens (or
 updates) a **"Version Packages"** Pull Request that consumes the pending changeset files, bumps the
 version in `package.json`, and writes the corresponding `CHANGELOG.md` entries.
 
