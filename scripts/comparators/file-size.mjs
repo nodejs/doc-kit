@@ -1,7 +1,8 @@
 import { stat, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { BASE, HEAD, TITLE } from '../constants.mjs';
+import { BASE, BENCHMARK_FILE, HEAD, TITLE } from '../constants.mjs';
+import { comparePerformance } from './performance.mjs';
 
 const UNITS = ['B', 'KB', 'MB', 'GB'];
 
@@ -25,7 +26,7 @@ const formatBytes = bytes => {
  * @returns {Promise<Map<string, number>>} Map of filename to size in bytes
  */
 const getStats = async dir => {
-  const files = await readdir(dir);
+  const files = (await readdir(dir)).filter(file => file !== BENCHMARK_FILE);
   return new Map(
     await Promise.all(
       files.map(async f => [f, (await stat(path.join(dir, f))).size])
@@ -53,6 +54,8 @@ const changed = [...new Set([...baseStats.keys(), ...headStats.keys()])]
   .map(toDiffObject)
   .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
 
+const sections = [];
+
 // Output markdown table if there are changes
 if (changed.length) {
   const rows = changed.map(({ file, base, head, diff }) => {
@@ -63,8 +66,19 @@ if (changed.length) {
     return `| \`${file}\` | ${formatBytes(base)} | ${formatBytes(head)} | ${diffFormatted} |`;
   });
 
-  console.log(TITLE);
-  console.log('| File | Base | Head | Diff |');
-  console.log('|-|-|-|-|');
-  console.log(rows.join('\n') + '\n');
+  sections.push(
+    '### Output size',
+    '| File | Base | Head | Diff |',
+    '|-|-|-|-|',
+    rows.join('\n')
+  );
+}
+
+const performance = await comparePerformance();
+if (performance) {
+  sections.push(performance);
+}
+
+if (sections.length) {
+  console.log(`${TITLE}\n\n${sections.join('\n\n')}\n`);
 }

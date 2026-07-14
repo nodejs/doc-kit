@@ -20,8 +20,8 @@ export default function createWorkerPool(threads) {
 
   return new Piscina({
     filename: workerScript,
-    minThreads: threads,
+    minThreads: 0,
     maxThreads: threads,
-    idleTimeout: Infinity, // Keep workers alive
+    idleTimeout: 1_000,
   });
 }
