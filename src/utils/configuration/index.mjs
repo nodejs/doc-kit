@@ -141,11 +141,8 @@ export const createRunConfiguration = async options => {
   config.target &&= enforceArray(config.target);
 
   // Merge with defaults
-  const merged = deepMerge(
-    config,
-    createConfigFromCLIOptions(options),
-    getDefaultConfig(config)
-  );
+  const intermediate = deepMerge(config, createConfigFromCLIOptions(options));
+  const merged = deepMerge(intermediate, getDefaultConfig(intermediate));
 
   // These need to be coerced
   merged.threads = Math.max(merged.threads, 1);
