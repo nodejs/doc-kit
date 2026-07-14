@@ -6,21 +6,22 @@ The `web` generator transforms JSX AST entries into complete web bundles, produc
 
 The `web` generator accepts the following configuration options:
 
-| Name              | Type      | Default                                       | Description                                                              |
-| ----------------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------ |
-| `output`          | `string`  | -                                             | The directory where HTML, JavaScript, and CSS files will be written      |
-| `templatePath`    | `string`  | `'template.html'`                             | Path to the HTML template file                                           |
-| `project`         | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector                |
-| `title`           | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)        |
-| `useAbsoluteURLs` | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`     |
-| `editURL`         | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                                  |
-| `pageURL`         | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                                |
-| `head`            | `object`  | See below                                     | Configurable `<meta>`, `<link>`, and raw markup for the document head    |
-| `lightningcss`    | `object`  | `{}`                                          | Options spread into LightningCSS while bundling CSS (see below)          |
-| `imports`         | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization    |
-| `virtualImports`  | `object`  | `{}`                                          | Additional virtual module mappings merged into the build                 |
-| `components`      | `object`  | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below) |
-| `rolldown`        | `object`  | `{}`                                          | Options merged into the Rolldown build — extra plugins, etc. (see below) |
+| Name              | Type      | Default                                       | Description                                                                                                 |
+| ----------------- | --------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `output`          | `string`  | -                                             | The directory where HTML, JavaScript, and CSS files will be written                                         |
+| `templatePath`    | `string`  | `'template.html'`                             | Path to the HTML template file                                                                              |
+| `project`         | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector                                                   |
+| `title`           | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)                                           |
+| `useAbsoluteURLs` | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`                                        |
+| `editURL`         | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                                                                     |
+| `pageURL`         | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                                                                   |
+| `remoteConfigUrl` | `string`  | `'https://nodejs.org/site.json'`              | URL fetched client-side at runtime for remote site config (currently used to power the announcement banner) |
+| `head`            | `object`  | See below                                     | Configurable `<meta>`, `<link>`, and raw markup for the document head                                       |
+| `lightningcss`    | `object`  | `{}`                                          | Options spread into LightningCSS while bundling CSS (see below)                                             |
+| `imports`         | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization                                       |
+| `virtualImports`  | `object`  | `{}`                                          | Additional virtual module mappings merged into the build                                                    |
+| `components`      | `object`  | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below)                                    |
+| `rolldown`        | `object`  | `{}`                                          | Options merged into the Rolldown build — extra plugins, etc. (see below)                                    |
 
 #### `head`
 
@@ -241,17 +242,18 @@ import { project, repository, editURL } from '#theme/config';
 
 All scalar (non-object) configuration values are automatically exported. The defaults include:
 
-| Export                   | Type                           | Description                                                                                         |
-| ------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `project`                | `string`                       | Project name (e.g. `'Node.js'`)                                                                     |
-| `repository`             | `string`                       | GitHub repository in `owner/repo` format                                                            |
-| `version`                | `string`                       | Current version label (e.g. `'v22.x'`)                                                              |
-| `versions`               | `Array<{ url, label, major }>` | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use) |
-| `editURL`                | `string`                       | Partially populated "edit this page" URL template (only `{path}` remains)                           |
-| `pages`                  | `Array<[string, string]>`      | Sorted `[name, path]` tuples for sidebar navigation                                                 |
-| `useAbsoluteURLs`        | `boolean`                      | Whether internal links use absolute URLs (mirrors config value)                                     |
-| `baseURL`                | `string`                       | Base URL for the documentation site (used when `useAbsoluteURLs` is `true`)                         |
-| `languageDisplayNameMap` | `Map<string, string>`          | Shiki language alias → display name map for code blocks                                             |
+| Export                   | Type                           | Description                                                                                                           |
+| ------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `project`                | `string`                       | Project name (e.g. `'Node.js'`)                                                                                       |
+| `repository`             | `string`                       | GitHub repository in `owner/repo` format                                                                              |
+| `version`                | `string`                       | Current version label (e.g. `'v22.x'`)                                                                                |
+| `versions`               | `Array<{ url, label, major }>` | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use)                   |
+| `editURL`                | `string`                       | Partially populated "edit this page" URL template (only `{path}` remains)                                             |
+| `pages`                  | `Array<[string, string]>`      | Sorted `[name, path]` tuples for sidebar navigation                                                                   |
+| `useAbsoluteURLs`        | `boolean`                      | Whether internal links use absolute URLs (mirrors config value)                                                       |
+| `baseURL`                | `string`                       | Base URL for the documentation site (used when `useAbsoluteURLs` is `true`)                                           |
+| `languageDisplayNameMap` | `Map<string, string>`          | Shiki language alias → display name map for code blocks                                                               |
+| `remoteConfigUrl`        | `string`                       | Mirrors the configured `remoteConfigUrl` (fetched client-side by `RemoteLoadableBanner` to load announcement banners) |
 
 #### Usage in custom components
 
