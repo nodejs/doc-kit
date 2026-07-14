@@ -1,6 +1,5 @@
 import { DOC_MAN_BASE_URL, DOC_API_HEADING_TYPES } from '../constants.mjs';
 import { slug } from './slugger.mjs';
-import { parseType } from './typeParser.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import BUILTIN_TYPE_MAP from '../maps/builtin.json' with { type: 'json' };
 import MDN_TYPE_MAP from '../maps/mdn.json' with { type: 'json' };
@@ -21,64 +20,59 @@ export const transformUnixManualToLink = (
 };
 
 /**
- * This method replaces plain text Types within the Markdown content into Markdown links
- * that link to the actual relevant reference for such type (either internal or external link)
+ * Looks a type name up in the type maps: the toolchain-provided map first
+ * (Node.js types/modules), then the built-in (TC39) map, then MDN. Map keys
+ * may be arbitrary display names (e.g. `zlib options`), not just identifiers.
  *
- * @param {string} type The plain type to be transformed into a Markdown link
- * @param {Record<string, string>} record The mapping of types to links
- * @returns {string} The Markdown link as a string (formatted in Markdown)
+ * @param {string} name The type name to look up
+ * @param {Record<string, string>} typeMap The toolchain mapping of types to links
+ * @returns {string} The reference URL or empty string if no match
  */
-export const transformTypeToReferenceLink = (type, record) => {
-  // Removes the wrapping curly braces that wrap the type references
-  // We keep the angle brackets `<>` intact here to parse Generics later
-  const typeInput = type
-    .trim()
-    .replace(/^\{(.*)\}$/, '$1')
-    .trim();
+export const lookupTypeName = (name, typeMap) => {
+  if (typeMap && name in typeMap) {
+    return typeMap[name];
+  }
 
-  /**
-   * Handles the mapping (if there's a match) of the input text
-   * into the reference type from the API docs
-   *
-   * @param {string} lookupPiece
-   * @returns {string} The reference URL or empty string if no match
-   */
-  const transformType = lookupPiece => {
-    // Transform Node.js type/module references into Markdown links
-    // that refer to other API docs pages within the Node.js API docs
-    if (record && lookupPiece in record) {
-      return record[lookupPiece];
-    }
+  const key = name.toLowerCase();
 
-    const key = lookupPiece.toLowerCase();
+  // Check in our built-in map (i.e. TC39 objects)
+  if (key in BUILTIN_TYPE_MAP) {
+    return BUILTIN_TYPE_MAP[key];
+  }
 
-    // Check in our built-in map (i.e. TC39 objects)
-    if (key in BUILTIN_TYPE_MAP) {
-      return BUILTIN_TYPE_MAP[key];
-    }
+  // Check in MDN
+  if (key in MDN_TYPE_MAP) {
+    return MDN_TYPE_MAP[key];
+  }
 
-    // Check in MDN
-    if (key in MDN_TYPE_MAP) {
-      return MDN_TYPE_MAP[key];
-    }
+  return '';
+};
 
-    // Transform Node.js types like 'vm.Something'.
-    if (lookupPiece.indexOf('.') >= 0) {
-      const [mod, ...pieces] = lookupPiece.split('.');
-      const isClass = pieces.at(-1).match(/^[A-Z][a-z]/);
+/**
+ * Resolves a type identifier to a documentation URL: map lookups first, then
+ * the dotted-name heuristic for Node.js types like `vm.Module` (which links
+ * to the module's page).
+ *
+ * @param {string} name The type identifier to resolve
+ * @param {Record<string, string>} typeMap The toolchain mapping of types to links
+ * @returns {string} The reference URL or empty string if no match
+ */
+export const resolveTypeReference = (name, typeMap) => {
+  const url = lookupTypeName(name, typeMap);
 
-      return `${mod}.html#${isClass ? 'class-' : ''}${slug(lookupPiece)}`;
-    }
+  if (url) {
+    return url;
+  }
 
-    return '';
-  };
+  // Transform Node.js types like 'vm.Something'.
+  if (name.indexOf('.') >= 0) {
+    const [mod, ...pieces] = name.split('.');
+    const isClass = pieces.at(-1).match(/^[A-Z][a-z]/);
 
-  const markdownLinks = parseType(typeInput, transformType);
+    return `${mod}.html#${isClass ? 'class-' : ''}${slug(name)}`;
+  }
 
-  // Return the replaced links or the original content if they all failed to be replaced
-  // Note that if some failed to get replaced, only the valid ones will be returned
-  // If no valid entry exists, we return the original string/type
-  return markdownLinks || type;
+  return '';
 };
 
 /**

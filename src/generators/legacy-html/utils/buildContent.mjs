@@ -11,7 +11,7 @@ import {
   GITHUB_BLOB_URL,
   populate,
 } from '../../../utils/configuration/templates.mjs';
-import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
+import { UNIST } from '../../../utils/queries/index.mjs';
 import { getRemarkRehypeWithShiki as remark } from '../../../utils/remark.mjs';
 
 /**
@@ -70,18 +70,6 @@ const buildStability = ({ children, data }, index, parent) => {
   parent.children.splice(index, 1, stabilityElement);
 
   return [SKIP];
-};
-
-/**
- * Transforms the node Markdown link into an HTML link
- *
- * @param {import('@types/mdast').Html} node The node containing the HTML content
- */
-const buildHtmlTypeLink = node => {
-  node.value = node.value.replace(
-    QUERIES.linksWithTypes,
-    (_, type, link) => `<a href="${link}" class="type">&lt;${type}&gt;</a>`
-  );
 };
 
 /**
@@ -237,10 +225,6 @@ export default (headNodes, metadataEntries) => {
       // This is treated differently as we want to preserve the position of a Stability Index
       // within the content, so we can't just remove it and append it to the metadata
       visit(entry.content, UNIST.isStabilityNode, buildStability);
-
-      // Parses the type references that got replaced into Markdown links (raw)
-      // into actual HTML links, these then get parsed into HAST nodes on `runSync`
-      visit(entry.content, UNIST.isHtmlWithType, buildHtmlTypeLink);
 
       // Splits the content into the Heading node and the rest of the content
       const [headingNode, ...restNodes] = entry.content.children;

@@ -1,136 +1,64 @@
 import { strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
-import { transformTypeToReferenceLink } from '../transformers.mjs';
+import { lookupTypeName, resolveTypeReference } from '../transformers.mjs';
 
-describe('transformTypeToReferenceLink', () => {
-  it('should transform a JavaScript primitive type into a Markdown link', () => {
+describe('lookupTypeName', () => {
+  it('resolves from the type map first', () => {
+    strictEqual(lookupTypeName('string', { string: 'override' }), 'override');
+  });
+
+  it('resolves JavaScript primitives from the built-in map', () => {
     strictEqual(
-      transformTypeToReferenceLink('string'),
-      '[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)'
+      lookupTypeName('string'),
+      'https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type'
     );
   });
 
-  it('should transform a JavaScript global type into a Markdown link', () => {
+  it('resolves JavaScript globals from the built-in map (case-insensitive)', () => {
     strictEqual(
-      transformTypeToReferenceLink('Array'),
-      '[`<Array>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)'
+      lookupTypeName('Array'),
+      'https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array'
     );
   });
 
-  it('should transform a type into a Markdown link', () => {
+  it('resolves Web APIs from the MDN map', () => {
     strictEqual(
-      transformTypeToReferenceLink('SomeOtherType', {
-        SomeOtherType: 'fromTypeMap',
-      }),
-      '[`<SomeOtherType>`](fromTypeMap)'
+      lookupTypeName('AbortSignal'),
+      'https://developer.mozilla.org/docs/Web/API/AbortSignal'
     );
   });
 
-  it('should transform a basic Generic type into a Markdown link', () => {
+  it('resolves display-name map keys verbatim', () => {
     strictEqual(
-      transformTypeToReferenceLink('{Promise<string>}'),
-      '[`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)&gt;'
+      lookupTypeName('zlib options', { 'zlib options': 'zlib.html#options' }),
+      'zlib.html#options'
     );
   });
 
-  it('should partially transform a Generic type if only one part is known', () => {
+  it('returns an empty string on a miss (no dotted heuristic)', () => {
+    strictEqual(lookupTypeName('vm.Module'), '');
+    strictEqual(lookupTypeName('NotAThing'), '');
+  });
+});
+
+describe('resolveTypeReference', () => {
+  it('falls back to the dotted-name heuristic for classes', () => {
+    strictEqual(resolveTypeReference('vm.Module'), 'vm.html#class-vmmodule');
+  });
+
+  it('does not use the class prefix for non-class members', () => {
+    strictEqual(resolveTypeReference('vm.constants'), 'vm.html#vmconstants');
+  });
+
+  it('prefers the map over the dotted heuristic', () => {
     strictEqual(
-      transformTypeToReferenceLink('{CustomType<string>}', {}),
-      '`<CustomType>`&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)&gt;'
+      resolveTypeReference('vm.Module', { 'vm.Module': 'mapped' }),
+      'mapped'
     );
   });
 
-  it('should transform a Generic type with an inner union like {Promise<string|boolean>}', () => {
-    strictEqual(
-      transformTypeToReferenceLink('{Promise<string|boolean>}', {}),
-      '[`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)&gt;'
-    );
-  });
-
-  it('should transform multi-parameter generics like {Map<string, number>}', () => {
-    strictEqual(
-      transformTypeToReferenceLink('{Map<string, number>}', {}),
-      '[`<Map>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type), [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt;'
-    );
-  });
-
-  it('should handle outer unions with generics like {Promise<string|number> | Iterable<boolean>}', () => {
-    strictEqual(
-      transformTypeToReferenceLink(
-        '{Promise<string|number> | Iterable<boolean>}',
-        {}
-      ),
-      '[`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt; | [`<Iterable>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol)&lt;[`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)&gt;'
-    );
-  });
-
-  it('should transform an intersection type joined with & into linked parts', () => {
-    strictEqual(
-      transformTypeToReferenceLink('{string&boolean}', {}),
-      '[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) & [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)'
-    );
-  });
-
-  it('should handle an intersection with generics like {Map<string, number>&Array<string>}', () => {
-    strictEqual(
-      transformTypeToReferenceLink('{Map<string, number>&Array<string>}', {}),
-      '[`<Map>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type), [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt; & [`<Array>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)&gt;'
-    );
-  });
-
-  it('should transform a function returning a Generic type', () => {
-    strictEqual(
-      transformTypeToReferenceLink('(err: Error) => Promise<boolean>', {}),
-      '(err: [`<Error>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error)) =&gt; [`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)&gt;'
-    );
-  });
-
-  it('should respect precedence: Unions (|) are weaker than Intersections (&)', () => {
-    strictEqual(
-      transformTypeToReferenceLink('string | number & boolean', {}),
-      '[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type) & [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)'
-    );
-  });
-
-  it('should correctly extract TS prefix operators and link the underlying type', () => {
-    strictEqual(
-      transformTypeToReferenceLink('typeof Compiler', {
-        Compiler: '/api/Compiler',
-      }),
-      'typeof [`<Compiler>`](/api/Compiler)'
-    );
-  });
-
-  it('should not incorrectly strip prefixes if they are part of the type name (word boundary)', () => {
-    strictEqual(
-      transformTypeToReferenceLink('typeofSomething', {
-        typeofSomething: '/api/typeofSomething',
-      }),
-      '[`<typeofSomething>`](/api/typeofSomething)'
-    );
-  });
-
-  it('should handle extreme nested combinations of functions, arrays, generics, unions, and intersections', () => {
-    const input =
-      '(str: string[]) => Promise<Map<string, number & string>, Map<string | number>>';
-
-    const expected =
-      '(str: [`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)[]) =&gt; [`<Promise>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[`<Map>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type), [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type) & [`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)&gt;, [`<Map>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map)&lt;[`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type) | [`<number>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#number_type)&gt;&gt;';
-
-    strictEqual(transformTypeToReferenceLink(input, {}), expected);
-  });
-
-  it('should parse functions with array destructuring in callbacks returning functions with object destructuring', () => {
-    const input =
-      '(cb: ([first, second]: string[]) => void) => ({ id, name }: User) => boolean';
-
-    const expected =
-      '(cb: ([first, second]: [`<string>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type)[]) =&gt; [`<void>`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/void)) =&gt; ({ id, name }: [`<User>`](userLink)) =&gt; [`<boolean>`](https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#boolean_type)';
-
-    strictEqual(
-      transformTypeToReferenceLink(input, { User: 'userLink' }),
-      expected
-    );
+  it('returns an empty string for unknown plain names', () => {
+    strictEqual(resolveTypeReference('NotAThing'), '');
   });
 });

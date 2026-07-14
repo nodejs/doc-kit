@@ -15,7 +15,6 @@ import {
   visitLinkReference,
   visitMarkdownLink,
   visitStability,
-  visitTextWithTypeNode,
   visitTextWithUnixManualNode,
   visitYAML,
 } from './visitors.mjs';
@@ -23,13 +22,14 @@ import { UNIST } from '../../../utils/queries/index.mjs';
 import { getRemark as remark } from '../../../utils/remark.mjs';
 import { relative } from '../../../utils/url.mjs';
 import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
+import { resolveTypeAnnotations } from './resolveTypes.mjs';
 
 /**
  * This generator generates a flattened list of metadata entries from a API doc
  *
  * @param {{ tree: import('mdast.Root'), mdx?: boolean } & import('../types').MetadataEntry} input
  * @param {Record<string, string>} typeMap
- * @returns {Promise<Array<import('../types').MetadataEntry>>}
+ * @returns {Array<import('../types').MetadataEntry>}
  */
 export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
   /**
@@ -62,6 +62,13 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
   const relativeTypeMap = Object.fromEntries(
     Object.entries(typeMap).map(([type, url]) => [type, relative(url, path)])
   );
+
+  // Resolve every type annotation in the file at once (one TypeScript parse
+  // per file). MDX trees never contain `typeAnnotation` nodes — there,
+  // `{...}` is a real expression — so this is skipped.
+  if (!mdx) {
+    resolveTypeAnnotations(tree, relativeTypeMap, path);
+  }
 
   // Handles the normalisation URLs that reference to API doc files with .md extension
   visit(tree, UNIST.isMarkdownUrl, node => visitMarkdownLink(node));
@@ -115,14 +122,6 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
     // If YAML data contains a 'type', use it to override heading type
     if (metadata.type) {
       metadata.heading.data.type = metadata.type;
-    }
-
-    // Process type references. Skipped for MDX, where bare `<...>`/`{...}` are
-    // real JSX/expression nodes (not type annotations) and must not be rewritten.
-    if (!mdx) {
-      visit(subTree, UNIST.isTextWithType, (node, _, parent) =>
-        visitTextWithTypeNode(node, parent, relativeTypeMap)
-      );
     }
 
     // Process Unix manual references

@@ -7,11 +7,6 @@ import { isTypedList } from './utils.mjs';
 export const QUERIES = {
   // Fixes the references to Markdown pages into the API documentation
   markdownUrl: /^(?![+a-zA-Z]+:)([^#?]+)\.md(#.+)?$/,
-  // ReGeX to match the {Type}<Type> (API type references)
-  normalizeTypes: /(\{|<)(?! )[^{}]+(?! )(\}|>)/g,
-  // ReGex to match the type API type references that got already parsed
-  // so that they can be transformed into HTML links
-  linksWithTypes: /\[`<[^{}]+>`\]\((\S+)\)/g,
   // ReGeX for handling Stability Indexes Metadata
   stabilityIndex: /^Stability: ([0-5](?:\.[0-3])?)(?:\s*-\s*)?(.*)$/s,
   // ReGeX for handling the Stability Index Prefix
@@ -46,22 +41,8 @@ export const UNIST = {
    * @param {import('@types/mdast').Text} text
    * @returns {boolean}
    */
-  isTextWithType: ({ type, value }) =>
-    type === 'text' && QUERIES.normalizeTypes.test(value),
-
-  /**
-   * @param {import('@types/mdast').Text} text
-   * @returns {boolean}
-   */
   isTextWithUnixManual: ({ type, value }) =>
     type === 'text' && QUERIES.unixManualPage.test(value),
-
-  /**
-   * @param {import('@types/mdast').Html} html
-   * @returns {boolean}
-   */
-  isHtmlWithType: ({ type, value }) =>
-    type === 'html' && QUERIES.linksWithTypes.test(value),
 
   /**
    * @param {import('@types/mdast').Link} link
@@ -103,9 +84,7 @@ export const UNIST = {
         list.children?.[0]?.children?.[0]?.children ?? [];
 
       return (
-        secondNode?.value?.trim() === '' &&
-        thirdNode?.type === 'link' &&
-        thirdNode?.children?.[0]?.value?.[0] === '<'
+        secondNode?.value?.trim() === '' && thirdNode?.type === 'typeAnnotation'
       );
     }
 

@@ -16,6 +16,11 @@ import { visit } from 'unist-util-visit';
 
 import syntaxHighlighter, { highlighter } from './highlighter.mjs';
 import { lazy } from './misc.mjs';
+import {
+  typeAnnotationToHast,
+  typeAnnotationToHighlightedHast,
+} from './type-annotations/hast.mjs';
+import remarkTypeAnnotations from './type-annotations/remark.mjs';
 import { AST_NODE_TYPES } from '../generators/jsx-ast/constants.mjs';
 import transformAlerts from '../generators/jsx-ast/utils/plugins/alerts.mjs';
 import transformElements from '../generators/jsx-ast/utils/plugins/transformer.mjs';
@@ -53,9 +58,15 @@ const restoreCodeMeta = () => tree => {
 
 /**
  * Retrieves an instance of Remark configured to parse GFM (GitHub Flavored Markdown)
+ * plus `{...}` type annotations (see `./type-annotations`), which only exist
+ * in non-MDX files — the MDX pipeline below never registers them.
  */
 export const getRemark = lazy(() =>
-  unified().use(remarkParse).use(remarkGfm).use(remarkStringify)
+  unified()
+    .use(remarkParse)
+    .use(remarkTypeAnnotations)
+    .use(remarkGfm)
+    .use(remarkStringify)
 );
 
 /**
@@ -80,7 +91,11 @@ export const getRemarkRehype = lazy(() =>
     // as these are nodes we manually created during the rehype process
     // We also allow dangerous HTML to be passed through, since we have HTML within our Markdown
     // and we trust the sources of the Markdown files
-    .use(remarkRehype, { allowDangerousHtml: true, passThrough })
+    .use(remarkRehype, {
+      allowDangerousHtml: true,
+      passThrough,
+      handlers: { typeAnnotation: typeAnnotationToHast },
+    })
     // We allow dangerous HTML to be passed through, since we have HTML within our Markdown
     // and we trust the sources of the Markdown files
     .use(rehypeStringify, { allowDangerousHtml: true })
@@ -97,7 +112,12 @@ export const getRemarkRehypeWithShiki = lazy(() =>
     // as these are nodes we manually created during the rehype process
     // We also allow dangerous HTML to be passed through, since we have HTML within our Markdown
     // and we trust the sources of the Markdown files
-    .use(remarkRehype, { allowDangerousHtml: true, passThrough })
+    .use(remarkRehype, {
+      allowDangerousHtml: true,
+      passThrough,
+      // legacy-html gets the minimal (unhighlighted) type rendering
+      handlers: { typeAnnotation: typeAnnotationToHast },
+    })
     // This is a custom ad-hoc within the Shiki Rehype plugin, used to highlight code
     // and transform them into HAST nodes
     .use(syntaxHighlighter)
@@ -120,7 +140,12 @@ export const getRemarkRecma = lazy(() =>
     // as these are nodes we manually created during the generation process
     // We also allow dangerous HTML to be passed through, since we have HTML within our Markdown
     // and we trust the sources of the Markdown files
-    .use(remarkRehype, { allowDangerousHtml: true, passThrough })
+    .use(remarkRehype, {
+      allowDangerousHtml: true,
+      passThrough,
+      // The web pipeline gets Shiki-highlighted types with embedded links
+      handlers: { typeAnnotation: typeAnnotationToHighlightedHast },
+    })
     .use(preserveCodeMeta)
     // Any `raw` HTML in the markdown must be converted to AST in order for Recma to understand it
     .use(rehypeRaw, { passThrough })

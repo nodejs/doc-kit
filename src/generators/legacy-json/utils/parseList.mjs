@@ -2,22 +2,11 @@ import {
   DEFAULT_EXPRESSION,
   LEADING_HYPHEN,
   NAME_EXPRESSION,
-  TYPE_EXPRESSION,
 } from '../constants.mjs';
 import parseSignature from './parseSignature.mjs';
 import { leftHandAssign } from '../../../utils/generators.mjs';
 import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
-
-/**
- * Modifies type references in a string by replacing template syntax (`<...>`) with curly braces `{...}`
- * and normalizing formatting.
- * @param {string} string
- * @returns {string}
- */
-export function transformTypeReferences(string) {
-  return string.replace(/`<([^>]+)>`/g, '{$1}').replaceAll('} | {', '|');
-}
 
 /**
  * Extracts and removes a specific pattern from a text string while storing the result in a key of the `current` object.
@@ -49,12 +38,13 @@ export function parseListItem(child) {
 
   const subList = child.children.find(UNIST.isLooselyTypedList);
 
-  // Extract and clean raw text from the node, excluding nested lists
-  current.textRaw = transformTypeReferences(
-    transformNodesToString(child.children.filter(node => node !== subList))
-      .replace(/\s+/g, ' ')
-      .replace(/<!--.*?-->/gs, '')
-  );
+  // Extract and clean raw text from the node, excluding nested lists.
+  // Type annotations serialize back to their `{Type}` source form.
+  current.textRaw = transformNodesToString(
+    child.children.filter(node => node !== subList)
+  )
+    .replace(/\s+/g, ' ')
+    .replace(/<!--.*?-->/gs, '');
 
   let text = current.textRaw;
 
@@ -68,7 +58,17 @@ export function parseListItem(child) {
     text = extractPattern(text, NAME_EXPRESSION, 'name', current);
   }
 
-  text = extractPattern(text, TYPE_EXPRESSION, 'type', current);
+  // The type is the item's typeAnnotation node; it's only a type (and not
+  // prose) when its serialized form sits at the head of the remaining text
+  const annotation = child.children
+    .find(node => node.type === 'paragraph')
+    ?.children.find(node => node.type === 'typeAnnotation');
+
+  if (annotation && text.startsWith(`{${annotation.value}}`)) {
+    current.type = annotation.value;
+    text = text.slice(annotation.value.length + 2).replace(/^\s+/, '');
+  }
+
   text = extractPattern(text, DEFAULT_EXPRESSION, 'default', current);
 
   // Set the remaining text as the description, removing any leading hyphen

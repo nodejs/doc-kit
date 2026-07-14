@@ -20,6 +20,8 @@ export const transformNodeToString = (node, escape) => {
   switch (node.type) {
     case 'inlineCode':
       return `\`${escape ? escapeHTMLEntities(node.value) : node.value}\``;
+    case 'typeAnnotation':
+      return `{${escape ? escapeHTMLEntities(node.value) : node.value}}`;
     case 'strong':
       return `**${transformNodesToString(node.children, escape)}**`;
     case 'emphasis':
