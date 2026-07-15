@@ -114,18 +114,13 @@ describe('omitKeys', () => {
 });
 
 describe('deepMerge', () => {
-  it('should merge flat objects with source taking precedence over base', () => {
+  it('should merge flat objects with latter-arguments taking precedence', () => {
     const result = deepMerge({ a: 1, b: 2 }, { b: 10, c: 3 });
-    assert.deepStrictEqual(result, { a: 1, b: 2, c: 3 });
+    assert.deepStrictEqual(result, { a: 1, b: 10, c: 3 });
   });
 
   it('should merge nested objects recursively', () => {
     const result = deepMerge({ nested: { a: 1 } }, { nested: { b: 2 } });
     assert.deepStrictEqual(result, { nested: { a: 1, b: 2 } });
-  });
-
-  it('should use base values when source values are undefined', () => {
-    const result = deepMerge({ a: undefined }, { a: 'base' });
-    assert.deepStrictEqual(result, { a: 'base' });
   });
 });

@@ -30,7 +30,10 @@ export default createLazyGenerator({
 
   dependsOn: 'jsx-ast',
 
-  defaultConfiguration: {
+  /**
+   * @param {import('../../utils/configuration/types').Configuration} config
+   */
+  defaultConfiguration: config => ({
     templatePath: join(import.meta.dirname, 'template.html'),
     project: 'Node.js',
     title: '{project} {version} Documentation',
@@ -38,6 +41,9 @@ export default createLazyGenerator({
     editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
     pageURL: '{baseURL}/latest-{version}/api{path}.html',
     remoteConfigUrl: 'https://nodejs.org/site.json',
+    // By default, the search box is only shown when we are _also_ building search data
+    showSearchBox:
+      Array.isArray(config.target) && config.target.includes('orama-db'),
 
     // Project-specific document `<head>` contents. `meta` and `links` are
     // arrays of attribute bags (boolean `true` renders a valueless attribute,
@@ -97,5 +103,5 @@ export default createLazyGenerator({
     // Options merged into the Rolldown build (client and server), e.g. extra
     // `plugins`. See the README for the merge semantics.
     rolldown: {},
-  },
+  }),
 });

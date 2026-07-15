@@ -16,8 +16,14 @@ export const lazy = fn =>
  * @param {*} value - The value to check
  * @returns {boolean} True if the value is a plain object, false otherwise
  */
-export const isPlainObject = value =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
+export const isPlainObject = value => {
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+};
 
 /**
  * Checks if a value is an async generator/iterable.
@@ -41,32 +47,26 @@ export const omitKeys = (obj, keys = []) =>
   );
 
 /**
- * Recursively merges multiple objects deeply.
+ * Recursively merges plain objects from left to right.
  * @template T
  * @param {...T} objects - Any number of objects to merge
  * @returns {T} A new object containing the deep merge of all provided objects
  */
 export const deepMerge = (...objects) => {
-  const base = objects.pop();
-
   return objects.reduce((result, source) => {
-    for (const key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        const sourceValue = source[key];
-        const isSourcePlainObject = isPlainObject(sourceValue);
-
-        const targetValue = result[key];
-        const baseValue = base[key];
-
-        result[key] =
-          isSourcePlainObject && isPlainObject(targetValue)
-            ? deepMerge(targetValue, sourceValue, baseValue ?? {})
-            : isSourcePlainObject && isPlainObject(baseValue)
-              ? deepMerge(sourceValue, baseValue)
-              : (sourceValue ?? baseValue);
+    for (const [key, sourceValue] of Object.entries(source)) {
+      if (sourceValue === undefined) {
+        continue;
       }
+
+      const targetValue = result[key];
+      result[key] = isPlainObject(sourceValue)
+        ? deepMerge(isPlainObject(targetValue) ? targetValue : {}, sourceValue)
+        : Array.isArray(sourceValue)
+          ? sourceValue.slice()
+          : sourceValue;
     }
 
     return result;
-  }, base);
+  }, {});
 };

@@ -18,6 +18,12 @@ mock.module('../../../generators/index.mjs', {
       json: { defaultConfiguration: { format: 'json' } },
       html: { defaultConfiguration: { format: 'html' } },
       markdown: {},
+      web: {
+        defaultConfiguration: config => ({
+          showSearchBox:
+            Array.isArray(config.target) && config.target.includes('orama-db'),
+        }),
+      },
     },
   },
 });
@@ -149,20 +155,33 @@ describe('config.mjs', () => {
   });
 
   describe('createRunConfiguration', () => {
-    it('should merge config sources in correct order', async () => {
+    it('should let defined CLI options override the config file', async () => {
       mockImportFromURL.mock.mockImplementationOnce(async () =>
-        createMockConfig({ global: { input: 'custom-src/' } })
+        createMockConfig({
+          global: {
+            input: 'custom-src/',
+            output: 'config-dist/',
+            version: '18.0.0',
+          },
+          target: ['html'],
+          threads: 1,
+        })
       );
 
       const config = await createRunConfiguration({
         configFile: 'config.mjs',
         output: 'custom-dist/',
+        version: '20.0.0',
+        target: ['html', 'orama-db'],
         threads: 2,
       });
 
       assert.strictEqual(config.global.input, 'custom-src/');
       assert.strictEqual(config.global.output, 'custom-dist/');
+      assert.strictEqual(config.global.version.version, '20.0.0');
+      assert.deepStrictEqual(config.target, ['html', 'orama-db']);
       assert.strictEqual(config.threads, 2);
+      assert.strictEqual(config.web.showSearchBox, true);
     });
 
     it('should transform string values only once', async () => {

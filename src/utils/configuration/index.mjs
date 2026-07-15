@@ -15,10 +15,16 @@ import { deepMerge, lazy } from '../misc.mjs';
 /**
  * Get's the default configuration
  */
-export const getDefaultConfig = lazy(() =>
+export const getDefaultConfig = lazy(config =>
   Object.keys(allGenerators).reduce(
     (acc, k) => {
-      acc[k] = allGenerators[k].defaultConfiguration ?? {};
+      acc[k] =
+        'defaultConfiguration' in allGenerators[k]
+          ? typeof allGenerators[k].defaultConfiguration === 'function'
+            ? allGenerators[k].defaultConfiguration(config)
+            : allGenerators[k].defaultConfiguration
+          : {};
+
       return acc;
     },
     /** @type {import('./types').Configuration} */ ({
@@ -134,12 +140,10 @@ export const createRunConfiguration = async options => {
   const config = await loadConfigFile(options.configFile);
   config.target &&= enforceArray(config.target);
 
-  // Merge with defaults
-  const merged = deepMerge(
-    config,
-    createConfigFromCLIOptions(options),
-    getDefaultConfig()
-  );
+  // Resolve user configuration first so dynamic defaults can use it
+  const cliConfig = createConfigFromCLIOptions(options);
+  const intermediate = deepMerge(config, cliConfig);
+  const merged = deepMerge(getDefaultConfig(intermediate), intermediate);
 
   // These need to be coerced
   merged.threads = Math.max(merged.threads, 1);
