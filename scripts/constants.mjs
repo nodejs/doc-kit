@@ -10,6 +10,8 @@ export const HEAD =
 export const TITLE =
   process.env.TITLE || `## \`${process.env.GENERATOR ?? '...'}\` Generator`;
 
+export const BENCHMARK_FILE = 'benchmark.json';
+
 // MDN Constants
 export const MDN_COMPAT_URL =
   'https://github.com/mdn/browser-compat-data/releases/latest/download/data.json';
