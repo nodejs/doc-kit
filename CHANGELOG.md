@@ -1,5 +1,11 @@
 # @node-core/doc-kit
 
+## 1.4.3
+
+### Patch Changes
+
+- [#905](https://github.com/nodejs/doc-kit/pull/905) [`f214a00`](https://github.com/nodejs/doc-kit/commit/f214a009d5ceadddc2a3b8d83b94eb070eb6e790) Thanks [@avivkeller](https://github.com/avivkeller)! - Allow for the specification of dynamically generated configuration values
+
 ## 1.4.2
 
 ### Patch Changes
