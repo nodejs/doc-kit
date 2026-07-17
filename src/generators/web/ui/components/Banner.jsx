@@ -9,20 +9,22 @@ const Banners = () => {
   const [banner, dismissBanner] = useBanners(remoteConfigUrl, version.major);
 
   return (
-    <Banner
-      key={banner.section}
-      type={banner.type}
-      onClose={() => dismissBanner(banner)}
-    >
-      {banner.link ? (
-        <a href={banner.link} target="_blank" rel="noopener noreferrer">
-          {banner.text}
-        </a>
-      ) : (
-        banner.text
-      )}
-      {banner.link && <ArrowUpRightIcon />}
-    </Banner>
+    banner && (
+      <Banner
+        key={banner.section}
+        type={banner.type}
+        onClose={() => dismissBanner(banner)}
+      >
+        {banner.link ? (
+          <a href={banner.link} target="_blank" rel="noopener noreferrer">
+            {banner.text}
+          </a>
+        ) : (
+          banner.text
+        )}
+        {banner.link && <ArrowUpRightIcon />}
+      </Banner>
+    )
   );
 };
 
