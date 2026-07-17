@@ -1,4 +1,6 @@
+import { existsSync } from 'node:fs';
 import { cpus } from 'node:os';
+import { join } from 'node:path';
 import { isMainThread } from 'node:worker_threads';
 
 import { coerce } from 'semver';
@@ -11,6 +13,15 @@ import { enforceArray } from '../array.mjs';
 import { leftHandAssign } from '../generators.mjs';
 import { importFromURL } from '../loaders.mjs';
 import { deepMerge, lazy } from '../misc.mjs';
+
+const CONFIG_FILE_NAMES = [
+  'doc-kit.config.js',
+  'doc-kit.config.cjs',
+  'doc-kit.config.mjs',
+  'doc-kit.config.ts',
+  'doc-kit.config.cts',
+  'doc-kit.config.mts',
+];
 
 /**
  * Get's the default configuration
@@ -129,7 +140,8 @@ export const assertRunnableOptions = config => {
 };
 
 /**
- * Creates a complete run configuration by merging config file, user options, and defaults.
+ * Creates a complete run configuration by merging an explicit or auto-detected
+ * config file, user options, and defaults.
  * Processes and validates configuration values including version coercion, changelog parsing,
  * and constraint enforcement for threads and chunk size.
  *
@@ -137,7 +149,12 @@ export const assertRunnableOptions = config => {
  * @returns {Promise<import('./types').Configuration>} The configuration
  */
 export const createRunConfiguration = async options => {
-  const config = await loadConfigFile(options.configFile);
+  const configFile =
+    options.configFile ??
+    CONFIG_FILE_NAMES.map(fileName => join(process.cwd(), fileName)).find(
+      existsSync
+    );
+  const config = await loadConfigFile(configFile);
   config.target &&= enforceArray(config.target);
 
   // Resolve user configuration first so dynamic defaults can use it

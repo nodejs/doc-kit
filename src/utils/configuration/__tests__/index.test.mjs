@@ -1,10 +1,22 @@
 import assert from 'node:assert';
+import * as nodeFs from 'node:fs';
+import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
 
 // Mock dependencies
 const mockParseChangelog = mock.fn(async changelog => [changelog]);
 const mockParseIndex = mock.fn(async index => [index]);
 const mockImportFromURL = mock.fn(async () => ({}));
+const mockExistsSync = mock.fn(() => false);
+
+const CONFIG_FILE_NAMES = [
+  'doc-kit.config.js',
+  'doc-kit.config.cjs',
+  'doc-kit.config.mjs',
+  'doc-kit.config.ts',
+  'doc-kit.config.cts',
+  'doc-kit.config.mts',
+];
 
 const createMockConfig = (overrides = {}) => ({
   global: {},
@@ -37,6 +49,9 @@ mock.module('../../../parsers/markdown.mjs', {
 mock.module('../../loaders.mjs', {
   namedExports: { importFromURL: mockImportFromURL },
 });
+mock.module('node:fs', {
+  namedExports: { ...nodeFs, existsSync: mockExistsSync },
+});
 
 const {
   assertRunnableOptions,
@@ -49,9 +64,14 @@ const {
 
 // Helper to reset all mocks
 const resetAllMocks = () => {
-  [mockParseChangelog, mockParseIndex, mockImportFromURL].forEach(m =>
-    m.mock.resetCalls()
-  );
+  [
+    mockParseChangelog,
+    mockParseIndex,
+    mockImportFromURL,
+    mockExistsSync,
+  ].forEach(m => m.mock.resetCalls());
+  mockImportFromURL.mock.mockImplementation(async () => ({}));
+  mockExistsSync.mock.mockImplementation(() => false);
 };
 
 // Helper to count specific function calls
@@ -184,6 +204,71 @@ describe('config.mjs', () => {
       assert.strictEqual(config.web.showSearchBox, true);
     });
 
+    for (const [index, fileName] of CONFIG_FILE_NAMES.entries()) {
+      it(`should auto-detect ${fileName} in the current directory`, async () => {
+        const detectedConfigFile = join(process.cwd(), fileName);
+        const mockConfig = createMockConfig({
+          global: { input: 'auto-detected-src/' },
+        });
+        mockExistsSync.mock.mockImplementation(
+          filePath => filePath === detectedConfigFile
+        );
+        mockImportFromURL.mock.mockImplementationOnce(async () => mockConfig);
+
+        const config = await createRunConfiguration({});
+
+        assert.strictEqual(config.global.input, 'auto-detected-src/');
+        assert.deepStrictEqual(
+          mockExistsSync.mock.calls.map(call => call.arguments[0]),
+          CONFIG_FILE_NAMES.slice(0, index + 1).map(candidate =>
+            join(process.cwd(), candidate)
+          )
+        );
+        assert.strictEqual(mockImportFromURL.mock.calls.length, 1);
+        assert.strictEqual(
+          mockImportFromURL.mock.calls[0].arguments[0],
+          detectedConfigFile
+        );
+      });
+    }
+
+    it('should use the first matching config file by priority', async () => {
+      const existingConfigFiles = new Set([
+        join(process.cwd(), 'doc-kit.config.cjs'),
+        join(process.cwd(), 'doc-kit.config.mjs'),
+        join(process.cwd(), 'doc-kit.config.cts'),
+      ]);
+      mockExistsSync.mock.mockImplementation(filePath =>
+        existingConfigFiles.has(filePath)
+      );
+
+      await createRunConfiguration({});
+
+      assert.strictEqual(mockImportFromURL.mock.calls.length, 1);
+      assert.strictEqual(
+        mockImportFromURL.mock.calls[0].arguments[0],
+        join(process.cwd(), 'doc-kit.config.cjs')
+      );
+    });
+
+    it('should prefer an explicit config file', async () => {
+      mockImportFromURL.mock.mockImplementationOnce(async () =>
+        createMockConfig({ global: { input: 'explicit-src/' } })
+      );
+
+      const config = await createRunConfiguration({
+        configFile: 'explicit-config.mjs',
+      });
+
+      assert.strictEqual(config.global.input, 'explicit-src/');
+      assert.strictEqual(mockExistsSync.mock.calls.length, 0);
+      assert.strictEqual(mockImportFromURL.mock.calls.length, 1);
+      assert.strictEqual(
+        mockImportFromURL.mock.calls[0].arguments[0],
+        'explicit-config.mjs'
+      );
+    });
+
     it('should transform string values only once', async () => {
       const changelogUrl = 'https://example.com/changelog.md';
       const indexUrl = 'https://example.com/index.md';
@@ -223,7 +308,7 @@ describe('config.mjs', () => {
       assert.strictEqual(config.chunkSize, 1);
     });
 
-    it('should work without config file', async () => {
+    it('should use an empty config when no config file is present', async () => {
       const config = await createRunConfiguration({
         version: '20.0.0',
         threads: 4,
@@ -231,6 +316,10 @@ describe('config.mjs', () => {
 
       assert.ok(config);
       assert.strictEqual(config.threads, 4);
+      assert.deepStrictEqual(
+        mockExistsSync.mock.calls.map(call => call.arguments[0]),
+        CONFIG_FILE_NAMES.map(fileName => join(process.cwd(), fileName))
+      );
       assert.strictEqual(mockImportFromURL.mock.calls.length, 0);
     });
 
