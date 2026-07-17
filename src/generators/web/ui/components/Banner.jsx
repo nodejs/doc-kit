@@ -13,6 +13,7 @@ const Banners = () => {
       <Banner
         key={banner.section}
         type={banner.type}
+        aria-label="Announcement"
         onClose={() => dismissBanner(banner)}
       >
         {banner.link ? (
