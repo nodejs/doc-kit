@@ -17,9 +17,12 @@ test.describe('Announcement Banner', () => {
 
     await page.goto('/assert.html');
 
-    const banner = page.getByRole('region', { name: 'Announcements' });
+    const banner = page.getByRole('region', { name: 'Announcement' });
     await expect(banner).toBeVisible();
     await expect(banner).toContainText('Important announcement for all users');
+    await expect(
+      banner.getByRole('button', { name: 'Close banner' })
+    ).toBeVisible();
   });
 
   test('renders a banner with a link', async ({ page }) => {
@@ -39,7 +42,7 @@ test.describe('Announcement Banner', () => {
 
     await page.goto('/assert.html');
 
-    const banner = page.getByRole('region', { name: 'Announcements' });
+    const banner = page.getByRole('region', { name: 'Announcement' });
     await expect(banner).toBeVisible();
 
     const link = banner.getByRole('link', { name: 'Read the release notes' });
@@ -60,7 +63,37 @@ test.describe('Announcement Banner', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(
-      page.getByRole('region', { name: 'Announcements' })
+      page.getByRole('region', { name: 'Announcement' })
     ).not.toBeAttached();
+  });
+
+  test('persists dismissal until the banner text changes', async ({ page }) => {
+    let text = 'Dismiss this announcement';
+
+    await page.route(REMOTE_CONFIG_URL, route =>
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          websiteBanners: { index: { text } },
+        }),
+      })
+    );
+
+    await page.goto('/assert.html');
+
+    const banner = page.getByRole('region', { name: 'Announcement' });
+    await banner.getByRole('button', { name: 'Close banner' }).click();
+    await expect(banner).not.toBeAttached();
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem('banner-dismissal')))
+      .toBe(text);
+
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await expect(banner).not.toBeAttached();
+
+    text = 'A new announcement';
+    await page.reload();
+    await expect(banner).toContainText(text);
   });
 });
