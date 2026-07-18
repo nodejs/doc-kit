@@ -21,7 +21,7 @@ export default {
 
   global: {
     // `www/content/` is assembled by `scripts/build-docs-content.mjs`.
-    input: [join(ROOT, 'content', '*.md')],
+    input: [join(ROOT, 'content', '**', '*.md')],
     output: join(ROOT, 'out'),
 
     version,

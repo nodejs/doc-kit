@@ -20,7 +20,7 @@ const GUIDE_ORDER = [
   '/comparators',
 ];
 
-const isGenerator = ([, path]) => path.startsWith('/generator-');
+const isGenerator = ([, path]) => path.startsWith('/generators/');
 
 /**
  * Page labels are raw heading text, so a heading like `` ## `web` Generator ``

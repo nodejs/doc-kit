@@ -39,7 +39,7 @@ Only some of these are things you ask for by name. `ast`, `metadata`, and
 them, and they are not valid `-t` targets. Everything in the fan-out below
 `metadata` is a target you can pass to `-t`, and passing several at once reuses
 the one shared parse rather than repeating it. The full list is in the
-[generators reference](./generator-web).
+[generators reference](./generators/web).
 
 ## The input contract
 
