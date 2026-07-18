@@ -116,6 +116,8 @@ export default {
     //   <svg height="30" width="30" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--color-brand-400)"/></svg>;
     imports: {
       '#theme/Logo': join(import.meta.dirname, './logo.jsx'),
+      // You can also change things such as `#theme/Layout`,
+      // and more!
     },
   },
 };
