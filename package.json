@@ -30,6 +30,16 @@
   "bin": {
     "doc-kit": "./bin/cli.mjs"
   },
+  "files": [
+    "src",
+    "!src/**/*.test.mjs",
+    "!src/**/__tests__",
+    "bin",
+    "shiki.config.mjs",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
   "devDependencies": {
     "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.31.0",
