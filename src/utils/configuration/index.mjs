@@ -1,4 +1,6 @@
+import { existsSync } from 'node:fs';
 import { cpus } from 'node:os';
+import { resolve } from 'node:path';
 import { isMainThread } from 'node:worker_threads';
 
 import { coerce } from 'semver';
@@ -11,6 +13,8 @@ import { enforceArray } from '../array.mjs';
 import { leftHandAssign } from '../generators.mjs';
 import { importFromURL } from '../loaders.mjs';
 import { deepMerge, lazy } from '../misc.mjs';
+
+const DEFAULT_CONFIG_FILE = 'doc-kit.config.mjs';
 
 /**
  * Get's the default configuration
@@ -54,11 +58,17 @@ export const getDefaultConfig = lazy(config =>
 /**
  * Loads a configuration file from a URL or file path.
  *
- * @param {string} filePath - The URL or file path to the configuration file
+ * @param {string} [filePath] - The URL or file path to the configuration file
  * @returns {Promise<Partial<import('./types').Configuration>>} The imported configuration object, or an empty object if no path provided
  */
-export const loadConfigFile = filePath =>
-  filePath ? importFromURL(filePath) : {};
+export const loadConfigFile = async filePath => {
+  if (filePath) {
+    return importFromURL(filePath);
+  }
+
+  const defaultConfigPath = resolve(DEFAULT_CONFIG_FILE);
+  return existsSync(defaultConfigPath) ? importFromURL(defaultConfigPath) : {};
+};
 
 /**
  * Transforms configuration values that need async processing or coercion.

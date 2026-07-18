@@ -54,9 +54,11 @@ Commands:
 
 ### `generate`
 
-You must provide either `--target` (one or more generators to run) or
-`--config-file` (which supplies the targets). Running `generate` without either
-exits with an error pointing you to the help output.
+You must provide the input and target generators through CLI options or a
+configuration file. When `--config-file` is omitted, doc-kit automatically
+loads `doc-kit.config.mjs` from the current working directory if it exists. An
+explicit `--config-file` path takes precedence. Running `generate` without a
+usable input and target exits with an error pointing you to the help output.
 
 ```
 Usage: @node-core/doc-kit generate [options]

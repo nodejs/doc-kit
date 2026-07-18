@@ -1,10 +1,13 @@
 import assert from 'node:assert';
+import fs, * as fsNamedExports from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
 
 // Mock dependencies
 const mockParseChangelog = mock.fn(async changelog => [changelog]);
 const mockParseIndex = mock.fn(async index => [index]);
 const mockImportFromURL = mock.fn(async () => ({}));
+const mockExistsSync = mock.fn(() => false);
 
 const createMockConfig = (overrides = {}) => ({
   global: {},
@@ -12,6 +15,10 @@ const createMockConfig = (overrides = {}) => ({
 });
 
 // Mock modules
+mock.module('node:fs', {
+  defaultExport: fs,
+  namedExports: { ...fsNamedExports, existsSync: mockExistsSync },
+});
 mock.module('../../../generators/index.mjs', {
   namedExports: {
     allGenerators: {
@@ -49,9 +56,12 @@ const {
 
 // Helper to reset all mocks
 const resetAllMocks = () => {
-  [mockParseChangelog, mockParseIndex, mockImportFromURL].forEach(m =>
-    m.mock.resetCalls()
-  );
+  [
+    mockParseChangelog,
+    mockParseIndex,
+    mockImportFromURL,
+    mockExistsSync,
+  ].forEach(m => m.mock.resetCalls());
 };
 
 // Helper to count specific function calls
@@ -74,14 +84,34 @@ describe('config.mjs', () => {
         mockImportFromURL.mock.calls[0].arguments[0],
         'path/to/config.mjs'
       );
+      assert.strictEqual(mockExistsSync.mock.calls.length, 0);
     });
 
-    it('should return empty object for falsy paths', async () => {
+    it('should discover doc-kit.config.mjs in the current directory', async () => {
+      const mockConfig = { custom: 'discovered-config' };
+      const defaultConfigPath = resolve('doc-kit.config.mjs');
+      mockExistsSync.mock.mockImplementationOnce(
+        filePath => filePath === defaultConfigPath
+      );
+      mockImportFromURL.mock.mockImplementationOnce(async () => mockConfig);
+
+      const result = await loadConfigFile();
+
+      assert.deepStrictEqual(result, mockConfig);
+      assert.strictEqual(mockExistsSync.mock.calls.length, 1);
+      assert.strictEqual(
+        mockImportFromURL.mock.calls[0].arguments[0],
+        defaultConfigPath
+      );
+    });
+
+    it('should return empty object when no config file is provided or found', async () => {
       for (const falsyValue of ['', null, undefined, 0, false]) {
         const result = await loadConfigFile(falsyValue);
         assert.deepStrictEqual(result, {});
       }
       assert.strictEqual(mockImportFromURL.mock.calls.length, 0);
+      assert.strictEqual(mockExistsSync.mock.calls.length, 5);
     });
   });
 
