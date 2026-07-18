@@ -9,6 +9,9 @@ import { TOC_MAX_HEADING_DEPTH } from '../constants.mjs';
 // rather than the full signature.
 const FUNCTION_HEADING_TYPES = new Set(['method', 'ctor', 'classMethod']);
 
+// Deprecation codes are part of the heading label, not a generic type prefix.
+const DEPRECATION_HEADING_REGEX = /^DEP\d+:/;
+
 /**
  * Generate a combined plain text string from all MDAST entries for estimating reading time.
  *
@@ -54,6 +57,10 @@ const headingLabel = data => {
 
   if (cliFlagOrEnv.length > 0) {
     return cliFlagOrEnv.at(-1)[1];
+  }
+
+  if (DEPRECATION_HEADING_REGEX.test(data.text)) {
+    return data.text.replace(/`/g, '').trim();
   }
 
   return (
