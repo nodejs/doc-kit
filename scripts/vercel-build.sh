@@ -16,6 +16,7 @@ node bin/cli.mjs generate \
   -v "$NODE_VERSION" \
   --type-map "./node/doc/type-map.json" \
   --index "./node/doc/api/index.md" \
+  --config-file "./doc-kit.config.mjs" \
   --log-level debug
 
 cp ./node/doc/api/*.md "./out"

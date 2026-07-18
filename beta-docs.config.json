@@ -1,0 +1,8 @@
+{
+  "websiteBanners": {
+    "index": {
+      "text": "Give us feedback on the new docs",
+      "link": "https://github.com/nodejs/doc-kit/issues"
+    }
+  }
+}
