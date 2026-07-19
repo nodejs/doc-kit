@@ -1,7 +1,4 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { describe, it, mock, afterEach } from 'node:test';
 
 let fileContent = 'hello from file';
@@ -69,35 +66,4 @@ describe('importFromURL', () => {
     assert.ok(typeof mod.loadFromURL === 'function');
     assert.ok(typeof mod.importFromURL === 'function');
   });
-
-  const typeScriptConfigCases = [
-    {
-      extension: 'ts',
-      source:
-        "const input: string = 'src';\nexport default { global: { input } };\n",
-    },
-    {
-      extension: 'cts',
-      source:
-        "const input: string = 'src';\nmodule.exports = { global: { input } };\n",
-    },
-    {
-      extension: 'mts',
-      source:
-        "const input: string = 'src';\nexport default { global: { input } };\n",
-    },
-  ];
-
-  for (const { extension, source } of typeScriptConfigCases) {
-    it(`should import a type-strippable .${extension} config file`, async t => {
-      const directory = await mkdtemp(join(tmpdir(), 'doc-kit-config-'));
-      t.after(() => rm(directory, { recursive: true, force: true }));
-      const configFile = join(directory, `doc-kit.config.${extension}`);
-      await writeFile(configFile, source);
-
-      const config = await importFromURL(configFile);
-
-      assert.deepStrictEqual(config, { global: { input: 'src' } });
-    });
-  }
 });

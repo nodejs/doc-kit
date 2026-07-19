@@ -13,21 +13,6 @@ import { leftHandAssign } from '../generators.mjs';
 import { importFromURL } from '../loaders.mjs';
 import { deepMerge, lazy } from '../misc.mjs';
 
-const CONFIG_FILE_NAMES = [
-  'doc-kit.config.js',
-  'doc-kit.config.cjs',
-  'doc-kit.config.mjs',
-  'doc-kit.config.ts',
-  'doc-kit.config.cts',
-  'doc-kit.config.mts',
-];
-const CONFIG_LOADERS = Object.fromEntries(
-  ['.js', '.cjs', '.mjs', '.ts', '.cts', '.mts'].map(extension => [
-    extension,
-    filePath => importFromURL(filePath),
-  ])
-);
-
 /**
  * Get's the default configuration
  */
@@ -156,13 +141,7 @@ export const assertRunnableOptions = config => {
 export const createRunConfiguration = async options => {
   const config = options.configFile
     ? await loadConfigFile(options.configFile)
-    : ((
-        await cosmiconfig('doc-kit', {
-          searchPlaces: CONFIG_FILE_NAMES,
-          loaders: CONFIG_LOADERS,
-          searchStrategy: 'none',
-        }).search(process.cwd())
-      )?.config ?? {});
+    : ((await cosmiconfig('doc-kit').search())?.config ?? {});
   config.target &&= enforceArray(config.target);
 
   // Resolve user configuration first so dynamic defaults can use it

@@ -8,15 +8,6 @@ const mockImportFromURL = mock.fn(async () => ({}));
 const mockSearch = mock.fn(async () => null);
 const mockCosmiconfig = mock.fn(() => ({ search: mockSearch }));
 
-const CONFIG_FILE_NAMES = [
-  'doc-kit.config.js',
-  'doc-kit.config.cjs',
-  'doc-kit.config.mjs',
-  'doc-kit.config.ts',
-  'doc-kit.config.cts',
-  'doc-kit.config.mts',
-];
-
 const createMockConfig = (overrides = {}) => ({
   global: {},
   ...overrides,
@@ -202,7 +193,7 @@ describe('config.mjs', () => {
       assert.strictEqual(config.web.showSearchBox, true);
     });
 
-    it('should search supported config files through cosmiconfig', async () => {
+    it('should discover a config through cosmiconfig', async () => {
       mockSearch.mock.mockImplementationOnce(async () => ({
         config: createMockConfig({
           global: { input: 'auto-detected-src/' },
@@ -214,20 +205,11 @@ describe('config.mjs', () => {
 
       assert.strictEqual(config.global.input, 'auto-detected-src/');
       assert.strictEqual(mockCosmiconfig.mock.calls.length, 1);
-      const [moduleName, options] = mockCosmiconfig.mock.calls[0].arguments;
-      assert.strictEqual(moduleName, 'doc-kit');
-      assert.deepStrictEqual(options.searchPlaces, CONFIG_FILE_NAMES);
-      assert.strictEqual(options.searchStrategy, 'none');
-      assert.deepStrictEqual(Object.keys(options.loaders), [
-        '.js',
-        '.cjs',
-        '.mjs',
-        '.ts',
-        '.cts',
-        '.mts',
+      assert.deepStrictEqual(mockCosmiconfig.mock.calls[0].arguments, [
+        'doc-kit',
       ]);
       assert.strictEqual(mockSearch.mock.calls.length, 1);
-      assert.strictEqual(mockSearch.mock.calls[0].arguments[0], process.cwd());
+      assert.deepStrictEqual(mockSearch.mock.calls[0].arguments, []);
     });
 
     it('should prefer an explicit config file', async () => {
