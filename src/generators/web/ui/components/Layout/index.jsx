@@ -1,7 +1,7 @@
 import TableOfContents from '@node-core/ui-components/Common/TableOfContents';
 import Article from '@node-core/ui-components/Containers/Article';
 
-import RemoteLoadableBanner from '../AnnouncementBanner/RemoteLoadableBanner';
+import Banner from '../Banner';
 
 import Footer from '#theme/Footer';
 import MetaBar from '#theme/Metabar';
@@ -19,7 +19,7 @@ import SideBar from '#theme/Sidebar';
  */
 export default ({ metadata, headings, readingTime, children }) => (
   <>
-    <RemoteLoadableBanner />
+    {CLIENT && <Banner />}
     <NavBar metadata={metadata} />
     <Article>
       <SideBar metadata={metadata} />
