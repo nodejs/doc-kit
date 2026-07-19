@@ -37,18 +37,16 @@ const getStats = async dir => {
 // Fetch stats for both directories in parallel
 const [baseStats, headStats] = await Promise.all([BASE, HEAD].map(getStats));
 
-const didChange = f =>
-  baseStats.has(f) && headStats.has(f) && baseStats.get(f) !== headStats.get(f);
+const didChange = f => baseStats.get(f) !== headStats.get(f);
 
 const toDiffObject = f => ({
   file: f,
-  base: baseStats.get(f),
-  head: headStats.get(f),
-  diff: headStats.get(f) - baseStats.get(f),
+  base: baseStats.get(f) ?? 0,
+  head: headStats.get(f) ?? 0,
+  diff: (headStats.get(f) ?? 0) - (baseStats.get(f) ?? 0),
 });
 
-// Find files that exist in both directories but have different sizes,
-// then sort by absolute diff (largest changes first)
+// Find files whose presence or size changed, then show the largest changes first.
 const changed = [...new Set([...baseStats.keys(), ...headStats.keys()])]
   .filter(didChange)
   .map(toDiffObject)
@@ -58,19 +56,30 @@ const sections = [];
 
 // Output markdown table if there are changes
 if (changed.length) {
+  const totalDiff = changed.reduce((total, { diff }) => total + diff, 0);
+  const totalSign = totalDiff > 0 ? '+' : '';
   const rows = changed.map(({ file, base, head, diff }) => {
     const sign = diff > 0 ? '+' : '';
-    const percent = `${sign}${((diff / base) * 100).toFixed(2)}%`;
-    const diffFormatted = `${sign}${formatBytes(diff)} (${percent})`;
+    const percent =
+      base === 0 ? '' : ` (${sign}${((diff / base) * 100).toFixed(1)}%)`;
+    const diffFormatted = `${sign}${formatBytes(diff)}${percent}`;
 
-    return `| \`${file}\` | ${formatBytes(base)} | ${formatBytes(head)} | ${diffFormatted} |`;
+    return `| \`${file}\` | ${baseStats.has(file) ? formatBytes(base) : '—'} | ${headStats.has(file) ? formatBytes(head) : '—'} | ${diffFormatted} |`;
   });
 
   sections.push(
-    '### Output size',
-    '| File | Base | Head | Diff |',
-    '|-|-|-|-|',
-    rows.join('\n')
+    [
+      `**Output size:** ${changed.length} ${changed.length === 1 ? 'file' : 'files'} changed · net ${totalSign}${formatBytes(totalDiff)}`,
+      '',
+      '<details>',
+      '<summary>File size details</summary>',
+      '',
+      '| File | Main | PR | Change |',
+      '| --- | ---: | ---: | ---: |',
+      rows.join('\n'),
+      '',
+      '</details>',
+    ].join('\n')
   );
 }
 

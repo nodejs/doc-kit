@@ -54,7 +54,7 @@ const runComparator = async (name, base, head) => {
   return stdout;
 };
 
-test('comparePerformance formats benchmark differences', async t => {
+test('comparePerformance summarizes benchmark differences', async t => {
   const { base, head } = await createDirectories(t);
 
   await Promise.all([
@@ -71,16 +71,14 @@ test('comparePerformance formats benchmark differences', async t => {
 
   assert.match(
     result,
-    /Elapsed time \| 2\.00 s \| 3\.00 s \| \+1\.00 s \(\+50\.00%\)/
+    /\*\*Generation time:\*\* 50\.0% slower \(2\.00 s → 3\.00 s\)/
   );
   assert.match(
     result,
-    /User CPU time \| 1\.00 s \| 750\.00 ms \| -250\.00 ms \(-25\.00%\)/
+    /\*\*Peak memory:\*\* 50\.0% higher \(1\.00 MB → 1\.50 MB\)/
   );
-  assert.match(
-    result,
-    /Peak resident memory \| 1\.00 MB \| 1\.50 MB \| \+512\.00 KB \(\+50\.00%\)/
-  );
+  assert.match(result, /single CI run/);
+  assert.doesNotMatch(result, /CPU time/);
 });
 
 test('comparePerformance omits results when an artifact has no benchmark', async t => {
@@ -101,7 +99,7 @@ test('comparePerformance rejects invalid benchmark values', async t => {
 
   await assert.rejects(
     comparePerformance(base, head),
-    /Invalid peak resident memory benchmark value/
+    /Invalid peak memory benchmark value/
   );
 });
 
@@ -118,9 +116,14 @@ test('file-size comparator combines output and performance results', async t => 
   const result = await runComparator('file-size', base, head);
 
   assert.equal(result.match(/## `test` Generator/g)?.length, 1);
-  assert.match(result, /### Output size/);
+  assert.match(result, /Output size:.*1 file changed · net \+11\.00 B/);
+  assert.match(result, /<summary>File size details<\/summary>/);
+  assert.match(
+    result,
+    /\| File \| Main \| PR \| Change \|\n\| --- \| ---: \| ---: \| ---: \|/
+  );
   assert.match(result, /`result\.txt`/);
-  assert.match(result, /### Performance/);
+  assert.match(result, /Performance estimate/);
   assert.doesNotMatch(result, /benchmark\.json/);
 });
 
@@ -137,7 +140,27 @@ test('object comparator treats benchmark data as metadata', async t => {
   const result = await runComparator('object-assertion', base, head);
 
   assert.equal(result.match(/## `test` Generator/g)?.length, 1);
-  assert.doesNotMatch(result, /### Output\n/);
-  assert.match(result, /### Performance/);
+  assert.doesNotMatch(result, /\*\*Output:/);
+  assert.match(result, /Performance estimate/);
   assert.doesNotMatch(result, /benchmark\.json/);
+});
+
+test('comparators report added and removed output files', async t => {
+  const { base, head } = await createDirectories(t);
+
+  await Promise.all([
+    writeFile(path.join(base, 'removed.json'), '{"old":true}', 'utf8'),
+    writeFile(path.join(head, 'added.json'), '{"new":true}', 'utf8'),
+  ]);
+
+  const [sizes, objects] = await Promise.all([
+    runComparator('file-size', base, head),
+    runComparator('object-assertion', base, head),
+  ]);
+
+  assert.match(sizes, /2 files changed/);
+  assert.match(sizes, /`added\.json` \| — \| 12\.00 B/);
+  assert.match(sizes, /`removed\.json` \| 12\.00 B \| —/);
+  assert.match(objects, /`added\.json` added/);
+  assert.match(objects, /`removed\.json` removed/);
 });
