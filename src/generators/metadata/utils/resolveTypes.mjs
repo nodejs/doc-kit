@@ -1,5 +1,6 @@
-import { parseSync, Visitor } from 'oxc-parser';
+import { parse } from '@yuku-parser/wasm';
 import { visit } from 'unist-util-visit';
+import { walk } from 'yuku-ast';
 
 import { lookupTypeName, resolveTypeReference } from './transformers.mjs';
 import logger from '../../../logger/index.mjs';
@@ -12,6 +13,7 @@ const KEYWORDS = [
   'TSUnknownKeyword',
   'TSNeverKeyword',
   'TSVoidKeyword',
+  'TSNullKeyword',
   'TSUndefinedKeyword',
   'TSObjectKeyword',
   'TSBigIntKeyword',
@@ -36,9 +38,9 @@ const parseAliases = values => {
     })
     .join('');
 
-  const result = parseSync('types.ts', source);
+  const result = parse(source, { lang: 'ts' });
 
-  if (result.errors.length > 0) {
+  if (result.diagnostics.length > 0) {
     return undefined;
   }
 
@@ -66,7 +68,7 @@ const parseAliases = values => {
     });
   };
 
-  const visitor = new Visitor({
+  walk(result.program, {
     /**
      *
      */
@@ -79,14 +81,8 @@ const parseAliases = values => {
      *
      */
     TSImportType: node => node.qualifier && record(node.qualifier), // import('fs').Stats
-    /**
-     *
-     */
-    TSLiteralType: node => node.literal.type === 'NullLiteral' && record(node),
     ...Object.fromEntries(KEYWORDS.map(kind => [kind, record])),
   });
-
-  visitor.visit(result.program);
 
   return identifiersPerAlias.map(identifiers => ({ identifiers }));
 };
