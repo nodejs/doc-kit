@@ -21,6 +21,7 @@
     "prepare": "husky || exit 0",
     "run": "node bin/cli.mjs",
     "watch": "node --watch bin/cli.mjs",
+    "docs:build": "bash scripts/vercel-docs-build.sh",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "release": "changeset publish"
@@ -29,6 +30,16 @@
   "bin": {
     "doc-kit": "./bin/cli.mjs"
   },
+  "files": [
+    "src",
+    "!src/**/*.test.mjs",
+    "!src/**/__tests__",
+    "bin",
+    "shiki.config.mjs",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
   "devDependencies": {
     "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.31.0",

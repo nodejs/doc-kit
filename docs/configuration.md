@@ -16,6 +16,8 @@ Configuration files can be either:
 
 ```javascript
 export default {
+  // targets, alternatively supplied by command line flags
+  target: ['orama-db', 'web'],
   global: {
     version: '20.0.0',
     minify: true,

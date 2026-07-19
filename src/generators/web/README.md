@@ -1,8 +1,8 @@
-## `web` Generator
+# `web` Generator
 
 The `web` generator transforms JSX AST entries into complete web bundles, producing server-side rendered HTML pages, client-side JavaScript with code splitting, and bundled CSS styles.
 
-### Configuring
+## Configuring
 
 The `web` generator accepts the following configuration options:
 
@@ -23,7 +23,7 @@ The `web` generator accepts the following configuration options:
 | `components`      | `object`  | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below)                                    |
 | `rolldown`        | `object`  | `{}`                                          | Options merged into the Rolldown build — extra plugins, etc. (see below)                                    |
 
-#### `head`
+### `head`
 
 The `head` object controls the project-specific markup injected into the
 document `<head>` (rendered into the template's `${head}` placeholder). It has
@@ -67,7 +67,7 @@ export default {
 > via `head`: `og:title` (mirrors the per-page title), `og:type`, and the font
 > preconnects/stylesheet the bundled UI components rely on.
 
-#### Custom LightningCSS options
+### Custom LightningCSS options
 
 The `lightningcss` object is spread directly into [LightningCSS][lightningcss]
 while CSS is bundled, so any of its options — `visitor` (custom plugins),
@@ -98,7 +98,7 @@ To apply more than one visitor, compose them with LightningCSS's
 
 [lightningcss]: https://lightningcss.dev/transforms.html
 
-#### Custom Rolldown options
+### Custom Rolldown options
 
 The `rolldown` object is merged into the [Rolldown][rolldown] `build` call used
 for **both** the client and server bundles, so you can register extra plugins,
@@ -155,7 +155,7 @@ export default {
 
 [rolldown]: https://rolldown.rs/
 
-#### Default `imports`
+### Default `imports`
 
 | Alias               | Default                                      | Description                                         |
 | ------------------- | -------------------------------------------- | --------------------------------------------------- |
@@ -180,7 +180,7 @@ export default {
 };
 ```
 
-### `components`
+## `components`
 
 `components` registers custom JSX components so they can be used directly in
 content (see [JSX-in-MDX](#jsx-in-mdx) below). Each entry maps a JSX tag name to
@@ -208,7 +208,7 @@ export default {
 };
 ```
 
-### JSX-in-MDX
+## JSX-in-MDX
 
 By default every input file is parsed as Markdown, where bare `<` and `{` are
 treated literally (Node.js core docs use `<string>`-style type annotations). To
@@ -230,7 +230,7 @@ title: Welcome
 There are {stats.length} APIs documented.
 ```
 
-### `#theme/config` virtual module
+## `#theme/config` virtual module
 
 The `web` generator provides a `#theme/config` virtual module that exposes pre-computed configuration as named exports. Any component (including custom overrides) can import the values it needs, and tree-shaking removes the rest.
 
@@ -238,7 +238,7 @@ The `web` generator provides a `#theme/config` virtual module that exposes pre-c
 import { project, repository, editURL } from '#theme/config';
 ```
 
-#### Available exports
+### Available exports
 
 All scalar (non-object) configuration values are automatically exported. The defaults include:
 
@@ -255,7 +255,7 @@ All scalar (non-object) configuration values are automatically exported. The def
 | `languageDisplayNameMap` | `Map<string, string>`          | Shiki language alias → display name map for code blocks                                                               |
 | `remoteConfigUrl`        | `string`                       | Mirrors the configured `remoteConfigUrl` (fetched client-side by `RemoteLoadableBanner` to load announcement banners) |
 
-#### Usage in custom components
+### Usage in custom components
 
 When overriding a `#theme/*` component, import only the config values you need:
 
@@ -277,7 +277,7 @@ export default ({ metadata }) => (
 );
 ```
 
-### Layout props
+## Layout props
 
 The `Layout` component receives the following props:
 
@@ -290,11 +290,11 @@ The `Layout` component receives the following props:
 
 Custom Layout components can use any combination of these props alongside `#theme/config` imports.
 
-### HTML template
+## HTML template
 
 The HTML template file (set via `templatePath`) uses JavaScript template literal syntax (`${...}` placeholders) and is evaluated at build time with full expression support.
 
-#### Available template variables
+### Available template variables
 
 | Variable           | Type     | Description                                                       |
 | ------------------ | -------- | ----------------------------------------------------------------- |

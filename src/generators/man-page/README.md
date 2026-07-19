@@ -1,8 +1,8 @@
-## `man-page` Generator
+# `man-page` Generator
 
 The `man-page` generator creates a Unix man page version of the Node.js CLI documentation in mdoc format.
 
-### Configuring
+## Configuring
 
 The `man-page` generator accepts the following configuration options:
 

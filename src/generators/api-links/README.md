@@ -1,8 +1,8 @@
-## `api-links` Generator
+# `api-links` Generator
 
 The `api-links` generator creates a mapping of publicly accessible functions to their source locations in the Node.js repository by analyzing JavaScript source files.
 
-### Configuring
+## Configuring
 
 The `api-links` generator accepts the following configuration options:
 

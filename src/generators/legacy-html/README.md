@@ -1,8 +1,8 @@
-## `legacy-html` Generator
+# `legacy-html` Generator
 
 The `legacy-html` generator creates legacy HTML documentation pages for Node.js API documentation with included assets and styles for retro-compatibility.
 
-### Configuring
+## Configuring
 
 The `legacy-html` generator accepts the following configuration options:
 

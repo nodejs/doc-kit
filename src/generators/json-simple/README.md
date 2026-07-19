@@ -1,8 +1,8 @@
-## `json-simple` Generator
+# `json-simple` Generator
 
 The `json-simple` generator creates a simplified JSON version of the API documentation, primarily for debugging and testing purposes.
 
-### Configuring
+## Configuring
 
 The `json-simple` generator accepts the following configuration options:
 

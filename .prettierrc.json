@@ -7,5 +7,13 @@
   "trailingComma": "es5",
   "bracketSpacing": true,
   "bracketSameLine": false,
-  "arrowParens": "avoid"
+  "arrowParens": "avoid",
+  "overrides": [
+    {
+      "files": "www/pages/**/*.md",
+      "options": {
+        "proseWrap": "always"
+      }
+    }
+  ]
 }

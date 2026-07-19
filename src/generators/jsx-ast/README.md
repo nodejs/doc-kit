@@ -1,8 +1,8 @@
-## `jsx-ast` Generator
+# `jsx-ast` Generator
 
 The `jsx-ast` generator converts MDAST (Markdown Abstract Syntax Tree) to JSX AST, transforming API documentation metadata into React-compatible JSX representations.
 
-### Configuring
+## Configuring
 
 The `jsx-ast` generator accepts the following configuration options:
 

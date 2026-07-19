@@ -1,8 +1,8 @@
-## `llms-txt` Generator
+# `llms-txt` Generator
 
 The `llms-txt` generator creates a `llms.txt` file to provide information to Large Language Models (LLMs) at inference time, containing links to all API documentation.
 
-### Configuring
+## Configuring
 
 The `llms-txt` generator accepts the following configuration options:
 

@@ -1,8 +1,8 @@
-## `ast` Generator
+# `ast` Generator
 
 The `ast` generator parses Markdown API documentation files into AST (Abstract Syntax Tree) representations, parallelizing the parsing across worker threads for better performance.
 
-### Configuring
+## Configuring
 
 The `ast` generator accepts the following configuration options:
 

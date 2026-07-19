@@ -6,6 +6,9 @@ npm-debug.log
 out
 base
 
+# Docs site content, assembled by scripts/build-docs-content.mjs
+www/content
+
 # Tests
 coverage
 junit.xml

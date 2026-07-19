@@ -1,8 +1,8 @@
-## `orama-db` Generator
+# `orama-db` Generator
 
 The `orama-db` generator creates an Orama database for the API documentation to enable full-text search functionality.
 
-### Configuring
+## Configuring
 
 The `orama-db` generator accepts the following configuration options:
 
