@@ -60,8 +60,9 @@ const headingLabel = data => {
     data.text
       // Remove any containing code blocks
       .replace(/`/g, '')
-      // Remove any prefixes (i.e. 'Class:')
-      .replace(/^[^:]+:/, '')
+      // Remove any prefixes (i.e. 'Class:'), except deprecation codes
+      // (i.e. 'DEP0001:') which are part of the label
+      .replace(/^(?!DEP\d+:)[^:]+:/, '')
       // Trim the remaining whitespace
       .trim()
   );

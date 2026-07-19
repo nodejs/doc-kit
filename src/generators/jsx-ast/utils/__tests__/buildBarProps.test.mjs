@@ -116,6 +116,28 @@ describe('extractHeadings', () => {
     assert.equal(result[1].value, 'new Buffer');
   });
 
+  it('preserves deprecation codes in heading labels', () => {
+    const entries = [
+      {
+        heading: {
+          depth: 2,
+          data: {
+            text: 'DEP0001: `http.OutgoingMessage.prototype.flush`',
+            name: 'http.OutgoingMessage.prototype.flush',
+            slug: 'DEP0001',
+          },
+        },
+      },
+    ];
+
+    const result = extractHeadings(entries);
+
+    assert.equal(
+      result[0].value,
+      'DEP0001: http.OutgoingMessage.prototype.flush'
+    );
+  });
+
   it('drops overload headings and links to the first signature', () => {
     const entries = [
       {
