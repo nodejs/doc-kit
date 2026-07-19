@@ -1,8 +1,7 @@
-import { existsSync } from 'node:fs';
 import { cpus } from 'node:os';
-import { join } from 'node:path';
 import { isMainThread } from 'node:worker_threads';
 
+import { cosmiconfig } from 'cosmiconfig';
 import { coerce } from 'semver';
 
 import { CHANGELOG_URL, populate } from './templates.mjs';
@@ -22,6 +21,12 @@ const CONFIG_FILE_NAMES = [
   'doc-kit.config.cts',
   'doc-kit.config.mts',
 ];
+const CONFIG_LOADERS = Object.fromEntries(
+  ['.js', '.cjs', '.mjs', '.ts', '.cts', '.mts'].map(extension => [
+    extension,
+    filePath => importFromURL(filePath),
+  ])
+);
 
 /**
  * Get's the default configuration
@@ -149,12 +154,15 @@ export const assertRunnableOptions = config => {
  * @returns {Promise<import('./types').Configuration>} The configuration
  */
 export const createRunConfiguration = async options => {
-  const configFile =
-    options.configFile ??
-    CONFIG_FILE_NAMES.map(fileName => join(process.cwd(), fileName)).find(
-      existsSync
-    );
-  const config = await loadConfigFile(configFile);
+  const config = options.configFile
+    ? await loadConfigFile(options.configFile)
+    : ((
+        await cosmiconfig('doc-kit', {
+          searchPlaces: CONFIG_FILE_NAMES,
+          loaders: CONFIG_LOADERS,
+          searchStrategy: 'none',
+        }).search(process.cwd())
+      )?.config ?? {});
   config.target &&= enforceArray(config.target);
 
   // Resolve user configuration first so dynamic defaults can use it

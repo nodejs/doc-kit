@@ -61,6 +61,7 @@
     "@swc/html-wasm": "^1.15.43",
     "acorn": "^8.17.0",
     "commander": "^15.0.0",
+    "cosmiconfig": "^9.0.2",
     "dedent": "^1.7.2",
     "estree-util-to-js": "^2.0.0",
     "estree-util-visit": "^2.0.0",

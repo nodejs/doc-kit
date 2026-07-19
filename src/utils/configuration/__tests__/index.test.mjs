@@ -1,13 +1,12 @@
 import assert from 'node:assert';
-import * as nodeFs from 'node:fs';
-import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
 
 // Mock dependencies
 const mockParseChangelog = mock.fn(async changelog => [changelog]);
 const mockParseIndex = mock.fn(async index => [index]);
 const mockImportFromURL = mock.fn(async () => ({}));
-const mockExistsSync = mock.fn(() => false);
+const mockSearch = mock.fn(async () => null);
+const mockCosmiconfig = mock.fn(() => ({ search: mockSearch }));
 
 const CONFIG_FILE_NAMES = [
   'doc-kit.config.js',
@@ -49,8 +48,8 @@ mock.module('../../../parsers/markdown.mjs', {
 mock.module('../../loaders.mjs', {
   namedExports: { importFromURL: mockImportFromURL },
 });
-mock.module('node:fs', {
-  namedExports: { ...nodeFs, existsSync: mockExistsSync },
+mock.module('cosmiconfig', {
+  namedExports: { cosmiconfig: mockCosmiconfig },
 });
 
 const {
@@ -64,14 +63,13 @@ const {
 
 // Helper to reset all mocks
 const resetAllMocks = () => {
-  [
-    mockParseChangelog,
-    mockParseIndex,
-    mockImportFromURL,
-    mockExistsSync,
-  ].forEach(m => m.mock.resetCalls());
+  [mockParseChangelog, mockParseIndex, mockImportFromURL, mockSearch].forEach(
+    m => m.mock.resetCalls()
+  );
+  mockCosmiconfig.mock.resetCalls();
   mockImportFromURL.mock.mockImplementation(async () => ({}));
-  mockExistsSync.mock.mockImplementation(() => false);
+  mockSearch.mock.mockImplementation(async () => null);
+  mockCosmiconfig.mock.mockImplementation(() => ({ search: mockSearch }));
 };
 
 // Helper to count specific function calls
@@ -204,51 +202,32 @@ describe('config.mjs', () => {
       assert.strictEqual(config.web.showSearchBox, true);
     });
 
-    for (const [index, fileName] of CONFIG_FILE_NAMES.entries()) {
-      it(`should auto-detect ${fileName} in the current directory`, async () => {
-        const detectedConfigFile = join(process.cwd(), fileName);
-        const mockConfig = createMockConfig({
+    it('should search supported config files through cosmiconfig', async () => {
+      mockSearch.mock.mockImplementationOnce(async () => ({
+        config: createMockConfig({
           global: { input: 'auto-detected-src/' },
-        });
-        mockExistsSync.mock.mockImplementation(
-          filePath => filePath === detectedConfigFile
-        );
-        mockImportFromURL.mock.mockImplementationOnce(async () => mockConfig);
+        }),
+        filepath: `${process.cwd()}/doc-kit.config.mjs`,
+      }));
 
-        const config = await createRunConfiguration({});
+      const config = await createRunConfiguration({});
 
-        assert.strictEqual(config.global.input, 'auto-detected-src/');
-        assert.deepStrictEqual(
-          mockExistsSync.mock.calls.map(call => call.arguments[0]),
-          CONFIG_FILE_NAMES.slice(0, index + 1).map(candidate =>
-            join(process.cwd(), candidate)
-          )
-        );
-        assert.strictEqual(mockImportFromURL.mock.calls.length, 1);
-        assert.strictEqual(
-          mockImportFromURL.mock.calls[0].arguments[0],
-          detectedConfigFile
-        );
-      });
-    }
-
-    it('should use the first matching config file by priority', async () => {
-      const existingConfigFiles = new Set([
-        join(process.cwd(), 'doc-kit.config.cjs'),
-        join(process.cwd(), 'doc-kit.config.mjs'),
-        join(process.cwd(), 'doc-kit.config.cts'),
+      assert.strictEqual(config.global.input, 'auto-detected-src/');
+      assert.strictEqual(mockCosmiconfig.mock.calls.length, 1);
+      const [moduleName, options] = mockCosmiconfig.mock.calls[0].arguments;
+      assert.strictEqual(moduleName, 'doc-kit');
+      assert.deepStrictEqual(options.searchPlaces, CONFIG_FILE_NAMES);
+      assert.strictEqual(options.searchStrategy, 'none');
+      assert.deepStrictEqual(Object.keys(options.loaders), [
+        '.js',
+        '.cjs',
+        '.mjs',
+        '.ts',
+        '.cts',
+        '.mts',
       ]);
-      mockExistsSync.mock.mockImplementation(filePath =>
-        existingConfigFiles.has(filePath)
-      );
-
-      await createRunConfiguration({});
-
-      assert.strictEqual(mockImportFromURL.mock.calls.length, 1);
-      assert.strictEqual(
-        mockImportFromURL.mock.calls[0].arguments[0],
-        join(process.cwd(), 'doc-kit.config.cjs')
-      );
+      assert.strictEqual(mockSearch.mock.calls.length, 1);
+      assert.strictEqual(mockSearch.mock.calls[0].arguments[0], process.cwd());
     });
 
     it('should prefer an explicit config file', async () => {
@@ -261,7 +240,7 @@ describe('config.mjs', () => {
       });
 
       assert.strictEqual(config.global.input, 'explicit-src/');
-      assert.strictEqual(mockExistsSync.mock.calls.length, 0);
+      assert.strictEqual(mockCosmiconfig.mock.calls.length, 0);
       assert.strictEqual(mockImportFromURL.mock.calls.length, 1);
       assert.strictEqual(
         mockImportFromURL.mock.calls[0].arguments[0],
@@ -316,10 +295,8 @@ describe('config.mjs', () => {
 
       assert.ok(config);
       assert.strictEqual(config.threads, 4);
-      assert.deepStrictEqual(
-        mockExistsSync.mock.calls.map(call => call.arguments[0]),
-        CONFIG_FILE_NAMES.map(fileName => join(process.cwd(), fileName))
-      );
+      assert.strictEqual(mockCosmiconfig.mock.calls.length, 1);
+      assert.strictEqual(mockSearch.mock.calls.length, 1);
       assert.strictEqual(mockImportFromURL.mock.calls.length, 0);
     });
 
