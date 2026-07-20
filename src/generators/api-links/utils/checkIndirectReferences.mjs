@@ -1,4 +1,4 @@
-import { visit } from 'estree-util-visit';
+import { walk } from 'oxc-walker';
 
 import { getLineNumber } from './getLineNumber.mjs';
 
@@ -12,18 +12,23 @@ export function checkIndirectReferences(program, exports, nameToLineNumberMap) {
     return;
   }
 
-  visit(program, node => {
-    if (node.type !== 'FunctionDeclaration') {
-      return;
-    }
+  walk(program, {
+    /**
+     *
+     */
+    enter(node) {
+      if (node.type !== 'FunctionDeclaration') {
+        return;
+      }
 
-    const name = node.id.name;
+      const name = node.id.name;
 
-    if (name in exports.indirects) {
-      nameToLineNumberMap[exports.indirects[name]] = getLineNumber(
-        program.sourceText,
-        node.range[0]
-      );
-    }
+      if (name in exports.indirects) {
+        nameToLineNumberMap[exports.indirects[name]] = getLineNumber(
+          program.sourceText,
+          node.range[0]
+        );
+      }
+    },
   });
 }

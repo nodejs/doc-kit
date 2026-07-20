@@ -1,6 +1,6 @@
 'use strict';
 
-import { visit } from 'estree-util-visit';
+import { walk } from 'oxc-walker';
 
 import { getLineNumber } from './getLineNumber.mjs';
 import { CONSTRUCTOR_EXPRESSION } from '../constants.mjs';
@@ -261,21 +261,26 @@ export function extractExports(program, basename, nameToLineNumberMap) {
       ),
   };
 
-  visit(program, node => {
-    if (node.type in TYPE_TO_HANDLER_MAP) {
-      const handler = TYPE_TO_HANDLER_MAP[node.type];
+  walk(program, {
+    /**
+     *
+     */
+    enter(node) {
+      if (node.type in TYPE_TO_HANDLER_MAP) {
+        const handler = TYPE_TO_HANDLER_MAP[node.type];
 
-      const output = handler(node);
+        const output = handler(node);
 
-      if (output) {
-        exports.ctors.push(...output.ctors);
-        exports.identifiers.push(...output.identifiers);
+        if (output) {
+          exports.ctors.push(...output.ctors);
+          exports.identifiers.push(...output.identifiers);
 
-        Object.keys(output.indirects).forEach(key => {
-          exports.indirects[key] = output.indirects[key];
-        });
+          Object.keys(output.indirects).forEach(key => {
+            exports.indirects[key] = output.indirects[key];
+          });
+        }
       }
-    }
+    },
   });
 
   return exports;

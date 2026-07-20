@@ -1,6 +1,6 @@
 'use strict';
 
-import { visit } from 'estree-util-visit';
+import { walk } from 'oxc-walker';
 
 import { getLineNumber } from './getLineNumber.mjs';
 
@@ -206,11 +206,16 @@ export function findDefinitions(
       ),
   };
 
-  visit(program, node => {
-    if (node.type in TYPE_TO_HANDLER_MAP) {
-      const handler = TYPE_TO_HANDLER_MAP[node.type];
+  walk(program, {
+    /**
+     *
+     */
+    enter(node) {
+      if (node.type in TYPE_TO_HANDLER_MAP) {
+        const handler = TYPE_TO_HANDLER_MAP[node.type];
 
-      handler(node);
-    }
+        handler(node);
+      }
+    },
   });
 }
