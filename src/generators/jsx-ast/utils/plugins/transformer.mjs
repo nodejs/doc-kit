@@ -23,38 +23,43 @@ const isLayout = node =>
   node?.name === 'Layout' && Array.isArray(node.children);
 
 /**
- * Adds responsive labels to table cells.
+ * Adds responsive labels and wraps tables.
  *
  * @param {import('hast').Element} table
+ * @param {import('unist').Parent | undefined} parent
+ * @param {number | undefined} index
  */
-const transformTable = table => {
+const transformTable = (table, parent, index) => {
   const thead = table.children.find(node => node.tagName === 'thead');
 
-  if (!thead) {
-    return;
-  }
+  if (thead?.children?.[0]?.children) {
+    const headers = thead.children[0].children.map(toString);
+    const tbody = table.children.find(node => node.tagName === 'tbody');
 
-  const headerRow = thead.children?.[0];
-
-  if (!headerRow?.children) {
-    return;
-  }
-
-  const headers = headerRow.children.map(toString);
-
-  const tbody = table.children.find(node => node.tagName === 'tbody');
-
-  if (!tbody?.children) {
-    return;
-  }
-
-  for (const row of tbody.children) {
-    for (const [index, cell] of (row.children ?? []).entries()) {
-      if (cell.tagName === 'td') {
-        cell.properties ??= {};
-        cell.properties['data-label'] = headers[index];
+    if (tbody?.children) {
+      for (const row of tbody.children) {
+        for (const [cellIndex, cell] of (row.children ?? []).entries()) {
+          if (cell.tagName === 'td') {
+            cell.properties ??= {};
+            cell.properties['data-label'] = headers[cellIndex];
+          }
+        }
       }
     }
+  }
+
+  /**
+   * Wrap <table> in a <div class="overflow-container">.
+   *
+   * Site styles rely on this wrapper for horizontal scrolling.
+   */
+  if (parent && index !== undefined) {
+    parent.children[index] = {
+      type: 'element',
+      tagName: 'div',
+      properties: { className: ['overflow-container'] },
+      children: [table],
+    };
   }
 };
 
@@ -72,7 +77,7 @@ const transformer = tree => {
    * We intentionally visit every node because MDX JSX nodes
    * are not HAST "element" nodes.
    */
-  visit(tree, node => {
+  visit(tree, (node, index, parent) => {
     /**
      * Find Layout regardless of node type.
      */
@@ -100,7 +105,7 @@ const transformer = tree => {
      * Tables need special handling.
      */
     if (node.tagName === 'table') {
-      transformTable(node);
+      transformTable(node, parent, index);
     }
   });
 
