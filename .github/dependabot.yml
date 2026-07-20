@@ -67,6 +67,10 @@ updates:
           - 'hast-*'
           - 'mdast-*'
           - 'hastscript'
+      oxc:
+        patterns:
+          - 'oxc-*'
+          - 'esrap'
       recma:
         patterns:
           - 'recma-*'
