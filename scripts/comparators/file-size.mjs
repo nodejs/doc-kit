@@ -1,7 +1,8 @@
-import { stat, readdir } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import path from 'node:path';
 
-import { BASE, BENCHMARK_FILE, HEAD, TITLE } from '../constants.mjs';
+import { BASE, HEAD, TITLE } from '../constants.mjs';
+import { listOutputFiles } from './files.mjs';
 import { comparePerformance } from './performance.mjs';
 
 const UNITS = ['B', 'KB', 'MB', 'GB'];
@@ -26,7 +27,7 @@ const formatBytes = bytes => {
  * @returns {Promise<Map<string, number>>} Map of filename to size in bytes
  */
 const getStats = async dir => {
-  const files = (await readdir(dir)).filter(file => file !== BENCHMARK_FILE);
+  const files = await listOutputFiles(dir);
   return new Map(
     await Promise.all(
       files.map(async f => [f, (await stat(path.join(dir, f))).size])

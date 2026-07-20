@@ -1,14 +1,13 @@
 import assert from 'node:assert';
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BASE, BENCHMARK_FILE, HEAD, TITLE } from '../constants.mjs';
+import { BASE, HEAD, TITLE } from '../constants.mjs';
+import { listOutputFiles } from './files.mjs';
 import { comparePerformance } from './performance.mjs';
 
 const [baseFiles, headFiles] = await Promise.all(
-  [BASE, HEAD].map(async directory =>
-    (await readdir(directory)).filter(file => file !== BENCHMARK_FILE)
-  )
+  [BASE, HEAD].map(directory => listOutputFiles(directory))
 );
 const baseFileSet = new Set(baseFiles);
 const headFileSet = new Set(headFiles);

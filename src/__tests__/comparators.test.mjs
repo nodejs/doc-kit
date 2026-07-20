@@ -147,10 +147,14 @@ test('object comparator treats benchmark data as metadata', async t => {
 
 test('comparators report added and removed output files', async t => {
   const { base, head } = await createDirectories(t);
+  const baseOutput = path.join(base, 'generator');
+  const headOutput = path.join(head, 'generator');
 
+  await Promise.all([mkdir(baseOutput), mkdir(headOutput)]);
   await Promise.all([
-    writeFile(path.join(base, 'removed.json'), '{"old":true}', 'utf8'),
-    writeFile(path.join(head, 'added.json'), '{"new":true}', 'utf8'),
+    writeFile(path.join(baseOutput, 'removed.json'), '{"old":true}', 'utf8'),
+    writeFile(path.join(headOutput, 'added.json'), '{"new":true}', 'utf8'),
+    writeFile(path.join(head, 'comparison.txt'), '', 'utf8'),
   ]);
 
   const [sizes, objects] = await Promise.all([
@@ -159,8 +163,10 @@ test('comparators report added and removed output files', async t => {
   ]);
 
   assert.match(sizes, /2 files changed/);
-  assert.match(sizes, /`added\.json` \| — \| 12\.00 B/);
-  assert.match(sizes, /`removed\.json` \| 12\.00 B \| —/);
-  assert.match(objects, /`added\.json` added/);
-  assert.match(objects, /`removed\.json` removed/);
+  assert.match(sizes, /`generator\/added\.json` \| — \| 12\.00 B/);
+  assert.match(sizes, /`generator\/removed\.json` \| 12\.00 B \| —/);
+  assert.match(objects, /`generator\/added\.json` added/);
+  assert.match(objects, /`generator\/removed\.json` removed/);
+  assert.doesNotMatch(sizes, /comparison\.txt|4\.00 KB/);
+  assert.doesNotMatch(objects, /comparison\.txt/);
 });
