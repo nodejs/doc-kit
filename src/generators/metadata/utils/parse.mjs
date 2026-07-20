@@ -4,10 +4,8 @@ import { basename, sep } from 'node:path/posix';
 
 import { slug } from 'github-slugger';
 import { u as createTree } from 'unist-builder';
-import { findAfter } from 'unist-util-find-after';
 import { remove } from 'unist-util-remove';
-import { selectAll } from 'unist-util-select';
-import { SKIP, visit } from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
 
 import createNodeSlugger from './slugger.mjs';
 import { transformNodeToHeading } from './transformers.mjs';
@@ -25,7 +23,22 @@ import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
 import { resolveTypeAnnotations } from './resolveTypes.mjs';
 
 /**
- * This generator generates a flattened list of metadata entries from a API doc
+ * Creates relative links for all known type references.
+ *
+ * This is executed once per document instead of repeatedly
+ * while processing individual sections.
+ *
+ * @param {Record<string, string>} typeMap
+ * @param {string} path
+ * @returns {Record<string, string>}
+ */
+const createRelativeTypeMap = (typeMap, path) =>
+  Object.fromEntries(
+    Object.entries(typeMap).map(([type, url]) => [type, relative(url, path)])
+  );
+
+/**
+ * This generator generates a flattened list of metadata entries from an API doc
  *
  * @param {{ tree: import('mdast.Root'), mdx?: boolean } & import('../types').MetadataEntry} input
  * @param {Record<string, string>} typeMap
@@ -33,114 +46,191 @@ import { resolveTypeAnnotations } from './resolveTypes.mjs';
  */
 export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
   /**
-   * Collection of metadata entries for the file
+   * Collection of generated metadata entries.
+   *
    * @type {Array<import('../types').MetadataEntry>}
    */
   const metadataCollection = [];
 
-  // Creates a new Slugger instance for the current API doc file
+  /**
+   * Slug generator for headings in this document.
+   */
   const nodeSlugger = createNodeSlugger();
 
-  // Slug the API (We use a non-class slugger, since we are fairly certain that `path` is unique)
+  /**
+   * Values reused throughout parsing.
+   */
   const api = slug(path.slice(1).replace(sep, '-'));
+  const fileName = basename(path);
 
-  // Get all Markdown Footnote definitions from the tree
-  const markdownDefinitions = selectAll('definition', tree);
+  /**
+   * Collect definitions and headings in a single AST traversal.
+   *
+   * The heading index is stored because we need the original
+   * position inside tree.children for section slicing.
+   *
+   * This avoids:
+   * - selectAll() traversals
+   * - findAfter() searches
+   * - indexOf() lookups later
+   */
+  const markdownDefinitions = [];
+  const headingNodes = [];
 
-  // Get all Markdown Heading entries from the tree
-  const headingNodes = selectAll('heading', tree);
+  visit(tree, (node, index, parent) => {
+    if (UNIST.isDefinition(node)) {
+      markdownDefinitions.push(node);
+    }
 
-  // Handles Markdown link references and updates them to be plain links
+    /**
+     * Only headings directly under the root define sections.
+     *
+     * Nested headings should not split the document.
+     */
+    if (UNIST.isHeading(node) && parent === tree) {
+      headingNodes.push({
+        node,
+        index,
+      });
+    }
+  });
+
+  /**
+   * Resolve Markdown reference links.
+   */
   visit(tree, UNIST.isLinkReference, node =>
     visitLinkReference(node, markdownDefinitions)
   );
 
-  // Removes all the original definitions from the tree as they are not needed anymore
+  /**
+   * Definitions are no longer needed after references
+   * have been converted.
+   */
   remove(tree, markdownDefinitions);
 
-  // Make all the typeMap links relative to us
-  const relativeTypeMap = Object.fromEntries(
-    Object.entries(typeMap).map(([type, url]) => [type, relative(url, path)])
-  );
-
-  // Resolve every type annotation in the file at once (one TypeScript parse
-  // per file). MDX trees never contain `typeAnnotation` nodes — there,
-  // `{...}` is a real expression — so this is skipped.
+  /**
+   * Resolve type annotation links once per document.
+   *
+   * MDX skips this because typeAnnotation nodes are not
+   * real syntax there.
+   */
   if (!mdx) {
-    resolveTypeAnnotations(tree, relativeTypeMap, path);
+    resolveTypeAnnotations(tree, createRelativeTypeMap(typeMap, path), path);
   }
 
-  // Handles the normalisation URLs that reference to API doc files with .md extension
+  /**
+   * Normalize markdown API links.
+   */
   visit(tree, UNIST.isMarkdownUrl, node => visitMarkdownLink(node));
 
-  // If the document has no headings but it has content, we add a fake heading to the top
+  /**
+   * Documents without headings still need a section
+   * if they contain content.
+   */
   if (headingNodes.length === 0 && tree.children.length > 0) {
-    tree.children.unshift(createTree('heading', { depth: 1 }, []));
+    const fakeHeading = createTree('heading', { depth: 1 }, []);
+
+    tree.children.unshift(fakeHeading);
+
+    headingNodes.push({
+      node: fakeHeading,
+      index: 0,
+    });
   }
 
-  // On "About this Documentation", we define the stability indices, and thus
-  // we don't need to check it for stability references
+  /**
+   * Documentation files define their own stability index.
+   */
   const ignoreStability = IGNORE_STABILITY_STEMS.includes(api);
 
-  // Process each heading and create metadata entries
-  visit(tree, UNIST.isHeading, (headingNode, index) => {
-    // Initialize heading
-    headingNode.data = transformNodeToHeading(headingNode);
-    // Initialize the metadata
-    const metadata = /** @type {import('../types').MetadataEntry} */ ({
-      api,
-      path,
-      mdx,
-      basename: basename(path),
-      heading: headingNode,
-    });
+  /**
+   * Process each section heading.
+   */
+  for (let i = 0; i < headingNodes.length; i++) {
+    const { node: headingNode, index: startHeadingIndex } = headingNodes[i];
 
-    // Generate slug and update heading data
+    /**
+     * Initialize heading metadata.
+     */
+    headingNode.data = transformNodeToHeading(headingNode);
+
+    const metadata =
+      /** @type {import('../types').MetadataEntry} */
+      ({
+        api,
+        path,
+        mdx,
+        basename: fileName,
+        heading: headingNode,
+      });
+
+    /**
+     * Generate a unique slug for this heading.
+     */
     metadata.heading.data.slug = nodeSlugger.slug(metadata.heading.data.text);
 
-    // Find the next heading to determine section boundaries
-    const nextHeadingNode =
-      findAfter(tree, index, UNIST.isHeading) ?? headingNode;
+    /**
+     * Find the end of this section.
+     *
+     * Using the stored heading indexes avoids
+     * findAfter() and repeated searching.
+     */
+    const stop = headingNodes[i + 1]?.index ?? tree.children.length;
 
-    const stop =
-      headingNode === nextHeadingNode
-        ? tree.children.length
-        : tree.children.indexOf(nextHeadingNode);
+    /**
+     * The first section includes document-level
+     * nodes such as YAML/frontmatter.
+     */
+    const startIndex = metadataCollection.length === 0 ? 0 : startHeadingIndex;
 
-    // Create subtree for this section. If it's the first entry, we start from the
-    // beginning of the tree to ensure top-level nodes (like YAML) are captured.
-    const startIndex = metadataCollection.length === 0 ? 0 : index;
+    /**
+     * Create a temporary tree containing only
+     * this section's content.
+     */
     const subTree = createTree('root', tree.children.slice(startIndex, stop));
 
+    /**
+     * Extract stability metadata.
+     */
     visit(subTree, UNIST.isStabilityNode, node =>
       visitStability(node, ignoreStability ? undefined : metadata)
     );
 
-    // Process YAML nodes directly - merge all YAML data
+    /**
+     * Extract YAML metadata.
+     */
     visit(subTree, UNIST.isYamlNode, node => visitYAML(node, metadata));
 
-    // If YAML data contains a 'type', use it to override heading type
+    /**
+     * YAML type overrides heading type.
+     */
     if (metadata.type) {
       metadata.heading.data.type = metadata.type;
     }
 
-    // Process Unix manual references
+    /**
+     * Convert Unix manual references.
+     */
     visit(subTree, UNIST.isTextWithUnixManual, (node, _, parent) =>
       visitTextWithUnixManualNode(node, parent)
     );
 
-    // Remove processed YAML nodes from the content
+    /**
+     * Remove YAML metadata nodes from the
+     * final rendered content.
+     */
     remove(subTree, [UNIST.isYamlNode]);
 
-    // Apply AST transformations
-    const parsedSubTree = remark().runSync(subTree);
-    metadata.content = parsedSubTree;
+    /**
+     * Apply remark transformations.
+     */
+    metadata.content = remark().runSync(subTree);
 
-    // Add to collection
+    /**
+     * Store final metadata entry.
+     */
     metadataCollection.push(metadata);
-
-    return SKIP;
-  });
+  }
 
   return metadataCollection;
 };

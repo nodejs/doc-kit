@@ -5,6 +5,18 @@
 // and the mandatory `\|` inside GFM table cells must be decoded here.
 const CHARACTER_ESCAPE = /\\([!-/:-@[-`{-~])/g;
 
+// Interior line endings are normalized to a single space.
+const WHITESPACE = /\s+/g;
+
+/**
+ * Normalizes the parsed type text into its canonical form.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+const normalizeTypeAnnotation = value =>
+  value.replace(WHITESPACE, ' ').trim().replace(CHARACTER_ESCAPE, '$1');
+
 /**
  * Creates the mdast-util-from-markdown extension that compiles
  * `typeAnnotation` tokens into `{ type: 'typeAnnotation', value }` nodes.
@@ -21,9 +33,16 @@ export const typeAnnotationFromMarkdown = () => ({
      * @param {import('micromark-util-types').Token} token
      */
     typeAnnotation(token) {
-      this.enter({ type: 'typeAnnotation', value: '' }, token);
+      this.enter(
+        {
+          type: 'typeAnnotation',
+          value: '',
+        },
+        token
+      );
     },
   },
+
   exit: {
     /**
      * @this {import('mdast-util-from-markdown').CompileContext}
@@ -33,9 +52,9 @@ export const typeAnnotationFromMarkdown = () => ({
       const node = this.stack.at(-1);
       const chunk = this.sliceSerialize(token);
 
-      // Chunks are split by interior line endings; re-join with a space
-      node.value = node.value ? `${node.value} ${chunk}` : chunk;
+      node.value += node.value ? ` ${chunk}` : chunk;
     },
+
     /**
      * @this {import('mdast-util-from-markdown').CompileContext}
      * @param {import('micromark-util-types').Token} token
@@ -43,10 +62,7 @@ export const typeAnnotationFromMarkdown = () => ({
     typeAnnotation(token) {
       const node = this.stack.at(-1);
 
-      node.value = node.value
-        .replace(/\s+/g, ' ')
-        .trim()
-        .replace(CHARACTER_ESCAPE, '$1');
+      node.value = normalizeTypeAnnotation(node.value);
 
       this.exit(token);
     },
@@ -63,7 +79,8 @@ export const typeAnnotationToMarkdown = () => ({
   handlers: {
     /**
      * @param {{ value: string }} node
+     * @returns {string}
      */
-    typeAnnotation: node => `{${node.value}}`,
+    typeAnnotation: ({ value }) => `{${value}}`,
   },
 });

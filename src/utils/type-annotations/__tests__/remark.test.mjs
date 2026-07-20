@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
-import { selectAll } from 'unist-util-select';
+import { visit } from 'unist-util-visit';
 
 import remarkTypeAnnotations from '../remark.mjs';
 
@@ -15,8 +15,16 @@ const processor = unified()
   .use(remarkGfm)
   .use(remarkStringify);
 
-const annotationsIn = markdown =>
-  selectAll('typeAnnotation', processor.parse(markdown));
+const annotationsIn = markdown => {
+  const tree = processor.parse(markdown);
+  const annotations = [];
+
+  visit(tree, 'typeAnnotation', node => {
+    annotations.push(node);
+  });
+
+  return annotations;
+};
 
 const valuesIn = markdown => annotationsIn(markdown).map(node => node.value);
 
@@ -86,13 +94,17 @@ describe('remarkTypeAnnotations', () => {
   it('leaves an unbalanced brace as literal text', () => {
     const tree = processor.parse('An { unclosed brace.');
 
-    assert.deepEqual(selectAll('typeAnnotation', tree), []);
-    assert.match(
-      selectAll('text', tree)
-        .map(node => node.value)
-        .join(''),
-      /\{ unclosed brace\./
-    );
+    const annotations = [];
+    visit(tree, 'typeAnnotation', node => {
+      annotations.push(node);
+    });
+    const textNodes = [];
+    visit(tree, 'text', node => {
+      textNodes.push(node.value);
+    });
+
+    assert.deepEqual(annotations, []);
+    assert.match(textNodes.join(''), /\{ unclosed brace\./);
   });
 
   it('does not match inside code spans', () => {

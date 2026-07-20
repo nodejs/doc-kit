@@ -23,6 +23,12 @@ export const QUERIES = {
 
 export const UNIST = {
   /**
+   * @param {import('@types/mdast').Definition} definition
+   * @returns {boolean}
+   */
+  isDefinition: ({ type }) => type === 'definition',
+
+  /**
    * @param {import('@types/mdast').Blockquote} blockquote
    * @returns {boolean}
    */
