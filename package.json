@@ -80,7 +80,6 @@
     "lightningcss-wasm": "^1.32.0",
     "mdast-util-slice-markdown": "^2.0.1",
     "oxc-parser": "^0.139.0",
-    "oxc-walker": "^1.0.0",
     "piscina": "^5.2.0",
     "preact": "^10.29.2",
     "preact-render-to-string": "^6.7.0",

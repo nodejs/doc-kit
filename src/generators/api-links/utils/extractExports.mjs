@@ -1,6 +1,6 @@
 'use strict';
 
-import { walk } from 'oxc-walker';
+import { Visitor } from 'oxc-parser';
 
 import { getLineNumber } from './getLineNumber.mjs';
 import { CONSTRUCTOR_EXPRESSION } from '../constants.mjs';
@@ -218,7 +218,6 @@ function handleVariableDeclaration(
 
   return exports;
 }
-
 /**
  * We need to find what a source file exports so we know what to include in
  * the final result. We can do this by going through every statement in the
@@ -242,46 +241,51 @@ export function extractExports(program, basename, nameToLineNumberMap) {
     indirects: {},
   };
 
-  const TYPE_TO_HANDLER_MAP = {
+  /**
+   *
+   */
+  function mergeExports(output) {
+    if (!output) {
+      return;
+    }
+
+    exports.ctors.push(...output.ctors);
+    exports.identifiers.push(...output.identifiers);
+
+    Object.assign(exports.indirects, output.indirects);
+  }
+
+  const visitor = new Visitor({
     /**
-     * @param {import('@oxc-project/types').Node} node
+     * @param {import('@oxc-project/types').ExpressionStatement} node
      */
-    ExpressionStatement: node =>
-      handleExpression(node, basename, nameToLineNumberMap, program.sourceText),
+    ExpressionStatement(node) {
+      mergeExports(
+        handleExpression(
+          node,
+          basename,
+          nameToLineNumberMap,
+          program.sourceText
+        )
+      );
+    },
 
     /**
-     * @param {import('@oxc-project/types').Node} node
+     * @param {import('@oxc-project/types').VariableDeclaration} node
      */
-    VariableDeclaration: node =>
-      handleVariableDeclaration(
-        node,
-        basename,
-        nameToLineNumberMap,
-        program.sourceText
-      ),
-  };
-
-  walk(program, {
-    /**
-     *
-     */
-    enter(node) {
-      if (node.type in TYPE_TO_HANDLER_MAP) {
-        const handler = TYPE_TO_HANDLER_MAP[node.type];
-
-        const output = handler(node);
-
-        if (output) {
-          exports.ctors.push(...output.ctors);
-          exports.identifiers.push(...output.identifiers);
-
-          Object.keys(output.indirects).forEach(key => {
-            exports.indirects[key] = output.indirects[key];
-          });
-        }
-      }
+    VariableDeclaration(node) {
+      mergeExports(
+        handleVariableDeclaration(
+          node,
+          basename,
+          nameToLineNumberMap,
+          program.sourceText
+        )
+      );
     },
   });
+
+  visitor.visit(program);
 
   return exports;
 }

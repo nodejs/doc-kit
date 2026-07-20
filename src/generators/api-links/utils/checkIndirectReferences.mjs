@@ -1,4 +1,4 @@
-import { walk } from 'oxc-walker';
+import { Visitor } from 'oxc-parser';
 
 import { getLineNumber } from './getLineNumber.mjs';
 
@@ -12,18 +12,14 @@ export function checkIndirectReferences(program, exports, nameToLineNumberMap) {
     return;
   }
 
-  walk(program, {
+  const visitor = new Visitor({
     /**
      *
      */
-    enter(node) {
-      if (node.type !== 'FunctionDeclaration') {
-        return;
-      }
+    FunctionDeclaration(node) {
+      const name = node.id?.name;
 
-      const name = node.id.name;
-
-      if (name in exports.indirects) {
+      if (name && name in exports.indirects) {
         nameToLineNumberMap[exports.indirects[name]] = getLineNumber(
           program.sourceText,
           node.range[0]
@@ -31,4 +27,6 @@ export function checkIndirectReferences(program, exports, nameToLineNumberMap) {
       }
     },
   });
+
+  visitor.visit(program);
 }
