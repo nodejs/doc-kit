@@ -98,6 +98,7 @@ function handleFunctionDeclaration(
   sourceText
 ) {
   if (!exports.identifiers.includes(node.id.name)) {
+    // Function isn't exported, not relevant to us
     return;
   }
 
