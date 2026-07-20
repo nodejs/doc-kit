@@ -1,7 +1,9 @@
 import { visit } from 'estree-util-visit';
 
+import { getLineNumber } from './getLineNumber.mjs';
+
 /**
- * @param {import('acorn').Program} program
+ * @param {import('@oxc-project/types').Program} program
  * @param {import('../types.d.ts').ProgramExports} exports
  * @param {Record<string, number>} nameToLineNumberMap
  */
@@ -11,14 +13,17 @@ export function checkIndirectReferences(program, exports, nameToLineNumberMap) {
   }
 
   visit(program, node => {
-    if (!node.loc || node.type !== 'FunctionDeclaration') {
+    if (node.type !== 'FunctionDeclaration') {
       return;
     }
 
     const name = node.id.name;
 
     if (name in exports.indirects) {
-      nameToLineNumberMap[exports.indirects[name]] = node.loc.start.line;
+      nameToLineNumberMap[exports.indirects[name]] = getLineNumber(
+        program.sourceText,
+        node.range[0]
+      );
     }
   });
 }

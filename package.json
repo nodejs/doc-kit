@@ -70,7 +70,6 @@
     "@orama/ui": "^1.5.4",
     "@rollup/plugin-virtual": "^3.0.2",
     "@swc/html-wasm": "^1.15.43",
-    "acorn": "^8.17.0",
     "commander": "^15.0.0",
     "dedent": "^1.7.2",
     "estree-util-to-js": "^2.0.0",

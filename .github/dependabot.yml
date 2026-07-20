@@ -68,7 +68,7 @@ updates:
           - 'hast-*'
           - 'mdast-*'
           - 'hastscript'
-          - 'acorn'
+          - '@oxc-project/types'
       recma:
         patterns:
           - 'recma-*'
