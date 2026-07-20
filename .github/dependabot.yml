@@ -64,11 +64,9 @@ updates:
           - 'rehype-*'
       ast:
         patterns:
-          - 'estree-*'
           - 'hast-*'
           - 'mdast-*'
           - 'hastscript'
-          - '@oxc-project/types'
       recma:
         patterns:
           - 'recma-*'

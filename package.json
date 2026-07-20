@@ -72,7 +72,7 @@
     "@swc/html-wasm": "^1.15.43",
     "commander": "^15.0.0",
     "dedent": "^1.7.2",
-    "estree-util-to-js": "^2.0.0",
+    "esrap": "^2.3.0",
     "github-slugger": "^2.0.0",
     "glob-parent": "^6.0.2",
     "hast-util-to-string": "^3.0.1",
