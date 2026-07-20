@@ -1,4 +1,4 @@
-'use strict';
+import { visit } from 'estree-util-visit';
 
 import { getLineNumber } from './getLineNumber.mjs';
 
@@ -12,28 +12,18 @@ export function checkIndirectReferences(program, exports, nameToLineNumberMap) {
     return;
   }
 
-  const body = program.body;
-  if (!body) {
-    return;
-  }
-
-  const sourceText = program.sourceText;
-
-  for (let i = 0; i < body.length; i++) {
-    let node = body[i];
-    if (node.type === 'ExportNamedDeclaration' && node.declaration) {
-      node = node.declaration;
+  visit(program, node => {
+    if (node.type !== 'FunctionDeclaration') {
+      return;
     }
 
-    if (node.type === 'FunctionDeclaration') {
-      const name = node.id.name;
-      if (name in exports.indirects) {
-        nameToLineNumberMap[exports.indirects[name]] = getLineNumber(
-          sourceText,
-          node.range[0],
-          program
-        );
-      }
+    const name = node.id.name;
+
+    if (name in exports.indirects) {
+      nameToLineNumberMap[exports.indirects[name]] = getLineNumber(
+        program.sourceText,
+        node.range[0]
+      );
     }
-  }
+  });
 }
