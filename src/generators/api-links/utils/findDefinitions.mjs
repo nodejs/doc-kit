@@ -78,7 +78,10 @@ function handleAssignmentExpression(
 
   nameToLineNumberMap[name] = getLineNumber(sourceText, node.range[0]);
 
-  if (rhs && rhs.type === 'Identifier' && lhs.property.name === rhs.name) {
+  // Track any identifier assignment as an indirect reference
+  // This handles cases like: Buffer.prototype.write = write;
+  // Which creates an indirect mapping: write -> buffer.write
+  if (rhs && rhs.type === 'Identifier') {
     exports.indirects[rhs.name] = name;
   }
 }
