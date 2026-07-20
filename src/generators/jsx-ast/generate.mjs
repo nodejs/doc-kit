@@ -47,7 +47,13 @@ export async function processChunk(slicedInput, itemIndices) {
 
     const content = await buildContent(entries, head);
 
-    const { code } = print(content, tsx());
+    const { code } = print(
+      content,
+      tsx({
+        // SUPER IMPORTANT: use double instead roldown will fail on certain unicode
+        quotes: 'double',
+      })
+    );
 
     results.push({ data: content.data, code });
   }
