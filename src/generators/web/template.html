@@ -5,7 +5,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title}</title>
-  <link rel="stylesheet" href="${root}styles.css" />
+  <link rel="preload" href="${root}styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="${root}styles.css">
+  </noscript>
   <meta property="og:title" content="${title}">
   <meta property="og:type" content="website">
 
@@ -13,8 +16,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Open+Sans:ital,wght@0,300..800;1,300..800" />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" />
+  </noscript>
 
   <!-- Apply theme before paint to avoid Flash of Unstyled Content -->
   <script>${themeScript}</script>
