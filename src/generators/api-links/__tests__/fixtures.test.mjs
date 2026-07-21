@@ -1,7 +1,6 @@
+import { globSync } from 'node:fs';
 import { basename, join, relative, sep } from 'node:path';
 import { after, before, describe, it } from 'node:test';
-
-import { globSync } from 'tinyglobby';
 
 import createWorkerPool from '../../../threading/index.mjs';
 import createParallelWorker from '../../../threading/parallel.mjs';

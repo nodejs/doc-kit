@@ -64,11 +64,13 @@ updates:
           - 'rehype-*'
       ast:
         patterns:
-          - 'estree-*'
           - 'hast-*'
           - 'mdast-*'
           - 'hastscript'
-          - 'acorn'
+      oxc:
+        patterns:
+          - 'oxc-*'
+          - 'esrap'
       recma:
         patterns:
           - 'recma-*'

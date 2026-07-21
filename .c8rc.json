@@ -2,9 +2,15 @@
   "all": true,
   "exclude": [
     "eslint.config.mjs",
+    "playwright.config.js",
     "**/fixtures",
+    "**/__tests__",
     "src/generators/legacy-html/assets",
     "src/generators/web/ui",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "www",
+    "beta",
+    "scripts",
+    "e2e"
   ]
 }

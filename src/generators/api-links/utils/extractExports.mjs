@@ -1,18 +1,20 @@
 'use strict';
 
-import { visit } from 'estree-util-visit';
+import { Visitor } from 'oxc-parser';
 
+import { getLineNumber } from './getLineNumber.mjs';
 import { CONSTRUCTOR_EXPRESSION } from '../constants.mjs';
 
 /**
  * @see https://github.com/estree/estree/blob/master/es5.md#assignmentexpression
  *
- * @param {import('acorn').ExpressionStatement} node
+ * @param {import('@oxc-project/types').ExpressionStatement} node
  * @param {string} basename
  * @param {Record<string, number>} nameToLineNumberMap
+ * @param {string} sourceText
  * @returns {import('../types').ProgramExports | undefined}
  */
-function handleExpression(node, basename, nameToLineNumberMap) {
+function handleExpression(node, basename, nameToLineNumberMap, sourceText) {
   const { expression } = node;
 
   if (expression.type !== 'AssignmentExpression') {
@@ -20,7 +22,7 @@ function handleExpression(node, basename, nameToLineNumberMap) {
   }
 
   // `a=b`, lhs=`a` and rhs=`b`
-  let { left: lhs, right: rhs, loc } = expression;
+  let { left: lhs, right: rhs } = expression;
 
   if (lhs.type !== 'MemberExpression') {
     return undefined;
@@ -41,32 +43,29 @@ function handleExpression(node, basename, nameToLineNumberMap) {
 
   if (lhs.object.name === 'exports') {
     // This is an assignment to a property in `module.exports` or `exports`
-    //  (i.e. `module.exports.asd = ...`)
+    //  (i.e. `module.exports.asd = ...` or `exports.asd = ...`)
 
     switch (rhs.type) {
       /** @see https://github.com/estree/estree/blob/master/es5.md#functionexpression */
       case 'FunctionExpression': {
         // module.exports.something = () => {}
-        nameToLineNumberMap[`${basename}.${lhs.property.name}`] =
-          loc.start.line;
+        nameToLineNumberMap[`${basename}.${lhs.property.name}`] = getLineNumber(
+          sourceText,
+          node.range[0]
+        );
 
         break;
       }
       /** @see https://github.com/estree/estree/blob/master/es5.md#identifier */
       case 'Identifier': {
         // Save this for later in case it's referenced
-        // module.exports.asd = something
-        if (rhs.name === lhs.property.name) {
-          exports.indirects[lhs.property.name] =
-            `${basename}.${lhs.property.name}`;
-        }
+        // exports.Buffer = Buffer -> indirect mapping
+        exports.indirects[rhs.name] = `${basename}.${lhs.property.name}`;
 
         break;
       }
       default: {
         if (lhs.property.name !== undefined) {
-          // Something else, let's save it for when we're searching for
-          //  declarations
           exports.identifiers.push(lhs.property.name);
         }
 
@@ -132,6 +131,9 @@ function handleExpression(node, basename, nameToLineNumberMap) {
 
         if (rhs.name !== undefined) {
           exports.identifiers.push(rhs.name);
+          if (CONSTRUCTOR_EXPRESSION.test(rhs.name[0])) {
+            exports.ctors.push(rhs.name);
+          }
         }
 
         break;
@@ -149,12 +151,18 @@ function handleExpression(node, basename, nameToLineNumberMap) {
 /**
  * @see https://github.com/estree/estree/blob/master/es5.md#variabledeclaration
  *
- * @param {import('acorn').VariableDeclaration} node
+ * @param {import('@oxc-project/types').VariableDeclaration} node
  * @param {string} basename
  * @param {Record<string, number>} nameToLineNumberMap
+ * @param {string} sourceText
  * @returns {import('../types').ProgramExports | undefined}
  */
-function handleVariableDeclaration(node, basename, nameToLineNumberMap) {
+function handleVariableDeclaration(
+  node,
+  basename,
+  nameToLineNumberMap,
+  sourceText
+) {
   /**
    * @type {import('../types').ProgramExports}
    */
@@ -164,7 +172,10 @@ function handleVariableDeclaration(node, basename, nameToLineNumberMap) {
     indirects: {},
   };
 
-  node.declarations.forEach(({ init: lhs, id }) => {
+  node.declarations.forEach(declarator => {
+    let lhs = declarator.init;
+    const id = declarator.id;
+
     while (lhs && lhs.type === 'AssignmentExpression') {
       // Move left until we get to what we're assigning to
       //  (if `a=b`, we want `a`)
@@ -177,10 +188,14 @@ function handleVariableDeclaration(node, basename, nameToLineNumberMap) {
       return;
     }
 
+    const range = declarator.range || node.range;
+
     switch (lhs.object.name) {
       case 'exports': {
-        nameToLineNumberMap[`${basename}.${lhs.property.name}`] =
-          node.loc.start.line;
+        nameToLineNumberMap[`${basename}.${lhs.property.name}`] = getLineNumber(
+          sourceText,
+          range[0]
+        );
 
         break;
       }
@@ -190,7 +205,7 @@ function handleVariableDeclaration(node, basename, nameToLineNumberMap) {
         }
 
         exports.ctors.push(id.name);
-        nameToLineNumberMap[id.name] = node.loc.start.line;
+        nameToLineNumberMap[id.name] = getLineNumber(sourceText, range[0]);
 
         break;
       }
@@ -203,7 +218,6 @@ function handleVariableDeclaration(node, basename, nameToLineNumberMap) {
 
   return exports;
 }
-
 /**
  * We need to find what a source file exports so we know what to include in
  * the final result. We can do this by going through every statement in the
@@ -212,7 +226,7 @@ function handleVariableDeclaration(node, basename, nameToLineNumberMap) {
  * Noteworthy that exports can happen throughout the program so we need to
  * go through the entire thing.
  *
- * @param {import('acorn').Program} program
+ * @param {import('@oxc-project/types').Program} program
  * @param {string} basename
  * @param {Record<string, number>} nameToLineNumberMap
  * @returns {import('../types').ProgramExports}
@@ -227,40 +241,51 @@ export function extractExports(program, basename, nameToLineNumberMap) {
     indirects: {},
   };
 
-  const TYPE_TO_HANDLER_MAP = {
-    /**
-     * @param {import('acorn').Node} node
-     */
-    ExpressionStatement: node =>
-      handleExpression(node, basename, nameToLineNumberMap),
-
-    /**
-     * @param {import('acorn').Node} node
-     */
-    VariableDeclaration: node =>
-      handleVariableDeclaration(node, basename, nameToLineNumberMap),
-  };
-
-  visit(program, node => {
-    if (!node.loc) {
+  /**
+   *
+   */
+  function mergeExports(output) {
+    if (!output) {
       return;
     }
 
-    if (node.type in TYPE_TO_HANDLER_MAP) {
-      const handler = TYPE_TO_HANDLER_MAP[node.type];
+    exports.ctors.push(...output.ctors);
+    exports.identifiers.push(...output.identifiers);
 
-      const output = handler(node);
+    Object.assign(exports.indirects, output.indirects);
+  }
 
-      if (output) {
-        exports.ctors.push(...output.ctors);
-        exports.identifiers.push(...output.identifiers);
+  const visitor = new Visitor({
+    /**
+     * @param {import('@oxc-project/types').ExpressionStatement} node
+     */
+    ExpressionStatement(node) {
+      mergeExports(
+        handleExpression(
+          node,
+          basename,
+          nameToLineNumberMap,
+          program.sourceText
+        )
+      );
+    },
 
-        Object.keys(output.indirects).forEach(key => {
-          exports.indirects[key] = output.indirects[key];
-        });
-      }
-    }
+    /**
+     * @param {import('@oxc-project/types').VariableDeclaration} node
+     */
+    VariableDeclaration(node) {
+      mergeExports(
+        handleVariableDeclaration(
+          node,
+          basename,
+          nameToLineNumberMap,
+          program.sourceText
+        )
+      );
+    },
   });
+
+  visitor.visit(program);
 
   return exports;
 }

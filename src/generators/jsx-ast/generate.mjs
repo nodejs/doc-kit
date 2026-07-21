@@ -1,4 +1,5 @@
-import { jsx, toJs } from 'estree-util-to-js';
+import { print } from 'esrap';
+import tsx from 'esrap/languages/tsx';
 
 import buildContent from './utils/buildContent.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
@@ -46,7 +47,13 @@ export async function processChunk(slicedInput, itemIndices) {
 
     const content = await buildContent(entries, head);
 
-    const { value: code } = toJs(content, { handlers: jsx });
+    const { code } = print(
+      content,
+      tsx({
+        // SUPER IMPORTANT: use double instead roldown will fail on certain unicode
+        quotes: 'double',
+      })
+    );
 
     results.push({ data: content.data, code });
   }

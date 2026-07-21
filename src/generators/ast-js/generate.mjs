@@ -3,7 +3,7 @@
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
-import { parse } from 'acorn';
+import { parse } from 'oxc-parser';
 import { globSync } from 'tinyglobby';
 
 import getConfig from '../../utils/configuration/index.mjs';
@@ -22,12 +22,14 @@ export async function processChunk(inputSlice, itemIndices) {
   for (const path of filePaths) {
     const value = await readFile(path, 'utf-8');
 
-    const parsed = parse(value, {
-      allowReturnOutsideFunction: true,
-      ecmaVersion: 'latest',
-      locations: true,
+    const result = await parse(path, value, {
+      lang: 'js',
+      sourceType: 'commonjs',
+      range: true,
     });
 
+    const parsed = result.program;
+    parsed.sourceText = value;
     parsed.path = path;
 
     results.push(parsed);

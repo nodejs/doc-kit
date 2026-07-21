@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { jsx, toJs } from 'estree-util-to-js';
+import { print } from 'esrap';
+import tsx from 'esrap/languages/tsx';
 
 import { setConfig } from '../../../utils/configuration/index.mjs';
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
@@ -14,7 +15,7 @@ import { generate } from '../generate.mjs';
  */
 const toCodeItem = content => ({
   data: content.data,
-  code: toJs(content, { handlers: jsx }).value,
+  code: print(content, tsx()).code,
 });
 
 const createEntry = (api, name) => {
