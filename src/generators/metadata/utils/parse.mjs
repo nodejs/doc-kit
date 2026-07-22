@@ -21,7 +21,10 @@ import {
 import { UNIST } from '../../../utils/queries/index.mjs';
 import { getRemark as remark } from '../../../utils/remark.mjs';
 import { relative } from '../../../utils/url.mjs';
-import { IGNORE_STABILITY_STEMS } from '../constants.mjs';
+import {
+  DEPRECATION_HEADING_REGEX,
+  IGNORE_STABILITY_STEMS,
+} from '../constants.mjs';
 import { resolveTypeAnnotations } from './resolveTypes.mjs';
 
 /**
@@ -43,6 +46,20 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
 
   // Slug the API (We use a non-class slugger, since we are fairly certain that `path` is unique)
   const api = slug(path.slice(1).replace(sep, '-'));
+
+  /**
+   * Creates a stable slug for a heading in the current API document.
+   * @param {string} text Heading text to slug.
+   * @returns {string} The generated heading slug.
+   */
+  const getHeadingSlug = text => {
+    const deprecationHeading =
+      api === 'deprecations' && DEPRECATION_HEADING_REGEX.exec(text);
+
+    return deprecationHeading
+      ? nodeSlugger.slug(deprecationHeading[1]).toUpperCase()
+      : nodeSlugger.slug(text);
+  };
 
   // Get all Markdown Footnote definitions from the tree
   const markdownDefinitions = selectAll('definition', tree);
@@ -96,7 +113,7 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
     });
 
     // Generate slug and update heading data
-    metadata.heading.data.slug = nodeSlugger.slug(metadata.heading.data.text);
+    metadata.heading.data.slug = getHeadingSlug(metadata.heading.data.text);
 
     // Find the next heading to determine section boundaries
     const nextHeadingNode =

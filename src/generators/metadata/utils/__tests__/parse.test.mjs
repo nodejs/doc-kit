@@ -69,6 +69,38 @@ describe('parseApiDoc', () => {
     });
   });
 
+  describe('deprecation headings', () => {
+    it('uses the DEP code as the slug on the deprecations page', () => {
+      const tree = u('root', [
+        h('DEP0001: http.OutgoingMessage.prototype.flush'),
+      ]);
+      const [entry] = parseApiDoc({ path: '/deprecations', tree }, typeMap);
+
+      assert.strictEqual(entry.heading.data.slug, 'DEP0001');
+    });
+
+    it('deduplicates repeated DEP code slugs', () => {
+      const tree = u('root', [
+        h('DEP0001: first deprecated API'),
+        h('DEP0001: second deprecated API'),
+      ]);
+      const entries = parseApiDoc({ path: '/deprecations', tree }, typeMap);
+
+      assert.strictEqual(entries[0].heading.data.slug, 'DEP0001');
+      assert.strictEqual(entries[1].heading.data.slug, 'DEP0001-1');
+    });
+
+    it('uses normal slugs for DEP headings outside the deprecations page', () => {
+      const tree = u('root', [h('DEP0190: some section heading')]);
+      const [entry] = parseApiDoc({ path, tree }, typeMap);
+
+      assert.strictEqual(
+        entry.heading.data.slug,
+        'dep0190-some-section-heading'
+      );
+    });
+  });
+
   describe('YAML metadata', () => {
     it('extracts added_in', () => {
       const tree = u('root', [h('fs'), yaml('added: v0.1.0')]);
