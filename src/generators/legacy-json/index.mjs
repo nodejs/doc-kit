@@ -16,8 +16,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'legacy-json',
 
-  version: '1.0.0',
-
   description: 'Generates the legacy version of the JSON API docs.',
 
   dependsOn: 'metadata',

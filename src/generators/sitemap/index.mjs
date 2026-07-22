@@ -10,8 +10,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'sitemap',
 
-  version: '1.0.0',
-
   description: 'Generates a sitemap.xml file for search engine optimization',
 
   dependsOn: 'metadata',

@@ -83,8 +83,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'my-format',
 
-  version: '1.0.0',
-
   description: 'Generates documentation in MyFormat',
 
   // This generator depends on the metadata generator
@@ -189,8 +187,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'parallel-generator',
 
-  version: '1.0.0',
-
   description: 'Processes data in parallel',
 
   dependsOn: 'metadata',
@@ -285,8 +281,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'streaming-generator',
 
-  version: '1.0.0',
-
   description: 'Streams results as they are ready',
 
   dependsOn: 'metadata',
@@ -344,8 +338,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  */
 export default createLazyGenerator({
   name: 'batch-generator',
-
-  version: '1.0.0',
 
   description: 'Requires all input at once',
 

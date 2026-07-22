@@ -129,10 +129,14 @@ describe('createLazyGenerator', () => {
   afterEach(() => mock.restoreAll());
 
   it('spreads metadata properties onto the returned object', () => {
-    const metadata = { name: 'ast', version: '1.0.0', dependsOn: undefined };
+    const metadata = {
+      name: 'ast',
+      description: 'Parses Markdown',
+      dependsOn: undefined,
+    };
     const gen = createLazyGenerator(metadata);
     assert.equal(gen.name, 'ast');
-    assert.equal(gen.version, '1.0.0');
+    assert.equal(gen.description, 'Parses Markdown');
   });
 
   it('exposes generate and processChunk functions that delegate to the lazily loaded module', async () => {

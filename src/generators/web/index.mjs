@@ -24,8 +24,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'web',
 
-  version: '1.0.0',
-
   description: 'Generates HTML/CSS/JS bundles from JSX AST entries',
 
   dependsOn: 'jsx-ast',

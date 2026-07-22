@@ -15,8 +15,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'ast-js',
 
-  version: '1.0.0',
-
   description: 'Parses Javascript source files passed into the input.',
 
   hasParallelProcessor: true,

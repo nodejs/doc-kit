@@ -18,8 +18,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'legacy-html',
 
-  version: '1.0.0',
-
   description:
     'Generates the legacy version of the API docs in HTML, with the assets and styles included as files',
 

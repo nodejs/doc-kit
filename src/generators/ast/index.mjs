@@ -11,8 +11,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'ast',
 
-  version: '1.0.0',
-
   description: 'Parses Markdown API doc files into AST trees',
 
   hasParallelProcessor: true,
