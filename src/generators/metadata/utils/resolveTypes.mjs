@@ -1,23 +1,25 @@
-import { parseSync, Visitor } from 'oxc-parser';
+import { parseSync } from '@swc/wasm';
 import { visit } from 'unist-util-visit';
 
 import { lookupTypeName, resolveTypeReference } from './transformers.mjs';
 import logger from '../../../logger/index.mjs';
+import { walk } from '../../../utils/swc.mjs';
 
-const KEYWORDS = [
-  'TSStringKeyword',
-  'TSNumberKeyword',
-  'TSBooleanKeyword',
-  'TSAnyKeyword',
-  'TSUnknownKeyword',
-  'TSNeverKeyword',
-  'TSVoidKeyword',
-  'TSUndefinedKeyword',
-  'TSObjectKeyword',
-  'TSBigIntKeyword',
-  'TSSymbolKeyword',
-  'TSThisType',
-];
+// `null` is a keyword kind in SWC, unlike most parsers which treat it as a literal type
+const KEYWORDS = new Set([
+  'string',
+  'number',
+  'boolean',
+  'any',
+  'unknown',
+  'never',
+  'void',
+  'undefined',
+  'object',
+  'bigint',
+  'symbol',
+  'null',
+]);
 
 /**
  * Parses a wrapped `type $Ti = <value>;` statement
@@ -36,11 +38,17 @@ const parseAliases = values => {
     })
     .join('');
 
-  const result = parseSync('types.ts', source);
+  let program;
 
-  if (result.errors.length > 0) {
+  try {
+    program = parseSync(source, { syntax: 'typescript' });
+  } catch {
     return undefined;
   }
+
+  // SWC spans are absolute and keep growing across parse calls; the module's
+  // span begins at the first token, which is the start of our source
+  const spanOffset = program.span.start;
 
   const identifiersPerAlias = values.map(() => []);
 
@@ -48,7 +56,8 @@ const parseAliases = values => {
    *
    */
   const record = node => {
-    const [start, end] = node.range ?? [node.start, node.end];
+    const start = node.span.start - spanOffset;
+    const end = node.span.end - spanOffset;
 
     const index = Math.max(
       0,
@@ -66,27 +75,25 @@ const parseAliases = values => {
     });
   };
 
-  const visitor = new Visitor({
+  walk(program, {
     /**
      *
      */
-    TSTypeReference: node => record(node.typeName), // Promise<T>, vm.Module
+    TsTypeReference: node => record(node.typeName), // Promise<T>, vm.Module
     /**
      *
      */
-    TSTypeQuery: node => record(node.exprName), // typeof Foo
+    TsTypeQuery: node => record(node.exprName), // typeof Foo
     /**
      *
      */
-    TSImportType: node => node.qualifier && record(node.qualifier), // import('fs').Stats
+    TsImportType: node => node.qualifier && record(node.qualifier), // import('fs').Stats
     /**
      *
      */
-    TSLiteralType: node => node.literal.type === 'NullLiteral' && record(node),
-    ...Object.fromEntries(KEYWORDS.map(kind => [kind, record])),
+    TsKeywordType: node => KEYWORDS.has(node.kind) && record(node), // string, null, ...
+    TsThisType: record,
   });
-
-  visitor.visit(result.program);
 
   return identifiersPerAlias.map(identifiers => ({ identifiers }));
 };
