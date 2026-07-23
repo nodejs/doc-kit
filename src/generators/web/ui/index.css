@@ -1,9 +1,12 @@
+@import '@fontsource-variable/open-sans/wght.css';
+@import '@fontsource-variable/open-sans/wght-italic.css';
+@import '@fontsource/ibm-plex-mono/400.css';
 @import '@node-core/ui-components/styles/index.css';
 @import '@node-core/rehype-shiki/index.css';
 
 /* Fonts */
 :root {
-  --font-open-sans: 'Open Sans', sans-serif;
+  --font-open-sans: 'Open Sans Variable', sans-serif;
   --font-ibm-plex-mono: 'IBM Plex Mono', monospace;
 }
 

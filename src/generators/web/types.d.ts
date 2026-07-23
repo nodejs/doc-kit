@@ -1,5 +1,4 @@
-import type { BundleAsyncOptions, CustomAtRules } from 'lightningcss-wasm';
-import type { BuildOptions } from 'rolldown';
+import type { UserConfig } from 'vite';
 
 import type { JSXContent } from '../jsx-ast/utils/buildContent.mjs';
 
@@ -32,14 +31,6 @@ export type Configuration = {
   title: string;
   useAbsoluteURLs: boolean;
   head: HeadConfig;
-  // Options spread into LightningCSS while bundling CSS. `filename`, `code`,
-  // `cssModules`, and `resolver` are managed by the generator and ignored here.
-  lightningcss: Partial<
-    Omit<
-      BundleAsyncOptions<CustomAtRules>,
-      'filename' | 'code' | 'cssModules' | 'resolver'
-    >
-  >;
   imports: Record<string, string>;
   virtualImports: Record<string, string>;
   // Maps a JSX tag name to its import, enabling JSX-in-MDX. The string shorthand
@@ -47,12 +38,12 @@ export type Configuration = {
   // `JSX_IMPORTS`. Pair each entry with a matching `imports` alias to resolve the
   // `source` to a real module path.
   components: Record<string, JSXImportConfig | string>;
-  // Options merged into the Rolldown build for the client and server bundles.
-  // See the web generator README for the merge semantics.
-  rolldown: Partial<BuildOptions>;
+  // Vite options merged into the client and SSR builds. The generator owns the
+  // fields that connect its virtual entries and output.
+  vite: UserConfig;
 };
 
 export type Generator = GeneratorMetadata<
   Configuration,
-  Generate<Array<JSXContent>, Promise<Array<{ html: string; css: string }>>>
+  Generate<Array<JSXContent>, Promise<void>>
 >;

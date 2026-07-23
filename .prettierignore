@@ -12,6 +12,7 @@ out/
 
 # Docs-site content, assembled by scripts/build-docs-content.mjs
 www/content/
+www/out/
 
 # Generated Files
 src/generators/metadata/maps/mdn.json

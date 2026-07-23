@@ -105,8 +105,8 @@ export default () => {
         false
       ),
 
-      // Render component to HTML string and return it
-      `return renderToStringAsync(${componentCode});`,
+      // Export a renderer that the temporary Vite SSR build can import.
+      `export default () => renderToStringAsync(${componentCode});`,
     ].join('\n');
   };
 
