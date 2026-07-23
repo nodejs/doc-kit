@@ -53,10 +53,9 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
    * @returns {string} The generated heading slug.
    */
   const getHeadingSlug = text => {
-    const deprecationHeading =
-      api === 'deprecations' && DEPRECATION_HEADING_REGEX.exec(text);
+    const deprecationHeading = DEPRECATION_HEADING_REGEX.exec(text);
 
-    return deprecationHeading
+    return api === 'deprecations' && deprecationHeading
       ? nodeSlugger.slug(deprecationHeading[1]).toUpperCase()
       : nodeSlugger.slug(text);
   };
