@@ -15,8 +15,6 @@ import legacyHtml from '../legacy-html/index.mjs';
 export default createLazyGenerator({
   name: 'legacy-html-all',
 
-  version: '1.0.0',
-
   description:
     'Generates the `all.html` file from the `legacy-html` generator, which includes all the modules in one single file',
 

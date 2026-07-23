@@ -10,8 +10,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'metadata',
 
-  version: '1.0.0',
-
   description: 'generates a flattened list of API doc metadata entries',
 
   dependsOn: 'ast',

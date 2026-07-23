@@ -16,8 +16,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'api-links',
 
-  version: '1.0.0',
-
   description:
     'Creates a mapping of publicly accessible functions to their source locations in the Node.js repository.',
 

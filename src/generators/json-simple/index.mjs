@@ -14,8 +14,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'json-simple',
 
-  version: '1.0.0',
-
   description:
     'Generates the simple JSON version of the API docs, and returns it as a string',
 

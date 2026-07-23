@@ -13,8 +13,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'llms-txt',
 
-  version: '1.0.0',
-
   description:
     'Generates a llms.txt file to provide information to LLMs at inference time',
 

@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import semver from 'semver';
-
 import { allGenerators } from '../index.mjs';
 
 const validDependencies = Object.keys(allGenerators);
@@ -16,16 +14,6 @@ describe('All Generators', () => {
         key,
         generator.name,
         `Generator key "${key}" does not match its name property "${generator.name}"`
-      );
-    });
-  });
-
-  it('should have valid semver versions', () => {
-    allGeneratorsEntries.forEach(([key, generator]) => {
-      const isValid = semver.valid(generator.version);
-      assert.ok(
-        isValid,
-        `Generator "${key}" has invalid semver version: "${generator.version}"`
       );
     });
   });

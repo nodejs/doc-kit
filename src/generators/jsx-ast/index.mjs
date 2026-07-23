@@ -10,8 +10,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'jsx-ast',
 
-  version: '1.0.0',
-
   description: 'Generates JSX AST from the input MDAST',
 
   dependsOn: 'metadata',

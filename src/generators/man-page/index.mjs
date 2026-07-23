@@ -13,8 +13,6 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
 export default createLazyGenerator({
   name: 'man-page',
 
-  version: '1.0.0',
-
   description: 'Generates the Node.js man-page.',
 
   dependsOn: 'metadata',

@@ -65,8 +65,6 @@ declare global {
     // The name of the Generator. Must match the Key in AllGenerators
     name: keyof AllGenerators;
 
-    version: string;
-
     description: string;
 
     hasParallelProcessor: boolean;
