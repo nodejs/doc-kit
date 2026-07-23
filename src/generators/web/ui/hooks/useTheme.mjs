@@ -29,7 +29,7 @@ const applySystemTheme = () => applyTheme('system');
 export const useTheme = () => {
   // Read stored preference once on mount; default to 'system'.
   const [pref, setPref] = useState(() =>
-    SERVER ? 'system' : (localStorage.getItem('theme') ?? 'system')
+    import.meta.env.SSR ? 'system' : (localStorage.getItem('theme') ?? 'system')
   );
 
   // Apply theme on every preference change, and if 'system',
@@ -49,7 +49,7 @@ export const useTheme = () => {
   /** Updates the preference in both React state and localStorage. */
   const setTheme = useCallback(next => {
     setPref(next);
-    if (CLIENT) {
+    if (!import.meta.env.SSR) {
       localStorage.setItem('theme', next);
     }
   }, []);

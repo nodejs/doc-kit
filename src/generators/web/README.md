@@ -1,27 +1,29 @@
 # `web` Generator
 
-The `web` generator transforms JSX AST entries into complete web bundles, producing server-side rendered HTML pages, client-side JavaScript with code splitting, and bundled CSS styles.
+The `web` generator transforms JSX AST entries into complete web bundles. Vite
+builds server-rendered HTML and hashed client-side JavaScript, CSS, and imported
+assets, then writes the complete static site to `output`. The generator is
+output-only and does not return an in-memory copy of its HTML or CSS.
 
 ## Configuring
 
 The `web` generator accepts the following configuration options:
 
-| Name              | Type      | Default                                       | Description                                                                                                 |
-| ----------------- | --------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `output`          | `string`  | -                                             | The directory where HTML, JavaScript, and CSS files will be written                                         |
-| `templatePath`    | `string`  | `'template.html'`                             | Path to the HTML template file                                                                              |
-| `project`         | `string`  | `'Node.js'`                                   | Project name used in page titles and the version selector                                                   |
-| `title`           | `string`  | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)                                           |
-| `useAbsoluteURLs` | `boolean` | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`                                        |
-| `editURL`         | `string`  | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                                                                     |
-| `pageURL`         | `string`  | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                                                                   |
-| `remoteConfigUrl` | `string`  | `'https://nodejs.org/site.json'`              | URL fetched client-side at runtime for remote site config (currently used to power the announcement banner) |
-| `head`            | `object`  | See below                                     | Configurable `<meta>`, `<link>`, and raw markup for the document head                                       |
-| `lightningcss`    | `object`  | `{}`                                          | Options spread into LightningCSS while bundling CSS (see below)                                             |
-| `imports`         | `object`  | See below                                     | Object mapping `#theme/` aliases to component paths for customization                                       |
-| `virtualImports`  | `object`  | `{}`                                          | Additional virtual module mappings merged into the build                                                    |
-| `components`      | `object`  | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below)                                    |
-| `rolldown`        | `object`  | `{}`                                          | Options merged into the Rolldown build — extra plugins, etc. (see below)                                    |
+| Name              | Type         | Default                                       | Description                                                                                                 |
+| ----------------- | ------------ | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `output`          | `string`     | Required                                      | The directory where HTML and Vite's hashed client output are written                                        |
+| `templatePath`    | `string`     | `'template.html'`                             | Path to the HTML template file                                                                              |
+| `project`         | `string`     | `'Node.js'`                                   | Project name used in page titles and the version selector                                                   |
+| `title`           | `string`     | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)                                           |
+| `useAbsoluteURLs` | `boolean`    | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`                                        |
+| `editURL`         | `string`     | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                                                                     |
+| `pageURL`         | `string`     | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                                                                   |
+| `remoteConfigUrl` | `string`     | `'https://nodejs.org/site.json'`              | URL fetched client-side at runtime for remote site config (currently used to power the announcement banner) |
+| `head`            | `object`     | See below                                     | Configurable `<meta>`, `<link>`, and raw markup for the document head                                       |
+| `imports`         | `object`     | See below                                     | Object mapping `#theme/` aliases to component paths for customization                                       |
+| `virtualImports`  | `object`     | `{}`                                          | Additional virtual module mappings merged into both Vite builds                                             |
+| `components`      | `object`     | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below)                                    |
+| `vite`            | `UserConfig` | `{}`                                          | Vite configuration merged into the client and SSR builds (see below)                                        |
 
 ### `head`
 
@@ -64,96 +66,58 @@ export default {
 ```
 
 > Structural and theme-bound tags are emitted by the template itself rather than
-> via `head`: `og:title` (mirrors the per-page title), `og:type`, and the font
-> preconnects/stylesheet the bundled UI components rely on.
+> via `head`, including `og:title` (which mirrors the per-page title) and
+> `og:type`. The UI stylesheet bundles its fonts locally.
 
-### Custom LightningCSS options
+### Custom Vite options
 
-The `lightningcss` object is spread directly into [LightningCSS][lightningcss]
-while CSS is bundled, so any of its options — `visitor` (custom plugins),
-`customAtRules`, `targets`, `drafts`, and so on — are supported. The generator
-manages `filename`, `code`, `cssModules`, and `resolver`, so those are ignored.
-
-```js
-// doc-kit.config.mjs
-export default {
-  web: {
-    lightningcss: {
-      customAtRules: {
-        mixin: { prelude: '<custom-ident>', body: 'style-block' },
-      },
-      visitor: {
-        Color(color) {
-          // e.g. transform every color through a design-token map
-          return color;
-        },
-      },
-    },
-  },
-};
-```
-
-To apply more than one visitor, compose them with LightningCSS's
-`composeVisitors` helper and pass the result as `visitor`.
-
-[lightningcss]: https://lightningcss.dev/transforms.html
-
-### Custom Rolldown options
-
-The `rolldown` object is merged into the [Rolldown][rolldown] `build` call used
-for **both** the client and server bundles, so you can register extra plugins,
-inject compile-time constants, add module aliases, or set any other Rolldown
-option. The same config is applied to both builds — branch inside a plugin (or
-read the `SERVER`/`CLIENT` defines) if you need per-target behavior.
-
-The merge follows these rules:
-
-- **`plugins`** are registered after the built-in virtual-module plugin (so
-  they see the in-memory entry modules) and before the CSS loader.
-- **`transform.define`** and **`resolve.alias`** are merged key-by-key, so you
-  can add entries without dropping the generator's. The built-in `SERVER`/
-  `CLIENT` defines and the `react`/`react-dom` → `preact/compat` aliases
-  (plus anything from `imports`) always win.
-- **All other options** (e.g. `output.minify`, `treeshake`, `external`,
-  `platform`, `logLevel`) override the generator's defaults.
-- **`input`** and the built-in plugins are managed by the generator and cannot
-  be overridden.
-
-> Functions (plugins, hooks, alias resolvers, etc.) are allowed here because the
-> `web` generator runs entirely on the main thread. Unlike the chunked
-> generators, its config is never serialized to a worker, so values that can't
-> be structured-cloned are safe. Keep this in mind if `web` ever gains parallel
-> processing: function-valued options would then need a serializable form.
+The `vite` object is merged into both production builds. This supports Vite
+plugins, aliases, `define`, asset options, and native Lightning CSS settings.
+Use `import.meta.env.SSR` inside application code or plugin transforms when
+behavior must differ between the SSR and browser builds.
 
 ```js
 // doc-kit.config.mjs
-import myRolldownPlugin from './my-rolldown-plugin.mjs';
+import myVitePlugin from './my-vite-plugin.mjs';
 
 export default {
   web: {
-    rolldown: {
-      // Register additional plugins (run after the built-in ones).
-      plugins: [myRolldownPlugin()],
-
-      // Inject extra compile-time constants (merged with SERVER/CLIENT).
-      transform: {
-        define: {
-          'process.env.ANALYTICS_ID': JSON.stringify('UA-XXXXX'),
-        },
+    vite: {
+      plugins: [myVitePlugin()],
+      define: {
+        'process.env.ANALYTICS_ID': JSON.stringify('UA-XXXXX'),
       },
-
-      // Extend module resolution with custom aliases.
       resolve: {
         alias: {
           '@components': './src/components',
         },
       },
+      css: {
+        lightningcss: {
+          targets: {
+            chrome: 100 << 16,
+          },
+        },
+      },
     },
   },
 };
 ```
 
-[rolldown]: https://rolldown.rs/
+The generator owns the fields required to coordinate its builds: config-file
+loading, app type and base, virtual inputs, Preact compatibility aliases and
+automatic JSX runtime, the Lightning CSS transformer, output/write mode, SSR
+format and temporary output, and SSR dependency bundling. Values supplied for
+those fields are replaced after configuration is merged. User plugins are
+registered after the generator's virtual-module plugin; other Vite options are
+preserved.
+
+Vite manifests are optional. Set `web.vite.build.manifest` to `true` or a file
+name when another tool needs one. The generated HTML already references the
+correct hashed scripts, stylesheets, imported assets, and module preloads.
+
+Function-valued plugins and hooks are supported because the `web` generator
+runs on the main thread and does not serialize this configuration to a worker.
 
 ### Default `imports`
 
@@ -300,9 +264,9 @@ The HTML template file (set via `templatePath`) uses JavaScript template literal
 | ------------------ | -------- | ----------------------------------------------------------------- |
 | `title`            | `string` | Fully resolved page title (e.g. `'File system \| Node.js v22.x'`) |
 | `dehydrated`       | `string` | Server-rendered HTML for the page content                         |
-| `importMap`        | `string` | JSON import map for client-side module resolution                 |
-| `entrypoint`       | `string` | Client-side entry point filename with cache-bust query            |
+| `entrypoint`       | `string` | Virtual Vite module for this page's client hydration              |
 | `speculationRules` | `string` | Speculation rules JSON for prefetching                            |
+| `themeScript`      | `string` | Inline script that applies the saved theme before paint           |
 | `root`             | `string` | Relative or absolute path to the site root                        |
 | `metadata`         | `object` | Full page metadata (frontmatter, path, heading, etc.)             |
 | `config`           | `object` | The resolved web generator configuration                          |
@@ -312,8 +276,9 @@ Since the template supports arbitrary JS expressions, you can use conditionals a
 
 ```html
 <title>${title}</title>
-<link rel="stylesheet" href="${root}styles.css" />
-<script type="importmap">
-  ${importMap}
-</script>
+<script type="module" src="${entrypoint}"></script>
 ```
+
+Vite processes each populated template as an HTML entry. It replaces the
+virtual `entrypoint` with the hashed client script and injects that page's
+stylesheets and module preloads in their required order.

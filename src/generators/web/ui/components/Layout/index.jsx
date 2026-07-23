@@ -19,7 +19,7 @@ import SideBar from '#theme/Sidebar';
  */
 export default ({ metadata, headings, readingTime, children }) => (
   <>
-    {CLIENT && <Banner />}
+    {!import.meta.env.SSR && <Banner />}
     <NavBar metadata={metadata} />
     <Article>
       <SideBar metadata={metadata} />

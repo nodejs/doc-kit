@@ -13,6 +13,9 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  * - Client-side JavaScript with code splitting
  * - Bundled CSS styles
  *
+ * Vite writes the complete static site to the configured output directory;
+ * this terminal generator does not return an in-memory copy.
+ *
  * `jsx-ast` serializes each page's JSX AST to a `code` string inside its worker,
  * so this generator only ever handles small `{ data, code }` items — the heavy
  * ASTs (notably the giant `all` page) never reach the main thread. Bundling and
@@ -48,8 +51,8 @@ export default createLazyGenerator({
     // Project-specific document `<head>` contents. `meta` and `links` are
     // arrays of attribute bags (boolean `true` renders a valueless attribute,
     // e.g. `crossorigin`); `html` holds arbitrary raw markup as an escape
-    // hatch. Structural/theme tags (`og:type`, font preconnects/stylesheets)
-    // are hardcoded in the template instead.
+    // hatch. Structural/theme tags such as `og:type` are hardcoded in the
+    // template instead.
     head: {
       meta: [
         {
@@ -81,11 +84,6 @@ export default createLazyGenerator({
       html: [],
     },
 
-    // Options spread directly into LightningCSS when bundling CSS, e.g.
-    // `visitor`, `customAtRules`, `targets`, or `drafts`. See
-    // https://lightningcss.dev/transforms.html for the full set.
-    lightningcss: {},
-
     imports: {
       '#theme/Logo': '@node-core/ui-components/Common/NodejsLogo',
       '#theme/Navigation': join(import.meta.dirname, './ui/components/NavBar'),
@@ -100,8 +98,8 @@ export default createLazyGenerator({
     // see the web generator README for the shape and shorthand.
     components: {},
 
-    // Options merged into the Rolldown build (client and server), e.g. extra
-    // `plugins`. See the README for the merge semantics.
-    rolldown: {},
+    // Vite options merged into both client and SSR builds. The generator owns
+    // the fields that connect its virtual entries and output.
+    vite: {},
   }),
 });

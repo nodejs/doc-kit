@@ -1,12 +1,9 @@
+/// <reference types="vite/client" />
+
 import { GlobalConfiguration } from '../../../utils/configuration/types';
 import { MetadataEntry } from '../../metadata/types';
 import { Configuration } from '../types';
 import { SemVer } from 'semver';
-
-declare global {
-  const SERVER: boolean;
-  const CLIENT: boolean;
-}
 
 declare module '#theme/config' {
   // From global configuration
