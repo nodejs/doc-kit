@@ -1,6 +1,6 @@
 'use strict';
 
-import { DEPRECATION_HEADING_REGEX } from '../constants.mjs';
+import { DEPRECATION_HEADING_REGEX } from '../../metadata/constants.mjs';
 
 /**
  * Creates a stateful slugger for legacy anchor links.
