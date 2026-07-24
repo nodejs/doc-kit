@@ -12,6 +12,9 @@ export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /^(?!-)(?!-+$).*?(--+)/g, to: '-' }, // Replace multiple hyphens
 ];
 
+// Matches Node.js deprecation headings such as "DEP0001: Description".
+export const DEPRECATION_HEADING_REGEX = /^(DEP\d+):/;
+
 // These are regular expressions used to determine if a given Markdown heading
 // is a specific type of API Doc entry (e.g., Event, Class, Method, etc)
 // and to extract the inner content of said Heading to be used as the API doc entry name
