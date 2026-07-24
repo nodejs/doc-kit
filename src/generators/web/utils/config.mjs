@@ -70,9 +70,10 @@ export function buildLanguageDisplayNameMap() {
  * per-page resolution by components).
  *
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input - JSX AST entries with .data metadata
+ * @param {boolean} [server=false] - Whether the module is for the server build.
  * @returns {string} JavaScript source code string with named exports
  */
-export default function createConfigSource(input) {
+export default function createConfigSource(input, server = false) {
   const { version: configVersion, ...config } = getConfig('web');
 
   const editURL = populate(config.editURL, {
@@ -93,13 +94,14 @@ export default function createConfigSource(input) {
         'virtualImports',
         'components',
         'head',
-        'vite',
+        'bundler',
       ]
     ),
     version: configVersion,
     versions: buildVersionEntries(config.changelog, pageURL),
     editURL,
     pages: buildPageList(input),
+    server,
   };
 
   const lines = Object.entries(exports).map(

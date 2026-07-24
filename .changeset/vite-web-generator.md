@@ -2,4 +2,5 @@
 '@node-core/doc-kit': minor
 ---
 
-Rebuild the `web` generator around Vite 8.1
+Make the `web` generator bundler-neutral through a custom adapter contract,
+with Vite 8.1 provided as the default adapter.

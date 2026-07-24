@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { jsx, toJs } from 'estree-util-to-js';
@@ -9,6 +9,7 @@ import { jsx, toJs } from 'estree-util-to-js';
 import { setConfig } from '../../../utils/configuration/index.mjs';
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
+import { createViteBundler } from '../bundlers/vite.mjs';
 import { generate } from '../generate.mjs';
 
 /**
@@ -64,7 +65,7 @@ const createTestConfiguration = async context => {
 };
 
 describe('web generate', () => {
-  it('writes Vite HTML entries and omits View As links for synthetic pages', async context => {
+  it('writes bundled HTML and omits View As links for synthetic pages', async context => {
     const { output } = await createTestConfiguration(context);
     const fs = createEntry('fs', 'File system');
     fs.path = '/api/fs';
@@ -128,7 +129,7 @@ describe('web generate', () => {
 
   it('applies configured Vite plugins', async context => {
     const { config, output } = await createTestConfiguration(context);
-    config.web.vite = {
+    config.web.bundler = createViteBundler({
       plugins: [
         {
           name: 'test-html-transform',
@@ -143,12 +144,65 @@ describe('web generate', () => {
           },
         },
       ],
-    };
+    });
 
     const fs = createEntry('fs', 'File system');
     await generate([toCodeItem(await buildContent([fs], fs))]);
     const html = await readFile(join(output, 'fs.html'), 'utf8');
 
     assert.match(html, /name=vite-plugin/);
+  });
+
+  it('uses a custom bundler adapter for server and client output', async context => {
+    const { config, output } = await createTestConfiguration(context);
+    const calls = [];
+
+    config.web.bundler = {
+      getEntryId(api) {
+        calls.push(`entry:${api}`);
+        return `/custom/${api}.js`;
+      },
+
+      async render({ entries, virtualImports, config: receivedConfig }) {
+        calls.push('server');
+        assert.strictEqual(receivedConfig, config.web);
+        assert.ok(entries.has('fs.jsx'));
+        assert.match(virtualImports['#theme/config'], /export const pages/);
+        assert.match(
+          virtualImports['#theme/config'],
+          /export const server = true;/
+        );
+
+        return new Map([
+          ['fs', '<article data-custom-ssr>Custom SSR</article>'],
+        ]);
+      },
+
+      async build({ entries, virtualImports, pages, config: receivedConfig }) {
+        calls.push('client');
+        assert.strictEqual(receivedConfig, config.web);
+        assert.ok(entries.has('fs.jsx'));
+        assert.match(
+          virtualImports['#theme/config'],
+          /export const server = false;/
+        );
+
+        await Promise.all(
+          [...pages].map(async ([fileName, html]) => {
+            const path = join(output, fileName);
+            await mkdir(dirname(path), { recursive: true });
+            await writeFile(path, html);
+          })
+        );
+      },
+    };
+
+    const fs = createEntry('fs', 'File system');
+    await generate([toCodeItem(await buildContent([fs], fs))]);
+    const html = await readFile(join(output, 'fs.html'), 'utf8');
+
+    assert.match(html, /data-custom-ssr/);
+    assert.match(html, /src="\/custom\/fs\.js"/);
+    assert.deepStrictEqual(calls, ['server', 'entry:fs', 'client']);
   });
 });

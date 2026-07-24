@@ -105,7 +105,7 @@ export default () => {
         false
       ),
 
-      // Export a renderer that the temporary Vite SSR build can import.
+      // Export a renderer that the server bundler can execute.
       `export default () => renderToStringAsync(${componentCode});`,
     ].join('\n');
   };

@@ -1,9 +1,11 @@
 # `web` Generator
 
-The `web` generator transforms JSX AST entries into complete web bundles. Vite
-builds server-rendered HTML and hashed client-side JavaScript, CSS, and imported
-assets, then writes the complete static site to `output`. The generator is
-output-only and does not return an in-memory copy of its HTML or CSS.
+The `web` generator transforms JSX AST entries into complete web bundles. Its
+bundler adapter builds server-rendered HTML and client-side JavaScript, CSS, and
+imported assets, then writes the complete static site to `output`. Vite is the
+default adapter, but projects can supply an adapter for webpack or another
+bundler. The generator is output-only and does not return an in-memory copy of
+its HTML or CSS.
 
 ## Configuring
 
@@ -11,7 +13,7 @@ The `web` generator accepts the following configuration options:
 
 | Name              | Type         | Default                                       | Description                                                                                                 |
 | ----------------- | ------------ | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `output`          | `string`     | Required                                      | The directory where HTML and Vite's hashed client output are written                                        |
+| `output`          | `string`     | Required                                      | The directory where HTML and bundled client output are written                                              |
 | `templatePath`    | `string`     | `'template.html'`                             | Path to the HTML template file                                                                              |
 | `project`         | `string`     | `'Node.js'`                                   | Project name used in page titles and the version selector                                                   |
 | `title`           | `string`     | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)                                           |
@@ -21,9 +23,9 @@ The `web` generator accepts the following configuration options:
 | `remoteConfigUrl` | `string`     | `'https://nodejs.org/site.json'`              | URL fetched client-side at runtime for remote site config (currently used to power the announcement banner) |
 | `head`            | `object`     | See below                                     | Configurable `<meta>`, `<link>`, and raw markup for the document head                                       |
 | `imports`         | `object`     | See below                                     | Object mapping `#theme/` aliases to component paths for customization                                       |
-| `virtualImports`  | `object`     | `{}`                                          | Additional virtual module mappings merged into both Vite builds                                             |
+| `virtualImports`  | `object`     | `{}`                                          | Additional virtual module mappings supplied to the server and client builds                                 |
 | `components`      | `object`     | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below)                                    |
-| `vite`            | `UserConfig` | `{}`                                          | Vite configuration merged into the client and SSR builds (see below)                                        |
+| `bundler`         | `WebBundler` | Vite adapter                                  | Adapter that renders server entries and writes the client and HTML output (see below)                       |
 
 ### `head`
 
@@ -69,20 +71,74 @@ export default {
 > via `head`, including `og:title` (which mirrors the per-page title) and
 > `og:type`. The UI stylesheet bundles its fonts locally.
 
-### Custom Vite options
+### Bundler adapters
 
-The `vite` object is merged into both production builds. This supports Vite
-plugins, aliases, `define`, asset options, and native Lightning CSS settings.
-Use `import.meta.env.SSR` inside application code or plugin transforms when
-behavior must differ between the SSR and browser builds.
+The `bundler` option accepts a small Doc Kit adapter rather than configuration
+for a particular build system:
+
+| Method       | Responsibility                                                                            |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| `getEntryId` | Return the module identifier placed in the populated HTML for an API name                 |
+| `render`     | Bundle and execute the server `entries`, returning a `Map` of API name to rendered HTML   |
+| `build`      | Bundle the client `entries`, process the populated `pages`, and write the complete output |
+
+Both `render` and `build` receive `{ entries, virtualImports, config }`; `build`
+also receives `pages`. Entry maps use `${api}.jsx` keys, rendered server results
+use `api` keys, and page maps use output-relative HTML file names. `config` is
+the resolved web configuration.
+
+The adapter must compile the generated Preact JSX and CSS imports and resolve
+the supplied theme aliases and virtual modules. The generated `#theme/config`
+module exports `server` as `true` for the server build and `false` for the
+client build.
+
+A webpack integration can live entirely in project configuration without
+adding webpack to Doc Kit:
+
+```js
+// webpack-bundler.mjs
+export const createWebpackBundler = webpackOptions => ({
+  getEntryId: api => `virtual:doc-kit/client/${api}.jsx`,
+
+  async render({ entries, virtualImports, config }) {
+    // Materialize or load the in-memory modules, run webpack's server target,
+    // execute each emitted entry, and return Map<api, renderedHtml>.
+  },
+
+  async build({ entries, virtualImports, pages, config }) {
+    // Run webpack's browser target, inject its emitted assets into `pages`,
+    // and write the HTML and assets to config.output.
+  },
+});
+```
 
 ```js
 // doc-kit.config.mjs
+import { createWebpackBundler } from './webpack-bundler.mjs';
+
+export default {
+  web: {
+    bundler: createWebpackBundler({
+      // Project-owned webpack configuration.
+    }),
+  },
+};
+```
+
+### Vite adapter
+
+When `bundler` is omitted, the generator imports and uses
+`createViteBundler()` automatically. To customize Vite, import the adapter
+directly and pass Vite's `UserConfig` to it:
+
+```js
+// doc-kit.config.mjs
+import { createViteBundler } from '@node-core/doc-kit/src/generators/web/bundlers/vite.mjs';
 import myVitePlugin from './my-vite-plugin.mjs';
 
 export default {
   web: {
-    vite: {
+    bundler: createViteBundler({
       plugins: [myVitePlugin()],
       define: {
         'process.env.ANALYTICS_ID': JSON.stringify('UA-XXXXX'),
@@ -99,7 +155,7 @@ export default {
           },
         },
       },
-    },
+    }),
   },
 };
 ```
@@ -112,12 +168,13 @@ those fields are replaced after configuration is merged. User plugins are
 registered after the generator's virtual-module plugin; other Vite options are
 preserved.
 
-Vite manifests are optional. Set `web.vite.build.manifest` to `true` or a file
-name when another tool needs one. The generated HTML already references the
-correct hashed scripts, stylesheets, imported assets, and module preloads.
+Vite manifests are optional. Pass `build: { manifest: true }` or a manifest file
+name to `createViteBundler` when another tool needs one. The generated HTML
+already references the correct hashed scripts, stylesheets, imported assets,
+and module preloads.
 
 Function-valued plugins and hooks are supported because the `web` generator
-runs on the main thread and does not serialize this configuration to a worker.
+runs on the main thread and does not serialize the bundler to a worker.
 
 ### Default `imports`
 
@@ -218,6 +275,7 @@ All scalar (non-object) configuration values are automatically exported. The def
 | `baseURL`                | `string`                       | Base URL for the documentation site (used when `useAbsoluteURLs` is `true`)                                           |
 | `languageDisplayNameMap` | `Map<string, string>`          | Shiki language alias → display name map for code blocks                                                               |
 | `remoteConfigUrl`        | `string`                       | Mirrors the configured `remoteConfigUrl` (fetched client-side by `RemoteLoadableBanner` to load announcement banners) |
+| `server`                 | `boolean`                      | Whether the current bundle is the server build                                                                        |
 
 ### Usage in custom components
 
@@ -264,7 +322,7 @@ The HTML template file (set via `templatePath`) uses JavaScript template literal
 | ------------------ | -------- | ----------------------------------------------------------------- |
 | `title`            | `string` | Fully resolved page title (e.g. `'File system \| Node.js v22.x'`) |
 | `dehydrated`       | `string` | Server-rendered HTML for the page content                         |
-| `entrypoint`       | `string` | Virtual Vite module for this page's client hydration              |
+| `entrypoint`       | `string` | Adapter-provided module identifier for this page's hydration      |
 | `speculationRules` | `string` | Speculation rules JSON for prefetching                            |
 | `themeScript`      | `string` | Inline script that applies the saved theme before paint           |
 | `root`             | `string` | Relative or absolute path to the site root                        |
@@ -279,6 +337,6 @@ Since the template supports arbitrary JS expressions, you can use conditionals a
 <script type="module" src="${entrypoint}"></script>
 ```
 
-Vite processes each populated template as an HTML entry. It replaces the
-virtual `entrypoint` with the hashed client script and injects that page's
-stylesheets and module preloads in their required order.
+The configured adapter processes each populated page. It must replace or
+resolve `entrypoint`, include that page's scripts and stylesheets, and write the
+final HTML.

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
+import { server } from '#theme/config';
+
 /** @returns {'dark'|'light'} The current OS-level color scheme. */
 const getSystemTheme = () =>
   matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -29,7 +31,7 @@ const applySystemTheme = () => applyTheme('system');
 export const useTheme = () => {
   // Read stored preference once on mount; default to 'system'.
   const [pref, setPref] = useState(() =>
-    import.meta.env.SSR ? 'system' : (localStorage.getItem('theme') ?? 'system')
+    server ? 'system' : (localStorage.getItem('theme') ?? 'system')
   );
 
   // Apply theme on every preference change, and if 'system',
@@ -49,7 +51,7 @@ export const useTheme = () => {
   /** Updates the preference in both React state and localStorage. */
   const setTheme = useCallback(next => {
     setPref(next);
-    if (!import.meta.env.SSR) {
+    if (!server) {
       localStorage.setItem('theme', next);
     }
   }, []);
