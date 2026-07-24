@@ -27,14 +27,17 @@ const formatPercent = (base, diff) => {
     return 'n/a';
   }
 
-  const percent = (diff / base) * 100;
-  return `${percent > 0 ? '+' : ''}${percent.toFixed(2)}%`;
+  return `${Math.abs((diff / base) * 100).toFixed(1)}%`;
 };
 
-const formatDiff = (base, head, formatter) => {
+const formatChange = (base, head, { increase, decrease }) => {
   const diff = head - base;
-  const value = `${diff > 0 ? '+' : ''}${formatter(diff)}`;
-  return `${value} (${formatPercent(base, diff)})`;
+
+  if (diff === 0) {
+    return 'unchanged';
+  }
+
+  return `${formatPercent(base, diff)} ${diff > 0 ? increase : decrease}`;
 };
 
 const readBenchmark = async directory => {
@@ -53,24 +56,16 @@ const readBenchmark = async directory => {
 
 const METRICS = [
   {
-    label: 'Elapsed time',
+    label: 'Generation time',
     value: benchmark => benchmark.elapsedSeconds,
     format: formatSeconds,
+    change: { increase: 'slower', decrease: 'faster' },
   },
   {
-    label: 'User CPU time',
-    value: benchmark => benchmark.userCpuSeconds,
-    format: formatSeconds,
-  },
-  {
-    label: 'System CPU time',
-    value: benchmark => benchmark.systemCpuSeconds,
-    format: formatSeconds,
-  },
-  {
-    label: 'Peak resident memory',
+    label: 'Peak memory',
     value: benchmark => benchmark.maxRssKiB * 1024,
     format: formatBytes,
+    change: { increase: 'higher', decrease: 'lower' },
   },
 ];
 
@@ -96,7 +91,7 @@ export const comparePerformance = async (
     return '';
   }
 
-  const rows = METRICS.map(({ label, value, format }) => {
+  const rows = METRICS.map(({ label, value, format, change }) => {
     const baseValue = value(base);
     const headValue = value(head);
 
@@ -104,13 +99,10 @@ export const comparePerformance = async (
       throw new TypeError(`Invalid ${label.toLowerCase()} benchmark value`);
     }
 
-    return `| ${label} | ${format(baseValue)} | ${format(headValue)} | ${formatDiff(baseValue, headValue, format)} |`;
+    return `- **${label}:** ${formatChange(baseValue, headValue, change)} (${format(baseValue)} → ${format(headValue)})`;
   });
 
-  return [
-    '### Performance',
-    '| Metric | Base | Head | Diff |',
-    '|-|-|-|-|',
-    ...rows,
-  ].join('\n');
+  return ['**Performance estimate** <sub>(single CI run)</sub>', ...rows].join(
+    '\n'
+  );
 };

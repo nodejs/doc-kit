@@ -1,16 +1,30 @@
 import assert from 'node:assert';
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BASE, BENCHMARK_FILE, HEAD, TITLE } from '../constants.mjs';
+import { BASE, HEAD, TITLE } from '../constants.mjs';
+import { listOutputFiles } from './files.mjs';
 import { comparePerformance } from './performance.mjs';
 
-const files = (await readdir(BASE)).filter(file => file !== BENCHMARK_FILE);
+const [baseFiles, headFiles] = await Promise.all(
+  [BASE, HEAD].map(directory => listOutputFiles(directory))
+);
+const baseFileSet = new Set(baseFiles);
+const headFileSet = new Set(headFiles);
+const files = [...new Set([...baseFiles, ...headFiles])];
 
 export const details = (summary, diff) =>
   `<details>\n<summary>${summary}</summary>\n\n\`\`\`diff\n${diff}\n\`\`\`\n\n</details>`;
 
 const getFileDiff = async file => {
+  if (!baseFileSet.has(file)) {
+    return `- \`${file}\` added`;
+  }
+
+  if (!headFileSet.has(file)) {
+    return `- \`${file}\` removed`;
+  }
+
   const basePath = join(BASE, file);
   const headPath = join(HEAD, file);
 
@@ -31,7 +45,10 @@ const filteredResults = results.filter(Boolean);
 
 const sections = [];
 if (filteredResults.length) {
-  sections.push('### Output', filteredResults.join('\n'));
+  sections.push(
+    `**Output:** ${filteredResults.length} ${filteredResults.length === 1 ? 'file differs' : 'files differ'}`,
+    filteredResults.join('\n')
+  );
 }
 
 const performance = await comparePerformance();
