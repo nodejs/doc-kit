@@ -5,6 +5,8 @@ import { pathToFileURL } from 'node:url';
 
 import {
   build as viteBuild,
+  defaultClientConditions,
+  defaultServerConditions,
   mergeConfig,
 } from 'vite';
 
@@ -159,6 +161,7 @@ export const createViteConfig = ({
   vite = {},
 }) => {
   const root = resolve(vite.root ?? process.cwd());
+  const conditions = server ? defaultServerConditions : defaultClientConditions;
 
   return {
     ...vite,
@@ -186,6 +189,7 @@ export const createViteConfig = ({
       { resolve: vite.resolve },
       {
         resolve: {
+          conditions: ['rolldown', ...conditions],
           dedupe: ['preact'],
 
           // Vite applies string aliases to matching package subpaths too.
@@ -227,6 +231,7 @@ export const createViteConfig = ({
       watch: null,
       lib: false,
 
+      ...(server ? { manifest: false } : {}),
       ssr: server,
 
       // Browser output follows the generator's minification setting. Temporary
@@ -256,6 +261,14 @@ export const createViteConfig = ({
             ...vite.ssr,
             external: [],
             noExternal: true,
+            resolve: {
+              ...vite.ssr?.resolve,
+              conditions: [
+                'rolldown',
+                ...defaultServerConditions,
+                ...(vite.ssr?.resolve?.conditions ?? []),
+              ],
+            },
           },
         }
       : {}),
