@@ -100,10 +100,8 @@
     "tinyglobby": "^0.2.17",
     "unified": "^11.0.5",
     "unist-builder": "^4.0.0",
-    "unist-util-find-after": "^5.0.0",
     "unist-util-position": "^5.0.0",
     "unist-util-remove": "^4.0.0",
-    "unist-util-select": "^5.1.0",
     "unist-util-visit": "^5.1.0",
     "yaml": "^2.9.0"
   }

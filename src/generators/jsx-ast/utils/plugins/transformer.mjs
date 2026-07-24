@@ -4,8 +4,9 @@ import { visit } from 'unist-util-visit';
 import { TAG_TRANSFORMS } from '../../constants.mjs';
 
 /**
- * Checks whether a HAST node is the generated GFM footnotes section.
- * @param {import('hast').Element} node
+ * Checks whether a node is the generated GFM footnotes section.
+ *
+ * @param {import('hast').Node} node
  */
 const isFootnotesSection = node =>
   node?.type === 'element' &&
@@ -14,11 +15,53 @@ const isFootnotesSection = node =>
     node.properties?.className?.includes('footnotes'));
 
 /**
- * Finds the generated page Layout node.
- * @param {import('hast').Root} tree
+ * Checks whether a node is the generated Layout component.
+ *
+ * @param {import('unist').Node} node
  */
-const findLayout = tree =>
-  tree.children.find(node => node.name === 'Layout' && node.children);
+const isLayout = node =>
+  node?.name === 'Layout' && Array.isArray(node.children);
+
+/**
+ * Adds responsive labels and wraps tables.
+ *
+ * @param {import('hast').Element} table
+ * @param {import('unist').Parent | undefined} parent
+ * @param {number | undefined} index
+ */
+const transformTable = (table, parent, index) => {
+  const thead = table.children.find(node => node.tagName === 'thead');
+
+  if (thead?.children?.[0]?.children) {
+    const headers = thead.children[0].children.map(toString);
+    const tbody = table.children.find(node => node.tagName === 'tbody');
+
+    if (tbody?.children) {
+      for (const row of tbody.children) {
+        for (const [cellIndex, cell] of (row.children ?? []).entries()) {
+          if (cell.tagName === 'td') {
+            cell.properties ??= {};
+            cell.properties['data-label'] = headers[cellIndex];
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Wrap <table> in a <div class="overflow-container">.
+   *
+   * Site styles rely on this wrapper for horizontal scrolling.
+   */
+  if (parent && index !== undefined) {
+    parent.children[index] = {
+      type: 'element',
+      tagName: 'div',
+      properties: { className: ['overflow-container'] },
+      children: [table],
+    };
+  }
+};
 
 /**
  * @template {import('unist').Node} T
@@ -26,50 +69,62 @@ const findLayout = tree =>
  * @returns {T}
  */
 const transformer = tree => {
-  visit(tree, 'element', (node, index, parent) => {
-    node.tagName = TAG_TRANSFORMS[node.tagName] || node.tagName;
+  let layout = null;
 
-    // Wrap <table> in a <div class="table-container">, and apply responsive
-    // data attributes
+  /**
+   * Transform element nodes and locate Layout.
+   *
+   * We intentionally visit every node because MDX JSX nodes
+   * are not HAST "element" nodes.
+   */
+  visit(tree, (node, index, parent) => {
+    /**
+     * Find Layout regardless of node type.
+     */
+    if (isLayout(node)) {
+      layout = node;
+    }
+
+    /**
+     * Only HAST elements have tagName.
+     */
+    if (node.type !== 'element') {
+      return;
+    }
+
+    /**
+     * Normalize HTML tags.
+     */
+    const transformedTag = TAG_TRANSFORMS[node.tagName];
+
+    if (transformedTag) {
+      node.tagName = transformedTag;
+    }
+
+    /**
+     * Tables need special handling.
+     */
     if (node.tagName === 'table') {
-      if (parent) {
-        parent.children[index] = {
-          type: 'element',
-          tagName: 'div',
-          properties: { className: ['overflow-container'] },
-          children: [node],
-        };
-      }
-
-      // Not every table will have a header, so only do this on tables
-      // with them.
-      const thead = node.children.find(el => el.tagName === 'thead');
-
-      if (thead) {
-        // TODO(@avivkeller): These are only strings afaict, so a `toString` dependency
-        // might not actually be needed.
-        const headers = thead.children[0].children.map(toString);
-        const tbody = node.children.find(el => el.tagName === 'tbody');
-
-        visit(
-          tbody,
-          node => node.tagName === 'td',
-          (node, index) => (node.properties['data-label'] = headers[index])
-        );
-      }
+      transformTable(node, parent, index);
     }
   });
 
-  const index = tree.children.findLastIndex(isFootnotesSection);
+  /**
+   * Find generated footnotes directly among root children.
+   *
+   * This is faster and more reliable than looking during
+   * the recursive traversal because footnotes are always
+   * generated at the document root.
+   */
+  const footnotesIndex = tree.children.findLastIndex(isFootnotesSection);
 
-  if (index !== -1) {
-    const [section] = tree.children.splice(index, 1);
-    const layout = findLayout(tree);
+  if (footnotesIndex !== -1) {
+    const [footnotes] = tree.children.splice(footnotesIndex, 1);
 
     if (layout) {
-      layout.children.push(section);
+      layout.children.push(footnotes);
     } else {
-      tree.children.push(section);
+      tree.children.push(footnotes);
     }
   }
 };
@@ -77,6 +132,6 @@ const transformer = tree => {
 /**
  * Transforms elements in a syntax tree by replacing tag names according to the mapping.
  *
- * Also moves any generated root section into its proper location in the AST.
+ * Also moves generated footnotes sections into Layout.
  */
 export default () => transformer;

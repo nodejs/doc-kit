@@ -39,4 +39,76 @@ describe('jsx-ast transformer', () => {
     assert.equal(tree.children.includes(footnotes), false);
     assert.equal(layout.children.at(-1), footnotes);
   });
+
+  it('wraps tables in an overflow container and adds responsive labels', () => {
+    const table = {
+      type: 'element',
+      tagName: 'table',
+      properties: {},
+      children: [
+        {
+          type: 'element',
+          tagName: 'thead',
+          properties: {},
+          children: [
+            {
+              type: 'element',
+              tagName: 'tr',
+              properties: {},
+              children: [
+                {
+                  type: 'element',
+                  tagName: 'th',
+                  properties: {},
+                  children: [{ type: 'text', value: 'Name' }],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'element',
+          tagName: 'tbody',
+          properties: {},
+          children: [
+            {
+              type: 'element',
+              tagName: 'tr',
+              properties: {},
+              children: [
+                {
+                  type: 'element',
+                  tagName: 'td',
+                  properties: {},
+                  children: [{ type: 'text', value: 'Alice' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const tree = {
+      type: 'root',
+      children: [table],
+    };
+
+    transformer()(tree);
+
+    const wrapper = tree.children[0];
+
+    assert.equal(wrapper.tagName, 'div');
+    assert.deepEqual(wrapper.properties.className, ['overflow-container']);
+
+    const transformedTable = wrapper.children[0];
+
+    assert.equal(transformedTable.tagName, 'table');
+    assert.equal(
+      transformedTable.children[1].children[0].children[0].properties[
+        'data-label'
+      ],
+      'Name'
+    );
+  });
 });

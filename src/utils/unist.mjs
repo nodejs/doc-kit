@@ -3,73 +3,88 @@
 import { pointEnd, pointStart } from 'unist-util-position';
 
 /**
- * Escapes HTML entities ("<" and ">") in a string
- * @param {string} string The string
+ * Escapes HTML entities in a string.
+ *
+ * @param {string} value
+ * @returns {string}
  */
-const escapeHTMLEntities = string =>
-  string.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const escapeHTMLEntities = value =>
+  value.replace(/[<>]/g, character => (character === '<' ? '&lt;' : '&gt;'));
 
 /**
- * Extracts text content from a node recursively
+ * Converts a node tree back into its source-like string representation.
  *
- * @param {import('unist').Node} node The Node to be transformed into a string
- * @param {boolean} [escape] Escape HTML entities ("<", ">")?
- * @returns {string} The transformed Node as a string
+ * @param {import('unist').Node} node
+ * @param {boolean} [escape]
+ * @returns {string}
  */
 export const transformNodeToString = (node, escape) => {
   switch (node.type) {
     case 'inlineCode':
       return `\`${escape ? escapeHTMLEntities(node.value) : node.value}\``;
+
     case 'typeAnnotation':
       return `{${escape ? escapeHTMLEntities(node.value) : node.value}}`;
+
     case 'strong':
       return `**${transformNodesToString(node.children, escape)}**`;
+
     case 'emphasis':
       return `_${transformNodesToString(node.children, escape)}_`;
-    default: {
+
+    default:
       if (node.children) {
         return transformNodesToString(node.children, escape);
       }
 
-      const string = node.value?.replace(/\n/g, ' ') || '';
+      if (!node.value) {
+        return '';
+      }
 
-      // Replace line breaks (\n) with spaces to keep text in a single line
-      return escape ? escapeHTMLEntities(string) : string;
-    }
+      // eslint-disable-next-line no-case-declarations
+      const value = node.value.replace(/\n/g, ' ');
+
+      return escape ? escapeHTMLEntities(value) : value;
   }
 };
 
 /**
- * This utility allows us to join children Nodes into one
- * and transfor them back to what their source would look like
+ * Joins child nodes into their source-like string representation.
  *
- * @param {Array<import('unist').Parent & import('unist').Literal>} nodes Nodes to parsed and joined
- * @param {boolean} [escape] Escape HTML entities ("<", ">")?
- * @returns {string} The parsed and joined nodes as a string
+ * @param {Array<import('unist').Node>} nodes
+ * @param {boolean} [escape]
+ * @returns {string}
  */
 export const transformNodesToString = (nodes, escape) => {
-  const mappedChildren = nodes.map(node => transformNodeToString(node, escape));
+  let result = '';
 
-  return mappedChildren.join('');
+  for (const node of nodes) {
+    result += transformNodeToString(node, escape);
+  }
+
+  return result;
 };
 
 /**
- * This method is an utility that allows us to conditionally invoke/call a callback
- * based on test conditions related to a Node's position relative to another one
- * being before or not the other Node
+ * Calls a callback when nodeA appears after nodeB.
  *
- * NOTE: Not yet used, but probably going to be used by the JSON generator.
- *
- * @param {import('unist').Node | undefined} nodeA The Node to be used as a position reference to check against
- * the other Node. If the other Node is before this one, the callback will be called.
- * @param {import('unist').Node | undefined} nodeB The Node to be checked against the position of the first Node
- * @param {(nodeA: import('unist').Node, nodeB: import('unist').Node) => void} callback The callback to be called
+ * @param {import('unist').Node | undefined} nodeA
+ * @param {import('unist').Node | undefined} nodeB
+ * @param {(nodeA: import('unist').Node, nodeB: import('unist').Node) => void} callback
  */
 export const callIfBefore = (nodeA, nodeB, callback) => {
+  if (!nodeA || !nodeB) {
+    return;
+  }
+
   const positionA = pointEnd(nodeA);
   const positionB = pointStart(nodeB);
 
-  if (positionA && positionB && positionA.line > positionB.line) {
+  if (!positionA || !positionB) {
+    return;
+  }
+
+  if (positionA.line > positionB.line) {
     callback(nodeA, nodeB);
   }
 };

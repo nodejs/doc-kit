@@ -9,35 +9,34 @@ const DOLLAR_SIGN = '$'.charCodeAt(0);
  * (and represents EOF as `null`).
  *
  * @param {import('micromark-util-types').Code} code
+ * @returns {boolean}
  */
 const isLineEnding = code => code !== null && code < -2;
 
 /**
- * A `{` directly after `$` is prose about template literals, not a type
- * annotation.
+ * A `{` immediately following `$` belongs to a template literal (`${...}`),
+ * not a type annotation.
  *
  * @param {import('micromark-util-types').Code} code
+ * @returns {boolean}
  */
-const previous = code => code !== DOLLAR_SIGN;
+const previousNotDollar = code => code !== DOLLAR_SIGN;
 
 /**
- * Tokenizes a balanced `{...}` span as a single `typeAnnotation` token.
+ * Tokenizes a balanced `{...}` span as a `typeAnnotation`.
  *
  * The outer braces become `typeAnnotationMarker` tokens; everything between
- * them becomes `typeAnnotationValue` chunks (one per line). An unbalanced or
- * empty span fails the construct, so the `{` falls back to literal text.
+ * them becomes one or more `typeAnnotationValue` tokens (split on line
+ * endings). Empty (`{}`) and unbalanced spans fail the construct so the `{`
+ * falls back to plain text.
  *
  * @type {import('micromark-util-types').Tokenizer}
  */
 function tokenizeTypeAnnotation(effects, ok, nok) {
-  // Nesting depth of inner `{`/`}` pairs (the wrapping pair is not counted)
   let depth = 0;
-  // `{}` (no content at all) must not become an annotation
   let hasContent = false;
 
   /**
-   * At the opening `{`.
-   *
    * @type {import('micromark-util-types').State}
    */
   const start = code => {
@@ -46,16 +45,13 @@ function tokenizeTypeAnnotation(effects, ok, nok) {
     effects.consume(code);
     effects.exit('typeAnnotationMarker');
 
-    return between;
+    return beforeValue;
   };
 
   /**
-   * At a position where a value chunk may start: right after the opening
-   * brace or after an interior line ending.
-   *
    * @type {import('micromark-util-types').State}
    */
-  const between = code => {
+  const beforeValue = code => {
     if (code === null) {
       return nok(code);
     }
@@ -69,7 +65,7 @@ function tokenizeTypeAnnotation(effects, ok, nok) {
       effects.consume(code);
       effects.exit('lineEnding');
 
-      return between;
+      return beforeValue;
     }
 
     effects.enter('typeAnnotationValue');
@@ -78,8 +74,6 @@ function tokenizeTypeAnnotation(effects, ok, nok) {
   };
 
   /**
-   * Inside a value chunk.
-   *
    * @type {import('micromark-util-types').State}
    */
   const value = code => {
@@ -89,14 +83,16 @@ function tokenizeTypeAnnotation(effects, ok, nok) {
       (code === RIGHT_CURLY_BRACE && depth === 0)
     ) {
       effects.exit('typeAnnotationValue');
-
-      return between(code);
+      return beforeValue(code);
     }
 
-    if (code === LEFT_CURLY_BRACE) {
-      depth++;
-    } else if (code === RIGHT_CURLY_BRACE) {
-      depth--;
+    switch (code) {
+      case LEFT_CURLY_BRACE:
+        depth++;
+        break;
+      case RIGHT_CURLY_BRACE:
+        depth--;
+        break;
     }
 
     hasContent = true;
@@ -106,8 +102,6 @@ function tokenizeTypeAnnotation(effects, ok, nok) {
   };
 
   /**
-   * At the closing `}`.
-   *
    * @type {import('micromark-util-types').State}
    */
   const finish = code => {
@@ -133,7 +127,7 @@ export const typeAnnotationSyntax = () => ({
     [LEFT_CURLY_BRACE]: {
       name: 'typeAnnotation',
       tokenize: tokenizeTypeAnnotation,
-      previous,
+      previous: previousNotDollar,
     },
   },
 });
