@@ -3,11 +3,6 @@ import { MetadataEntry } from '../../metadata/types';
 import { Configuration } from '../types';
 import { SemVer } from 'semver';
 
-declare global {
-  const SERVER: boolean;
-  const CLIENT: boolean;
-}
-
 declare module '#theme/config' {
   // From global configuration
   export const repository: GlobalConfiguration['repository'];
@@ -34,6 +29,7 @@ declare module '#theme/config' {
   export const pages: Array<[string, string]>;
   export const languageDisplayNameMap: Map<string[], string>;
   export const remoteConfigUrl: string;
+  export const server: boolean;
 }
 
 // Omit Primitives from Metadata

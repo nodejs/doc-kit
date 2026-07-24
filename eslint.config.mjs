@@ -10,7 +10,11 @@ export default defineConfig([
   importX.flatConfigs.recommended,
   react.configs.recommended,
   {
-    ignores: ['out/', 'src/generators/api-links/__tests__/fixtures/'],
+    ignores: [
+      'www/out',
+      'out/',
+      'src/generators/api-links/__tests__/fixtures/',
+    ],
   },
   {
     files: ['**/*.{mjs,jsx,js}'],
@@ -97,10 +101,6 @@ export default defineConfig([
     languageOptions: {
       globals: {
         ...globals.browser,
-        // SERVER and CLIENT denote server-only and client-only
-        // codepaths in our web generator
-        CLIENT: 'readonly',
-        SERVER: 'readonly',
       },
       ecmaVersion: 'latest',
     },

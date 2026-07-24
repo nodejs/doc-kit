@@ -1,18 +1,24 @@
-import { randomUUID } from 'node:crypto';
-import { createRequire } from 'node:module';
-
-import { transform } from 'lightningcss-wasm';
-
-import bundleCode from './bundle.mjs';
-import { createChunkedRequire } from './chunks.mjs';
 import createConfigSource from './config.mjs';
 import createASTBuilder from './generate.mjs';
 import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import { populate } from '../../../utils/configuration/templates.mjs';
-import { minifyHTML } from '../../../utils/html-minifier.mjs';
+import { resolveBundler } from '../bundlers/index.mjs';
 import { SPECULATION_RULES } from '../constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
+
+/**
+ * Creates the virtual imports for one bundle target.
+ *
+ * @param {Array<{ data: import('../../metadata/types').MetadataEntry }>} sidebarEntries
+ * @param {Record<string, string>} virtualImports
+ * @param {boolean} server
+ * @returns {Record<string, string>}
+ */
+const createVirtualImports = (sidebarEntries, virtualImports, server) => ({
+  ...virtualImports,
+  '#theme/config': createConfigSource(sidebarEntries, server),
+});
 
 /**
  * Populates a template string by evaluating it as a JavaScript template literal,
@@ -114,40 +120,8 @@ export function createCodeConverter() {
 }
 
 /**
- * Bundles and executes server-side code, returning dehydrated HTML pages.
- *
- * @param {Map<string, string>} serverCodeMap - Map of fileName to server-side JavaScript code.
- * @param {ReturnType<import('node:module').createRequire>} requireFn - Node.js require function for external packages.
- * @param {Object} virtualImports - virtual imports to pass to Rolldown
- * @returns {{ pages: Map<string, string>, css: string }}
- */
-async function executeServerCode(serverCodeMap, requireFn, virtualImports) {
-  // Bundle all server-side code, which may produce code-split chunks
-  const { chunks, css } = await bundleCode(serverCodeMap, virtualImports, {
-    server: true,
-  });
-
-  const entryChunks = chunks.filter(c => c.isEntry);
-  const otherChunks = chunks.filter(c => !c.isEntry);
-
-  // Create enhanced require function that can resolve code-split chunks
-  const enhancedRequire = createChunkedRequire(otherChunks, requireFn);
-
-  const pages = new Map();
-
-  // Execute each bundled entry and collect dehydrated HTML results
-  for (const chunk of entryChunks) {
-    const executedFunction = new Function('require', chunk.code);
-    const dehydratedHtml = await executedFunction(enhancedRequire);
-    pages.set(chunk.fileName, dehydratedHtml);
-  }
-
-  return { pages, css };
-}
-
-/**
- * Bundles pre-converted JSX code into complete HTML pages, client JS bundles,
- * and CSS. Conversion (JSX AST → code) happens upstream via
+ * Bundles pre-converted JSX code into complete HTML pages and client assets.
+ * Conversion (JSX AST → code) happens upstream via
  * {@link createCodeConverter} so the heavy ASTs are already discarded; this
  * step needs every entry together for code-splitting and the shared sidebar.
  *
@@ -166,18 +140,17 @@ export async function processBundles({
   template,
 }) {
   const config = getConfig('web');
-  const requireFn = createRequire(import.meta.url);
-  const virtualImports = {
-    '#theme/config': createConfigSource(sidebarEntries),
-    ...config.virtualImports,
-  };
+  const bundler = await resolveBundler(config.bundler);
 
-  // Bundle server and client code in parallel. Both need all entries for
-  // code-splitting, but are independent of each other.
-  const [serverBundle, clientBundle] = await Promise.all([
-    executeServerCode(serverCodeMap, requireFn, virtualImports),
-    bundleCode(clientCodeMap, virtualImports),
-  ]);
+  const serverPages = await bundler.render({
+    entries: serverCodeMap,
+    virtualImports: createVirtualImports(
+      sidebarEntries,
+      config.virtualImports,
+      true
+    ),
+    config,
+  });
 
   const titleSuffix = populate(config.title, {
     ...config,
@@ -189,38 +162,43 @@ export async function processBundles({
   // template authors avoid nested template-literal escaping.
   const head = buildHead(config.head);
 
-  // Render final HTML pages
-  const results = await Promise.all(
-    datas.map(async data => {
+  // Render the templates with the client identifiers supplied by the adapter.
+  // The adapter then owns scripts, stylesheets, preloads, and imported assets.
+  const pages = new Map(
+    datas.map(data => {
       const root = resolvePageRoot(data);
       const title = data.title ?? data.heading.data.name;
+      const fileName = `${data.path.replace(/^\/+/, '')}.html`;
 
-      // Replace template placeholders with actual content
-      const renderedHtml = populateWithEvaluation(template, {
-        title: title
-          ? titleSuffix
-            ? `${title} | ${titleSuffix}`
-            : title
-          : titleSuffix,
-        dehydrated: serverBundle.pages.get(`${data.api}.js`) ?? '',
-        importMap: clientBundle.importMap?.replaceAll('/', root) ?? '',
-        entrypoint: `${data.api}.js?${randomUUID()}`,
-        speculationRules: SPECULATION_RULES,
-        themeScript: THEME_SCRIPT,
-        root,
-        metadata: data,
-        config,
-        head,
-      });
-
-      return { html: await minifyHTML(renderedHtml), path: data.path };
+      return [
+        fileName,
+        populateWithEvaluation(template, {
+          title: title
+            ? titleSuffix
+              ? `${title} | ${titleSuffix}`
+              : title
+            : titleSuffix,
+          dehydrated: serverPages.get(data.api) ?? '',
+          entrypoint: bundler.getEntryId(data.api),
+          speculationRules: SPECULATION_RULES,
+          themeScript: THEME_SCRIPT,
+          root,
+          metadata: data,
+          config,
+          head,
+        }),
+      ];
     })
   );
 
-  const { code: minifiedCSS } = transform({
-    code: Buffer.from(`${serverBundle.css}\n${clientBundle.css}`),
-    minify: true,
+  await bundler.build({
+    entries: clientCodeMap,
+    virtualImports: createVirtualImports(
+      sidebarEntries,
+      config.virtualImports,
+      false
+    ),
+    pages,
+    config,
   });
-
-  return { results, chunks: clientBundle.chunks, css: minifiedCSS };
 }

@@ -1,7 +1,5 @@
-import type { BundleAsyncOptions, CustomAtRules } from 'lightningcss-wasm';
-import type { BuildOptions } from 'rolldown';
-
 import type { JSXContent } from '../jsx-ast/utils/buildContent.mjs';
+import type { GlobalConfiguration } from '../../utils/configuration/types';
 
 // An attribute bag rendered into an HTML tag. `true` becomes a valueless
 // attribute (e.g. `crossorigin`); `false`/`null`/`undefined` are omitted.
@@ -27,19 +25,40 @@ export type HeadConfig = {
   html: Array<string>;
 };
 
+export type ResolvedWebConfiguration = Configuration & GlobalConfiguration;
+
+export type ServerBundleOptions = {
+  // Server-side JSX programs keyed by `${api}.jsx`.
+  entries: Map<string, string>;
+  // In-memory modules that the bundler must make available to the entries.
+  virtualImports: Record<string, string>;
+  config: ResolvedWebConfiguration;
+};
+
+export type ClientBundleOptions = {
+  // Client-side JSX programs keyed by `${api}.jsx`.
+  entries: Map<string, string>;
+  // In-memory modules that the bundler must make available to the entries.
+  virtualImports: Record<string, string>;
+  // Populated HTML keyed by its output-relative file name.
+  pages: Map<string, string>;
+  config: ResolvedWebConfiguration;
+};
+
+export type WebBundler = {
+  // Returns the module identifier embedded in one page's client script tag.
+  getEntryId(api: string): string;
+  // Returns rendered HTML keyed by API name.
+  render(options: ServerBundleOptions): Promise<Map<string, string>>;
+  // Bundles the client entries and writes the complete site.
+  build(options: ClientBundleOptions): Promise<void>;
+};
+
 export type Configuration = {
   templatePath: string;
   title: string;
   useAbsoluteURLs: boolean;
   head: HeadConfig;
-  // Options spread into LightningCSS while bundling CSS. `filename`, `code`,
-  // `cssModules`, and `resolver` are managed by the generator and ignored here.
-  lightningcss: Partial<
-    Omit<
-      BundleAsyncOptions<CustomAtRules>,
-      'filename' | 'code' | 'cssModules' | 'resolver'
-    >
-  >;
   imports: Record<string, string>;
   virtualImports: Record<string, string>;
   // Maps a JSX tag name to its import, enabling JSX-in-MDX. The string shorthand
@@ -47,12 +66,11 @@ export type Configuration = {
   // `JSX_IMPORTS`. Pair each entry with a matching `imports` alias to resolve the
   // `source` to a real module path.
   components: Record<string, JSXImportConfig | string>;
-  // Options merged into the Rolldown build for the client and server bundles.
-  // See the web generator README for the merge semantics.
-  rolldown: Partial<BuildOptions>;
+  // Optional bundler adapter. When omitted, the Vite adapter is loaded lazily.
+  bundler?: WebBundler;
 };
 
 export type Generator = GeneratorMetadata<
   Configuration,
-  Generate<Array<JSXContent>, Promise<Array<{ html: string; css: string }>>>
+  Generate<Array<JSXContent>, Promise<void>>
 >;

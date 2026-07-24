@@ -70,9 +70,10 @@ export function buildLanguageDisplayNameMap() {
  * per-page resolution by components).
  *
  * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input - JSX AST entries with .data metadata
+ * @param {boolean} [server=false] - Whether the module is for the server build.
  * @returns {string} JavaScript source code string with named exports
  */
-export default function createConfigSource(input) {
+export default function createConfigSource(input, server = false) {
   const { version: configVersion, ...config } = getConfig('web');
 
   const editURL = populate(config.editURL, {
@@ -84,22 +85,23 @@ export default function createConfigSource(input) {
   const exports = {
     ...omitKeys(
       config,
-      // These are keys that are large, build-time only (e.g. the document head
-      // and CSS options), or not serializable (e.g. `lightningcss` visitor
-      // functions), so they are never exposed to client components.
+      // These are large or build-time-only keys, or may contain functions, so
+      // they are never exposed to client components.
       [
         'changelog',
         'index',
         'imports',
         'virtualImports',
+        'components',
         'head',
-        'lightningcss',
+        'bundler',
       ]
     ),
     version: configVersion,
     versions: buildVersionEntries(config.changelog, pageURL),
     editURL,
     pages: buildPageList(input),
+    server,
   };
 
   const lines = Object.entries(exports).map(
