@@ -7,7 +7,7 @@ import { createCodeConverter, processBundles } from './utils/processing.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
 
 /**
- * Main generation function that bundles per-page JSX code into web output.
+ * Main generation function that sends per-page JSX code to the web bundler.
  *
  * Receives `jsx-ast`'s output as `{ data, code }` items — the JSX AST was
  * already serialized to `code` in the jsx-ast worker, so no AST is held here.

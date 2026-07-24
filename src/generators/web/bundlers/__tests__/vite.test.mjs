@@ -11,7 +11,7 @@ import {
 import {
   createVirtualModulesPlugin,
   createViteConfig,
-  renderServerEntries,
+  render,
 } from '../vite.mjs';
 
 const output = join(tmpdir(), 'doc-kit-vite-test-output');
@@ -49,7 +49,7 @@ describe('Vite virtual modules', () => {
 
 describe('Vite configuration', () => {
   it('uses the generated client entries and configured output', () => {
-    getConfig('web').vite = {
+    const vite = {
       base: '/custom/',
       build: {
         outDir: 'custom-output',
@@ -65,6 +65,8 @@ describe('Vite configuration', () => {
       sources: new Map(),
       input,
       server: false,
+      config: getConfig('web'),
+      vite,
     });
 
     assert.strictEqual(config.base, './');
@@ -74,7 +76,7 @@ describe('Vite configuration', () => {
   });
 
   it('keeps the temporary SSR build self-contained', () => {
-    getConfig('web').vite = {
+    const vite = {
       ssr: {
         external: ['preact'],
         noExternal: false,
@@ -94,6 +96,8 @@ describe('Vite configuration', () => {
       input,
       server: true,
       serverOutDir: serverOutput,
+      config: getConfig('web'),
+      vite,
     });
 
     assert.strictEqual(config.build.ssr, true);
@@ -107,22 +111,23 @@ describe('Vite configuration', () => {
 
 describe('Vite SSR temporary output', () => {
   it('always removes temporary output after a renderer throws', async () => {
-    getConfig('web').vite = {};
     const temporaryDirectory = await mkdtemp(
       join(tmpdir(), 'doc-kit-vite-cleanup-test-')
     );
 
     await assert.rejects(
-      renderServerEntries(
-        new Map([
+      render({
+        entries: new Map([
           [
             'broken.jsx',
             'export default () => { throw new Error("render failed"); };',
           ],
         ]),
-        {},
-        async () => temporaryDirectory
-      ),
+        virtualImports: {},
+        config: getConfig('web'),
+        vite: {},
+        createTemporaryDirectory: async () => temporaryDirectory,
+      }),
       /render failed/
     );
 

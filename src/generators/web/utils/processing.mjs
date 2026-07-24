@@ -1,15 +1,24 @@
 import createConfigSource from './config.mjs';
 import createASTBuilder from './generate.mjs';
 import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
-import {
-  buildClientPages,
-  getClientEntryId,
-  renderServerEntries,
-} from './vite.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import { populate } from '../../../utils/configuration/templates.mjs';
+import { resolveBundler } from '../bundlers/index.mjs';
 import { SPECULATION_RULES } from '../constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
+
+/**
+ * Creates the virtual imports for one bundle target.
+ *
+ * @param {Array<{ data: import('../../metadata/types').MetadataEntry }>} sidebarEntries
+ * @param {Record<string, string>} virtualImports
+ * @param {boolean} server
+ * @returns {Record<string, string>}
+ */
+const createVirtualImports = (sidebarEntries, virtualImports, server) => ({
+  ...virtualImports,
+  '#theme/config': createConfigSource(sidebarEntries, server),
+});
 
 /**
  * Populates a template string by evaluating it as a JavaScript template literal,
@@ -131,14 +140,17 @@ export async function processBundles({
   template,
 }) {
   const config = getConfig('web');
-  const virtualImports = {
-    '#theme/config': createConfigSource(sidebarEntries),
-    ...config.virtualImports,
-  };
+  const bundler = await resolveBundler(config.bundler);
 
-  // The SSR build is written and executed as one complete temporary output
-  // because its entries can share chunks. It is removed before this returns.
-  const serverPages = await renderServerEntries(serverCodeMap, virtualImports);
+  const serverPages = await bundler.render({
+    entries: serverCodeMap,
+    virtualImports: createVirtualImports(
+      sidebarEntries,
+      config.virtualImports,
+      true
+    ),
+    config,
+  });
 
   const titleSuffix = populate(config.title, {
     ...config,
@@ -150,9 +162,8 @@ export async function processBundles({
   // template authors avoid nested template-literal escaping.
   const head = buildHead(config.head);
 
-  // Render the templates with virtual module entrypoints. Vite then consumes
-  // these pages as HTML entries and owns scripts, stylesheets, preloads, and
-  // imported assets.
+  // Render the templates with the client identifiers supplied by the adapter.
+  // The adapter then owns scripts, stylesheets, preloads, and imported assets.
   const pages = new Map(
     datas.map(data => {
       const root = resolvePageRoot(data);
@@ -168,7 +179,7 @@ export async function processBundles({
               : title
             : titleSuffix,
           dehydrated: serverPages.get(data.api) ?? '',
-          entrypoint: getClientEntryId(data.api),
+          entrypoint: bundler.getEntryId(data.api),
           speculationRules: SPECULATION_RULES,
           themeScript: THEME_SCRIPT,
           root,
@@ -180,5 +191,14 @@ export async function processBundles({
     })
   );
 
-  await buildClientPages(clientCodeMap, virtualImports, pages);
+  await bundler.build({
+    entries: clientCodeMap,
+    virtualImports: createVirtualImports(
+      sidebarEntries,
+      config.virtualImports,
+      false
+    ),
+    pages,
+    config,
+  });
 }

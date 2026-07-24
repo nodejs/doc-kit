@@ -4,17 +4,24 @@ import { basename, isAbsolute, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import {
-  build,
+  build as viteBuild,
   defaultClientConditions,
   defaultServerConditions,
   mergeConfig,
 } from 'vite';
 
-import getConfig from '../../../utils/configuration/index.mjs';
 import { minifyHTML } from '../../../utils/html-minifier.mjs';
 
 const VIRTUAL_PREFIX = 'virtual:doc-kit/';
 const RESOLVED_VIRTUAL_PREFIX = '\0doc-kit:';
+
+/**
+ * Returns the virtual Vite client entry imported by one HTML page.
+ *
+ * @param {string} api
+ * @returns {string}
+ */
+const getViteEntryId = api => `${VIRTUAL_PREFIX}client/${api}.jsx`;
 
 /**
  * Resolves relative theme aliases against Vite's configured project root.
@@ -73,14 +80,6 @@ export const createVirtualModulesPlugin = sources => {
 };
 
 /**
- * Returns the virtual client entry imported by one HTML page.
- *
- * @param {string} api
- * @returns {string}
- */
-export const getClientEntryId = api => `${VIRTUAL_PREFIX}client/${api}.jsx`;
-
-/**
  * Finalizes Vite's generated HTML before its normal write phase.
  *
  * @returns {import('vite').Plugin}
@@ -130,7 +129,7 @@ const createBuildEntries = (codeMap, environment) => {
     const name = basename(fileName, '.jsx');
     const id =
       environment === 'client'
-        ? getClientEntryId(name)
+        ? getViteEntryId(name)
         : `${VIRTUAL_PREFIX}server/${fileName}`;
 
     input[name] = id;
@@ -149,11 +148,18 @@ const createBuildEntries = (codeMap, environment) => {
  * @param {Record<string, string>|Array<string>} options.input
  * @param {boolean} options.server
  * @param {string} [options.serverOutDir]
+ * @param {import('../types').ResolvedWebConfiguration} options.config
+ * @param {import('vite').UserConfig} options.vite
  * @returns {import('vite').InlineConfig}
  */
-export const createViteConfig = ({ sources, input, server, serverOutDir }) => {
-  const webConfig = getConfig('web');
-  const vite = webConfig.vite ?? {};
+export const createViteConfig = ({
+  sources,
+  input,
+  server,
+  serverOutDir,
+  config: webConfig,
+  vite = {},
+}) => {
   const root = resolve(vite.root ?? process.cwd());
   const conditions = server ? defaultServerConditions : defaultClientConditions;
 
@@ -272,17 +278,22 @@ export const createViteConfig = ({ sources, input, server, serverOutDir }) => {
 /**
  * Builds and executes the server entries through Vite's SSR pipeline.
  *
- * @param {Map<string, string>} codeMap
- * @param {Record<string, string>} virtualImports
- * @param {() => Promise<string>} [createTemporaryDirectory]
+ * @param {object} options
+ * @param {Map<string, string>} options.entries
+ * @param {Record<string, string>} options.virtualImports
+ * @param {import('../types').ResolvedWebConfiguration} options.config
+ * @param {import('vite').UserConfig} options.vite
+ * @param {() => Promise<string>} [options.createTemporaryDirectory]
  * @returns {Promise<Map<string, string>>}
  */
-export const renderServerEntries = async (
-  codeMap,
+export const render = async ({
+  entries,
   virtualImports,
-  createTemporaryDirectory = () => mkdtemp(join(tmpdir(), 'doc-kit-vite-ssr-'))
-) => {
-  const { input, sources } = createBuildEntries(codeMap, 'server');
+  createTemporaryDirectory = () => mkdtemp(join(tmpdir(), 'doc-kit-vite-ssr-')),
+  config,
+  vite = {},
+}) => {
+  const { input, sources } = createBuildEntries(entries, 'server');
 
   for (const [id, code] of Object.entries(virtualImports)) {
     sources.set(id, code);
@@ -291,12 +302,14 @@ export const renderServerEntries = async (
   const temporaryDirectory = await createTemporaryDirectory();
 
   try {
-    await build(
+    await viteBuild(
       createViteConfig({
         sources,
         input,
         server: true,
         serverOutDir: temporaryDirectory,
+        config,
+        vite,
       })
     );
 
@@ -322,17 +335,26 @@ export const renderServerEntries = async (
  * Lets Vite transform the rendered pages as HTML entries. Vite injects their
  * hashed scripts, stylesheets, and module preloads, then writes the site.
  *
- * @param {Map<string, string>} codeMap
- * @param {Record<string, string>} virtualImports
- * @param {Map<string, string>} htmlPages
+ * @param {object} options
+ * @param {Map<string, string>} options.entries
+ * @param {Record<string, string>} options.virtualImports
+ * @param {Map<string, string>} options.pages
+ * @param {import('../types').ResolvedWebConfiguration} options.config
+ * @param {import('vite').UserConfig} options.vite
  * @returns {Promise<void>}
  */
-export const buildClientPages = async (codeMap, virtualImports, htmlPages) => {
-  const { sources } = createBuildEntries(codeMap, 'client');
-  const root = resolve(getConfig('web').vite?.root ?? process.cwd());
+export const build = async ({
+  entries,
+  virtualImports,
+  pages,
+  config,
+  vite = {},
+}) => {
+  const { sources } = createBuildEntries(entries, 'client');
+  const root = resolve(vite.root ?? process.cwd());
   const input = [];
 
-  for (const [fileName, html] of htmlPages) {
+  for (const [fileName, html] of pages) {
     const id = resolve(root, fileName);
     input.push(id);
     sources.set(id, html);
@@ -342,5 +364,35 @@ export const buildClientPages = async (codeMap, virtualImports, htmlPages) => {
     sources.set(id, code);
   }
 
-  await build(createViteConfig({ sources, input, server: false }));
+  await viteBuild(
+    createViteConfig({
+      sources,
+      input,
+      server: false,
+      config,
+      vite,
+    })
+  );
 };
+
+/**
+ * Creates the default Vite implementation of the web bundler contract.
+ *
+ * @param {import('vite').UserConfig} [options]
+ * @returns {import('../types').WebBundler}
+ */
+export const createViteBundler = (options = {}) => ({
+  getEntryId: getViteEntryId,
+  /**
+   * Runs the Vite server build.
+   *
+   * @param {import('../types').ServerBundleOptions} context
+   */
+  render: context => render({ ...context, vite: options }),
+  /**
+   * Runs the Vite client build.
+   *
+   * @param {import('../types').ClientBundleOptions} context
+   */
+  build: context => build({ ...context, vite: options }),
+});

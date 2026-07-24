@@ -13,8 +13,8 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  * - Client-side JavaScript with code splitting
  * - Bundled CSS styles
  *
- * Vite writes the complete static site to the configured output directory;
- * this terminal generator does not return an in-memory copy.
+ * The configured bundler writes the complete static site to the output
+ * directory; this terminal generator does not return an in-memory copy.
  *
  * `jsx-ast` serializes each page's JSX AST to a `code` string inside its worker,
  * so this generator only ever handles small `{ data, code }` items — the heavy
@@ -98,8 +98,7 @@ export default createLazyGenerator({
     // see the web generator README for the shape and shorthand.
     components: {},
 
-    // Vite options merged into both client and SSR builds. The generator owns
-    // the fields that connect its virtual entries and output.
-    vite: {},
+    // When omitted, the Vite adapter is loaded lazily during generation.
+    bundler: undefined,
   }),
 });

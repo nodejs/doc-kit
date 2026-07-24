@@ -1,5 +1,3 @@
-/// <reference types="vite/client" />
-
 import { GlobalConfiguration } from '../../../utils/configuration/types';
 import { MetadataEntry } from '../../metadata/types';
 import { Configuration } from '../types';
@@ -31,6 +29,7 @@ declare module '#theme/config' {
   export const pages: Array<[string, string]>;
   export const languageDisplayNameMap: Map<string[], string>;
   export const remoteConfigUrl: string;
+  export const server: boolean;
 }
 
 // Omit Primitives from Metadata
