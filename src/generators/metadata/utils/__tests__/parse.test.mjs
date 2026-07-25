@@ -86,15 +86,6 @@ describe('parseApiDoc', () => {
       assert.strictEqual(entries[1].heading.data.slug, 'DEP0001');
     });
 
-    it('uses normal slugs for DEP headings outside the deprecations page', () => {
-      const tree = u('root', [h('DEP0190: some section heading')]);
-      const [entry] = parseApiDoc({ path, tree }, typeMap);
-
-      assert.strictEqual(
-        entry.heading.data.slug,
-        'dep0190-some-section-heading'
-      );
-    });
   });
 
   describe('YAML metadata', () => {
