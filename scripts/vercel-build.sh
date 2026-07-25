@@ -11,7 +11,7 @@ node bin/cli.mjs generate \
   -t llms-txt \
   -t web \
   -i "./node/doc/api/*.md" \
-  --exclude "./node/doc/api/quic.md" \
+  --ignore "./node/doc/api/quic.md" \
   -o "./out" \
   -c "./node/CHANGELOG.md" \
   -v "$NODE_VERSION" \
