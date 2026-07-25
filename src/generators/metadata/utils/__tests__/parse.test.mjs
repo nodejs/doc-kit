@@ -79,15 +79,11 @@ describe('parseApiDoc', () => {
       assert.strictEqual(entry.heading.data.slug, 'DEP0001');
     });
 
-    it('deduplicates repeated DEP code slugs', () => {
-      const tree = u('root', [
-        h('DEP0001: first deprecated API'),
-        h('DEP0001: second deprecated API'),
-      ]);
+    it('does not suffix a code after a similarly named normal heading', () => {
+      const tree = u('root', [h('DEP0001'), h('DEP0001: deprecated API')]);
       const entries = parseApiDoc({ path: '/deprecations', tree }, typeMap);
 
-      assert.strictEqual(entries[0].heading.data.slug, 'DEP0001');
-      assert.strictEqual(entries[1].heading.data.slug, 'DEP0001-1');
+      assert.strictEqual(entries[1].heading.data.slug, 'DEP0001');
     });
 
     it('uses normal slugs for DEP headings outside the deprecations page', () => {

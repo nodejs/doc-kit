@@ -56,7 +56,7 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
     const deprecationHeading = DEPRECATION_HEADING_REGEX.exec(text);
 
     return api === 'deprecations' && deprecationHeading
-      ? nodeSlugger.slug(deprecationHeading[1]).toUpperCase()
+      ? deprecationHeading[1]
       : nodeSlugger.slug(text);
   };
 
