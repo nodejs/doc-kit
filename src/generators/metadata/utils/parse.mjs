@@ -55,9 +55,7 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
   const getHeadingSlug = text => {
     const deprecationHeading = DEPRECATION_HEADING_REGEX.exec(text);
 
-    return deprecationHeading
-      ? deprecationHeading[1]
-      : nodeSlugger.slug(text);
+    return deprecationHeading ? deprecationHeading[1] : nodeSlugger.slug(text);
   };
 
   // Get all Markdown Footnote definitions from the tree

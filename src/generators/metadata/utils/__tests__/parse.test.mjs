@@ -85,7 +85,6 @@ describe('parseApiDoc', () => {
 
       assert.strictEqual(entries[1].heading.data.slug, 'DEP0001');
     });
-
   });
 
   describe('YAML metadata', () => {
