@@ -29,7 +29,9 @@ const buildHeading = ({ data, children, depth }, index, parent, legacySlug) => {
     // to be converted into Rehype nodes
     ...children,
     // Legacy anchor alias to preserve old external links
-    createElement('span', createElement(`a#${legacySlug}`)),
+    ...(legacySlug === data.slug
+      ? []
+      : [createElement('span', createElement(`a#${legacySlug}`))]),
     // Creates the element that references the link to the heading
     // (The `#` anchor on the right of each Heading section)
     createElement(

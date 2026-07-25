@@ -69,6 +69,24 @@ describe('parseApiDoc', () => {
     });
   });
 
+  describe('deprecation headings', () => {
+    it('uses the DEP code as the slug on the deprecations page', () => {
+      const tree = u('root', [
+        h('DEP0001: http.OutgoingMessage.prototype.flush'),
+      ]);
+      const [entry] = parseApiDoc({ path: '/deprecations', tree }, typeMap);
+
+      assert.strictEqual(entry.heading.data.slug, 'DEP0001');
+    });
+
+    it('does not suffix a code after a similarly named normal heading', () => {
+      const tree = u('root', [h('DEP0001'), h('DEP0001: deprecated API')]);
+      const entries = parseApiDoc({ path: '/deprecations', tree }, typeMap);
+
+      assert.strictEqual(entries[1].heading.data.slug, 'DEP0001');
+    });
+  });
+
   describe('YAML metadata', () => {
     it('extracts added_in', () => {
       const tree = u('root', [h('fs'), yaml('added: v0.1.0')]);
