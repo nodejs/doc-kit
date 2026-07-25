@@ -1,6 +1,7 @@
 import { cpus } from 'node:os';
 import { isMainThread } from 'node:worker_threads';
 
+import { cosmiconfig } from 'cosmiconfig';
 import { coerce } from 'semver';
 
 import { CHANGELOG_URL, populate } from './templates.mjs';
@@ -9,8 +10,9 @@ import logger from '../../logger/index.mjs';
 import { parseChangelog, parseIndex } from '../../parsers/markdown.mjs';
 import { enforceArray } from '../array.mjs';
 import { leftHandAssign } from '../generators.mjs';
-import { importFromURL } from '../loaders.mjs';
 import { deepMerge, lazy } from '../misc.mjs';
+
+const configExplorer = cosmiconfig('doc-kit');
 
 /**
  * Get's the default configuration
@@ -52,13 +54,18 @@ export const getDefaultConfig = lazy(config =>
 );
 
 /**
- * Loads a configuration file from a URL or file path.
+ * Loads an explicit configuration file or searches for one using cosmiconfig.
  *
- * @param {string} filePath - The URL or file path to the configuration file
- * @returns {Promise<Partial<import('./types').Configuration>>} The imported configuration object, or an empty object if no path provided
+ * @param {string} [filePath] - The path to an explicit configuration file
+ * @returns {Promise<Partial<import('./types').Configuration>>} The loaded configuration object, or an empty object if none is found
  */
-export const loadConfigFile = filePath =>
-  filePath ? importFromURL(filePath) : {};
+export const loadConfigFile = async filePath => {
+  const result = filePath
+    ? await configExplorer.load(filePath)
+    : await configExplorer.search();
+
+  return result?.config ?? {};
+};
 
 /**
  * Transforms configuration values that need async processing or coercion.
@@ -122,7 +129,7 @@ export const assertRunnableOptions = config => {
   if (!config.target || !config.global?.input) {
     throw new Error(
       'Both a `target` and an `input` must be provided, either via ' +
-        '`--target`/`--input` or a `--config-file`. ' +
+        '`--target`/`--input` or a configuration file. ' +
         'Run `doc-kit generate --help` for usage.'
     );
   }
