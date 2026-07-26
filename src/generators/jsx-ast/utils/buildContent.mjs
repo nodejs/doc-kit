@@ -132,6 +132,11 @@ export const extractHeadingContent = content => {
  * @param {import('unist').Node|null} changeElement - The change history element, if available
  */
 export const createHeadingElement = (content, changeElement) => {
+  // If the heading is empty, we don't render it
+  if (!content.children || content.children.length === 0) {
+    return { type: 'text', value: '' };
+  }
+
   const { type, slug } = content.data;
 
   let headingContent = extractHeadingContent(content);
