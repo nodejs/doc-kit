@@ -117,8 +117,7 @@ reproduce literal output.
 A conforming [document][term-document] MUST contain elements in the following
 order. Items marked OPTIONAL MAY be omitted entirely.
 
-1. **Title heading** (REQUIRED) - Exactly one [ATX heading][cm-atx-heading]
-   at depth 1.
+1. **Title heading** (OPTIONAL) - An [ATX heading][cm-atx-heading] at depth 1.
 2. **[Simple directives][§6.2]** (OPTIONAL) - Zero or more
    [HTML comment][cm-html-comment] directives providing
    [document][term-document]-level metadata. These MUST immediately follow

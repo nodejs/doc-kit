@@ -87,7 +87,7 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
   // Handles the normalisation URLs that reference to API doc files with .md extension
   visit(tree, UNIST.isMarkdownUrl, node => visitMarkdownLink(node));
 
-  // If the document has no headings but it has content, we add a fake heading to the top
+  // If the document has no headings but it has content, we add a fake heading to the top, it will not be rendered
   if (headingNodes.length === 0 && tree.children.length > 0) {
     tree.children.unshift(createTree('heading', { depth: 1 }, []));
   }
