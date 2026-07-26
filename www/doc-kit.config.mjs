@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = dirname(fileURLToPath(import.meta.url));
 
 const { version } = JSON.parse(
-  readFileSync(join(ROOT, '..', 'package.json'), 'utf-8')
+  readFileSync(join(ROOT, '..', 'packages', 'core', 'package.json'), 'utf-8')
 );
 
 const REPOSITORY = 'nodejs/doc-kit';
@@ -15,7 +15,7 @@ const DESCRIPTION =
   'doc-kit is the documentation toolchain behind the Node.js API reference — ' +
   'a pipeline that turns API-shaped Markdown into HTML, JSON, man pages and more.';
 
-/** @type {import('../src/utils/configuration/types').Configuration} */
+/** @type {import('../packages/core/src/utils/configuration/types').Configuration} */
 export default {
   target: ['orama-db', 'web'],
 

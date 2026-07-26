@@ -13,7 +13,7 @@ export default defineConfig([
     ignores: [
       'www/out',
       'out/',
-      'src/generators/api-links/__tests__/fixtures/',
+      'packages/core/src/generators/api-links/__tests__/fixtures/',
     ],
   },
   {
@@ -58,7 +58,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/**/*.mjs', 'bin/**/*.mjs'],
+    files: ['packages/*/src/**/*.mjs', 'packages/*/bin/**/*.mjs'],
     plugins: {
       jsdoc,
     },
@@ -95,8 +95,8 @@ export default defineConfig([
   },
   {
     files: [
-      'src/generators/legacy-html/assets/*.js',
-      'src/generators/web/ui/**/*',
+      'packages/core/src/generators/legacy-html/assets/*.js',
+      'packages/core/src/generators/web/ui/**/*',
     ],
     languageOptions: {
       globals: {

@@ -3,8 +3,8 @@
   "exclude": [
     "eslint.config.mjs",
     "**/fixtures",
-    "src/generators/legacy-html/assets",
-    "src/generators/web/ui",
+    "packages/core/src/generators/legacy-html/assets",
+    "packages/core/src/generators/web/ui",
     "**/*.d.ts"
   ]
 }

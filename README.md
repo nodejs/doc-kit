@@ -36,7 +36,7 @@ $ npx doc-kit --help
 ```
 
 ```sh
-$ node bin/cli.mjs --help
+$ node packages/core/bin/cli.mjs --help
 ```
 
 ```

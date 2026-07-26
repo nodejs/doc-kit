@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
-import { comparePerformance } from '../../scripts/comparators/performance.mjs';
+import { comparePerformance } from '../comparators/performance.mjs';
 
 const benchmark = {
   elapsedSeconds: 2,
@@ -18,7 +18,7 @@ const benchmark = {
 
 const executeFile = promisify(execFile);
 const comparatorDirectory = fileURLToPath(
-  new URL('../../scripts/comparators/', import.meta.url)
+  new URL('../comparators/', import.meta.url)
 );
 
 const createDirectories = async t => {
