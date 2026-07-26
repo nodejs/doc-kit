@@ -5,6 +5,10 @@
 // and the mandatory `\|` inside GFM table cells must be decoded here.
 const CHARACTER_ESCAPE = /\\([!-/:-@[-`{-~])/g;
 
+// A single union separator, with any surrounding whitespace. Lookarounds
+// exclude `||` (logical OR in default-value prose).
+const UNION_SEPARATOR = /(?<!\|)\s*\|\s*(?!\|)/g;
+
 /**
  * Creates the mdast-util-from-markdown extension that compiles
  * `typeAnnotation` tokens into `{ type: 'typeAnnotation', value }` nodes.
@@ -48,7 +52,7 @@ export const typeAnnotationFromMarkdown = () => ({
         .replace(/\s+/g, ' ')
         .trim()
         .replace(CHARACTER_ESCAPE, '$1')
-        .replace(/(?<!\|)\s*\|\s*(?!\|)/g, ' | ');
+        .replace(UNION_SEPARATOR, ' | ');
 
       this.exit(token);
     },
