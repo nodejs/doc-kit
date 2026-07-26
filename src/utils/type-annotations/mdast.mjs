@@ -10,7 +10,8 @@ const CHARACTER_ESCAPE = /\\([!-/:-@[-`{-~])/g;
  * `typeAnnotation` tokens into `{ type: 'typeAnnotation', value }` nodes.
  *
  * The stored `value` is the canonical, single-line, unescaped TypeScript type
- * text; link offsets computed later are relative to it.
+ * text with union separators spaced (`A | B`); link offsets computed later
+ * are relative to it.
  *
  * @returns {import('mdast-util-from-markdown').Extension}
  */
@@ -46,7 +47,8 @@ export const typeAnnotationFromMarkdown = () => ({
       node.value = node.value
         .replace(/\s+/g, ' ')
         .trim()
-        .replace(CHARACTER_ESCAPE, '$1');
+        .replace(CHARACTER_ESCAPE, '$1')
+        .replace(/(?<!\|)\s*\|\s*(?!\|)/g, ' | ');
 
       this.exit(token);
     },

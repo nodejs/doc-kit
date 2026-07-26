@@ -28,8 +28,18 @@ describe('remarkTypeAnnotations', () => {
   it('parses multiple annotations in one paragraph', () => {
     assert.deepEqual(valuesIn('{string} and {Buffer|Blob} and {integer}'), [
       'string',
-      'Buffer|Blob',
+      'Buffer | Blob',
       'integer',
+    ]);
+  });
+
+  it('spaces union separators, without touching `||`', () => {
+    assert.deepEqual(valuesIn('Takes {string|URL} or {string  |  URL}.'), [
+      'string | URL',
+      'string | URL',
+    ]);
+    assert.deepEqual(valuesIn("Defaults to {req.url || '/'}."), [
+      "req.url || '/'",
     ]);
   });
 
@@ -62,7 +72,7 @@ describe('remarkTypeAnnotations', () => {
       '| `flag` | {string\\|number} |',
     ].join('\n');
 
-    assert.deepEqual(valuesIn(markdown), ['string|number']);
+    assert.deepEqual(valuesIn(markdown), ['string | number']);
   });
 
   it('normalizes interior line breaks to spaces', () => {
@@ -122,6 +132,6 @@ describe('remarkTypeAnnotations', () => {
       processor.parse('Returns: {Promise<Buffer|string>} on success.')
     );
 
-    assert.match(output, /\{Promise<Buffer\|string>\}/);
+    assert.match(output, /\{Promise<Buffer \| string>\}/);
   });
 });
