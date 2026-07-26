@@ -54,9 +54,11 @@ Commands:
 
 ### `generate`
 
-You must provide either `--target` (one or more generators to run) or
-`--config-file` (which supplies the targets). Running `generate` without either
-exits with an error pointing you to the help output.
+You must provide an input and at least one target through command-line options
+or a configuration file. Configuration is discovered automatically using
+`cosmiconfig`, or you can select a file explicitly with `--config-file`.
+Running `generate` without the required values exits with an error pointing you
+to the help output.
 
 ```
 Usage: @node-core/doc-kit generate [options]

@@ -1,16 +1,36 @@
 # Configuration
 
-`doc-kit`'s CLI supports a `--config-file` option, allowing for custom configuration files to be passed.
-These configuration files must be loadable via a `import()` call, so usually JSON or JavaScript files with default exports.
+`doc-kit` uses [`cosmiconfig`](https://github.com/cosmiconfig/cosmiconfig) to
+discover and load configuration. Run the CLI from your project directory and it
+will automatically look for a `doc-kit` property in `package.json`, rc files
+such as `.doc-kitrc.yml`, and module files such as `doc-kit.config.mjs`.
 
-By convention, this file is usually named `doc-kit.config.mjs` or `doc-kit.config.json`.
+Use `--config-file <path>` to load a specific file instead of searching.
 
 ## Configuration File Format
 
 Configuration files can be either:
 
-- **JavaScript/ESM** (`.mjs`, `.js` with `"type": "module"`)
+- **JavaScript** (`.js`, `.mjs`, `.cjs`)
+- **TypeScript** (`.ts`, when `typescript` is installed in the project)
 - **JSON** (`.json`)
+- **YAML** (`.yaml`, `.yml`, or an extensionless rc file)
+
+JavaScript and TypeScript configuration files export the configuration object.
+JSON and YAML files contain the object directly. A `package.json` configuration
+uses the `doc-kit` property:
+
+```json
+{
+  "doc-kit": {
+    "target": ["json"],
+    "global": {
+      "input": "doc/api/*.md",
+      "output": "out"
+    }
+  }
+}
+```
 
 ### Basic Example
 
@@ -94,10 +114,11 @@ export default {
 
 ## Configuration Merging
 
-Configurations are merged in the following order (earlier sources take precedence):
+Configurations are merged in the following order (higher sources take
+precedence):
 
-1. **Config file** (`--config-file`)
-2. **CLI options** (command-line arguments)
+1. **CLI options** (command-line arguments)
+2. **Configuration file** (discovered or selected with `--config-file`)
 3. **Default values** (built-in defaults)
 
 ## CLI Options Mapping

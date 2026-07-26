@@ -4,7 +4,12 @@ import { describe, it, mock, beforeEach } from 'node:test';
 // Mock dependencies
 const mockParseChangelog = mock.fn(async changelog => [changelog]);
 const mockParseIndex = mock.fn(async index => [index]);
-const mockImportFromURL = mock.fn(async () => ({}));
+const mockConfigSearch = mock.fn(async () => null);
+const mockConfigLoad = mock.fn(async () => null);
+const mockCosmiconfig = mock.fn(() => ({
+  search: mockConfigSearch,
+  load: mockConfigLoad,
+}));
 
 const createMockConfig = (overrides = {}) => ({
   global: {},
@@ -34,8 +39,8 @@ mock.module('../../../parsers/markdown.mjs', {
   },
 });
 
-mock.module('../../loaders.mjs', {
-  namedExports: { importFromURL: mockImportFromURL },
+mock.module('cosmiconfig', {
+  namedExports: { cosmiconfig: mockCosmiconfig },
 });
 
 const {
@@ -49,9 +54,12 @@ const {
 
 // Helper to reset all mocks
 const resetAllMocks = () => {
-  [mockParseChangelog, mockParseIndex, mockImportFromURL].forEach(m =>
-    m.mock.resetCalls()
-  );
+  [
+    mockParseChangelog,
+    mockParseIndex,
+    mockConfigSearch,
+    mockConfigLoad,
+  ].forEach(m => m.mock.resetCalls());
 };
 
 // Helper to count specific function calls
@@ -64,24 +72,20 @@ describe('config.mjs', () => {
   describe('loadConfigFile', () => {
     it('should load config from file path', async () => {
       const mockConfig = { custom: 'config' };
-      mockImportFromURL.mock.mockImplementationOnce(async () => mockConfig);
+      mockConfigLoad.mock.mockImplementationOnce(async filePath => ({
+        config: mockConfig,
+        filepath: filePath,
+      }));
 
       const result = await loadConfigFile('path/to/config.mjs');
 
       assert.deepStrictEqual(result, mockConfig);
-      assert.strictEqual(mockImportFromURL.mock.calls.length, 1);
+      assert.strictEqual(mockConfigLoad.mock.calls.length, 1);
       assert.strictEqual(
-        mockImportFromURL.mock.calls[0].arguments[0],
+        mockConfigLoad.mock.calls[0].arguments[0],
         'path/to/config.mjs'
       );
-    });
-
-    it('should return empty object for falsy paths', async () => {
-      for (const falsyValue of ['', null, undefined, 0, false]) {
-        const result = await loadConfigFile(falsyValue);
-        assert.deepStrictEqual(result, {});
-      }
-      assert.strictEqual(mockImportFromURL.mock.calls.length, 0);
+      assert.strictEqual(mockConfigSearch.mock.calls.length, 0);
     });
   });
 
@@ -156,8 +160,8 @@ describe('config.mjs', () => {
 
   describe('createRunConfiguration', () => {
     it('should let defined CLI options override the config file', async () => {
-      mockImportFromURL.mock.mockImplementationOnce(async () =>
-        createMockConfig({
+      mockConfigLoad.mock.mockImplementationOnce(async () => ({
+        config: createMockConfig({
           global: {
             input: 'custom-src/',
             output: 'config-dist/',
@@ -165,8 +169,9 @@ describe('config.mjs', () => {
           },
           target: ['html'],
           threads: 1,
-        })
-      );
+        }),
+        filepath: 'config.mjs',
+      }));
 
       const config = await createRunConfiguration({
         configFile: 'config.mjs',
@@ -188,15 +193,16 @@ describe('config.mjs', () => {
       const changelogUrl = 'https://example.com/changelog.md';
       const indexUrl = 'https://example.com/index.md';
 
-      mockImportFromURL.mock.mockImplementationOnce(async () =>
-        createMockConfig({
+      mockConfigLoad.mock.mockImplementationOnce(async () => ({
+        config: createMockConfig({
           global: {
             version: '20.0.0',
             changelog: changelogUrl,
             index: indexUrl,
           },
-        })
-      );
+        }),
+        filepath: 'config.mjs',
+      }));
 
       resetAllMocks(); // Clear calls from getDefaultConfig
       await createRunConfiguration({ configFile: 'config.mjs' });
@@ -231,16 +237,18 @@ describe('config.mjs', () => {
 
       assert.ok(config);
       assert.strictEqual(config.threads, 4);
-      assert.strictEqual(mockImportFromURL.mock.calls.length, 0);
+      assert.strictEqual(mockConfigLoad.mock.calls.length, 0);
+      assert.strictEqual(mockConfigSearch.mock.calls.length, 1);
     });
 
     it('should handle generator-specific overrides', async () => {
-      mockImportFromURL.mock.mockImplementationOnce(async () =>
-        createMockConfig({
+      mockConfigLoad.mock.mockImplementationOnce(async () => ({
+        config: createMockConfig({
           global: { version: '20.0.0' },
           json: { minify: false, version: '18.0.0' },
-        })
-      );
+        }),
+        filepath: 'config.mjs',
+      }));
 
       const config = await createRunConfiguration({
         configFile: 'config.mjs',
@@ -280,9 +288,10 @@ describe('config.mjs', () => {
 
     for (const { name, value, mockFn, configKey } of testCases) {
       it(`should transform ${name} only for strings`, async () => {
-        mockImportFromURL.mock.mockImplementationOnce(async () =>
-          createMockConfig({ global: { [configKey]: value } })
-        );
+        mockConfigLoad.mock.mockImplementationOnce(async () => ({
+          config: createMockConfig({ global: { [configKey]: value } }),
+          filepath: 'config.mjs',
+        }));
 
         resetAllMocks();
         await createRunConfiguration({ configFile: 'config.mjs' });

@@ -12,6 +12,7 @@ const { runGenerators } = createGenerator();
 
 /**
  * @typedef {Object} CLIOptions
+ * @property {string} configFile
  * @property {string[]} input
  * @property {string[]} target
  * @property {string[]} ignore
