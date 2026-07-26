@@ -18,7 +18,7 @@ export async function generate(input) {
   const template = await readFile(config.templatePath, 'utf-8');
 
   const apiDocsLinks = input
-    .filter(entry => entry.heading.depth === 1)
+    .filter(entry => entry.heading.depth === 1 && entry.heading.data.text)
     .map(entry => `- ${buildApiDocLink(entry, config)}`)
     .join('\n');
 
