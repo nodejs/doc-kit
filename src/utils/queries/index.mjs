@@ -41,8 +41,10 @@ export const UNIST = {
    * @param {import('@types/mdast').Text} text
    * @returns {boolean}
    */
-  isTextWithUnixManual: ({ type, value }) =>
-    type === 'text' && QUERIES.unixManualPage.test(value),
+  isTextWithUnixManual: ({ type, value }) => {
+    QUERIES.unixManualPage.lastIndex = 0; // Reset the lastIndex to ensure proper matching
+    return type === 'text' && QUERIES.unixManualPage.test(value);
+  },
 
   /**
    * @param {import('@types/mdast').Link} link
