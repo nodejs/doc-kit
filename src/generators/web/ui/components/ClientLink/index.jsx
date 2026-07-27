@@ -48,6 +48,26 @@ const isInternalLink = href => {
 const hasModifier = e =>
   e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
 
+/**
+ * Re-import and execute the new page's entrypoint module script after a DOM swap.
+ * By appending a timestamp query parameter, we bypass the browser's ES module
+ * evaluation cache, ensuring Preact runs `hydrate()` on the freshly injected `#root`.
+ * This natively re-attaches all synthetic event listeners (such as CodeBox copy
+ * buttons or CodeTabs switchers) without requiring browser storage or DOM hacks.
+ */
+function reinitPageFeatures(newDoc) {
+  const newScript = newDoc.querySelector('body script[type="module"][src]');
+  if (newScript && newScript.getAttribute('src')) {
+    const scriptUrl = new URL(
+      newScript.getAttribute('src'),
+      window.location.origin
+    );
+    // Bypass module evaluation cache so Preact re-hydrates on every navigation
+    scriptUrl.searchParams.set('t', Date.now());
+    import(/* @vite-ignore */ scriptUrl.toString()).catch(() => {});
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Core navigation function
 // ---------------------------------------------------------------------------
@@ -96,7 +116,11 @@ export const navigate = async (url, isPopState = false) => {
           newSidebar.scrollTop = sidebarScrollTop;
         }
 
-        // 5. Scroll to hash target if URL contains a hash, otherwise to top
+        // 5. Re-import the new page's module script to trigger Preact hydration
+        //    on the newly swapped DOM nodes (CodeBox copy buttons, tabs, etc.).
+        reinitPageFeatures(newDoc);
+
+        // 6. Scroll to hash target if URL contains a hash, otherwise to top
         const hash = new URL(url, window.location.origin).hash;
         if (hash) {
           const target = document.getElementById(hash.slice(1));
@@ -140,8 +164,16 @@ if (typeof window !== 'undefined' && !window.__dockit_client_nav) {
       return;
     }
 
-    // Handle hash-only links (#heading-id) manually because native hash
-    // navigation can break after innerHTML swap of #root
+    // ====== PICKER-HEADER LINKS ======
+    // .picker-header > a toggles legacy dropdown menus.
+    // Never intercept these – let the attached click listener handle them.
+    if (anchor.closest('.picker-header')) {
+      return;
+    }
+
+    // ====== HASH-ONLY LINKS ======
+    // Handle #heading-id links manually because native hash navigation can
+    // break after innerHTML swap of #root (the element may have moved).
     if (href && href.startsWith('#')) {
       const target = document.getElementById(href.slice(1));
       if (target) {

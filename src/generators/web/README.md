@@ -139,6 +139,7 @@ Since the template supports arbitrary JS expressions, you can use conditionals a
 - **View Transitions API Integration**: Automatically utilizes `document.startViewTransition()` if supported for smooth page crossfades.
 - **TOC & Hash Link Support**: Smoothly handles in-page anchor links (`#heading-id`) and Table of Contents (TOC) navigation via `scrollIntoView`.
 - **History & Popstate Handling**: Listens for `popstate` events to support browser Back and Forward buttons seamlessly.
+- **Dynamic Preact Re-Hydration**: Automatically identifies and imports the new page's entrypoint module script (`<script type="module" src="...">`) with a timestamp query parameter after swapping `#root`. This triggers Preact's `hydrate()` on the freshly injected DOM, seamlessly re-attaching all synthetic event listeners (e.g., `CodeBox` copy buttons, tab switchers, interactive pickers) without any manual DOM manipulation or storage dependencies.
 
 #### Usage
 
