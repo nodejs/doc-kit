@@ -20,3 +20,8 @@ node
 # Playwright
 playwright-report/
 test-results/
+
+# Local documentation (ignored)
+LOCAL_LINK_GUIDE.md
+WEB_GENERATOR_GUIDE.md
+CLIENT_LINK_GUIDE.md

@@ -3,6 +3,7 @@ import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
+import ClientLink, { navigate } from '../ClientLink';
 
 import { project, version, versions, pages } from '#theme/config';
 
@@ -17,7 +18,7 @@ const getMajorVersion = v => parseInt(String(v).match(/\d+/)?.[0] ?? '0', 10);
  * Redirect to a URL
  * @param {string} url URL
  */
-const redirect = url => (window.location.href = url);
+const redirect = url => navigate(url);
 
 /**
  * Sidebar component for MDX documentation with version selection and page navigation
@@ -49,7 +50,7 @@ export default ({ metadata }) => {
       pathname={`${metadata.basename}.html`}
       groups={[{ groupName: 'API Documentation', items }]}
       onSelect={redirect}
-      as={props => <a {...props} rel="prefetch" />}
+      as={ClientLink}
       title="Navigation"
     >
       <div>

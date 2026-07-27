@@ -128,3 +128,41 @@ Since the template supports arbitrary JS expressions, you can use conditionals a
   ${importMap}
 </script>
 ```
+
+### Client-Side SPA Navigation (`ClientLink` & `navigate`)
+
+`doc-kit` provides a built-in zero-reload navigation solution for static web output without requiring browser storage (`sessionStorage`/`localStorage`).
+
+#### Features
+- **Zero-Reload Navigation**: Intercepts internal link clicks (`<a>`), fetches target page HTML in the background, and updates the `#root` container.
+- **Scroll Position Preservation**: Retains the sidebar (`<aside>`) scroll position in module memory across page transitions without resetting or requiring storage APIs.
+- **View Transitions API Integration**: Automatically utilizes `document.startViewTransition()` if supported for smooth page crossfades.
+- **TOC & Hash Link Support**: Smoothly handles in-page anchor links (`#heading-id`) and Table of Contents (TOC) navigation via `scrollIntoView`.
+- **History & Popstate Handling**: Listens for `popstate` events to support browser Back and Forward buttons seamlessly.
+
+#### Usage
+
+##### 1. Using `ClientLink` in Custom Components
+Import `ClientLink` and pass it as the `as` prop to `<SideBar>` or use it directly as a drop-in replacement for `<a>`:
+
+```jsx
+import ClientLink, { navigate } from '@node-core/doc-kit/src/generators/web/ui/components/ClientLink/index.jsx';
+
+export default ({ metadata }) => (
+  <SideBar
+    pathname={`/learn${metadata.path.replace('/index', '')}`}
+    groups={sidebar}
+    onSelect={navigate}
+    as={ClientLink}
+    title="Navigation"
+  />
+);
+```
+
+##### 2. Programmatic Navigation with `navigate()`
+```javascript
+import { navigate } from '@node-core/doc-kit/src/generators/web/ui/components/ClientLink/index.jsx';
+
+// Navigate programmatically without a full page reload
+navigate('/learn/getting-started.html');
+```
