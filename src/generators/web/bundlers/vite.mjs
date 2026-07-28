@@ -127,6 +127,8 @@ const createBuildEntries = (codeMap, environment) => {
 
   for (const [fileName, code] of codeMap) {
     const name = basename(fileName, '.jsx');
+    // Client IDs must match entrypoints embedded in rendered HTML; server IDs
+    // only need a distinct virtual JSX path for the SSR build.
     const id =
       environment === 'client'
         ? getViteEntryId(name)
@@ -299,6 +301,9 @@ export const render = async ({
     sources.set(id, code);
   }
 
+  // Vite writes the compiled SSR renderers here so Node can import and execute
+  // them without mixing intermediate modules into the final site. The directory
+  // is removed after rendering
   const temporaryDirectory = await createTemporaryDirectory();
 
   try {
