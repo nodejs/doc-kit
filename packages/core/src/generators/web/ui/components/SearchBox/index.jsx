@@ -11,6 +11,27 @@ import styles from './index.module.css';
 import useOrama from '../../hooks/useOrama.mjs';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
+/**
+ * Dismisses the search modal the clicked hit sits in.
+ *
+ * @param {MouseEvent} event
+ */
+const closeSearchModal = event => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+    return;
+  }
+
+  event.currentTarget.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+  );
+};
+
+/**
+ * A search hit link that dismisses the modal when followed.
+ * @param {Object} props - Anchor props, as passed by `SearchHit`.
+ */
+const SearchHitLink = props => <a {...props} onClick={closeSearchModal} />;
+
 const SearchBox = ({ pathname }) => {
   const client = useOrama(pathname);
 
@@ -21,6 +42,7 @@ const SearchBox = ({ pathname }) => {
           noResultsTitle="No results found for"
           onHit={hit => (
             <SearchHit
+              as={SearchHitLink}
               document={{
                 ...hit.document,
                 href: relativeOrAbsolute(hit.document.href, pathname),

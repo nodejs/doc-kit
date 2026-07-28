@@ -1,6 +1,7 @@
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import { relativeOrAbsolute } from '../../packages/core/src/generators/web/ui/utils/relativeOrAbsolute.mjs';
+import { renderLabel } from '../../packages/core/src/generators/web/ui/utils/renderLabel.jsx';
 
 import { pages } from '#theme/config';
 
@@ -21,33 +22,6 @@ const GUIDE_ORDER = [
 ];
 
 const isGenerator = ([, path]) => path.startsWith('/generators/');
-
-/**
- * Page labels are raw heading text, so a heading like `` ## `web` Generator ``
- * arrives with its backticks intact. The sidebar renders the label verbatim,
- * showing the literal backticks. Split on backtick pairs and wrap the enclosed
- * spans in `<code>` so they render as inline code; labels without backticks pass
- * through as a plain string.
- *
- * @param {string} label
- * @returns {import('react').ReactNode}
- */
-const renderLabel = label => {
-  const segments = label.split('`');
-
-  if (segments.length === 1) {
-    return label;
-  }
-
-  // Odd-indexed segments sat between a pair of backticks.
-  return segments.map((segment, index) =>
-    index % 2 ? (
-      <code key={`code:${segment}`}>{segment}</code>
-    ) : (
-      <span key={`text:${segment}`}>{segment}</span>
-    )
-  );
-};
 
 /**
  * Orders the narrative pages by `GUIDE_ORDER`, leaving anything unlisted at the
