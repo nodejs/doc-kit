@@ -1,15 +1,13 @@
 'use strict';
 
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import { copyStaticAssets } from './utils/copying.mjs';
 import { createCodeConverter, processBundles } from './utils/processing.mjs';
 import getConfig from '../../utils/configuration/index.mjs';
-import { writeFile } from '../../utils/file.mjs';
 
 /**
- * Main generation function that bundles per-page JSX code into web output.
+ * Main generation function that sends per-page JSX code to the web bundler.
  *
  * Receives `jsx-ast`'s output as `{ data, code }` items — the JSX AST was
  * already serialized to `code` in the jsx-ast worker, so no AST is held here.
@@ -40,7 +38,7 @@ export async function generate(input) {
     .filter(data => data.synthetic !== true)
     .map(data => ({ data }));
 
-  const { results, css, chunks } = await processBundles({
+  await processBundles({
     serverCodeMap: converter.serverCodeMap,
     clientCodeMap: converter.clientCodeMap,
     datas,
@@ -48,19 +46,5 @@ export async function generate(input) {
     template,
   });
 
-  if (config.output) {
-    for (const { html, path } of results) {
-      await writeFile(join(config.output, `${path}.html`), html, 'utf-8');
-    }
-
-    for (const chunk of chunks) {
-      await writeFile(join(config.output, chunk.fileName), chunk.code, 'utf-8');
-    }
-
-    await writeFile(join(config.output, 'styles.css'), css, 'utf-8');
-
-    await copyStaticAssets(config);
-  }
-
-  return results.map(({ html }) => ({ html: html.toString(), css }));
+  await copyStaticAssets(config);
 }

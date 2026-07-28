@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { jsx, toJs } from 'estree-util-to-js';
@@ -6,6 +9,7 @@ import { jsx, toJs } from 'estree-util-to-js';
 import { setConfig } from '../../../utils/configuration/index.mjs';
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
+import { createViteBundler } from '../bundlers/vite.mjs';
 import { generate } from '../generate.mjs';
 
 /**
@@ -44,33 +48,50 @@ const createEntry = (api, name) => {
   };
 };
 
-describe('web generate', () => {
-  it('omits View As links for synthetic pages only', async () => {
-    await setConfig({});
+const createTestConfiguration = async context => {
+  const output = await mkdtemp(join(tmpdir(), 'doc-kit-web-test-'));
+  context.after(() => rm(output, { recursive: true, force: true }));
 
+  const config = await setConfig({
+    output,
+    version: 'v22.0.0',
+    changelog: [],
+    generators: {
+      web: {},
+    },
+  });
+
+  return { config, output };
+};
+
+describe('web generate', () => {
+  it('writes bundled HTML and omits View As links for synthetic pages', async context => {
+    const { output } = await createTestConfiguration(context);
     const fs = createEntry('fs', 'File system');
+    fs.path = '/api/fs';
     const notFoundPage = buildNotFoundPage();
     const contents = await Promise.all([
       buildContent([fs], fs),
       buildContent(notFoundPage.entries, notFoundPage.head),
     ]);
-    const input = contents.map(toCodeItem);
 
-    const [fsPage, notFoundResult] = await generate(input);
+    await generate(contents.map(toCodeItem));
 
-    assert.match(fsPage.html, /View As/);
-    assert.match(fsPage.html, /href=fs\.json/);
-    assert.match(fsPage.html, /href=fs\.md/);
+    const [fsHTML, notFoundHTML] = await Promise.all([
+      readFile(join(output, 'api/fs.html'), 'utf8'),
+      readFile(join(output, '404.html'), 'utf8'),
+    ]);
 
-    assert.doesNotMatch(notFoundResult.html, /View As/);
-    assert.doesNotMatch(notFoundResult.html, /href=404\.json/);
-    assert.doesNotMatch(notFoundResult.html, /href=404\.md/);
+    assert.match(fsHTML, /View As/);
+    assert.match(fsHTML, /href=fs\.json/);
+    assert.match(fsHTML, /href=fs\.md/);
+    assert.doesNotMatch(notFoundHTML, /View As/);
+    assert.match(fsHTML, /src=\.\.\/assets\//);
+    assert.match(notFoundHTML, /src=\.\/assets\//);
   });
 
-  it('renders the configurable head without hardcoded defaults', async () => {
-    // `setConfig` resolves generator defaults; mutate the live config to apply
-    // per-generator overrides (the same object `getConfig('web')` returns).
-    const config = await setConfig({});
+  it('renders the configurable head without hardcoded defaults', async context => {
+    const { config, output } = await createTestConfiguration(context);
     config.web.head = {
       meta: [
         { name: 'description', content: 'Custom project docs' },
@@ -81,18 +102,107 @@ describe('web generate', () => {
     };
 
     const fs = createEntry('fs', 'File system');
-    const [fsPage] = await generate([toCodeItem(await buildContent([fs], fs))]);
+    await generate([toCodeItem(await buildContent([fs], fs))]);
+    const html = await readFile(join(output, 'fs.html'), 'utf8');
 
-    assert.match(fsPage.html, /Custom project docs/);
-    assert.match(fsPage.html, /https:\/\/example\.com\/og\.png/);
-    assert.match(fsPage.html, /href=https:\/\/example\.com\/favicon\.ico/);
-    assert.match(fsPage.html, /content=#abcdef/);
+    assert.match(html, /Custom project docs/);
+    assert.match(html, /https:\/\/example\.com\/og\.png/);
+    assert.match(html, /href=https:\/\/example\.com\/favicon\.ico/);
+    assert.match(html, /content=#abcdef/);
+    assert.doesNotMatch(html, /nodejs\.org/);
+    assert.match(html, /property=og:type content=website/);
+  });
 
-    // Project-branding `head` config no longer leaks Node.js defaults.
-    assert.doesNotMatch(fsPage.html, /nodejs\.org/);
+  it('uses Vite base URLs for absolute client assets', async context => {
+    const { config, output } = await createTestConfiguration(context);
+    config.web.useAbsoluteURLs = true;
+    config.web.baseURL = 'https://example.com/docs';
 
-    // Structural/theme tags stay hardcoded in the template regardless.
-    assert.match(fsPage.html, /property=og:type content=website/);
-    assert.match(fsPage.html, /href=https:\/\/fonts\.googleapis\.com/);
+    const notFoundPage = buildNotFoundPage();
+    const content = await buildContent(notFoundPage.entries, notFoundPage.head);
+    await generate([toCodeItem(content)]);
+    const html = await readFile(join(output, '404.html'), 'utf8');
+
+    assert.match(html, /src=https:\/\/example\.com\/docs\/assets\//);
+    assert.match(html, /href=https:\/\/example\.com\/docs\/assets\//);
+  });
+
+  it('applies configured Vite plugins', async context => {
+    const { config, output } = await createTestConfiguration(context);
+    config.web.bundler = createViteBundler({
+      plugins: [
+        {
+          name: 'test-html-transform',
+          transformIndexHtml() {
+            return [
+              {
+                tag: 'meta',
+                attrs: { name: 'vite-plugin', content: 'enabled' },
+                injectTo: 'head',
+              },
+            ];
+          },
+        },
+      ],
+    });
+
+    const fs = createEntry('fs', 'File system');
+    await generate([toCodeItem(await buildContent([fs], fs))]);
+    const html = await readFile(join(output, 'fs.html'), 'utf8');
+
+    assert.match(html, /name=vite-plugin/);
+  });
+
+  it('uses a custom bundler adapter for server and client output', async context => {
+    const { config, output } = await createTestConfiguration(context);
+    const calls = [];
+
+    config.web.bundler = {
+      getEntryId(api) {
+        calls.push(`entry:${api}`);
+        return `/custom/${api}.js`;
+      },
+
+      async render({ entries, virtualImports, config: receivedConfig }) {
+        calls.push('server');
+        assert.strictEqual(receivedConfig, config.web);
+        assert.ok(entries.has('fs.jsx'));
+        assert.match(virtualImports['#theme/config'], /export const pages/);
+        assert.match(
+          virtualImports['#theme/config'],
+          /export const server = true;/
+        );
+
+        return new Map([
+          ['fs', '<article data-custom-ssr>Custom SSR</article>'],
+        ]);
+      },
+
+      async build({ entries, virtualImports, pages, config: receivedConfig }) {
+        calls.push('client');
+        assert.strictEqual(receivedConfig, config.web);
+        assert.ok(entries.has('fs.jsx'));
+        assert.match(
+          virtualImports['#theme/config'],
+          /export const server = false;/
+        );
+
+        await Promise.all(
+          [...pages].map(async ([fileName, html]) => {
+            const path = join(output, fileName);
+            await mkdir(dirname(path), { recursive: true });
+            await writeFile(path, html);
+          })
+        );
+      },
+    };
+
+    const fs = createEntry('fs', 'File system');
+    await generate([toCodeItem(await buildContent([fs], fs))]);
+    const html = await readFile(join(output, 'fs.html'), 'utf8');
+
+    assert.match(html, /data-custom-ssr/);
+    assert.match(html, /src="\/custom\/fs\.js"/);
+    assert.deepStrictEqual(calls, ['server', 'entry:fs', 'client']);
   });
 });
