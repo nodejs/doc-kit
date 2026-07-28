@@ -158,8 +158,8 @@ export const createRunConfiguration = async options => {
 
   if (process.arch === 'riscv64' && merged.threads > 1) {
     logger.warn(
-      `Using ${merged.threads} threads might cause failures when` +
-        'allocating wasm memory due to insufficient virtual address space' +
+      `Using ${merged.threads} threads might cause failures when ` +
+        'allocating wasm memory due to insufficient virtual address space ' +
         'on riscv64 with sv39. Please consider using only a single thread.'
     );
   }
