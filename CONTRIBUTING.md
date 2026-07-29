@@ -149,7 +149,7 @@ The steps below will give you a general idea of how to prepare your local enviro
 5. **Check code quality**
 
    ```bash
-   node --run format
+   node --run format:check
    node --run lint
    ```
 
@@ -317,7 +317,7 @@ This project uses automated code quality tools:
 
 ```bash
 # Format code
-node --run format # To apply changes, use `format:write`
+node --run format:write # To only check formatting, use `format:check`
 
 # Lint code
 node --run lint # To apply changes, use `lint:fix`
