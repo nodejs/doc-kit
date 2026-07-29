@@ -11,18 +11,7 @@ import { lazy } from './misc.mjs';
  * @param {Array<import('../generators/metadata/types').MetadataEntry>} nodes The API metadata Nodes to be grouped
  */
 export const groupNodesByModule = nodes => {
-  /** @type {Map<string, Array<import('../generators/metadata/types').MetadataEntry>>} */
-  const groupedNodes = new Map();
-
-  for (const node of nodes) {
-    if (!groupedNodes.has(node.api)) {
-      groupedNodes.set(node.api, []);
-    }
-
-    groupedNodes.get(node.api).push(node);
-  }
-
-  return groupedNodes;
+  return Map.groupBy(nodes, node => node.api);
 };
 
 /**
