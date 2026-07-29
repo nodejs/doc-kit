@@ -117,7 +117,7 @@ reproduce literal output.
 A conforming [document][term-document] MUST contain elements in the following
 order. Items marked OPTIONAL MAY be omitted entirely.
 
-1. **Title heading** (OPTIONAL) - An [ATX heading][cm-atx-heading] at depth 1.
+1. **Title heading** (OPTIONAL, RECOMMENDED) - An [ATX heading][cm-atx-heading] at depth 1.
 2. **[Simple directives][§6.2]** (OPTIONAL) - Zero or more
    [HTML comment][cm-html-comment] directives providing
    [document][term-document]-level metadata. These MUST immediately follow
@@ -173,7 +173,7 @@ NOT be used.
 
 #### 4.2.1. Depth 1
 
-The [document][term-document] title. Exactly one depth-1 heading MUST appear
+The [document][term-document] title. Exactly one depth-1 heading SHOULD appear
 per document.
 
 #### 4.2.2. Depth 2
