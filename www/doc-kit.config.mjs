@@ -28,7 +28,7 @@ const DESCRIPTION =
 
 /** @type {import('../packages/core/src/utils/configuration/types').Configuration} */
 export default {
-  target: ['orama-db', 'legacy-json', 'web'],
+  target: ['orama-db', 'legacy-json', 'html'],
 
   global: {
     // `www/content/` is assembled by `scripts/build-docs-content.mjs`.
@@ -55,7 +55,7 @@ export default {
     generateIndexPage: false,
   },
 
-  web: {
+  html: {
     project: 'doc-kit',
     title: '{project} documentation',
 

@@ -5,7 +5,7 @@ packages/core/src/generators/api-links/__tests__/fixtures/
 *.snapshot
 
 # Templates
-packages/core/src/generators/web/template.html
+packages/react/src/html/template.html
 
 # Output
 out/

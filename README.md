@@ -111,11 +111,11 @@ npx doc-kit generate \
 
 ### Redesigned
 
-To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling.vercel.app), use the `web` and `orama-db` (for search) generators.
+To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling.vercel.app), use the `html` and `orama-db` (for search) generators. These generators live in the separate [`@nodejs/doc-kit-generator-react`](packages/react) package, which must be installed alongside this one.
 
 ```sh
 npx doc-kit generate \
-  -t web \
+  -t html \
   -t orama-db \
   -i "path/to/node/doc/api/*.md" \
   -o out \

@@ -21,7 +21,7 @@ Raw Markdown Files
     ↓
   [jsx-ast] - Convert to JSX AST
     ↓
-  [web] - Generate HTML/CSS/JS bundles
+  [html] - Generate HTML/CSS/JS bundles
 ```
 
 Each generator declares its dependency using the `dependsOn` field, allowing automatic pipeline construction.
@@ -357,7 +357,7 @@ export default {
 
   description: 'Requires all input at once',
 
-  dependsOn: '@node-core/doc-kit/jsx-ast',
+  dependsOn: '@nodejs/doc-kit-generator-react/jsx-ast',
 
   generate,
 };

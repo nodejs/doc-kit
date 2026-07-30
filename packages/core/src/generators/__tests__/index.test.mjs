@@ -1,13 +1,25 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { allGenerators, publicGenerators } from '../index.mjs';
+import {
+  allGenerators,
+  deprecatedGenerators,
+  publicGenerators,
+} from '../index.mjs';
 import { loadGenerator, resolveGeneratorSpecifier } from '../loader.mjs';
 
 const validDependencies = Object.values(allGenerators);
 
+// Deprecated aliases intentionally have keys that differ from the
+// generator's name, so they are excluded from the name-match assertions.
+const currentGenerators = Object.fromEntries(
+  Object.entries(allGenerators).filter(
+    ([name]) => !(name in deprecatedGenerators)
+  )
+);
+
 const loadedGenerators = await Promise.all(
-  Object.entries(allGenerators).map(async ([name, specifier]) => [
+  Object.entries(currentGenerators).map(async ([name, specifier]) => [
     name,
     specifier,
     await loadGenerator(specifier),
@@ -48,6 +60,15 @@ describe('All Generators', () => {
         );
       }
     });
+  });
+
+  it('should resolve deprecated aliases to loadable generators', async () => {
+    for (const [name, specifier] of Object.entries(deprecatedGenerators)) {
+      assert.equal(resolveGeneratorSpecifier(name), specifier);
+
+      const generator = await loadGenerator(specifier);
+      assert.ok(generator.name, `Deprecated alias "${name}" must load`);
+    }
   });
 
   it('should have ast generator as a top-level generator with no dependencies', async () => {

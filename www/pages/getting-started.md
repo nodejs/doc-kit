@@ -48,12 +48,12 @@ that's fully customizable via [a configuration file][].
 
 ## Render the modern site
 
-The `web` target produces the server-rendered, client-hydrated site that
+The `html` target produces the server-rendered, client-hydrated site that
 [nodejs.org](https://nodejs.org) uses — and that this site is built with:
 
 ```bash
 npx doc-kit generate \
-  -t web \
+  -t html \
   -i "docs/*.md" \
   -o out
 ```
@@ -61,12 +61,12 @@ npx doc-kit generate \
 Pair it with `orama-db` to add search:
 
 ```bash
-npx doc-kit generate -t web -t orama-db -i "docs/*.md" -o out
+npx doc-kit generate -t html -t orama-db -i "docs/*.md" -o out
 ```
 
 ## Preview it locally
 
-The `web` output uses import maps and client-side hydration, so it must be
+The `html` output uses import maps and client-side hydration, so it must be
 served over HTTP — opening the files directly with `file://` will not work. Any
 static server will do the trick; for example:
 
@@ -78,9 +78,9 @@ Then open the printed URL (usually <http://localhost:3000>). The
 `legacy-html-all` output from earlier has no such requirement — `out/all.html`
 opens straight from disk.
 
-## Customize the `web` generator output
+## Customize the `html` generator output
 
-The power of the `web` generator comes from its customization hooks. Let's walk
+The power of the `html` generator comes from its customization hooks. Let's walk
 through a couple quick changes.
 
 Create a `doc-kit.config.mjs` file at the root of the project.
@@ -90,7 +90,7 @@ import { join } from 'node:path';
 
 /** @type {import('@node-core/doc-kit/src/utils/configuration/types').Configuration} */
 export default {
-  web: {
+  html: {
     project: 'My Project', // Project name used in page titles and the version selector
     remoteConfigUrl: '', // Suppress the Node.js default that sets the top banner based on Node.js news.
     head: {
@@ -130,7 +130,7 @@ experience, preserving core functionality.
 
 - Explore [Configuration](./configuration.html) — consider moving your `-t`
   target flags into a `doc-kit.config.mjs` file.
-- [Further customize the `web` generator](./generators/web.html) — give it a
+- [Further customize the `html` generator](./generators/html.html) — give it a
   custom sidenav or footer.
 - [Read the full input specification](./specification.html) — the full Markdown
   contract.

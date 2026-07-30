@@ -4,7 +4,7 @@
 documentation. It's the documentation toolchain behind the Node.js API
 reference, found at https://nodejs.org/docs/latest/api/. This site is built by
 `doc-kit`, from its own repository. The pages you are reading were produced by
-the `web` generator.
+the `html` generator.
 
 > 📣 `doc-kit` is in beta. We'd like feedback within the
 > [issue log](https://github.com/nodejs/doc-kit/issues) or by visiting the
@@ -24,7 +24,7 @@ Raw Markdown Files
         │
     [metadata]        extract structured API metadata
         │
-        ├─► [jsx-ast] ─► [web]       server-rendered site
+        ├─► [jsx-ast] ─► [html]       server-rendered site
         ├─► [legacy-html] ─► …-all   classic HTML
         ├─► [legacy-json] ─► …-all   JSON
         ├─► [json-simple]            simplified JSON
@@ -39,7 +39,7 @@ Only some of these are things you ask for by name. `ast`, `metadata`, and
 them, and they are not valid `-t` targets. Everything in the fan-out below
 `metadata` is a target you can pass to `-t`, and passing several at once reuses
 the one shared parse rather than repeating it. The full list is in the
-[generators reference](./generators/web.html).
+[generators reference](./generators/html.html).
 
 ## The input contract
 
@@ -65,7 +65,7 @@ See [the specification](./specification.html) for the full input format.
 A couple places `doc-kit` is already in use. Feel free to PR yours.
 
 - <https://nodejs.org/api> - `legacy-json`
-- <https://beta.docs.nodejs.org/> - `web`
-- <https://nodejs.org/learn> - `web`
-- <https://webpack-doc-kit.vercel.app/> - `web`
-- <https://undici.nodejs.org/> - `web`
+- <https://beta.docs.nodejs.org/> - `html`
+- <https://nodejs.org/learn> - `html`
+- <https://webpack-doc-kit.vercel.app/> - `html`
+- <https://undici.nodejs.org/> - `html`

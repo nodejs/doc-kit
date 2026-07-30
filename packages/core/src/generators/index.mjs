@@ -2,7 +2,7 @@
 
 /**
  * Maps the shorthand names accepted by the CLI and configuration files
- * (e.g. `--target web`) to the import specifiers they resolve to.
+ * (e.g. `--target html`) to the import specifiers they resolve to.
  *
  * Generators are loaded dynamically by specifier (see `./loader.mjs`), so this
  * module must not import any generator code — it is purely a lookup table.
@@ -18,10 +18,10 @@ export const publicGenerators = {
   'legacy-json-all': '@node-core/doc-kit/legacy-json-all',
   'addon-verify': '@node-core/doc-kit/addon-verify',
   'api-links': '@node-core/doc-kit/api-links',
-  'orama-db': '@node-core/doc-kit/orama-db',
-  'llms-txt': '@node-core/doc-kit/llms-txt',
-  sitemap: '@node-core/doc-kit/sitemap',
-  web: '@node-core/doc-kit/web',
+  'orama-db': '@nodejs/doc-kit-generator-react/orama-db',
+  'llms-txt': '@nodejs/doc-kit-generator-react/llms-txt',
+  sitemap: '@nodejs/doc-kit-generator-react/sitemap',
+  html: '@nodejs/doc-kit-generator-react/html',
 };
 
 // These ones are special since they don't produce standard output,
@@ -30,11 +30,19 @@ export const publicGenerators = {
 const internalGenerators = {
   ast: '@node-core/doc-kit/ast',
   metadata: '@node-core/doc-kit/metadata',
-  'jsx-ast': '@node-core/doc-kit/jsx-ast',
+  'jsx-ast': '@nodejs/doc-kit-generator-react/jsx-ast',
   'ast-js': '@node-core/doc-kit/ast-js',
+};
+
+// Former names kept resolvable for existing invocations and config files.
+// Unlike the maps above, keys here intentionally differ from the generator's
+// `name` property.
+export const deprecatedGenerators = {
+  web: '@nodejs/doc-kit-generator-react/html',
 };
 
 export const allGenerators = {
   ...publicGenerators,
   ...internalGenerators,
+  ...deprecatedGenerators,
 };
