@@ -3,6 +3,7 @@ import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
+import { renderLabel } from '../../utils/renderLabel.jsx';
 
 import { project, version, versions, pages } from '#theme/config';
 
@@ -37,7 +38,7 @@ export default ({ metadata }) => {
     }));
 
   const items = pages.map(([heading, path]) => ({
-    label: heading,
+    label: renderLabel(heading),
     link:
       metadata.path === path
         ? `${metadata.basename}.html`

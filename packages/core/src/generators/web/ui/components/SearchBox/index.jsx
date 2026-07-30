@@ -11,6 +11,45 @@ import styles from './index.module.css';
 import useOrama from '../../hooks/useOrama.mjs';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
+/**
+ * Dismisses the search modal the clicked hit sits in
+ *
+ * @param {MouseEvent} event
+ */
+const followSearchHit = event => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+    return;
+  }
+
+  const target = new URL(event.currentTarget.href);
+
+  event.preventDefault();
+
+  // Escape is the only dismissal `SearchModal` exposes to the hits it renders.
+  event.currentTarget.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+  );
+
+  requestAnimationFrame(() => {
+    if (target.pathname !== window.location.pathname) {
+      window.location.href = target.href;
+      return;
+    }
+
+    requestAnimationFrame(() =>
+      document
+        .getElementById(decodeURIComponent(target.hash.slice(1)))
+        ?.scrollIntoView()
+    );
+  });
+};
+
+/**
+ * A search hit link that dismisses the modal when followed.
+ * @param {Object} props - Anchor props, as passed by `SearchHit`.
+ */
+const SearchHitLink = props => <a {...props} onClick={followSearchHit} />;
+
 const SearchBox = ({ pathname }) => {
   const client = useOrama(pathname);
 
@@ -21,6 +60,7 @@ const SearchBox = ({ pathname }) => {
           noResultsTitle="No results found for"
           onHit={hit => (
             <SearchHit
+              as={SearchHitLink}
               document={{
                 ...hit.document,
                 href: relativeOrAbsolute(hit.document.href, pathname),
