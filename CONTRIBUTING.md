@@ -71,6 +71,18 @@ The steps below will give you a general idea of how to prepare your local enviro
    npm install
    ```
 
+### Repository Layout
+
+This repository is an npm workspaces monorepo. The root package is private and
+holds the shared tooling (linting, formatting, tests, changesets); every
+published package lives under `packages/`:
+
+- `packages/core`: [`@node-core/doc-kit`](packages/core)
+
+Everything else at the root supports the repo rather than shipping to npm:
+`docs/` (the reference docs), `www/` (the documentation site), `scripts/` (build
+and comparison helpers), and `e2e/` (Playwright tests).
+
 ### Running the Tool Locally
 
 `doc-kit` generates documentation from the Markdown API docs in the [Node.js repository](https://github.com/nodejs/node). To run the tool locally, you need a copy of those source files.
@@ -91,7 +103,7 @@ The steps below will give you a general idea of how to prepare your local enviro
    For fast iteration during development, target a single Markdown file instead of all API docs:
 
    ```bash
-   node bin/cli.mjs generate \
+   node packages/core/bin/cli.mjs generate \
      -t legacy-html \
      -i ../node/doc/api/fs.md \
      -o out \
@@ -112,7 +124,7 @@ The steps below will give you a general idea of how to prepare your local enviro
    Add `--log-level debug` before the `generate` subcommand to see the full pipeline trace:
 
    ```bash
-   node bin/cli.mjs --log-level debug generate -t legacy-html -i ../node/doc/api/fs.md -o out
+   node packages/core/bin/cli.mjs --log-level debug generate -t legacy-html -i ../node/doc/api/fs.md -o out
    ```
 
 > [!TIP]
@@ -216,7 +228,8 @@ Testing is a crucial part of maintaining code quality and ensuring reliability. 
 
 ### Test File Organization
 
-Tests should be organized to mirror the source code structure:
+Tests should be organized to mirror the source code structure. The paths below
+are relative to the package the source file lives in (e.g. `packages/core`):
 
 - For a source file at `/src/index.mjs`, create a test file at `/src/__tests__/index.test.mjs`
 - For a source file at `/src/utils/parser.mjs`, create a test file at `/src/utils/__tests__/parser.test.mjs`
@@ -306,7 +319,7 @@ node --run test
 node --run test:coverage
 
 # Run specific test file
-node --test src/test/index.test.mjs
+node --test packages/core/src/utils/__tests__/parser.test.mjs
 ```
 
 ## Code Quality

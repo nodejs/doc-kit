@@ -1,6 +1,6 @@
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
-import { relativeOrAbsolute } from '../../src/generators/web/ui/utils/relativeOrAbsolute.mjs';
+import { relativeOrAbsolute } from '../../packages/core/src/generators/web/ui/utils/relativeOrAbsolute.mjs';
 
 import { pages } from '#theme/config';
 
@@ -75,7 +75,7 @@ const orderGuides = guides =>
  * single version and passes an empty `changelog`, so `versions` is empty and the
  * control has nothing to offer; it is omitted.
  *
- * @param {{ metadata: import('../../src/generators/web/ui/types').SerializedMetadata }} props
+ * @param {{ metadata: import('../../packages/core/src/generators/web/ui/types').SerializedMetadata }} props
  */
 export default ({ metadata }) => {
   const toItem = ([heading, path]) => ({

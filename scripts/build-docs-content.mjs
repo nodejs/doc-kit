@@ -5,7 +5,8 @@
 //
 //   www/pages/*.md              authored narrative pages, copied verbatim
 //   docs/*.md                   the existing reference docs
-//   src/generators/*/README.md  per-generator config reference, written to
+//   packages/core/src/generators/*/README.md
+//                               per-generator config reference, written to
 //                               `generators/<name>.md`
 //
 // `www/content/` is a build artifact and is gitignored. Run this before
@@ -21,7 +22,7 @@ const SOURCES = [
   { pattern: 'www/pages/*.md', rename: basename },
   { pattern: 'docs/*.md', rename: basename },
   {
-    pattern: 'src/generators/*/README.md',
+    pattern: 'packages/core/src/generators/*/README.md',
     rename: file => `generators/${basename(dirname(file))}.md`,
   },
 ];

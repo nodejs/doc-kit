@@ -1,11 +1,11 @@
 npm-shrinkwrap.json
 
 # Tests files
-src/generators/api-links/__tests__/fixtures/
+packages/core/src/generators/api-links/__tests__/fixtures/
 *.snapshot
 
 # Templates
-src/generators/web/template.html
+packages/core/src/generators/web/template.html
 
 # Output
 out/
@@ -15,7 +15,7 @@ www/content/
 www/out/
 
 # Generated Files
-src/generators/metadata/maps/mdn.json
+packages/core/src/generators/metadata/maps/mdn.json
 
 # The specification uses things that prettier would not
 # approve of, such as bullets with `*`

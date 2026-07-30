@@ -34,10 +34,10 @@ A generator is defined as a module exporting an object conforming to the `Genera
 
 ### Step 1: Create the Generator Files
 
-Create a new directory in `src/generators/`:
+Create a new directory in `packages/core/src/generators/`:
 
 ```
-src/generators/my-format/
+packages/core/src/generators/my-format/
 ├── index.mjs         # Generator metadata (required)
 ├── generate.mjs      # Generator implementation (required)
 ├── constants.mjs     # Constants (optional)
@@ -72,7 +72,7 @@ export type Generator = GeneratorMetadata<
 Create the generator metadata in `index.mjs` using `createLazyGenerator`:
 
 ```javascript
-// src/generators/my-format/index.mjs
+// packages/core/src/generators/my-format/index.mjs
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -104,7 +104,7 @@ export default createLazyGenerator({
 Create the generator implementation in `generate.mjs`:
 
 ```javascript
-// src/generators/my-format/generate.mjs
+// packages/core/src/generators/my-format/generate.mjs
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -149,7 +149,7 @@ function transformToMyFormat(entries, version) {
 
 ### Step 5: Register the Generator
 
-Add your generator to the exports in `src/generators/index.mjs`:
+Add your generator to the exports in `packages/core/src/generators/index.mjs`:
 
 ```javascript
 // For public generators (available via CLI)
@@ -178,7 +178,7 @@ For generators processing large datasets, implement parallel processing using wo
 First, define the generator metadata in `index.mjs`:
 
 ```javascript
-// src/generators/parallel-generator/index.mjs
+// packages/core/src/generators/parallel-generator/index.mjs
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -199,7 +199,7 @@ export default createLazyGenerator({
 Then, implement both `processChunk` and `generate` in `generate.mjs`:
 
 ```javascript
-// src/generators/parallel-generator/generate.mjs
+// packages/core/src/generators/parallel-generator/generate.mjs
 import getConfig from '../../utils/configuration/index.mjs';
 
 /**
@@ -272,7 +272,7 @@ Generators can yield results as they're produced using async generators.
 Define the generator metadata in `index.mjs`:
 
 ```javascript
-// src/generators/streaming-generator/index.mjs
+// packages/core/src/generators/streaming-generator/index.mjs
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -292,7 +292,7 @@ export default createLazyGenerator({
 Implement the generator in `generate.mjs`:
 
 ```javascript
-// src/generators/streaming-generator/generate.mjs
+// packages/core/src/generators/streaming-generator/generate.mjs
 /**
  * Process a chunk of data
  *
@@ -330,7 +330,7 @@ Some generators must collect all input before processing.
 Generator metadata in `index.mjs`:
 
 ```javascript
-// src/generators/batch-generator/index.mjs
+// packages/core/src/generators/batch-generator/index.mjs
 import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
@@ -348,7 +348,7 @@ export default createLazyGenerator({
 Implementation in `generate.mjs`:
 
 ```javascript
-// src/generators/batch-generator/generate.mjs
+// packages/core/src/generators/batch-generator/generate.mjs
 /**
  * Non-streaming - returns Promise instead of AsyncGenerator
  *
@@ -401,7 +401,7 @@ export async function generate(input, worker) {
 
 ```javascript
 // Step 1: Parse markdown to AST
-// src/generators/ast/index.mjs
+// packages/core/src/generators/ast/index.mjs
 export default createLazyGenerator({
   name: 'ast',
   dependsOn: undefined,  // No dependency
@@ -409,7 +409,7 @@ export default createLazyGenerator({
 });
 
 // Step 2: Extract metadata from AST
-// src/generators/metadata/index.mjs
+// packages/core/src/generators/metadata/index.mjs
 export default createLazyGenerator({
   name: 'metadata',
   dependsOn: 'ast',  // Depends on AST
@@ -417,7 +417,7 @@ export default createLazyGenerator({
 });
 
 // Step 3: Generate HTML from metadata
-// src/generators/html-generator/index.mjs
+// packages/core/src/generators/html-generator/index.mjs
 export default createLazyGenerator({
   name: 'html-generator',
   dependsOn: 'metadata',  // Depends on metadata

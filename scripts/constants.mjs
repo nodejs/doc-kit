@@ -18,5 +18,5 @@ export const MDN_COMPAT_URL =
   'https://github.com/mdn/browser-compat-data/releases/latest/download/data.json';
 
 export const MDN_TYPE_MAP = fileURLToPath(
-  import.meta.resolve('../src/generators/metadata/maps/mdn.json')
+  import.meta.resolve('../packages/core/src/generators/metadata/maps/mdn.json')
 );
