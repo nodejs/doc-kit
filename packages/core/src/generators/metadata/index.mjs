@@ -12,7 +12,7 @@ export default {
 
   description: 'generates a flattened list of API doc metadata entries',
 
-  dependsOn: '@node-core/doc-kit/ast',
+  dependsOn: '@nodejs/doc-kit/ast',
 
   hasParallelProcessor: true,
 

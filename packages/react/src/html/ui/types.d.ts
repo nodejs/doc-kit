@@ -1,5 +1,5 @@
-import { GlobalConfiguration } from '@node-core/doc-kit/utils/configuration/types';
-import { MetadataEntry } from '@node-core/doc-kit/generators/metadata/types';
+import { GlobalConfiguration } from '@nodejs/doc-kit/utils/configuration/types';
+import { MetadataEntry } from '@nodejs/doc-kit/generators/metadata/types';
 import { Configuration } from '../types';
 import { SemVer } from 'semver';
 

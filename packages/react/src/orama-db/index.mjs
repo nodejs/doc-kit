@@ -13,7 +13,7 @@ export default {
 
   description: 'Generates the Orama database for the API docs.',
 
-  dependsOn: '@node-core/doc-kit/metadata',
+  dependsOn: '@nodejs/doc-kit/metadata',
 
   generate,
 };

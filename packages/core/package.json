@@ -1,7 +1,7 @@
 {
-  "name": "@node-core/doc-kit",
+  "name": "@nodejs/doc-kit",
   "type": "module",
-  "version": "1.4.3",
+  "version": "0.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
@@ -18,12 +18,9 @@
   "main": "./src/generators.mjs",
   "exports": {
     ".": "./src/generators.mjs",
-    "./addon-verify": "./src/generators/addon-verify/index.mjs",
-    "./api-links": "./src/generators/api-links/index.mjs",
     "./ast": "./src/generators/ast/index.mjs",
     "./ast-js": "./src/generators/ast-js/index.mjs",
     "./json-simple": "./src/generators/json-simple/index.mjs",
-    "./man-page": "./src/generators/man-page/index.mjs",
     "./metadata": "./src/generators/metadata/index.mjs",
     "./package.json": "./package.json",
     "./shiki.config.mjs": "./shiki.config.mjs",
@@ -52,7 +49,6 @@
     "commander": "^15.0.0",
     "cosmiconfig": "^9.0.2",
     "dedent": "^1.7.2",
-    "estree-util-visit": "^2.0.0",
     "github-slugger": "^2.0.0",
     "glob-parent": "^6.0.2",
     "hastscript": "^9.0.1",
@@ -76,10 +72,14 @@
     "yaml": "^2.9.0"
   },
   "peerDependencies": {
+    "@node-core/doc-kit": "^1.4.3",
     "@nodejs/doc-kit-generator-legacy": "^0.0.0",
     "@nodejs/doc-kit-generator-react": "^0.0.0"
   },
   "peerDependenciesMeta": {
+    "@node-core/doc-kit": {
+      "optional": true
+    },
     "@nodejs/doc-kit-generator-legacy": {
       "optional": true
     },

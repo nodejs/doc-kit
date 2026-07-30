@@ -1,4 +1,4 @@
-import type { MetadataEntry } from '@node-core/doc-kit/generators/metadata/types';
+import type { MetadataEntry } from '@nodejs/doc-kit/generators/metadata/types';
 
 export interface SitemapEntry {
   loc: string;

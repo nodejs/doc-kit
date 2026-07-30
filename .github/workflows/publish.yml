@@ -56,9 +56,9 @@ jobs:
         env:
           SLACK_COLOR: '#43853D'
           SLACK_ICON: https://github.com/nodejs.png?size=48
-          SLACK_TITLE: ':rocket: Package Published: @node-core/doc-kit'
+          SLACK_TITLE: ':rocket: doc-kit Packages Published'
           SLACK_MESSAGE: |
-            :package: *Package*: `@node-core/doc-kit` (<https://www.npmjs.com/package/@node-core/doc-kit|View on npm>)
+            :package: *Packages*: `nodejs/doc-kit` workspace (<https://www.npmjs.com/package/@nodejs/doc-kit|@nodejs/doc-kit on npm>)
             :bust_in_silhouette: *Published by*: ${{ github.triggering_actor }}
             :octocat: *Commit*: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
           SLACK_USERNAME: nodejs-bot

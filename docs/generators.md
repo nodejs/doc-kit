@@ -1,6 +1,6 @@
 # Creating Generators
 
-This guide explains how to create new documentation generators for `@node-core/doc-kit`.
+This guide explains how to create new documentation generators for `@nodejs/doc-kit`.
 
 ## Generator Concepts
 
@@ -88,7 +88,7 @@ export default {
 
   // This generator depends on the metadata generator. Dependencies are
   // declared as import specifiers, so they can live in any package.
-  dependsOn: '@node-core/doc-kit/metadata',
+  dependsOn: '@nodejs/doc-kit/metadata',
 
   defaultConfiguration: {
     // If your generator supports a custom configuration, define the defaults here
@@ -170,8 +170,8 @@ the import specifier it resolves to:
 
 ```javascript
 export const publicGenerators = {
-  'json-simple': '@node-core/doc-kit/json-simple',
-  'my-format': '@node-core/doc-kit/my-format', // Add this
+  'json-simple': '@nodejs/doc-kit/json-simple',
+  'my-format': '@nodejs/doc-kit/my-format', // Add this
   // ... other generators
 };
 ```
@@ -199,7 +199,7 @@ export default {
 
   description: 'Processes data in parallel',
 
-  dependsOn: '@node-core/doc-kit/metadata',
+  dependsOn: '@nodejs/doc-kit/metadata',
 
   // Indicates this generator has a processChunk implementation
   hasParallelProcessor: true,
@@ -296,7 +296,7 @@ export default {
 
   description: 'Streams results as they are ready',
 
-  dependsOn: '@node-core/doc-kit/metadata',
+  dependsOn: '@nodejs/doc-kit/metadata',
 
   hasParallelProcessor: true,
 
@@ -403,7 +403,7 @@ export default {
 
   // This generator requires the metadata generator's output. The dependency
   // is an import specifier, so it may point at any installed package.
-  dependsOn: '@node-core/doc-kit/metadata',
+  dependsOn: '@nodejs/doc-kit/metadata',
 
   // ... other metadata
 
@@ -434,7 +434,7 @@ export default {
 // packages/core/src/generators/metadata/index.mjs
 export default {
   name: 'metadata',
-  dependsOn: '@node-core/doc-kit/ast', // Depends on AST
+  dependsOn: '@nodejs/doc-kit/ast', // Depends on AST
   // Processes AST output
 };
 
@@ -442,7 +442,7 @@ export default {
 // packages/core/src/generators/html-generator/index.mjs
 export default {
   name: 'html-generator',
-  dependsOn: '@node-core/doc-kit/metadata', // Depends on metadata
+  dependsOn: '@nodejs/doc-kit/metadata', // Depends on metadata
   // Processes metadata output
 };
 ```

@@ -7,8 +7,13 @@ This page takes you from an empty directory to a rendered documentation page.
 From an initialized npm project, run this in your terminal.
 
 ```bash
-npm install --save-dev @node-core/doc-kit
+npm install --save-dev @nodejs/doc-kit @nodejs/doc-kit-generator-legacy @nodejs/doc-kit-generator-react
 ```
+
+`@nodejs/doc-kit` provides the engine and CLI; generators ship as separate
+packages, so install the ones for the output formats you need
+(`@nodejs/doc-kit-generator-legacy` and `@nodejs/doc-kit-generator-react` cover
+the targets used on this page).
 
 ## Write a valid input document
 
@@ -88,7 +93,7 @@ Create a `doc-kit.config.mjs` file at the root of the project.
 ```mjs
 import { join } from 'node:path';
 
-/** @type {import('@node-core/doc-kit/src/utils/configuration/types').Configuration} */
+/** @type {import('@nodejs/doc-kit/src/utils/configuration/types').Configuration} */
 export default {
   html: {
     project: 'My Project', // Project name used in page titles and the version selector

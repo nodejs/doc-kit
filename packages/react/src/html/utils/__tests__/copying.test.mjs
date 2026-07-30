@@ -8,7 +8,7 @@ mock.module('node:fs/promises', {
 });
 
 const mockLogError = mock.fn();
-mock.module('@node-core/doc-kit/logger/index.mjs', {
+mock.module('@nodejs/doc-kit/logger/index.mjs', {
   defaultExport: { error: mockLogError },
 });
 

@@ -3,18 +3,19 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
+
 import {
   convertOptionToMandoc,
   convertEnvVarToMandoc,
 } from './utils/converter.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { writeFile } from '../../utils/file.mjs';
 
 /**
- * @param {Array<import('../metadata/types').MetadataEntry>} components
+ * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} components
  * @param {number} start
  * @param {number} end
- * @param {(element: import('../metadata/types').MetadataEntry) => string} convert
+ * @param {(element: import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry) => string} convert
  * @returns {string}
  */
 function extractMandoc(components, start, end, convert) {

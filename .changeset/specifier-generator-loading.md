@@ -1,5 +1,5 @@
 ---
-'@node-core/doc-kit': minor
+'@nodejs/doc-kit': minor
 ---
 
 Generators are now loaded dynamically by import specifier instead of a static

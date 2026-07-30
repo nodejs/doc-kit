@@ -1,5 +1,5 @@
 ---
-'@node-core/doc-kit': patch
+'@nodejs/doc-kit': patch
 ---
 
 Use short `DEP` codes for deprecation heading anchors.

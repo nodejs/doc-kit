@@ -39,7 +39,7 @@ export default {
   // Targets, alternatively supplied by command line flags. Each entry is
   // either a built-in shorthand name or an import specifier resolving to a
   // generator module (e.g. '@my-scope/my-package/my-generator').
-  target: ['orama-db', 'web'],
+  target: ['orama-db', 'html'],
   global: {
     version: '20.0.0',
     minify: true,

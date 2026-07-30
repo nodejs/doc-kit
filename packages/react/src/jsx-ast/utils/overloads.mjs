@@ -8,8 +8,8 @@ const OVERLOADABLE_TYPES = new Set(['method', 'ctor', 'classMethod']);
  * Two headings document the same function (i.e. are overloads of one another)
  * when they sit at the same depth and share the same resolved name and type.
  *
- * @param {import('@node-core/doc-kit/generators/metadata/types').HeadingNode} a
- * @param {import('@node-core/doc-kit/generators/metadata/types').HeadingNode} b
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingNode} a
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingNode} b
  */
 const isSameFunction = (a, b) =>
   a.depth === b.depth &&
@@ -26,8 +26,8 @@ const isSameFunction = (a, b) =>
  * rendering in full on the page. The first (most stable) heading is left as-is,
  * and the ToC links to its existing anchor.
  *
- * @param {Array<import('@node-core/doc-kit/generators/metadata/types').MetadataEntry>} entries - Page entries, in render order.
- * @returns {Array<import('@node-core/doc-kit/generators/metadata/types').MetadataEntry>} The same entries (mutated).
+ * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries - Page entries, in render order.
+ * @returns {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} The same entries (mutated).
  */
 export const annotateOverloads = entries => {
   for (let i = 0; i < entries.length; i++) {

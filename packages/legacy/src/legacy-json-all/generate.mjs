@@ -3,7 +3,7 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import getConfig from '@node-core/doc-kit/utils/configuration/index.mjs';
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
 
 import { legacyToJSON } from '../utils/legacyToJSON.mjs';
 

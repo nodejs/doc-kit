@@ -1,5 +1,5 @@
 ---
-'@node-core/doc-kit': patch
+'@nodejs/doc-kit': patch
 ---
 
 Add `web.navigation`, which supplies the sidebar groups (`navigation.sidebar`)

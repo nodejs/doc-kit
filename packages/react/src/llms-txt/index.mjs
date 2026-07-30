@@ -16,7 +16,7 @@ export default {
   description:
     'Generates a llms.txt file to provide information to LLMs at inference time',
 
-  dependsOn: '@node-core/doc-kit/metadata',
+  dependsOn: '@nodejs/doc-kit/metadata',
 
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.txt'),

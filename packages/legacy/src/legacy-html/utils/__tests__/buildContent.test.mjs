@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { before, describe, it } from 'node:test';
 
-import { setConfig } from '@node-core/doc-kit/utils/configuration/index.mjs';
+import { setConfig } from '@nodejs/doc-kit/utils/configuration/index.mjs';
 
 import buildContent from '../buildContent.mjs';
 

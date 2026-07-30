@@ -16,6 +16,9 @@ describe('generateFileList', () => {
     const testFile = result.find(file => file.name === 'test.js');
 
     assert(testFile.content.includes("'use strict';"));
+    // The generated file runs inside nodejs/node's `test/addons` tree, where
+    // the helper is only reachable via this relative path.
+    assert(testFile.content.includes("require('../../common')"));
     assert(testFile.content.includes('`./build/${common.buildType}/addon`'));
     assert(!testFile.content.includes("'./build/Release/addon'"));
   });

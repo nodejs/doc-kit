@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   default as getConfig,
   setConfig,
-} from '@node-core/doc-kit/utils/configuration/index.mjs';
+} from '@nodejs/doc-kit/utils/configuration/index.mjs';
 
 import {
   buildHead,

@@ -126,7 +126,7 @@ const formatFlag = flag =>
  * This function formats command-line options, including flags and descriptions,
  * for display in Unix manual pages using Mandoc.
  *
- * @param {import('../../metadata/types').MetadataEntry} element - The metadata entry containing details about the API option.
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} element - The metadata entry containing details about the API option.
  * @returns {string} The Mandoc formatted string representing the API option, including flags and content.
  */
 export function convertOptionToMandoc(element) {
@@ -150,7 +150,7 @@ export function convertOptionToMandoc(element) {
  * This function formats environment variables for Unix manual pages, converting
  * the variable name and value, along with any associated descriptions, into Mandoc.
  *
- * @param {import('../../metadata/types').MetadataEntry} element - The metadata entry containing details about the environment variable.
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} element - The metadata entry containing details about the environment variable.
  * @returns {string} The Mandoc formatted representation of the environment variable and its content.
  */
 export function convertEnvVarToMandoc(element) {

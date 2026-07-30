@@ -1,12 +1,12 @@
-import { populate } from '@node-core/doc-kit/utils/configuration/templates.mjs';
-import { transformNodeToString } from '@node-core/doc-kit/utils/unist.mjs';
+import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
+import { transformNodeToString } from '@nodejs/doc-kit/utils/unist.mjs';
 
 /**
  * Retrieves the description of a given API doc entry. It first checks whether
  * the entry has a llm_description property. If not, it extracts the first
  * paragraph from the entry's content.
  *
- * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} entry
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry
  * @returns {string}
  */
 export const getEntryDescription = entry => {
@@ -32,8 +32,8 @@ export const getEntryDescription = entry => {
 /**
  * Builds a markdown link for an API doc entry
  *
- * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} entry
- * @param {import('@node-core/doc-kit/utils/configuration/types').Configuration['llms-txt']}
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry
+ * @param {import('@nodejs/doc-kit/utils/configuration/types').Configuration['llms-txt']}
  * @returns {string}
  */
 export const buildApiDocLink = (entry, config) => {

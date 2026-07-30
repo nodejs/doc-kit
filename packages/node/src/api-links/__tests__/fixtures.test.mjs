@@ -1,13 +1,13 @@
 import { basename, join, relative, sep } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
+import { generate as astJsGenerate } from '@nodejs/doc-kit/generators/ast-js/generate.mjs';
+import { loadGenerator } from '@nodejs/doc-kit/generators/loader.mjs';
+import createWorkerPool from '@nodejs/doc-kit/threading/index.mjs';
+import createParallelWorker from '@nodejs/doc-kit/threading/parallel.mjs';
+import { setConfig } from '@nodejs/doc-kit/utils/configuration/index.mjs';
 import { globSync } from 'tinyglobby';
 
-import { loadGenerator } from '../../../generators/loader.mjs';
-import createWorkerPool from '../../../threading/index.mjs';
-import createParallelWorker from '../../../threading/parallel.mjs';
-import { setConfig } from '../../../utils/configuration/index.mjs';
-import { generate as astJsGenerate } from '../../ast-js/generate.mjs';
 import { generate as apiLinksGenerate } from '../generate.mjs';
 
 const relativePath = relative(process.cwd(), import.meta.dirname);

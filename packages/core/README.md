@@ -1,4 +1,4 @@
-# `@node-core/doc-kit`
+# `@nodejs/doc-kit`
 
 The core of doc-kit: the CLI and the generators that turn API-shaped Markdown
 into HTML, JSON, man pages and more.
@@ -10,7 +10,7 @@ references.
 ## Scripts
 
 Run these from this directory, or from the repository root with
-`npm run <script> --workspace @node-core/doc-kit`.
+`npm run <script> --workspace @nodejs/doc-kit`.
 
 ```sh
 # Run the CLI

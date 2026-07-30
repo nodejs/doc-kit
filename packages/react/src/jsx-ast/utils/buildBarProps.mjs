@@ -12,7 +12,7 @@ const FUNCTION_HEADING_TYPES = new Set(['method', 'ctor', 'classMethod']);
 /**
  * Generate a combined plain text string from all MDAST entries for estimating reading time.
  *
- * @param {Array<import('@node-core/doc-kit/generators/metadata/types').MetadataEntry>} entries - API documentation entries
+ * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries - API documentation entries
  */
 export const extractTextContent = entries => {
   return entries.reduce((acc, entry) => {
@@ -25,7 +25,7 @@ export const extractTextContent = entries => {
 
 /**
  * Determines if an entry should be included in the Table of Contents.
- * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} entry
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry
  */
 const shouldIncludeEntryInToC = ({ heading }) =>
   // Only include headings with text,
@@ -41,7 +41,7 @@ const shouldIncludeEntryInToC = ({ heading }) =>
  * other headings keep their plain text, with CLI flags / env vars and leading
  * prefixes (i.e. `Class:`) stripped.
  *
- * @param {import('@node-core/doc-kit/generators/metadata/types').HeadingData} data
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingData} data
  */
 const headingLabel = data => {
   if (FUNCTION_HEADING_TYPES.has(data.type)) {
@@ -70,7 +70,7 @@ const headingLabel = data => {
 
 /**
  * Extracts and formats heading information from an API documentation entry.
- * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} entry
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry
  */
 const extractHeading = entry => {
   const data = entry.heading.data;
@@ -88,7 +88,7 @@ const extractHeading = entry => {
  * Build the list of heading metadata for sidebar navigation. Overload headings
  * are dropped so each function contributes a single entry.
  *
- * @param {Array<import('@node-core/doc-kit/generators/metadata/types').MetadataEntry>} entries - All API metadata entries
+ * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries - All API metadata entries
  */
 export const extractHeadings = entries =>
   entries

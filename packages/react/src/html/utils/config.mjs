@@ -1,10 +1,10 @@
 'use strict';
 
-import getConfig from '@node-core/doc-kit/utils/configuration/index.mjs';
-import { populate } from '@node-core/doc-kit/utils/configuration/templates.mjs';
-import { getVersionFromSemVer } from '@node-core/doc-kit/utils/generators.mjs';
-import { omitKeys } from '@node-core/doc-kit/utils/misc.mjs';
 import { LANGS } from '@node-core/rehype-shiki';
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
+import { getVersionFromSemVer } from '@nodejs/doc-kit/utils/generators.mjs';
+import { omitKeys } from '@nodejs/doc-kit/utils/misc.mjs';
 
 import { getSortedHeadNodes } from '../../jsx-ast/utils/getSortedHeadNodes.mjs';
 

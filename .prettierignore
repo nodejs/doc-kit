@@ -1,7 +1,7 @@
 npm-shrinkwrap.json
 
 # Tests files
-packages/core/src/generators/api-links/__tests__/fixtures/
+packages/node/src/api-links/__tests__/fixtures/
 *.snapshot
 
 # Templates

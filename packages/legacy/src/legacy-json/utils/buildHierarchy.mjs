@@ -1,7 +1,7 @@
 /**
  * Recursively finds the most suitable parent node for a given `entry` based on heading depth.
  *
- * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} entry
+ * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry
  * @param {Array<import('../types.d.ts').HierarchizedEntry>} nodes
  * @param {number} startIdx
  * @returns {import('../types.d.ts').HierarchizedEntry}
@@ -39,7 +39,7 @@ export function findParent(entry, nodes, startIdx) {
  * found by looping through entries in reverse starting at the current
  * index - 1.
  *
- * @param {Array<import('@node-core/doc-kit/generators/metadata/types').MetadataEntry>} entries
+ * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries
  * @returns {Array<import('../types.d.ts').HierarchizedEntry>}
  */
 export function buildHierarchy(entries) {

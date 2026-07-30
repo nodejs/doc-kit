@@ -1,9 +1,9 @@
 'use strict';
 
-import { highlighter } from '@node-core/doc-kit/utils/highlighter.mjs';
-import { lazy } from '@node-core/doc-kit/utils/misc.mjs';
-import { typeAnnotationToHighlightedHast } from '@node-core/doc-kit/utils/type-annotations/hast.mjs';
 import rehypeShikiji from '@node-core/rehype-shiki/plugin';
+import { highlighter } from '@nodejs/doc-kit/utils/highlighter.mjs';
+import { lazy } from '@nodejs/doc-kit/utils/misc.mjs';
+import { typeAnnotationToHighlightedHast } from '@nodejs/doc-kit/utils/type-annotations/hast.mjs';
 import recmaJsx from 'recma-jsx';
 import recmaStringify from 'recma-stringify';
 import rehypeRaw from 'rehype-raw';

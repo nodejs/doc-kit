@@ -1,4 +1,4 @@
-# @node-core/doc-kit
+# @nodejs/doc-kit
 
 ## 1.4.3
 

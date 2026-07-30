@@ -5,7 +5,7 @@
 **Authored By**: Aviv Keller (<me@aviv.sh>)
 
 This document specifies the Markdown format consumed by
-[`@node-core/doc-kit`][doc-kit]. It defines the structural, syntactic, and
+[`@nodejs/doc-kit`][doc-kit]. It defines the structural, syntactic, and
 semantic rules that documents MUST follow to be correctly parsed. The format
 is a strict superset of [GitHub Flavored Markdown][gfm] (which itself is a
 strict superset of [CommonMark][commonmark]), adding conventions for API

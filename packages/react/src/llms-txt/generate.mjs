@@ -3,8 +3,8 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import getConfig from '@node-core/doc-kit/utils/configuration/index.mjs';
-import { writeFile } from '@node-core/doc-kit/utils/file.mjs';
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
 
 import { buildApiDocLink } from './utils/buildApiDocLink.mjs';
 

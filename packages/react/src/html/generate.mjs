@@ -2,7 +2,7 @@
 
 import { readFile } from 'node:fs/promises';
 
-import getConfig from '@node-core/doc-kit/utils/configuration/index.mjs';
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
 
 import { copyStaticAssets } from './utils/copying.mjs';
 import { createCodeConverter, processBundles } from './utils/processing.mjs';
