@@ -9,8 +9,7 @@
   "scripts": {
     "lint": "eslint . --no-warn-ignored",
     "lint:fix": "eslint --fix . --no-warn-ignored",
-    "format": "prettier .",
-    "format:write": "prettier --write .",
+    "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
     "test:coverage": "c8 node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
