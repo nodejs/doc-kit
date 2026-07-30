@@ -1,5 +1,7 @@
 'use strict';
 
+import { populate } from '@node-core/doc-kit/utils/configuration/templates.mjs';
+
 import {
   buildToC,
   buildNavigation,
@@ -7,13 +9,12 @@ import {
   buildGitHub,
 } from './buildDropdowns.mjs';
 import tableOfContents from './tableOfContents.mjs';
-import { populate } from '../../../utils/configuration/templates.mjs';
 
 /**
  * Replaces the template values in the API template with the given values.
  * @param {string} apiTemplate - The HTML template string
  * @param {import('../types').TemplateValues} values - The values to replace the template values with
- * @param {import('../../../utils/configuration/types').GlobalConfiguration} config
+ * @param {import('@node-core/doc-kit/utils/configuration/types').GlobalConfiguration} config
  * @param {{ skipGitHub?: boolean; skipGtocPicker?: boolean }} [options] - Optional settings
  * @returns {string} The replaced template values
  */

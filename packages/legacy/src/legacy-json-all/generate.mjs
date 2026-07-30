@@ -3,8 +3,9 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import getConfig from '../../utils/configuration/index.mjs';
-import { legacyToJSON } from '../../utils/generators.mjs';
+import getConfig from '@node-core/doc-kit/utils/configuration/index.mjs';
+
+import { legacyToJSON } from '../utils/legacyToJSON.mjs';
 
 /**
  * Generates the legacy JSON `all.json` file.

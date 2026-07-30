@@ -85,7 +85,7 @@ export function parseListItem(child) {
 /**
  * Parses a list of nodes and updates the corresponding section object with the extracted information.
  * Handles different section types such as methods, properties, and events differently.
- * @param {import('../../generators/legacy-json/types').Section} section
+ * @param {{ [key: string]: unknown }} section - The section object to populate with the parsed values
  * @param {import('@types/mdast').RootContent[]} nodes
  */
 export function parseList(section, nodes) {

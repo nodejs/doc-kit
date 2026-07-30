@@ -1,0 +1,32 @@
+{
+  "name": "@nodejs/doc-kit-generator-legacy",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Legacy-format generators for @node-core/doc-kit: legacy-html, legacy-html-all, legacy-json, and legacy-json-all",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs/doc-kit.git",
+    "directory": "packages/legacy"
+  },
+  "exports": {
+    "./legacy-html": "./src/legacy-html/index.mjs",
+    "./legacy-html-all": "./src/legacy-html-all/index.mjs",
+    "./legacy-json": "./src/legacy-json/index.mjs",
+    "./legacy-json-all": "./src/legacy-json-all/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "!src/**/*.test.mjs",
+    "!src/**/__tests__",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "dependencies": {
+    "@node-core/doc-kit": "^1.4.3",
+    "hastscript": "^9.0.1",
+    "unist-builder": "^4.0.0",
+    "unist-util-visit": "^5.1.0"
+  }
+}

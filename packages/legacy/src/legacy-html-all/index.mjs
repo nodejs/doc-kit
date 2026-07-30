@@ -18,7 +18,7 @@ export default {
   description:
     'Generates the `all.html` file from the `legacy-html` generator, which includes all the modules in one single file',
 
-  dependsOn: '@node-core/doc-kit/legacy-html',
+  dependsOn: '@nodejs/doc-kit-generator-legacy/legacy-html',
 
   defaultConfiguration: {
     templatePath: legacyHtml.defaultConfiguration.templatePath,

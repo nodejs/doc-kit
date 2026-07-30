@@ -3,7 +3,8 @@
 import assert from 'node:assert/strict';
 import { before, describe, it } from 'node:test';
 
-import { setConfig } from '../../../../utils/configuration/index.mjs';
+import { setConfig } from '@node-core/doc-kit/utils/configuration/index.mjs';
+
 import buildContent from '../buildContent.mjs';
 
 const createEntry = slug => {

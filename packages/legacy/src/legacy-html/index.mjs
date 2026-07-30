@@ -2,8 +2,9 @@
 
 import { join } from 'node:path';
 
+import { GITHUB_EDIT_URL } from '@node-core/doc-kit/utils/configuration/templates.mjs';
+
 import { generate, processChunk } from './generate.mjs';
-import { GITHUB_EDIT_URL } from '../../utils/configuration/templates.mjs';
 
 /**
  *

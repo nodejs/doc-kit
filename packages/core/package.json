@@ -23,10 +23,6 @@
     "./ast": "./src/generators/ast/index.mjs",
     "./ast-js": "./src/generators/ast-js/index.mjs",
     "./json-simple": "./src/generators/json-simple/index.mjs",
-    "./legacy-html": "./src/generators/legacy-html/index.mjs",
-    "./legacy-html-all": "./src/generators/legacy-html-all/index.mjs",
-    "./legacy-json": "./src/generators/legacy-json/index.mjs",
-    "./legacy-json-all": "./src/generators/legacy-json-all/index.mjs",
     "./man-page": "./src/generators/man-page/index.mjs",
     "./metadata": "./src/generators/metadata/index.mjs",
     "./package.json": "./package.json",
@@ -80,9 +76,13 @@
     "yaml": "^2.9.0"
   },
   "peerDependencies": {
+    "@nodejs/doc-kit-generator-legacy": "^0.0.0",
     "@nodejs/doc-kit-generator-react": "^0.0.0"
   },
   "peerDependenciesMeta": {
+    "@nodejs/doc-kit-generator-legacy": {
+      "optional": true
+    },
     "@nodejs/doc-kit-generator-react": {
       "optional": true
     }
