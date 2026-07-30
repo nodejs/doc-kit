@@ -317,7 +317,7 @@ This project uses automated code quality tools:
 
 ```bash
 # Format code
-node --run format:write # To only check formatting, use `format:check`
+node --run format # To only check formatting, use `format:check`
 
 # Lint code
 node --run lint # To apply changes, use `lint:fix`
