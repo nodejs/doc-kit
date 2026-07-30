@@ -16,63 +16,88 @@ const streamOf = chunk =>
     yield chunk;
   })();
 
-mock.module('../generators/index.mjs', {
+// Synthetic generators keyed by specifier (any string works as a specifier)
+const syntheticGenerators = {
+  // Root streaming generator (no dependency)
+  ast: {
+    name: 'ast',
+    hasParallelProcessor: true,
+    generate: async () => {
+      record('ast');
+      return streamOf([{ ast: true }]);
+    },
+  },
+  // Streaming generator shared by multiple consumers
+  metadata: {
+    name: 'metadata',
+    dependsOn: 'ast',
+    hasParallelProcessor: true,
+    generate: async input => {
+      record('metadata');
+      return streamOf([{ meta: input.length }]);
+    },
+  },
+  // Two non-streaming consumers of the shared `metadata` result
+  'gen-a': {
+    name: 'gen-a',
+    dependsOn: 'metadata',
+    generate: async input => {
+      record('gen-a');
+      return { a: input };
+    },
+  },
+  'gen-b': {
+    name: 'gen-b',
+    dependsOn: 'metadata',
+    generate: async input => {
+      record('gen-b');
+      return { b: input };
+    },
+  },
+  // A target that is itself depended upon by another target
+  'gen-c': {
+    name: 'gen-c',
+    dependsOn: 'metadata',
+    hasParallelProcessor: true,
+    generate: async () => {
+      record('gen-c');
+      return streamOf([{ c: true }]);
+    },
+  },
+  'gen-c-all': {
+    name: 'gen-c-all',
+    dependsOn: 'gen-c',
+    generate: async input => {
+      record('gen-c-all');
+      return { all: input };
+    },
+  },
+};
+
+mock.module('../generators/loader.mjs', {
   namedExports: {
-    allGenerators: {
-      // Root streaming generator (no dependency)
-      ast: {
-        name: 'ast',
-        hasParallelProcessor: true,
-        generate: async () => {
-          record('ast');
-          return streamOf([{ ast: true }]);
-        },
-      },
-      // Streaming generator shared by multiple consumers
-      metadata: {
-        name: 'metadata',
-        dependsOn: 'ast',
-        hasParallelProcessor: true,
-        generate: async input => {
-          record('metadata');
-          return streamOf([{ meta: input.length }]);
-        },
-      },
-      // Two non-streaming consumers of the shared `metadata` result
-      'gen-a': {
-        name: 'gen-a',
-        dependsOn: 'metadata',
-        generate: async input => {
-          record('gen-a');
-          return { a: input };
-        },
-      },
-      'gen-b': {
-        name: 'gen-b',
-        dependsOn: 'metadata',
-        generate: async input => {
-          record('gen-b');
-          return { b: input };
-        },
-      },
-      // A target that is itself depended upon by another target
-      'gen-c': {
-        name: 'gen-c',
-        dependsOn: 'metadata',
-        hasParallelProcessor: true,
-        generate: async () => {
-          record('gen-c');
-          return streamOf([{ c: true }]);
-        },
-      },
-      'gen-c-all': {
-        name: 'gen-c-all',
-        dependsOn: 'gen-c',
-        generate: async input => {
-          record('gen-c-all');
-          return { all: input };
-        },
-      },
+    resolveGeneratorSpecifier: specifier => specifier,
+    loadGenerator: async specifier => syntheticGenerators[specifier],
+    loadGenerators: async targets => {
+      const generators = new Map();
+      const queue = [...targets];
+
+      while (queue.length > 0) {
+        const specifier = queue.shift();
+
+        if (generators.has(specifier)) {
+          continue;
+        }
+
+        const generator = syntheticGenerators[specifier];
+        generators.set(specifier, generator);
+
+        if (generator.dependsOn) {
+          queue.push(generator.dependsOn);
+        }
+      }
+
+      return generators;
     },
   },
 });

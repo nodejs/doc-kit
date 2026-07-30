@@ -5,26 +5,32 @@ import { cosmiconfig } from 'cosmiconfig';
 import { coerce } from 'semver';
 
 import { CHANGELOG_URL, populate } from './templates.mjs';
-import { allGenerators } from '../../generators/index.mjs';
+import {
+  loadGenerators,
+  resolveGeneratorSpecifier,
+} from '../../generators/loader.mjs';
 import logger from '../../logger/index.mjs';
 import { parseChangelog, parseIndex } from '../../parsers/markdown.mjs';
 import { enforceArray } from '../array.mjs';
 import { leftHandAssign } from '../generators.mjs';
-import { deepMerge, lazy } from '../misc.mjs';
+import { deepMerge } from '../misc.mjs';
 
 const configExplorer = cosmiconfig('doc-kit');
 
 /**
- * Get's the default configuration
+ * Get's the default configuration for the loaded generators
+ *
+ * @param {Map<string, GeneratorMetadata>} generators - Loaded generators
+ * @param {Partial<import('./types').Configuration>} config - The user configuration
  */
-export const getDefaultConfig = lazy(config =>
-  Object.keys(allGenerators).reduce(
-    (acc, k) => {
-      acc[k] =
-        'defaultConfiguration' in allGenerators[k]
-          ? typeof allGenerators[k].defaultConfiguration === 'function'
-            ? allGenerators[k].defaultConfiguration(config)
-            : allGenerators[k].defaultConfiguration
+export const getDefaultConfig = (generators, config) =>
+  [...generators.values()].reduce(
+    (acc, generator) => {
+      acc[generator.name] =
+        'defaultConfiguration' in generator
+          ? typeof generator.defaultConfiguration === 'function'
+            ? generator.defaultConfiguration(config)
+            : generator.defaultConfiguration
           : {};
 
       return acc;
@@ -50,8 +56,7 @@ export const getDefaultConfig = lazy(config =>
       threads: process.arch === 'riscv64' ? 1 : cpus().length,
       chunkSize: 10,
     })
-  )
-);
+  );
 
 /**
  * Loads an explicit configuration file or searches for one using cosmiconfig.
@@ -150,7 +155,16 @@ export const createRunConfiguration = async options => {
   // Resolve user configuration first so dynamic defaults can use it
   const cliConfig = createConfigFromCLIOptions(options);
   const intermediate = deepMerge(config, cliConfig);
-  const merged = deepMerge(getDefaultConfig(intermediate), intermediate);
+
+  // Resolve shorthand targets into import specifiers, then load the requested
+  // generators (and their dependency closure) so their defaults can be applied
+  intermediate.target &&= intermediate.target.map(resolveGeneratorSpecifier);
+  const generators = await loadGenerators(intermediate.target ?? []);
+
+  const merged = deepMerge(
+    getDefaultConfig(generators, intermediate),
+    intermediate
+  );
 
   // These need to be coerced
   merged.threads = Math.max(merged.threads, 1);
@@ -169,8 +183,8 @@ export const createRunConfiguration = async options => {
 
   // Now assign to each generator config (they inherit from global)
   await Promise.all(
-    Object.keys(allGenerators).map(async k => {
-      const value = merged[k];
+    [...generators.values()].map(async ({ name }) => {
+      const value = merged[name];
 
       // Transform generator-specific overrides
       await transformConfig(value);

@@ -28,7 +28,8 @@ declare global {
   }
 
   export interface ParallelTaskOptions {
-    generatorName: keyof AllGenerators;
+    /** Resolved import specifier the worker loads the generator from */
+    generatorSpecifier: string;
     input: unknown[];
     itemIndices: number[];
   }
@@ -67,7 +68,7 @@ declare global {
 
     description: string;
 
-    hasParallelProcessor: boolean;
+    hasParallelProcessor?: boolean;
 
     /**
      * The immediate generator that this generator depends on.
@@ -90,8 +91,11 @@ declare global {
      *
      * The `ast-js` generator is the top-level parser for JavaScript files. It
      * passes the ASTs for any JavaScript files given in the input.
+     *
+     * Declared as an import specifier (e.g. `@node-core/doc-kit/metadata`),
+     * so a dependency may live in any installed package.
      */
-    dependsOn: keyof AllGenerators | undefined;
+    dependsOn: string | undefined;
 
     /**
      * Generators are abstract and the different generators have different sort of inputs and outputs.

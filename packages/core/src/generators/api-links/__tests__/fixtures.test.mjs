@@ -3,6 +3,7 @@ import { after, before, describe, it } from 'node:test';
 
 import { globSync } from 'tinyglobby';
 
+import { loadGenerator } from '../../../generators/loader.mjs';
 import createWorkerPool from '../../../threading/index.mjs';
 import createParallelWorker from '../../../threading/parallel.mjs';
 import { setConfig } from '../../../utils/configuration/index.mjs';
@@ -15,7 +16,7 @@ const sourceFiles = globSync('*.js', {
   cwd: new URL(import.meta.resolve('./fixtures')),
 });
 
-const config = await setConfig({});
+const config = await setConfig({ target: ['api-links'] });
 
 describe('api links', () => {
   let pool;
@@ -35,7 +36,12 @@ describe('api links', () => {
           join(relativePath, 'fixtures', sourceFile).replaceAll(sep, '/'),
         ];
 
-        const worker = await createParallelWorker('ast-js', pool, config);
+        const worker = createParallelWorker(
+          'ast-js',
+          await loadGenerator('ast-js'),
+          pool,
+          config
+        );
 
         // Collect results from the async generator
         const astJsResults = [];

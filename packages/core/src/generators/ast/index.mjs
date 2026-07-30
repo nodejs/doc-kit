@@ -1,6 +1,6 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate, processChunk } from './generate.mjs';
 
 /**
  * This generator parses Markdown API doc files into AST trees.
@@ -8,10 +8,13 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'ast',
 
   description: 'Parses Markdown API doc files into AST trees',
 
   hasParallelProcessor: true,
-});
+
+  generate,
+  processChunk,
+};

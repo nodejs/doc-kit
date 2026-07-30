@@ -2,8 +2,8 @@ import { u as createTree } from 'unist-builder';
 
 import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
 import { getRemarkRecma as remark } from '../../../utils/remark.mjs';
+import { DEFAULT_EXPRESSION } from '../../../utils/signature/constants.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
-import { DEFAULT_EXPRESSION } from '../../legacy-json/constants.mjs';
 import { TRIMMABLE_PADDING_REGEX } from '../constants.mjs';
 
 /**

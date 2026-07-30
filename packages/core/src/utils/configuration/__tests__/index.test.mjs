@@ -16,20 +16,29 @@ const createMockConfig = (overrides = {}) => ({
   ...overrides,
 });
 
+// Synthetic generators keyed by specifier; the identity resolver below means
+// shorthand names and specifiers are the same thing in these tests.
+const mockGenerators = {
+  json: { name: 'json', defaultConfiguration: { format: 'json' } },
+  html: { name: 'html', defaultConfiguration: { format: 'html' } },
+  markdown: { name: 'markdown' },
+  web: {
+    name: 'web',
+    defaultConfiguration: config => ({
+      showSearchBox:
+        Array.isArray(config.target) && config.target.includes('orama-db'),
+    }),
+  },
+};
+
 // Mock modules
-mock.module('../../../generators/index.mjs', {
+mock.module('../../../generators/loader.mjs', {
   namedExports: {
-    allGenerators: {
-      json: { defaultConfiguration: { format: 'json' } },
-      html: { defaultConfiguration: { format: 'html' } },
-      markdown: {},
-      web: {
-        defaultConfiguration: config => ({
-          showSearchBox:
-            Array.isArray(config.target) && config.target.includes('orama-db'),
-        }),
-      },
-    },
+    resolveGeneratorSpecifier: specifier => specifier,
+    loadGenerator: async specifier => mockGenerators[specifier],
+    // Defaults are computed from the loaded generators; returning the full
+    // set regardless of targets keeps the assertions below simple.
+    loadGenerators: async () => new Map(Object.entries(mockGenerators)),
   },
 });
 mock.module('../../../parsers/markdown.mjs', {

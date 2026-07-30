@@ -2,8 +2,8 @@
 
 import { join } from 'node:path';
 
+import { generate, processChunk } from './generate.mjs';
 import { GITHUB_EDIT_URL } from '../../utils/configuration/templates.mjs';
-import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
  *
@@ -15,13 +15,13 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'legacy-html',
 
   description:
     'Generates the legacy version of the API docs in HTML, with the assets and styles included as files',
 
-  dependsOn: 'metadata',
+  dependsOn: '@node-core/doc-kit/metadata',
 
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.html'),
@@ -32,4 +32,7 @@ export default createLazyGenerator({
   },
 
   hasParallelProcessor: true,
-});
+
+  generate,
+  processChunk,
+};

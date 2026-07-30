@@ -2,11 +2,11 @@ import {
   DEFAULT_EXPRESSION,
   LEADING_HYPHEN,
   NAME_EXPRESSION,
-} from '../constants.mjs';
+} from './constants.mjs';
 import parseSignature from './parseSignature.mjs';
-import { leftHandAssign } from '../../../utils/generators.mjs';
-import { QUERIES, UNIST } from '../../../utils/queries/index.mjs';
-import { transformNodesToString } from '../../../utils/unist.mjs';
+import { leftHandAssign } from '../generators.mjs';
+import { QUERIES, UNIST } from '../queries/index.mjs';
+import { transformNodesToString } from '../unist.mjs';
 
 /**
  * Extracts and removes a specific pattern from a text string while storing the result in a key of the `current` object.
@@ -31,7 +31,7 @@ export const extractPattern = (text, pattern, key, current) => {
  * Parses an individual list item node to extract its properties
  *
  * @param {import('@types/mdast').ListItem} child
- * @returns {import('../types').ParameterList}
+ * @returns {import('./types').ParameterList}
  */
 export function parseListItem(child) {
   const current = {};
@@ -85,7 +85,7 @@ export function parseListItem(child) {
 /**
  * Parses a list of nodes and updates the corresponding section object with the extracted information.
  * Handles different section types such as methods, properties, and events differently.
- * @param {import('../types').Section} section
+ * @param {import('../../generators/legacy-json/types').Section} section
  * @param {import('@types/mdast').RootContent[]} nodes
  */
 export function parseList(section, nodes) {

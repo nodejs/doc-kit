@@ -4,15 +4,15 @@ import { createJSXElement } from './ast.mjs';
 import { parseListIntoProperties } from './types.mjs';
 import { highlighter } from '../../../utils/highlighter.mjs';
 import { UNIST } from '../../../utils/queries/index.mjs';
-import { parseListItem } from '../../legacy-json/utils/parseList.mjs';
-import parseSignature from '../../legacy-json/utils/parseSignature.mjs';
+import { parseListItem } from '../../../utils/signature/parseList.mjs';
+import parseSignature from '../../../utils/signature/parseSignature.mjs';
 import { JSX_IMPORTS } from '../../web/constants.mjs';
 
 /**
  * Generates a string representation of a function or class signature.
  *
  * @param {string} functionName - The name of the function or class.
- * @param {import('../../legacy-json/types').MethodSignature} signature - The parsed signature object.
+ * @param {import('../../../utils/signature/types').MethodSignature} signature - The parsed signature object.
  * @param {string} prefix - Optional prefix, i.e. `'new '` for constructors.
  */
 export const generateSignature = (
@@ -52,7 +52,7 @@ export const generateSignature = (
  * Creates a syntax-highlighted code block for a signature using rehype-shiki.
  *
  * @param {string} functionName - The function name to display.
- * @param {import('../../legacy-json/types').MethodSignature} signature - Signature object with parameter and return type info.
+ * @param {import('../../../utils/signature/types').MethodSignature} signature - Signature object with parameter and return type info.
  * @param {string} prefix - Optional prefix like `'new '`.
  */
 export const createSignatureCodeBlock = (functionName, signature, prefix) => {

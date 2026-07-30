@@ -53,6 +53,7 @@ const createTestConfiguration = async context => {
   context.after(() => rm(output, { recursive: true, force: true }));
 
   const config = await setConfig({
+    target: ['web'],
     output,
     version: 'v22.0.0',
     changelog: [],

@@ -1,7 +1,7 @@
 'use strict';
 
+import { generate } from './generate.mjs';
 import { GITHUB_BLOB_URL } from '../../utils/configuration/templates.mjs';
-import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
  * This generator is responsible for mapping publicly accessible functions in
@@ -13,7 +13,7 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'api-links',
 
   description:
@@ -21,9 +21,11 @@ export default createLazyGenerator({
 
   // Unlike the rest of the generators, this utilizes Javascript sources being
   // passed into the input field rather than Markdown.
-  dependsOn: 'ast-js',
+  dependsOn: '@node-core/doc-kit/ast-js',
 
   defaultConfiguration: {
     sourceURL: `${GITHUB_BLOB_URL}lib/{fileName}`,
   },
-});
+
+  generate,
+};

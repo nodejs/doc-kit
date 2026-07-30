@@ -1,6 +1,6 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 import legacyHtml from '../legacy-html/index.mjs';
 
 /**
@@ -12,15 +12,17 @@ import legacyHtml from '../legacy-html/index.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'legacy-html-all',
 
   description:
     'Generates the `all.html` file from the `legacy-html` generator, which includes all the modules in one single file',
 
-  dependsOn: 'legacy-html',
+  dependsOn: '@node-core/doc-kit/legacy-html',
 
   defaultConfiguration: {
     templatePath: legacyHtml.defaultConfiguration.templatePath,
   },
-});
+
+  generate,
+};

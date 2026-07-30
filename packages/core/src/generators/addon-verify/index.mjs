@@ -1,6 +1,6 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 
 /**
  * This generator generates a file list from code blocks extracted from
@@ -9,11 +9,13 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default await createLazyGenerator({
+export default {
   name: 'addon-verify',
 
   description:
     'Generates a file list from code blocks extracted from `doc/api/addons.md` to facilitate C++ compilation and JavaScript runtime validations',
 
-  dependsOn: 'metadata',
-});
+  dependsOn: '@node-core/doc-kit/metadata',
+
+  generate,
+};

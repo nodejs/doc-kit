@@ -1,6 +1,6 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate, processChunk } from './generate.mjs';
 
 /**
  * This generator parses Javascript sources passed into the generator's input
@@ -12,10 +12,13 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'ast-js',
 
   description: 'Parses Javascript source files passed into the input.',
 
   hasParallelProcessor: true,
-});
+
+  generate,
+  processChunk,
+};

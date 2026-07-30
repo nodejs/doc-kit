@@ -69,7 +69,7 @@ export const createCache = () => {
    * Collects an async generator's chunks, ensuring a single collection is
    * shared across all consumers of the same key.
    *
-   * @param {string} key - Cache key (the generator name)
+   * @param {string} key - Cache key (resolved generator specifier)
    * @param {AsyncGenerator<unknown[]>} generator - Generator to collect
    * @returns {Promise<unknown[]>} Promise resolving to the collected items
    */
@@ -93,7 +93,7 @@ export const createCache = () => {
     /**
      * Whether a generator has already been scheduled.
      *
-     * @param {string} name - Generator name
+     * @param {string} name - Cache key (resolved generator specifier)
      * @returns {boolean}
      */
     has: name => name in results,
@@ -101,7 +101,7 @@ export const createCache = () => {
     /**
      * Registers a generator's pending result.
      *
-     * @param {string} name - Generator name
+     * @param {string} name - Cache key (resolved generator specifier)
      * @param {Promise<unknown> | AsyncGenerator} result - Pending result
      */
     store: (name, result) => {
@@ -115,7 +115,7 @@ export const createCache = () => {
      * final collection). This drives eviction without coupling the cache to the
      * generator registry: callers supply how to resolve a dependency.
      *
-     * @param {string[]} targets - Requested generator names
+     * @param {string[]} targets - Requested generator cache keys
      * @param {(name: string) => string | undefined} dependsOn - Resolves a
      * generator's dependency name (if any)
      */
@@ -159,7 +159,7 @@ export const createCache = () => {
      * Reads a generator's result (collecting it first if it streams) and
      * evicts it once every expected consumer has read it.
      *
-     * @param {string} name - Generator name to consume
+     * @param {string} name - Cache key (resolved generator specifier) to consume
      * @returns {Promise<unknown>}
      */
     consume: async name => {

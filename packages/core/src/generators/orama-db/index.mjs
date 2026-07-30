@@ -1,6 +1,6 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 
 /**
  * This generator is responsible for generating the Orama database for the
@@ -8,10 +8,12 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'orama-db',
 
   description: 'Generates the Orama database for the API docs.',
 
-  dependsOn: 'metadata',
-});
+  dependsOn: '@node-core/doc-kit/metadata',
+
+  generate,
+};

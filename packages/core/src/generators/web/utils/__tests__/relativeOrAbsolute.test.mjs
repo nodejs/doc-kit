@@ -8,6 +8,7 @@ import {
 import { relativeOrAbsolute } from '../relativeOrAbsolute.mjs';
 
 await setConfig({
+  target: ['web'],
   version: 'v22.0.0',
   changelog: [],
   generators: {

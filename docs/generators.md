@@ -69,24 +69,26 @@ export type Generator = GeneratorMetadata<
 
 ### Step 3: Define Generator Metadata
 
-Create the generator metadata in `index.mjs` using `createLazyGenerator`:
+A generator module's default export is a plain object with its metadata and
+implementation. Create it in `index.mjs`:
 
 ```javascript
 // packages/core/src/generators/my-format/index.mjs
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 
 /**
  * Generates output in MyFormat.
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'my-format',
 
   description: 'Generates documentation in MyFormat',
 
-  // This generator depends on the metadata generator
-  dependsOn: 'metadata',
+  // This generator depends on the metadata generator. Dependencies are
+  // declared as import specifiers, so they can live in any package.
+  dependsOn: '@node-core/doc-kit/metadata',
 
   defaultConfiguration: {
     // If your generator supports a custom configuration, define the defaults here
@@ -96,7 +98,9 @@ export default createLazyGenerator({
     // To override the defaults, they can be specified here
     ref: 'overriddenRef',
   },
-});
+
+  generate,
+};
 ```
 
 ### Step 4: Implement the Generator Logic
@@ -147,27 +151,33 @@ function transformToMyFormat(entries, version) {
 }
 ```
 
-### Step 5: Register the Generator
+### Step 5: Make the Generator Loadable
 
-Add your generator to the exports in `packages/core/src/generators/index.mjs`:
+Generators are loaded dynamically by import specifier. Anything that resolves
+to a module whose default export is a generator works as a `--target`:
+
+```bash
+# A package (subpath) export
+doc-kit generate -t @my-scope/my-package/my-format ...
+
+# A local file
+doc-kit generate -t ./generators/my-format/index.mjs ...
+```
+
+Built-in generators additionally get a shorthand alias in
+`packages/core/src/generators/index.mjs`, which maps the name users type to
+the import specifier it resolves to:
 
 ```javascript
-// For public generators (available via CLI)
-import myFormat from './my-format/index.mjs';
-
 export const publicGenerators = {
-  'json-simple': jsonSimple,
-  'my-format': myFormat, // Add this
+  'json-simple': '@node-core/doc-kit/json-simple',
+  'my-format': '@node-core/doc-kit/my-format', // Add this
   // ... other generators
 };
-
-// For internal generators (used only as dependencies)
-const internalGenerators = {
-  ast,
-  metadata,
-  // ... internal generators
-};
 ```
+
+If the generator lives in this repository, also add a matching subpath to the
+`exports` map of its package's `package.json`.
 
 ## Parallel Processing with Workers
 
@@ -179,21 +189,24 @@ First, define the generator metadata in `index.mjs`:
 
 ```javascript
 // packages/core/src/generators/parallel-generator/index.mjs
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate, processChunk } from './generate.mjs';
 
 /**
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'parallel-generator',
 
   description: 'Processes data in parallel',
 
-  dependsOn: 'metadata',
+  dependsOn: '@node-core/doc-kit/metadata',
 
   // Indicates this generator has a processChunk implementation
   hasParallelProcessor: true,
-});
+
+  generate,
+  processChunk,
+};
 ```
 
 Then, implement both `processChunk` and `generate` in `generate.mjs`:
@@ -273,20 +286,23 @@ Define the generator metadata in `index.mjs`:
 
 ```javascript
 // packages/core/src/generators/streaming-generator/index.mjs
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate, processChunk } from './generate.mjs';
 
 /**
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'streaming-generator',
 
   description: 'Streams results as they are ready',
 
-  dependsOn: 'metadata',
+  dependsOn: '@node-core/doc-kit/metadata',
 
   hasParallelProcessor: true,
-});
+
+  generate,
+  processChunk,
+};
 ```
 
 Implement the generator in `generate.mjs`:
@@ -331,18 +347,20 @@ Generator metadata in `index.mjs`:
 
 ```javascript
 // packages/core/src/generators/batch-generator/index.mjs
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 
 /**
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'batch-generator',
 
   description: 'Requires all input at once',
 
-  dependsOn: 'jsx-ast',
-});
+  dependsOn: '@node-core/doc-kit/jsx-ast',
+
+  generate,
+};
 ```
 
 Implementation in `generate.mjs`:
@@ -378,15 +396,19 @@ Use non-streaming when:
 In `index.mjs`:
 
 ```javascript
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 
-export default createLazyGenerator({
+export default {
   name: 'my-generator',
 
-  dependsOn: 'metadata', // This generator requires metadata output
+  // This generator requires the metadata generator's output. The dependency
+  // is an import specifier, so it may point at any installed package.
+  dependsOn: '@node-core/doc-kit/metadata',
 
   // ... other metadata
-});
+
+  generate,
+};
 ```
 
 In `generate.mjs`:
@@ -402,27 +424,27 @@ export async function generate(input, worker) {
 ```javascript
 // Step 1: Parse markdown to AST
 // packages/core/src/generators/ast/index.mjs
-export default createLazyGenerator({
+export default {
   name: 'ast',
-  dependsOn: undefined,  // No dependency
+  dependsOn: undefined, // No dependency
   // Processes raw markdown files
-});
+};
 
 // Step 2: Extract metadata from AST
 // packages/core/src/generators/metadata/index.mjs
-export default createLazyGenerator({
+export default {
   name: 'metadata',
-  dependsOn: 'ast',  // Depends on AST
+  dependsOn: '@node-core/doc-kit/ast', // Depends on AST
   // Processes AST output
-});
+};
 
 // Step 3: Generate HTML from metadata
 // packages/core/src/generators/html-generator/index.mjs
-export default createLazyGenerator({
+export default {
   name: 'html-generator',
-  dependsOn: 'metadata',  // Depends on metadata
+  dependsOn: '@node-core/doc-kit/metadata', // Depends on metadata
   // Processes metadata output
-});
+};
 ```
 
 ### Multiple Consumers

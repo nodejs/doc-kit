@@ -1,7 +1,7 @@
 import { buildHierarchy } from './buildHierarchy.mjs';
-import { parseList } from './parseList.mjs';
 import { enforceArray } from '../../../utils/array.mjs';
 import { getRemarkRehype as remark } from '../../../utils/remark.mjs';
+import { parseList } from '../../../utils/signature/parseList.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import { SECTION_TYPE_PLURALS, UNPROMOTED_KEYS } from '../constants.mjs';
 
