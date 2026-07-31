@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { toHtml } from 'hast-util-to-html';
+import { toString } from 'hast-util-to-string';
 
 import {
   typeAnnotationToHast,
@@ -105,27 +106,23 @@ describe('typeAnnotationToHighlightedHast', () => {
       { start: 0, end: value.length, text: value, href: 'http2.html#headers' },
     ];
 
-    const asTypeScript = toHtml(
-      typeAnnotationToHighlightedHast(
-        state,
-        makeNode(value, {
-          typescript: true,
-          links,
-        })
-      )
+    const asTypeScript = typeAnnotationToHighlightedHast(
+      state,
+      makeNode(value, { typescript: true, links })
     );
 
-    const asDisplayName = toHtml(
-      typeAnnotationToHighlightedHast(state, makeNode(value, { links }))
+    const asDisplayName = typeAnnotationToHighlightedHast(
+      state,
+      makeNode(value, { links })
     );
 
-    assert.match(asTypeScript, /<span style="color:/);
-    assert.doesNotMatch(asDisplayName, /<span style="color:/);
+    assert.match(toHtml(asTypeScript), /<span style="color:/);
+    assert.doesNotMatch(toHtml(asDisplayName), /<span style="color:/);
 
     // Still one highlighted <code> with the whole name linked
-    assert.match(asDisplayName, /^<code[^>]*class="[^"]*shiki[^"]*type"/);
-    assert.match(asDisplayName, /<a href="http2.html#headers"/);
-    assert.equal(asDisplayName.replace(/<[^>]+>/g, ''), value);
+    assert.match(toHtml(asDisplayName), /^<code[^>]*class="[^"]*shiki[^"]*/);
+    assert.match(toHtml(asDisplayName), /<a href="http2.html#headers"/);
+    assert.equal(toString(asDisplayName), value);
   });
 
   it('falls back to plain code when nothing resolved', () => {

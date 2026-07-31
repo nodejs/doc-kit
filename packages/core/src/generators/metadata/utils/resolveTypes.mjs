@@ -124,7 +124,7 @@ export const parseTypeValues = values => {
 const resolveDisplayNames = (value, typeMap) => {
   const links = [];
 
-  for (const { 0: part, index } of value.matchAll(/[^|]+/g)) {
+  for (const { 0: part, index } of value.matchAll(/(?:[^|]|\|\|)+/g)) {
     // An array of a type links to the type itself
     const name = part.trim().replace(/(\[\])+$/, '');
     const href = name && resolveTypeReference(name, typeMap);

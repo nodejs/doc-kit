@@ -98,6 +98,13 @@ describe('resolveTypeAnnotations', () => {
     ]);
   });
 
+  it('does not read `||` in default-value prose as a union', () => {
+    const node = resolve("req.url || '/'");
+
+    assert.deepEqual(node.data.links, []);
+    assert.deepEqual(warnings, ["Invalid type annotation: {req.url || '/'}"]);
+  });
+
   it('marks which values are TypeScript, for the highlighter', () => {
     const isTypeScript = (value, typeMap) =>
       resolve(value, typeMap).data.typescript;
