@@ -48,6 +48,11 @@ export const lookupTypeName = (name, typeMap) => {
   return '';
 };
 
+// A dotted identifier path, e.g. `vm.Module` or `os.constants.dlopen`. Names
+// that merely contain a dot (prose, `Object.<string, string>`) must not be
+// turned into a module link.
+const MODULE_QUALIFIED_NAME = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/;
+
 /**
  * Resolves a type identifier to a documentation URL: map lookups first, then
  * the dotted-name heuristic for Node.js types like `vm.Module` (which links
@@ -65,7 +70,7 @@ export const resolveTypeReference = (name, typeMap) => {
   }
 
   // Transform Node.js types like 'vm.Something'.
-  if (name.indexOf('.') >= 0) {
+  if (MODULE_QUALIFIED_NAME.test(name)) {
     const [mod, ...pieces] = name.split('.');
     const isClass = pieces.at(-1).match(/^[A-Z][a-z]/);
 

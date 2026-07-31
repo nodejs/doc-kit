@@ -93,6 +93,37 @@ describe('remarkTypeAnnotations', () => {
     assert.deepEqual(valuesIn('An empty {} object.'), []);
   });
 
+  it('does not match prose that cannot start a type', () => {
+    const markdown = 'and code points U+007B ({), and U+007D (}).';
+
+    assert.deepEqual(valuesIn(markdown), []);
+    assert.deepEqual(
+      selectAll('text', processor.parse(markdown)).map(node => node.value),
+      [markdown]
+    );
+  });
+
+  it('matches an annotation opened directly after punctuation', () => {
+    assert.deepEqual(valuesIn('In batches ({Uint8Array\\[]} per iteration).'), [
+      'Uint8Array[]',
+    ]);
+    assert.deepEqual(
+      valuesIn('* `maxSessionMemory`{number} Sets the maximum'),
+      ['number']
+    );
+  });
+
+  it('matches types opening with an operator or an escape', () => {
+    assert.deepEqual(valuesIn('A {-1 | 0 | 1} literal.'), ['-1 | 0 | 1']);
+    assert.deepEqual(valuesIn('An {\\[]} array.'), ['[]']);
+  });
+
+  it('allows leading whitespace inside the braces', () => {
+    assert.deepEqual(valuesIn('Headers { string | URL | Object } here.'), [
+      'string | URL | Object',
+    ]);
+  });
+
   it('leaves an unbalanced brace as literal text', () => {
     const tree = processor.parse('An { unclosed brace.');
 
