@@ -96,6 +96,9 @@ export default createLazyGenerator({
     // see the web generator README for the shape and shorthand.
     components: {},
 
+    // The SideBar and NavBar navigation items
+    navigation: {},
+
     // When omitted, the Vite adapter is loaded lazily during generation.
     bundler: undefined,
   }),

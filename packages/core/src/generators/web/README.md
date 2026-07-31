@@ -25,6 +25,7 @@ The `web` generator accepts the following configuration options:
 | `imports`         | `object`     | See below                                     | Object mapping `#theme/` aliases to component paths for customization                                       |
 | `virtualImports`  | `object`     | `{}`                                          | Additional virtual module mappings supplied to the server and client builds                                 |
 | `components`      | `object`     | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below)                                    |
+| `navigation`      | `object`     | `{}`                                          | Sidebar groups and navigation bar items (see below)                                                         |
 | `bundler`         | `WebBundler` | Vite adapter                                  | Adapter that renders server entries and writes the client and HTML output (see below)                       |
 
 ### `head`
@@ -70,6 +71,56 @@ export default {
 > Structural and theme-bound tags are emitted by the template itself rather than
 > via `head`, including `og:title` (which mirrors the per-page title) and
 > `og:type`. The UI stylesheet bundles its fonts locally.
+
+### `navigation`
+
+The `navigation` object supplies the site's two navigation surfaces. Both keys
+are optional; omit either one to keep that component's default.
+
+| Key       | Type    | Description                                                                                                |
+| --------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `sidebar` | `array` | Sidebar groups, each `{ groupName, items }`. Defaults to one `API Documentation` group holding every page. |
+| `navbar`  | `array` | Navigation bar items, each `{ text, link, target? }`. Defaults to none, which renders no items.            |
+
+Sidebar items are `{ label, link }` and may nest through an `items` array of
+their own. A `label` is plain text, except that backticked spans render as
+`<code>` (``'`fs` Generator'``), matching how page headings are rendered. A
+`link` is a page path without its extension (`/fs`, `/generators/web`): it is
+resolved against the page being rendered, so it obeys `useAbsoluteURLs` and
+highlights while it is the current page. Links starting with `http://` or
+`https://` are used as authored.
+
+Navigation bar links are always used as authored, since they typically point
+outside the generated site. Give them a `target` of `'_blank'` to open in a new
+tab and mark them with an external-link icon.
+
+```js
+// doc-kit.config.mjs
+export default {
+  web: {
+    navigation: {
+      sidebar: [
+        {
+          groupName: 'Guides',
+          items: [{ label: 'Getting started', link: '/getting-started' }],
+        },
+        {
+          groupName: 'Reference',
+          items: [{ label: '`fs`', link: '/fs' }],
+        },
+      ],
+      navbar: [
+        { text: 'Learn', link: 'https://nodejs.org/en/learn' },
+        { text: 'Download', link: 'https://nodejs.org/en/download' },
+      ],
+    },
+  },
+};
+```
+
+The sidebar also renders a version `<Select>` built from `changelog`. A site
+configured without one has no versions to switch between, so the control is
+omitted rather than rendered empty.
 
 ### Bundler adapters
 
@@ -261,8 +312,6 @@ import { project, repository, editURL } from '#theme/config';
 
 ### Available exports
 
-All scalar (non-object) configuration values are automatically exported. The defaults include:
-
 | Export                   | Type                           | Description                                                                                                           |
 | ------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
 | `project`                | `string`                       | Project name (e.g. `'Node.js'`)                                                                                       |
@@ -271,6 +320,7 @@ All scalar (non-object) configuration values are automatically exported. The def
 | `versions`               | `Array<{ url, label, major }>` | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use)                   |
 | `editURL`                | `string`                       | Partially populated "edit this page" URL template (only `{path}` remains)                                             |
 | `pages`                  | `Array<[string, string]>`      | Sorted `[name, path]` tuples for sidebar navigation                                                                   |
+| `navigation`             | `object`                       | Mirrors the configured `navigation` (consumed by the built-in `SideBar` and `NavBar`)                                 |
 | `useAbsoluteURLs`        | `boolean`                      | Whether internal links use absolute URLs (mirrors config value)                                                       |
 | `baseURL`                | `string`                       | Base URL for the documentation site (used when `useAbsoluteURLs` is `true`)                                           |
 | `languageDisplayNameMap` | `Map<string, string>`          | Shiki language alias → display name map for code blocks                                                               |
