@@ -63,8 +63,10 @@ export default ({ metadata, headings = [], readingTime }) => {
     <MetaBar
       heading="Table of Contents"
       // Offset the sticky position by the sticky navigation bar's height,
-      // otherwise the navigation bar covers the top of the meta bar
-      style={{ top: 'var(--header-height)' }}
+      // otherwise the navigation bar covers the top of the meta bar.
+      // `--header-height` comes from `@node-core/ui-components` base styles;
+      // fall back to its current value (4rem) in case it is ever renamed
+      style={{ top: 'var(--header-height, 4rem)' }}
       headings={{
         items: headings.map(({ value, stability, ...heading }) => ({
           ...heading,
