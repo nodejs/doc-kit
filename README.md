@@ -9,7 +9,11 @@
 </p>
 
 <p align="center">
-  <code>@node-core/doc-kit</code> is a tool to generate API documentation of Node.js. <a href="https://github.com/nodejs/node/issues/52343">See this issue</a> for more information.
+  <code>@node-core/doc-kit</code> is a tool to generate API documentation of Node.js. <a href="https://github.com/nodejs/node/issues/52343">See this issue</a> for more information. 
+</p>
+
+<p align="center">
+  <code>doc-kit</code> can make sites unrelated to Node.js too. <a href="https://doc-kit.nodejs.org/">View the docs, getting-started, and showcase.</a>
 </p>
 
 <p align="center">
