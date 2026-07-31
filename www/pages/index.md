@@ -39,7 +39,7 @@ Only some of these are things you ask for by name. `ast`, `metadata`, and
 them, and they are not valid `-t` targets. Everything in the fan-out below
 `metadata` is a target you can pass to `-t`, and passing several at once reuses
 the one shared parse rather than repeating it. The full list is in the
-[generators reference](./generators/web).
+[generators reference](./generators/web.html).
 
 ## The input contract
 
@@ -51,14 +51,14 @@ important rule:
 > page's identity — its sidebar label and its output filename. A file without
 > one produces no page at all, and the build still exits `0`.
 
-See [the specification](./specification) for the full input format.
+See [the specification](./specification.html) for the full input format.
 
 ## What's next
 
-- [Getting started](./getting-started) — render your first document.
-- [Commands](./commands) — the `doc-kit` CLI surface.
-- [Configuration](./configuration) — `doc-kit.config.mjs` reference.
-- [Creating generators](./generators) — extend the pipeline.
+- [Getting started](./getting-started.html) — render your first document.
+- [Commands](./commands.html) — the `doc-kit` CLI surface.
+- [Configuration](./configuration.html) — `doc-kit.config.mjs` reference.
+- [Creating generators](./generators.html) — extend the pipeline.
 
 ## Showcase
 

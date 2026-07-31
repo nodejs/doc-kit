@@ -128,9 +128,9 @@ experience, preserving core functionality.
 
 ## Next steps
 
-- Explore [Configuration](./configuration) — consider moving your `-t` target
-  flags into a `doc-kit.config.mjs` file.
-- [Further customize the `web` generator](./generators/web) — give it a custom
-  sidenav or footer.
-- [Read the full input specification](./specification) — the full Markdown
+- Explore [Configuration](./configuration.html) — consider moving your `-t`
+  target flags into a `doc-kit.config.mjs` file.
+- [Further customize the `web` generator](./generators/web.html) — give it a
+  custom sidenav or footer.
+- [Read the full input specification](./specification.html) — the full Markdown
   contract.
