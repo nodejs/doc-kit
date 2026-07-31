@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <code>@node-core/doc-kit</code> is a tool to generate API documentation of Node.js. <a href="https://github.com/nodejs/node/issues/52343">See this issue</a> for more information. 
+  <code>@node-core/doc-kit</code> is a tool to generate API documentation of Node.js. <a href="https://github.com/nodejs/node/issues/52343">See this issue</a> for more information.
 </p>
 
 <p align="center">
