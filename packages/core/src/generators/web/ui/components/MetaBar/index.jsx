@@ -62,6 +62,9 @@ export default ({ metadata, headings = [], readingTime }) => {
   return (
     <MetaBar
       heading="Table of Contents"
+      // Offset the sticky position by the sticky navigation bar's height,
+      // otherwise the navigation bar covers the top of the meta bar
+      style={{ top: 'var(--header-height)' }}
       headings={{
         items: headings.map(({ value, stability, ...heading }) => ({
           ...heading,

@@ -16,23 +16,25 @@ export default ({ metadata }) => {
   const [themePreference, setThemePreference] = useTheme();
 
   return (
-    <NavBar
-      Logo={Logo}
-      sidebarItemTogglerAriaLabel="Toggle navigation menu"
-      navItems={[]}
-    >
-      {showSearchBox && <SearchBox pathname={metadata.path} />}
-      <ThemeToggle
-        onChange={setThemePreference}
-        currentTheme={themePreference}
-      />
-      <a
-        href={`https://github.com/${repository}`}
-        aria-label={`View ${repository} on GitHub`}
-        className={styles.ghIconWrapper}
+    <div className="nav-bar-sticky">
+      <NavBar
+        Logo={Logo}
+        sidebarItemTogglerAriaLabel="Toggle navigation menu"
+        navItems={[]}
       >
-        <GitHubIcon />
-      </a>
-    </NavBar>
+        {showSearchBox && <SearchBox pathname={metadata.path} />}
+        <ThemeToggle
+          onChange={setThemePreference}
+          currentTheme={themePreference}
+        />
+        <a
+          href={`https://github.com/${repository}`}
+          aria-label={`View ${repository} on GitHub`}
+          className={styles.ghIconWrapper}
+        >
+          <GitHubIcon />
+        </a>
+      </NavBar>
+    </div>
   );
 };

@@ -10,6 +10,25 @@
   --font-ibm-plex-mono: 'IBM Plex Mono', monospace;
 }
 
+/* Keep the top navigation bar visible while scrolling */
+.nav-bar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Radix popups (theme switcher, selects) must paint above the sticky
+   navigation bar; they render in a portal and slightly overlap the bar.
+   `!important` is needed because Radix sets an inline `z-index: auto` */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+/* Keep anchored headings below the sticky navigation bar */
+main [id] {
+  scroll-margin-top: calc(var(--header-height, 4rem) + 1rem);
+}
+
 main {
   /* Code should inherit its font size */
   code {
