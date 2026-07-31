@@ -10,11 +10,14 @@
   --font-ibm-plex-mono: 'IBM Plex Mono', monospace;
 }
 
-/* Keep the top navigation bar visible while scrolling */
+/* Keep the top navigation bar visible while scrolling. The hidden sidebar
+   toggler checkbox inside the NavBar is translated above the bar, so clip it:
+   inside this stacking context it would otherwise cover the banner above */
 .nav-bar-sticky {
   position: sticky;
   top: 0;
   z-index: 40;
+  overflow: hidden;
 }
 
 /* Radix popups (theme switcher, selects) must paint above the sticky
