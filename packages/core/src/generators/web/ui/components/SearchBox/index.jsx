@@ -36,11 +36,15 @@ const followSearchHit = event => {
       return;
     }
 
-    requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      // Keep the URL hash in sync with the followed hit, since
+      // `scrollIntoView` alone leaves the previous hash untouched.
+      history.pushState(null, '', target.hash || target.pathname);
+
       document
         .getElementById(decodeURIComponent(target.hash.slice(1)))
-        ?.scrollIntoView()
-    );
+        ?.scrollIntoView();
+    });
   });
 };
 
