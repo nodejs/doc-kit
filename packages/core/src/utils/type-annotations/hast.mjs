@@ -2,6 +2,8 @@
 
 import { highlighter } from '../highlighter.mjs';
 
+const [lightTheme, darkTheme] = highlighter.shiki.getLoadedThemes();
+
 /**
  * Slices a type's text by its resolved link ranges into hast children —
  * plain text segments interleaved with `<a class="type-link">` anchors.
@@ -80,7 +82,7 @@ export const typeAnnotationToHighlightedHast = (state, node) => {
 
   const root = highlighter.shiki.codeToHast(node.value, {
     lang: 'typescript',
-    theme: highlighter.shiki.getLoadedThemes()[0],
+    themes: { light: lightTheme, dark: darkTheme },
     decorations: links.map(({ start, end, href }) => ({
       start,
       end,
@@ -92,8 +94,7 @@ export const typeAnnotationToHighlightedHast = (state, node) => {
 
   // codeToHast wraps the highlighted line in <pre><code>; re-shape that into
   // a single inline <code> element ("only the outermost type opens/closes
-  // the code fragment") carrying Shiki's theme styling. The <pre>'s tabindex
-  // is dropped — an inline fragment is no scroll container.
+  // the code fragment")
   const [preElement] = root.children;
   const [codeElement] = preElement.children;
 
@@ -102,7 +103,6 @@ export const typeAnnotationToHighlightedHast = (state, node) => {
     tagName: 'code',
     properties: {
       class: `${preElement.properties.class} type`,
-      style: preElement.properties.style,
     },
     children: codeElement.children,
   };

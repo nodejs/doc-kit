@@ -53,12 +53,13 @@
     "README.md"
   ],
   "dependencies": {
+    "@11ty/is-land": "^5.0.1",
     "@actions/core": "^3.0.0",
     "@fontsource-variable/open-sans": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@heroicons/react": "^2.2.0",
-    "@node-core/rehype-shiki": "^1.4.2",
-    "@node-core/ui-components": "^1.7.2",
+    "@node-core/rehype-shiki": "^1.4.3",
+    "@node-core/ui-components": "^1.7.4",
     "@orama/orama": "^3.1.18",
     "@orama/ui": "^1.5.4",
     "@swc/html-wasm": "^1.15.43",

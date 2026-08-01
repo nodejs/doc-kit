@@ -9,6 +9,7 @@ import SearchHit from '@node-core/ui-components/Common/Search/Results/Hit';
 
 import styles from './index.module.css';
 import useOrama from '../../hooks/useOrama.mjs';
+import withIsland from '../../islands/withIsland.jsx';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
 /**
@@ -97,4 +98,7 @@ const SearchBox = ({ pathname }) => {
   );
 };
 
-export default SearchBox;
+export default withIsland(SearchBox, {
+  name: 'SearchBox',
+  on: { interaction: 'pointerover,focusin,touchstart' },
+});

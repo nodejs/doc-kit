@@ -3,7 +3,6 @@ import Article from '@node-core/ui-components/Containers/Article';
 
 import Banner from '../Banner';
 
-import { server } from '#theme/config';
 import Footer from '#theme/Footer';
 import MetaBar from '#theme/Metabar';
 import NavBar from '#theme/Navigation';
@@ -20,7 +19,7 @@ import SideBar from '#theme/Sidebar';
  */
 export default ({ metadata, headings, readingTime, children }) => (
   <>
-    {!server && <Banner />}
+    <Banner />
     <NavBar metadata={metadata} />
     <Article>
       <SideBar metadata={metadata} />

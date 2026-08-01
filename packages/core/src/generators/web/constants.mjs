@@ -24,7 +24,7 @@ export const JSX_IMPORTS = {
   },
   CodeTabs: {
     name: 'CodeTabs',
-    source: '@node-core/ui-components/MDX/CodeTabs',
+    source: resolve(ROOT, './ui/components/CodeTabs'),
   },
   MDXTooltip: {
     name: 'MDXTooltip',
