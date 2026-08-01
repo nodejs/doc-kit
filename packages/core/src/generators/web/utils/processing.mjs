@@ -1,5 +1,5 @@
 import createConfigSource from './config.mjs';
-import createASTBuilder from './generate.mjs';
+import createProgramBuilder from './generate.mjs';
 import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
 import getConfig from '../../../utils/configuration/index.mjs';
 import { populate } from '../../../utils/configuration/templates.mjs';
@@ -94,7 +94,7 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
  * @returns {{ add: (item: { data: import('../../metadata/types').MetadataEntry, code: string }) => void, serverCodeMap: Map<string, string>, clientCodeMap: Map<string, string> }}
  */
 export function createCodeConverter() {
-  const { buildServerProgram, buildClientProgram } = createASTBuilder();
+  const { buildServerProgram, clientProgram } = createProgramBuilder();
 
   const serverCodeMap = new Map();
   const clientCodeMap = new Map();
@@ -111,8 +111,8 @@ export function createCodeConverter() {
       // Prepare code for server-side execution (wrapped for SSR)
       serverCodeMap.set(fileName, buildServerProgram(code));
 
-      // Prepare code for client-side execution (wrapped for hydration)
-      clientCodeMap.set(fileName, buildClientProgram(code));
+      // Every page's entry is the same module; the bundler emits one chunk.
+      clientCodeMap.set(fileName, clientProgram);
     },
     serverCodeMap,
     clientCodeMap,

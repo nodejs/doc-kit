@@ -1,3 +1,6 @@
 {
-  "sideEffects": false
+  "sideEffects": [
+    "*.css",
+    "./islands/runtime.mjs"
+  ]
 }

@@ -2,6 +2,7 @@ import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import Banner from '@node-core/ui-components/Common/Banner';
 
 import useBanners from '../hooks/useBanners.mjs';
+import withIsland from '../islands/withIsland.jsx';
 
 import { remoteConfigUrl, version } from '#theme/config';
 
@@ -29,4 +30,4 @@ const Banners = () => {
   );
 };
 
-export default Banners;
+export default withIsland(Banners, { name: 'Banner', on: { idle: true } });

@@ -2,6 +2,7 @@ import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
+import withIsland from '../../islands/withIsland.jsx';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 import { renderLabel } from '../../utils/renderLabel.jsx';
 
@@ -56,7 +57,7 @@ const buildGroups = metadata => {
  * Sidebar component for MDX documentation with version selection and page navigation
  * @param {{ metadata: import('../../types').SerializedMetadata }} props
  */
-export default ({ metadata }) => {
+const Sidebar = ({ metadata }) => {
   const introducedMajor = getMajorVersion(
     metadata.added ?? metadata.introduced_in
   );
@@ -93,3 +94,5 @@ export default ({ metadata }) => {
     </SideBar>
   );
 };
+
+export default withIsland(Sidebar, { name: 'SideBar', on: { idle: true } });

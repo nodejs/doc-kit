@@ -236,6 +236,12 @@ export const createViteConfig = ({
       ...(server ? { manifest: false } : {}),
       ssr: server,
 
+      // Islands make split CSS wrong: a component's stylesheet would arrive
+      // with the chunk that hydrates it, long after the server-rendered markup
+      // it styles is on screen. One stylesheet keeps the page styled from the
+      // first paint, whenever — or whether — its islands load.
+      ...(server ? {} : { cssCodeSplit: false }),
+
       // Browser output follows the generator's minification setting. Temporary
       // server output stays readable and disappears immediately after render.
       minify: server ? false : (vite.build?.minify ?? webConfig.minify),

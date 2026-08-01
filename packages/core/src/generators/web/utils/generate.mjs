@@ -46,46 +46,30 @@ export const createImportDeclaration = (
 };
 
 /**
- * Factory function that creates server and client program generators.
- *
- * Returns two functions that wrap JSX component code:
- * - `buildClientProgram`: Wraps component for client-side hydration
- * - `buildServerProgram`: Wraps component for server-side rendering
+ * Factory function that creates the page programs.
  */
 export default () => {
   // User-configured components (for JSX-in-MDX), merged with the built-ins.
   const { components } = getConfig('web');
 
-  // Generate import statements for all JSX components
-  // TODO: Optimize by conditionally including server-only or client-only imports
-  const baseImports = [
+  const componentImports = [
     ...Object.values(JSX_IMPORTS),
     ...Object.entries(components).map(normalizeComponent),
-  ].map(({ name, source, isDefaultExport = true }) =>
-    createImportDeclaration(name, source, isDefaultExport)
-  );
+  ];
 
   /**
-   * Builds a client-side hydration program.
+   * Declares only the components a page actually uses.
    *
-   * @param {string} componentCode - JSX component code expression.
-   * @returns {string} Complete client-side JavaScript program.
+   * @param {Array<import('../constants.mjs').JSXImportConfig>} imports
+   * @param {string} code - The page's JSX expression.
+   * @returns {Array<string>}
    */
-  const buildClientProgram = componentCode => {
-    return [
-      // Import all JSX components
-      ...baseImports,
-
-      // Import CSS styles for client-side rendering
-      createImportDeclaration(null, resolve(ROOT, './ui/index.css')),
-
-      // Import Preact's hydrate function (named import)
-      createImportDeclaration('hydrate', 'preact', false),
-
-      // Hydrate the component into the root element
-      `hydrate(${componentCode}, document.getElementById("root"));`,
-    ].join('');
-  };
+  const declare = (imports, code) =>
+    imports
+      .filter(({ name }) => code.includes(`<${name}`))
+      .map(({ name, source, isDefaultExport = true }) =>
+        createImportDeclaration(name, source, isDefaultExport)
+      );
 
   /**
    * Builds a server-side rendering (SSR) program.
@@ -95,8 +79,8 @@ export default () => {
    */
   const buildServerProgram = componentCode => {
     return [
-      // Import all JSX components
-      ...baseImports,
+      // Import the JSX components this page uses
+      ...declare(componentImports, componentCode),
 
       // Import Preact's async SSR render function (named import)
       createImportDeclaration(
@@ -110,5 +94,23 @@ export default () => {
     ].join('\n');
   };
 
-  return { buildClientProgram, buildServerProgram };
+  // The client entry, shared verbatim by every page
+  const clientProgram = [
+    createImportDeclaration(null, resolve(ROOT, './ui/index.css')),
+
+    createImportDeclaration(
+      'registerIslands',
+      resolve(ROOT, './ui/islands/runtime.mjs'),
+      false
+    ),
+
+    `registerIslands({${componentImports
+      .map(
+        ({ name, source }) =>
+          `${JSON.stringify(name)}: () => import(${JSON.stringify(source)})`
+      )
+      .join(', ')}});`,
+  ].join('\n');
+
+  return { buildServerProgram, clientProgram };
 };

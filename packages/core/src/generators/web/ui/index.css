@@ -10,6 +10,21 @@
   --font-ibm-plex-mono: 'IBM Plex Mono', monospace;
 }
 
+is-land,
+island-slot {
+  display: contents;
+}
+
+/* TODO(@avivkeller): make this component's CSS more agnostic */
+is-land[data-component='SideBar'] {
+  display: flex;
+  flex-direction: column;
+
+  > aside {
+    flex: 1 0 auto;
+  }
+}
+
 main {
   /* Code should inherit its font size */
   code {

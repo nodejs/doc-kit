@@ -1,10 +1,9 @@
-import ThemeToggle from '@node-core/ui-components/Common/ThemeToggle';
 import NavBar from '@node-core/ui-components/Containers/NavBar';
 import styles from '@node-core/ui-components/Containers/NavBar/index.module.css';
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
 import SearchBox from './SearchBox';
-import { useTheme } from '../hooks/useTheme.mjs';
+import ThemeToggle from './ThemeToggle.jsx';
 
 import { repository, showSearchBox, navigation } from '#theme/config';
 import Logo from '#theme/Logo';
@@ -12,30 +11,23 @@ import Logo from '#theme/Logo';
 /**
  * NavBar component that displays the headings, search, etc.
  */
-export default ({ metadata }) => {
-  const [themePreference, setThemePreference] = useTheme();
-
-  return (
-    <NavBar
-      Logo={Logo}
-      sidebarItemTogglerAriaLabel="Toggle navigation menu"
-      navItems={navigation.navbar ?? []}
-      // Drives the active-item highlight, and is dereferenced for every item
-      // whose link is site-absolute, so it must always be a string.
-      pathname={metadata.path}
+export default ({ metadata }) => (
+  <NavBar
+    Logo={Logo}
+    sidebarItemTogglerAriaLabel="Toggle navigation menu"
+    navItems={navigation.navbar ?? []}
+    // Drives the active-item highlight, and is dereferenced for every item
+    // whose link is site-absolute, so it must always be a string.
+    pathname={metadata.path}
+  >
+    {showSearchBox && <SearchBox pathname={metadata.path} />}
+    <ThemeToggle />
+    <a
+      href={`https://github.com/${repository}`}
+      aria-label={`View ${repository} on GitHub`}
+      className={styles.ghIconWrapper}
     >
-      {showSearchBox && <SearchBox pathname={metadata.path} />}
-      <ThemeToggle
-        onChange={setThemePreference}
-        currentTheme={themePreference}
-      />
-      <a
-        href={`https://github.com/${repository}`}
-        aria-label={`View ${repository} on GitHub`}
-        className={styles.ghIconWrapper}
-      >
-        <GitHubIcon />
-      </a>
-    </NavBar>
-  );
-};
+      <GitHubIcon />
+    </a>
+  </NavBar>
+);
