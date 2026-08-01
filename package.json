@@ -32,7 +32,7 @@
     "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.31.0",
     "@eslint/js": "10.0.1",
-    "@playwright/test": "~1.60.0",
+    "@playwright/test": "~1.62.0",
     "@reporters/github": "~2.0.1",
     "@types/mdast": "~4.0.4",
     "@types/node": "~24.10.1",
