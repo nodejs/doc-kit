@@ -1,5 +1,8 @@
 import type { JSXContent } from '../jsx-ast/utils/buildContent.mjs';
 import type { GlobalConfiguration } from '../../utils/configuration/types';
+import type SideBar from '@node-core/ui-components/Containers/Sidebar';
+import type NavBar from '@node-core/ui-components/Containers/NavBar';
+import type { ComponentProps } from 'preact';
 
 // An attribute bag rendered into an HTML tag. `true` becomes a valueless
 // attribute (e.g. `crossorigin`); `false`/`null`/`undefined` are omitted.
@@ -66,6 +69,14 @@ export type Configuration = {
   // `JSX_IMPORTS`. Pair each entry with a matching `imports` alias to resolve the
   // `source` to a real module path.
   components: Record<string, JSXImportConfig | string>;
+  // Sidebar groups and navigation-bar items. Both keys are optional; omitting
+  // one keeps that component's default. Sidebar links are page paths resolved
+  // per page (absolute URLs pass through); navigation-bar links are verbatim.
+  navigation: {
+    sidebar?: ComponentProps<typeof SideBar>['groups'];
+    navbar?: ComponentProps<typeof NavBar>['navItems'];
+    // TODO(@avivkeller): `navigation.showCrossLinks`
+  };
   // Optional bundler adapter. When omitted, the Vite adapter is loaded lazily.
   bundler?: WebBundler;
 };

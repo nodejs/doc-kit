@@ -5,7 +5,7 @@ import styles from './index.module.css';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 import { renderLabel } from '../../utils/renderLabel.jsx';
 
-import { project, version, versions, pages } from '#theme/config';
+import { project, version, versions, navigation, pages } from '#theme/config';
 
 /**
  * Extracts the major version number from a version string.
@@ -19,6 +19,38 @@ const getMajorVersion = v => parseInt(String(v).match(/\d+/)?.[0] ?? '0', 10);
  * @param {string} url URL
  */
 const redirect = url => (window.location.href = url);
+
+/**
+ * Builds the sidebar groups
+ *
+ * @param {import('../../types').SerializedMetadata} metadata
+ */
+const buildGroups = metadata => {
+  const toLink = path =>
+    metadata.path === path
+      ? `${metadata.basename}.html`
+      : `${relativeOrAbsolute(path, metadata.path)}.html`;
+
+  const toItem = ({ label, link, items }) => ({
+    label: renderLabel(label),
+    link: /^https?:/.test(link) ? link : toLink(link),
+    ...(items && { items: items.map(toItem) }),
+  });
+
+  if (navigation.sidebar) {
+    return navigation.sidebar.map(({ groupName, items }) => ({
+      groupName,
+      items: items.map(toItem),
+    }));
+  }
+
+  return [
+    {
+      groupName: 'API Documentation',
+      items: pages.map(([label, link]) => toItem({ label, link })),
+    },
+  ];
+};
 
 /**
  * Sidebar component for MDX documentation with version selection and page navigation
@@ -37,32 +69,27 @@ export default ({ metadata }) => {
       label,
     }));
 
-  const items = pages.map(([heading, path]) => ({
-    label: renderLabel(heading),
-    link:
-      metadata.path === path
-        ? `${metadata.basename}.html`
-        : `${relativeOrAbsolute(path, metadata.path)}.html`,
-  }));
-
   return (
     <SideBar
       pathname={`${metadata.basename}.html`}
-      groups={[{ groupName: 'API Documentation', items }]}
+      groups={buildGroups(metadata)}
       onSelect={redirect}
       as={props => <a {...props} rel="prefetch" />}
       title="Navigation"
     >
-      <div>
-        <Select
-          label={`${project} version`}
-          values={compatibleVersions}
-          inline={true}
-          className={styles.select}
-          placeholder={`v${version.version}`}
-          onChange={redirect}
-        />
-      </div>
+      {/* A site built without a `changelog` has no versions to switch between. */}
+      {versions.length > 0 && (
+        <div>
+          <Select
+            label={`${project} version`}
+            values={compatibleVersions}
+            inline={true}
+            className={styles.select}
+            placeholder={`v${version.version}`}
+            onChange={redirect}
+          />
+        </div>
+      )}
     </SideBar>
   );
 };

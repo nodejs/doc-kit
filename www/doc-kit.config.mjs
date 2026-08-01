@@ -1,12 +1,23 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { globSync, readFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
+const REPO = join(ROOT, '..');
 
 const { version } = JSON.parse(
-  readFileSync(join(ROOT, '..', 'packages', 'core', 'package.json'), 'utf-8')
+  readFileSync(join(REPO, 'packages', 'core', 'package.json'), 'utf-8')
 );
+
+const generatorItems = globSync('packages/core/src/generators/*/README.md', {
+  cwd: REPO,
+})
+  .map(file => basename(dirname(file)))
+  .sort()
+  .map(name => ({
+    label: `\`${name}\` Generator`,
+    link: `/generators/${name}`,
+  }));
 
 const REPOSITORY = 'nodejs/doc-kit';
 const BASE_URL = 'https://doc-kit-docs.vercel.app';
@@ -58,9 +69,22 @@ export default {
     // each slug back to its true origin.
     editURL: `https://github.com/${REPOSITORY}`,
 
-    imports: {
-      // Sidebar order and grouping are not configurable; see the component.
-      '#theme/Sidebar': join(ROOT, 'theme', 'SideBar.jsx'),
+    navigation: {
+      sidebar: [
+        {
+          groupName: 'Pages',
+          items: [
+            { label: '`doc-kit`', link: '/index' },
+            { label: 'Getting started', link: '/getting-started' },
+            { label: 'Configuration', link: '/configuration' },
+            { label: 'Creating Commands', link: '/commands' },
+            { label: 'Creating Generators', link: '/generators' },
+            { label: 'Specification', link: '/specification' },
+            { label: 'Creating Comparators', link: '/comparators' },
+          ],
+        },
+        { groupName: 'Generators', items: generatorItems },
+      ],
     },
 
     head: {

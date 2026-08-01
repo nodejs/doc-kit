@@ -6,7 +6,7 @@ import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 import SearchBox from './SearchBox';
 import { useTheme } from '../hooks/useTheme.mjs';
 
-import { repository, showSearchBox } from '#theme/config';
+import { repository, showSearchBox, navigation } from '#theme/config';
 import Logo from '#theme/Logo';
 
 /**
@@ -19,7 +19,10 @@ export default ({ metadata }) => {
     <NavBar
       Logo={Logo}
       sidebarItemTogglerAriaLabel="Toggle navigation menu"
-      navItems={[]}
+      navItems={navigation.navbar ?? []}
+      // Drives the active-item highlight, and is dereferenced for every item
+      // whose link is site-absolute, so it must always be a string.
+      pathname={metadata.path}
     >
       {showSearchBox && <SearchBox pathname={metadata.path} />}
       <ThemeToggle
