@@ -21,7 +21,7 @@ const followSearchHit = event => {
     return;
   }
 
-  const target = new URL(event.currentTarget.href);
+  const { href } = event.currentTarget;
 
   event.preventDefault();
 
@@ -30,18 +30,16 @@ const followSearchHit = event => {
     new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
   );
 
-  requestAnimationFrame(() => {
-    if (target.pathname !== window.location.pathname) {
-      window.location.href = target.href;
-      return;
-    }
-
-    requestAnimationFrame(() =>
-      document
-        .getElementById(decodeURIComponent(target.hash.slice(1)))
-        ?.scrollIntoView()
-    );
-  });
+  // A plain `location.href` assignment covers both cases: same-page hits
+  // become a native fragment navigation (hash, scroll and history entry
+  // included), cross-page hits simply load the target page. The nested
+  // `requestAnimationFrame` waits for the modal to actually close —
+  // navigating while it is still open suppresses the fragment scroll.
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      window.location.href = href;
+    })
+  );
 };
 
 /**
