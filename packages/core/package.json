@@ -16,6 +16,29 @@
     "watch": "node --watch bin/cli.mjs"
   },
   "main": "./src/generators.mjs",
+  "exports": {
+    ".": "./src/generators.mjs",
+    "./addon-verify": "./src/generators/addon-verify/index.mjs",
+    "./api-links": "./src/generators/api-links/index.mjs",
+    "./ast": "./src/generators/ast/index.mjs",
+    "./ast-js": "./src/generators/ast-js/index.mjs",
+    "./json-simple": "./src/generators/json-simple/index.mjs",
+    "./jsx-ast": "./src/generators/jsx-ast/index.mjs",
+    "./legacy-html": "./src/generators/legacy-html/index.mjs",
+    "./legacy-html-all": "./src/generators/legacy-html-all/index.mjs",
+    "./legacy-json": "./src/generators/legacy-json/index.mjs",
+    "./legacy-json-all": "./src/generators/legacy-json-all/index.mjs",
+    "./llms-txt": "./src/generators/llms-txt/index.mjs",
+    "./man-page": "./src/generators/man-page/index.mjs",
+    "./metadata": "./src/generators/metadata/index.mjs",
+    "./orama-db": "./src/generators/orama-db/index.mjs",
+    "./sitemap": "./src/generators/sitemap/index.mjs",
+    "./web": "./src/generators/web/index.mjs",
+    "./package.json": "./package.json",
+    "./shiki.config.mjs": "./shiki.config.mjs",
+    "./src/*": "./src/*",
+    "./*": "./src/*"
+  },
   "bin": {
     "doc-kit": "./bin/cli.mjs"
   },

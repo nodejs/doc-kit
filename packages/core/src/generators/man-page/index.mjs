@@ -2,7 +2,7 @@
 
 import { join } from 'node:path';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 
 /**
  * This generator generates a man page version of the CLI.md file.
@@ -10,12 +10,12 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'man-page',
 
   description: 'Generates the Node.js man-page.',
 
-  dependsOn: 'metadata',
+  dependsOn: '@node-core/doc-kit/metadata',
 
   defaultConfiguration: {
     fileName: 'node.1',
@@ -23,4 +23,6 @@ export default createLazyGenerator({
     envVarsHeaderSlug: 'environment-variables-1',
     templatePath: join(import.meta.dirname, 'template.1'),
   },
-});
+
+  generate,
+};

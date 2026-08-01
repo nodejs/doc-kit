@@ -1,6 +1,6 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 
 /**
  * This generator generates a simplified JSON version of the API docs and returns it as a string
@@ -11,11 +11,13 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'json-simple',
 
   description:
     'Generates the simple JSON version of the API docs, and returns it as a string',
 
-  dependsOn: 'metadata',
-});
+  dependsOn: '@node-core/doc-kit/metadata',
+
+  generate,
+};

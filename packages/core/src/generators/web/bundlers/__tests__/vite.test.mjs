@@ -17,6 +17,7 @@ import {
 const output = join(tmpdir(), 'doc-kit-vite-test-output');
 
 await setConfig({
+  target: ['web'],
   output,
   version: 'v22.0.0',
   changelog: [],

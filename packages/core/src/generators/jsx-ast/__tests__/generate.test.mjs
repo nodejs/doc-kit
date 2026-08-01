@@ -58,7 +58,7 @@ const createWorker = seenItems => ({
 
 describe('jsx-ast generate', () => {
   it('does not attach raw section entries to regular JSX content', async () => {
-    await setConfig({});
+    await setConfig({ target: ['jsx-ast'] });
 
     const fs = createEntry('fs', 'File system');
     const [content] = await processChunk([{ head: fs, entries: [fs] }], [0]);
@@ -68,7 +68,7 @@ describe('jsx-ast generate', () => {
   });
 
   it('respects jsx-ast synthetic page flags', async () => {
-    await setConfig({});
+    await setConfig({ target: ['jsx-ast'] });
 
     const jsxAstConfig = getConfig('jsx-ast');
     jsxAstConfig.generateAllPage = false;

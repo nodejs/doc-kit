@@ -36,8 +36,11 @@ export default new Command('generate')
     new Option('-i, --input <patterns...>', 'Input file patterns (glob)')
   )
   .addOption(
-    new Option('-t, --target <generator...>', 'Target generator(s)').choices(
-      Object.keys(publicGenerators)
+    new Option(
+      '-t, --target <generator...>',
+      'Target generator(s): a built-in name ' +
+        `(${Object.keys(publicGenerators).join(', ')}) ` +
+        'or an import specifier for a custom generator'
     )
   )
   .addOption(

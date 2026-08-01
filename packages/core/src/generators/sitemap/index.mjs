@@ -1,21 +1,23 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate } from './generate.mjs';
 
 /**
  * This generator generates a sitemap.xml file for search engine optimization
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'sitemap',
 
   description: 'Generates a sitemap.xml file for search engine optimization',
 
-  dependsOn: 'metadata',
+  dependsOn: '@node-core/doc-kit/metadata',
 
   defaultConfiguration: {
     indexURL: '{baseURL}/latest/api/',
     pageURL: '{indexURL}{path}.html',
   },
-});
+
+  generate,
+};

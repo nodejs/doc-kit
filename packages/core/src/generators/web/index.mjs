@@ -2,8 +2,8 @@
 
 import { join } from 'node:path';
 
+import { generate } from './generate.mjs';
 import { GITHUB_EDIT_URL } from '../../utils/configuration/templates.mjs';
-import { createLazyGenerator } from '../../utils/generators.mjs';
 
 /**
  * Web generator - transforms JSX AST entries into complete web bundles.
@@ -24,12 +24,12 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'web',
 
   description: 'Generates HTML/CSS/JS bundles from JSX AST entries',
 
-  dependsOn: 'jsx-ast',
+  dependsOn: '@node-core/doc-kit/jsx-ast',
 
   /**
    * @param {import('../../utils/configuration/types').Configuration} config
@@ -42,9 +42,12 @@ export default createLazyGenerator({
     editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
     pageURL: '{baseURL}/latest-{version}/api{path}.html',
     remoteConfigUrl: 'https://nodejs.org/site.json',
-    // By default, the search box is only shown when we are _also_ building search data
+    // By default, the search box is only shown when we are _also_ building
+    // search data. `target` holds resolved import specifiers, so match on the
+    // subpath rather than an exact name.
     showSearchBox:
-      Array.isArray(config.target) && config.target.includes('orama-db'),
+      Array.isArray(config.target) &&
+      config.target.some(target => target.endsWith('orama-db')),
 
     // Project-specific document `<head>` contents. `meta` and `links` are
     // arrays of attribute bags (boolean `true` renders a valueless attribute,
@@ -99,4 +102,6 @@ export default createLazyGenerator({
     // When omitted, the Vite adapter is loaded lazily during generation.
     bundler: undefined,
   }),
-});
+
+  generate,
+};

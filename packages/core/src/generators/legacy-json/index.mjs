@@ -1,6 +1,6 @@
 'use strict';
 
-import { createLazyGenerator } from '../../utils/generators.mjs';
+import { generate, processChunk } from './generate.mjs';
 
 /**
  * This generator is responsible for generating the legacy JSON files for the
@@ -13,12 +13,12 @@ import { createLazyGenerator } from '../../utils/generators.mjs';
  *
  * @type {import('./types').Generator}
  */
-export default createLazyGenerator({
+export default {
   name: 'legacy-json',
 
   description: 'Generates the legacy version of the JSON API docs.',
 
-  dependsOn: 'metadata',
+  dependsOn: '@node-core/doc-kit/metadata',
 
   defaultConfiguration: {
     ref: 'main',
@@ -26,4 +26,7 @@ export default createLazyGenerator({
   },
 
   hasParallelProcessor: true,
-});
+
+  generate,
+  processChunk,
+};

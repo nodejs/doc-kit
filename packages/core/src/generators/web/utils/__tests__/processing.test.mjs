@@ -12,6 +12,7 @@ import {
 } from '../processing.mjs';
 
 await setConfig({
+  target: ['web'],
   version: 'v22.0.0',
   changelog: [],
   generators: {

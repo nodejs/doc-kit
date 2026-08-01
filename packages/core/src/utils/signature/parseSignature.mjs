@@ -1,6 +1,6 @@
 'use strict';
 
-import { PARAM_EXPRESSION } from '../constants.mjs';
+import { PARAM_EXPRESSION } from './constants.mjs';
 
 const OPTIONAL_LEVEL_CHANGES = { '[': 1, ']': -1 };
 
@@ -78,8 +78,8 @@ export function parseDefaultValue(parameterName) {
 /**
  * @param {string} parameterName
  * @param {number} index
- * @param {Array<import('../types.d.ts').ParameterList>} markdownParameters
- * @returns {import('../types.d.ts').Parameter}
+ * @param {Array<import('./types.d.ts').ParameterList>} markdownParameters
+ * @returns {import('./types.d.ts').Parameter}
  */
 export function findParameter(parameterName, index, markdownParameters) {
   const parameter = markdownParameters[index];
@@ -109,11 +109,11 @@ export function findParameter(parameterName, index, markdownParameters) {
 
 /**
  * @param {string[]} declaredParameters
- * @param {Array<import('../types.d.ts').ParameterList>} markdownParameters
+ * @param {Array<import('./types.d.ts').ParameterList>} markdownParameters
  */
 export function parseParameters(declaredParameters, markdownParameters) {
   /**
-   * @type {Array<import('../types.d.ts').Parameter>}
+   * @type {Array<import('./types.d.ts').Parameter>}
    */
   let parameters = [];
 
@@ -166,12 +166,12 @@ export function parseParameters(declaredParameters, markdownParameters) {
 
 /**
  * @param {string} textRaw Something like `new buffer.Blob([sources[, options]])`
- * @param {Array<import('../types.d.ts').ParameterList} markdownParameters The properties in the AST
- * @returns {import('../types.d.ts').MethodSignature | undefined}
+ * @param {Array<import('./types.d.ts').ParameterList} markdownParameters The properties in the AST
+ * @returns {import('./types.d.ts').MethodSignature | undefined}
  */
 export default (textRaw, markdownParameters) => {
   /**
-   * @type {import('../types.d.ts').MethodSignature}
+   * @type {import('./types.d.ts').MethodSignature}
    */
   const signature = { params: [] };
 
