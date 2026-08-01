@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+  <code>doc-kit</code> can make sites unrelated to Node.js too. <a href="https://doc-kit.nodejs.org/">View the docs, getting-started, and showcase.</a>
+</p>
+
+<p align="center">
   <a title="MIT License" href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
   </a>
