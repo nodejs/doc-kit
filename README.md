@@ -87,7 +87,7 @@ Options:
                                (minimum: 1)
   -v, --version <semver>       Target Node.js version
   -c, --changelog <url>        Changelog URL or path
-  --git-ref                    Git ref URL
+  --git-ref <ref>              Git ref
   --index <url>                index.md URL or path
   --minify                     Minify?
   --type-map <url>             Type map URL or path
