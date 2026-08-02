@@ -49,11 +49,13 @@ Usage: @node-core/doc-kit [options] [command]
 CLI tool to generate the Node.js API documentation
 
 Options:
-  -h, --help          display help for command
+  --log-level <level>  Log level (choices: "debug", "info", "warn", "error",
+                       "fatal", default: "info")
+  -h, --help           display help for command
 
 Commands:
-  generate [options]  Generate API docs
-  help [command]      display help for command
+  generate [options]   Generate API docs
+  help [command]       display help for command
 ```
 
 ### `generate`
@@ -70,15 +72,26 @@ Usage: @node-core/doc-kit generate [options]
 Generate API docs
 
 Options:
-  -i, --input <patterns...>  Input file patterns (glob)
-  --ignore [patterns...]     Ignore patterns (comma-separated)
-  -o, --output <dir>         Output directory
-  -p, --threads <number>      (default: "12")
-  -v, --version <semver>     Target Node.js version (default: "v22.14.0")
-  -c, --changelog <url>      Changelog URL or path (default: "https://raw.githubusercontent.com/nodejs/node/HEAD/CHANGELOG.md")
-  --git-ref <url>            Git ref/commit URL (default: "https://github.com/nodejs/node/tree/HEAD")
-  -t, --target [modes...]    Target generator modes (choices: "json-simple", "legacy-html", "legacy-html-all", "man-page", "legacy-json", "legacy-json-all", "addon-verify", "api-links", "orama-db", "llms-txt")
-  -h, --help                 display help for command
+  --config-file <path>         Config file
+  -i, --input <patterns...>    Input file patterns (glob)
+  -t, --target <generator...>  Target generator(s): a built-in name
+                               (json-simple, legacy-html, legacy-html-all,
+                               man-page, legacy-json, legacy-json-all,
+                               addon-verify, api-links, orama-db, llms-txt,
+                               sitemap, web) or an import specifier for a custom
+                               generator
+  --ignore <patterns...>       Ignore file patterns (glob)
+  -o, --output <directory>     The output directory
+  -p, --threads <number>       Number of threads to use (minimum: 1)
+  --chunk-size <number>        Number of items to process per worker thread
+                               (minimum: 1)
+  -v, --version <semver>       Target Node.js version
+  -c, --changelog <url>        Changelog URL or path
+  --git-ref                    Git ref URL
+  --index <url>                index.md URL or path
+  --minify                     Minify?
+  --type-map <url>             Type map URL or path
+  -h, --help                   display help for command
 ```
 
 ## Examples
