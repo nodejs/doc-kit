@@ -112,52 +112,93 @@ export const parseTypeValues = values => {
 };
 
 /**
+ * Resolves a type value as a `|`-separated union of display names (e.g.
+ * `HTTP/2 Headers Object | HTTP/2 Raw Headers`). Map keys may contain spaces
+ * and slashes, so such values may not parse as TypeScript, but each part is
+ * still resolvable on its own.
+ *
+ * @param {string} value The type value
+ * @param {Record<string, string>} typeMap The toolchain mapping of types to links
+ * @returns {Array<{ start: number, end: number, text: string, href: string }>} The resolved links
+ */
+const resolveDisplayNames = (value, typeMap) => {
+  const links = [];
+
+  for (const { 0: part, index } of value.matchAll(/(?:[^|]|\|\|)+/g)) {
+    // An array of a type links to the type itself
+    const name = part.trim().replace(/(\[\])+$/, '');
+    const href = name && resolveTypeReference(name, typeMap);
+
+    if (href) {
+      const start = index + part.indexOf(name);
+
+      links.push({ start, end: start + name.length, text: name, href });
+    }
+  }
+
+  return links;
+};
+
+/**
+ * Resolves a type value's links: the whole value when it is a map key in its
+ * own right, then its parsed identifiers, then its display names
+ *
+ * @param {string} value The type value
+ * @param {Record<string, string>} typeMap The toolchain mapping of types to links
+ * @param {{ error?: boolean, identifiers?: Array<object> }} result The parse of `value`
+ * @returns {Array<{ start: number, end: number, text: string, href: string }>} The resolved links
+ */
+const resolveLinks = (value, typeMap, result) => {
+  const url = lookupTypeName(value, typeMap);
+
+  if (url) {
+    return [{ start: 0, end: value.length, text: value, href: url }];
+  }
+
+  if (result.error) {
+    return resolveDisplayNames(value, typeMap);
+  }
+
+  return (
+    result.identifiers
+      .map(({ start, end, text, lookup }) => ({
+        start,
+        end,
+        text,
+        href: resolveTypeReference(lookup, typeMap),
+      }))
+      .filter(({ href }) => href)
+      // The hast handlers slice the value by these ranges in order
+      .sort((a, b) => a.start - b.start)
+  );
+};
+
+/**
  * Resolves every `typeAnnotation` node in a file's tree
  */
 export const resolveTypeAnnotations = (tree, typeMap, path) => {
-  const pending = [];
+  const nodes = [];
 
+  // A visitor must not return a value: `visit` reads a number as the index to
+  // continue from, which would skip siblings
   visit(tree, 'typeAnnotation', node => {
-    node.data = { links: [] };
-
-    const url = lookupTypeName(node.value, typeMap);
-
-    if (url) {
-      node.data.links.push({
-        start: 0,
-        end: node.value.length,
-        text: node.value,
-        href: url,
-      });
-    } else {
-      pending.push(node);
-    }
+    nodes.push(node);
   });
 
-  parseTypeValues(pending.map(({ value }) => value)).forEach(
-    (result, index) => {
-      const node = pending[index];
+  parseTypeValues(nodes.map(({ value }) => value)).forEach((result, index) => {
+    const node = nodes[index];
+    const links = resolveLinks(node.value, typeMap, result);
 
-      if (result.error) {
-        node.data.parseError = true;
+    // Unparseable display names must not be highlighted as the TypeScript
+    // they are not (which colours the `/` and `2` of `HTTP/2`)
+    node.data = { links, typescript: !result.error };
 
-        logger.warn(`Invalid type annotation: {${node.value}}`, {
-          file: { path, position: node.position },
-        });
+    if (result.error && !links.length) {
+      node.data.parseError = true;
 
-        return;
-      }
-
-      for (const { start, end, text, lookup } of result.identifiers) {
-        const href = resolveTypeReference(lookup, typeMap);
-
-        if (href) {
-          node.data.links.push({ start, end, text, href });
-        }
-      }
-
-      // The hast handlers slice the value by these ranges in order
-      node.data.links.sort((a, b) => a.start - b.start);
+      logger.warn(`Invalid type annotation: {${node.value}}`, {
+        file: { path, position: node.position },
+      });
     }
-  );
+  });
 };

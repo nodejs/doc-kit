@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { toHtml } from 'hast-util-to-html';
+import { toString } from 'hast-util-to-string';
 
 import {
   typeAnnotationToHast,
@@ -63,6 +64,7 @@ describe('typeAnnotationToHast', () => {
 describe('typeAnnotationToHighlightedHast', () => {
   it('produces one inline <code> with shiki tokens and embedded links', () => {
     const node = makeNode('Promise<string>', {
+      typescript: true,
       links: [{ start: 0, end: 7, text: 'Promise', href: 'mdn.io/promise' }],
     });
 
@@ -84,6 +86,7 @@ describe('typeAnnotationToHighlightedHast', () => {
 
   it('splits a link range that crosses token boundaries', () => {
     const node = makeNode('vm.Module', {
+      typescript: true,
       links: [
         { start: 0, end: 9, text: 'vm.Module', href: 'vm.html#class-module' },
       ],
@@ -95,6 +98,31 @@ describe('typeAnnotationToHighlightedHast', () => {
     const anchors = html.match(/href="vm.html#class-module"/g);
     assert.ok(anchors.length >= 1);
     assert.match(html.replace(/<[^>]+>/g, ''), /^vm\.Module$/);
+  });
+
+  it('highlights a display name as plain text', () => {
+    const value = 'HTTP/2 Headers Object';
+    const links = [
+      { start: 0, end: value.length, text: value, href: 'http2.html#headers' },
+    ];
+
+    const asTypeScript = typeAnnotationToHighlightedHast(
+      state,
+      makeNode(value, { typescript: true, links })
+    );
+
+    const asDisplayName = typeAnnotationToHighlightedHast(
+      state,
+      makeNode(value, { links })
+    );
+
+    assert.match(toHtml(asTypeScript), /<span style="color:/);
+    assert.doesNotMatch(toHtml(asDisplayName), /<span style="color:/);
+
+    // Still one highlighted <code> with the whole name linked
+    assert.match(toHtml(asDisplayName), /^<code[^>]*class="[^"]*shiki[^"]*/);
+    assert.match(toHtml(asDisplayName), /<a href="http2.html#headers"/);
+    assert.equal(toString(asDisplayName), value);
   });
 
   it('falls back to plain code when nothing resolved', () => {

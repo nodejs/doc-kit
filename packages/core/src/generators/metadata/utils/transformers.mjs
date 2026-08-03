@@ -1,4 +1,8 @@
-import { DOC_MAN_BASE_URL, DOC_API_HEADING_TYPES } from '../constants.mjs';
+import {
+  DOC_MAN_BASE_URL,
+  DOC_API_HEADING_TYPES,
+  MODULE_QUALIFIED_NAME,
+} from '../constants.mjs';
 import { slug } from './slugger.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import BUILTIN_TYPE_MAP from '../maps/builtin.json' with { type: 'json' };
@@ -65,7 +69,7 @@ export const resolveTypeReference = (name, typeMap) => {
   }
 
   // Transform Node.js types like 'vm.Something'.
-  if (name.indexOf('.') >= 0) {
+  if (MODULE_QUALIFIED_NAME.test(name)) {
     const [mod, ...pieces] = name.split('.');
     const isClass = pieces.at(-1).match(/^[A-Z][a-z]/);
 

@@ -63,8 +63,10 @@ export const typeAnnotationToHast = (state, node) => {
 /**
  * Syntax-highlighted mdast→hast handler for `typeAnnotation` nodes, used by
  * the web (JSX) pipeline. The whole type is highlighted as one inline
- * TypeScript fragment, and each resolved identifier's exact character range
- * is wrapped in an `<a>` via Shiki decorations.
+ * fragment, and each resolved identifier's exact character range is wrapped
+ * in an `<a>` via Shiki decorations. Values that are not TypeScript (display
+ * names such as `HTTP/2 Headers Object`) are highlighted as plain text, so
+ * their prose is not coloured as operators and numeric literals.
  *
  * Falls back to the minimal handler when the type failed to parse or nothing
  * resolved (no point paying for highlighting then).
@@ -81,7 +83,7 @@ export const typeAnnotationToHighlightedHast = (state, node) => {
   }
 
   const root = highlighter.shiki.codeToHast(node.value, {
-    lang: 'typescript',
+    lang: node.data?.typescript ? 'typescript' : 'text',
     themes: { light: lightTheme, dark: darkTheme },
     decorations: links.map(({ start, end, href }) => ({
       start,

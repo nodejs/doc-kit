@@ -61,4 +61,15 @@ describe('resolveTypeReference', () => {
   it('returns an empty string for unknown plain names', () => {
     strictEqual(resolveTypeReference('NotAThing'), '');
   });
+
+  it('applies the dotted heuristic to identifier paths only', () => {
+    strictEqual(
+      resolveTypeReference('os.constants.dlopen'),
+      'os.html#osconstantsdlopen'
+    );
+
+    for (const name of ['Buffer or fs.Stats', 'Object.<string, string>']) {
+      strictEqual(resolveTypeReference(name), '');
+    }
+  });
 });
