@@ -4,10 +4,8 @@ The `llms-txt` generator creates a `llms.txt` file to provide information to Lar
 
 ## Configuring
 
-The `llms-txt` generator accepts the following configuration options:
-
-| Name           | Type     | Default                           | Description                                    |
-| -------------- | -------- | --------------------------------- | ---------------------------------------------- |
-| `output`       | `string` | -                                 | The directory where `llms.txt` will be written |
-| `templatePath` | `string` | `'template.txt'`                  | Path to the template file                      |
-| `pageURL`      | `string` | `'{baseURL}/latest/api{path}.md'` | URL template for documentation page links      |
+- `output` {string} The directory where `llms.txt` will be written.
+- `templatePath` {string} Path to the template file.
+  **Default:** `'template.txt'`.
+- `pageURL` {string} URL template for documentation page links.
+  **Default:** `'{baseURL}/latest/api{path}.md'`.

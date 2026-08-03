@@ -4,8 +4,4 @@ The `addon-verify` generator extracts code blocks from `doc/api/addons.md` and g
 
 ## Configuring
 
-The `addon-verify` generator accepts the following configuration options:
-
-| Name     | Type     | Default | Description                                              |
-| -------- | -------- | ------- | -------------------------------------------------------- |
-| `output` | `string` | -       | The directory where extracted code files will be written |
+- `output` {string} The directory where extracted code files will be written.

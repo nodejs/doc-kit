@@ -4,8 +4,5 @@ The `metadata` generator creates a flattened list of metadata entries from API d
 
 ## Configuring
 
-The `metadata` generator accepts the following configuration options:
-
-| Name      | Type     | Default          | Description                                        |
-| --------- | -------- | ---------------- | -------------------------------------------------- |
-| `typeMap` | `string` | `'typeMap.json'` | URL or path to the type mapping configuration file |
+- `typeMap` {string} URL or path to the type mapping configuration file.
+  **Default:** `'typeMap.json'`.

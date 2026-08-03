@@ -4,9 +4,5 @@ The `ast-js` generator parses JavaScript source files into AST (Abstract Syntax 
 
 ## Configuring
 
-The `ast-js` generator accepts the following configuration options:
-
-| Name     | Type                 | Default | Description                                       |
-| -------- | -------------------- | ------- | ------------------------------------------------- |
-| `input`  | `string \| string[]` | -       | Glob pattern(s) for the JavaScript files to parse |
-| `ignore` | `string \| string[]` | -       | Glob pattern(s) for files to exclude from parsing |
+- `input` {string|string[]} Glob pattern(s) for the JavaScript files to parse.
+- `ignore` {string|string[]} Glob pattern(s) for files to exclude from parsing.
