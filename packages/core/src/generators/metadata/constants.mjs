@@ -15,6 +15,11 @@ export const DOC_API_SLUGS_REPLACEMENTS = [
 // Matches Node.js deprecation headings such as "DEP0001: Description".
 export const DEPRECATION_HEADING_REGEX = /^(DEP\d+):/;
 
+// A dotted identifier path, e.g. `vm.Module` or `os.constants.dlopen`. Names
+// that merely contain a dot (prose, `Object.<string, string>`, `1.5`) must not
+// be turned into a module link.
+export const MODULE_QUALIFIED_NAME = /^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+$/;
+
 // These are regular expressions used to determine if a given Markdown heading
 // is a specific type of API Doc entry (e.g., Event, Class, Method, etc)
 // and to extract the inner content of said Heading to be used as the API doc entry name

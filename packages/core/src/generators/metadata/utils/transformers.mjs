@@ -1,4 +1,8 @@
-import { DOC_MAN_BASE_URL, DOC_API_HEADING_TYPES } from '../constants.mjs';
+import {
+  DOC_MAN_BASE_URL,
+  DOC_API_HEADING_TYPES,
+  MODULE_QUALIFIED_NAME,
+} from '../constants.mjs';
 import { slug } from './slugger.mjs';
 import { transformNodesToString } from '../../../utils/unist.mjs';
 import BUILTIN_TYPE_MAP from '../maps/builtin.json' with { type: 'json' };
@@ -47,11 +51,6 @@ export const lookupTypeName = (name, typeMap) => {
 
   return '';
 };
-
-// A dotted identifier path, e.g. `vm.Module` or `os.constants.dlopen`. Names
-// that merely contain a dot (prose, `Object.<string, string>`) must not be
-// turned into a module link.
-const MODULE_QUALIFIED_NAME = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/;
 
 /**
  * Resolves a type identifier to a documentation URL: map lookups first, then
