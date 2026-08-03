@@ -62,7 +62,7 @@
     "@node-core/ui-components": "^1.7.4",
     "@orama/orama": "^3.1.18",
     "@orama/ui": "^1.5.4",
-    "@swc/html-wasm": "^1.15.43",
+    "@swc/html-wasm": "^1.15.46",
     "@swc/wasm": "^1.15.46",
     "acorn": "^8.17.0",
     "commander": "^15.0.0",
