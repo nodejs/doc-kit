@@ -94,6 +94,24 @@ Options:
   -h, --help                   display help for command
 ```
 
+### `serve`
+
+`serve` accepts the same options as `generate`, plus a `--port`. It generates
+the documentation, serves the output on <http://localhost:3000> (or the next
+available port), and regenerates whenever the input files change — ideal while
+writing documentation.
+
+```sh
+npx doc-kit serve -t html -i "docs/*.md" -o out
+```
+
+To serve an already-generated output directory without regenerating or
+watching, pass `--static`:
+
+```sh
+npx doc-kit serve --static -o out
+```
+
 ## Examples
 
 ### Legacy
@@ -126,5 +144,5 @@ npx doc-kit generate \
 > In order to use the search functionality, you _must_ serve the output directory.
 >
 > ```sh
-> npx serve out
+> npx doc-kit serve --static -o out
 > ```
