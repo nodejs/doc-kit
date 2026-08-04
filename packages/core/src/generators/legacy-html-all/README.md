@@ -4,11 +4,10 @@ The `legacy-html-all` generator creates a single `all.html` file containing all 
 
 ## Configuring
 
-The `legacy-html-all` generator accepts the following configuration options:
-
-| Name           | Type      | Default                      | Description                                    |
-| -------------- | --------- | ---------------------------- | ---------------------------------------------- |
-| `output`       | `string`  | -                            | The directory where `all.html` will be written |
-| `templatePath` | `string`  | Inherited from `legacy-html` | Path to the HTML template file                 |
-| `minify`       | `boolean` | Inherited from `global`      | Whether to minify the output HTML              |
-| `version`      | `object`  | Inherited from `global`      | Version object containing version information  |
+- `output` {string} The directory where `all.html` will be written.
+- `templatePath` {string} Path to the HTML template file. Inherited from
+  `legacy-html`. **Default:** `'template.html'`.
+- `minify` {boolean} Whether to minify the output HTML. Inherited from
+  `global`. **Default:** `true`.
+- `version` {Object} Version object containing version information. Inherited
+  from `global`. **Default:** `process.version`.

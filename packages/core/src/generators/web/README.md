@@ -9,36 +9,48 @@ its HTML or CSS.
 
 ## Configuring
 
-The `web` generator accepts the following configuration options:
-
-| Name              | Type         | Default                                       | Description                                                                                                 |
-| ----------------- | ------------ | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `output`          | `string`     | Required                                      | The directory where HTML and bundled client output are written                                              |
-| `templatePath`    | `string`     | `'template.html'`                             | Path to the HTML template file                                                                              |
-| `project`         | `string`     | `'Node.js'`                                   | Project name used in page titles and the version selector                                                   |
-| `title`           | `string`     | `'{project} v{version} Documentation'`        | Title template for HTML pages (supports `{project}`, `{version}`)                                           |
-| `useAbsoluteURLs` | `boolean`    | `false`                                       | When `true`, all internal links use absolute URLs based on `baseURL`                                        |
-| `editURL`         | `string`     | `'${GITHUB_EDIT_URL}/doc/api{path}.md'`       | URL template for "edit this page" links                                                                     |
-| `pageURL`         | `string`     | `'{baseURL}/latest-{version}/api{path}.html'` | URL template for documentation page links                                                                   |
-| `remoteConfigUrl` | `string`     | `'https://nodejs.org/site.json'`              | URL fetched client-side at runtime for remote site config (currently used to power the announcement banner) |
-| `head`            | `object`     | See below                                     | Configurable `<meta>`, `<link>`, and raw markup for the document head                                       |
-| `imports`         | `object`     | See below                                     | Object mapping `#theme/` aliases to component paths for customization                                       |
-| `virtualImports`  | `object`     | `{}`                                          | Additional virtual module mappings supplied to the server and client builds                                 |
-| `components`      | `object`     | `{}`                                          | Maps JSX tag names to component imports, enabling JSX-in-MDX (see below)                                    |
-| `navigation`      | `object`     | `{}`                                          | Sidebar groups and navigation bar items (see below)                                                         |
-| `bundler`         | `WebBundler` | Vite adapter                                  | Adapter that renders server entries and writes the client and HTML output (see below)                       |
+- `output` {string} The directory where HTML and bundled client output are
+  written. Required.
+- `templatePath` {string} Path to the HTML template file.
+  **Default:** `'template.html'`.
+- `project` {string} Project name used in page titles and the version selector.
+  **Default:** `'Node.js'`.
+- `title` {string} Title template for HTML pages (supports `{project}`,
+  `{version}`). **Default:** `'{project} v{version} Documentation'`.
+- `useAbsoluteURLs` {boolean} When `true`, all internal links use absolute URLs
+  based on `baseURL`. **Default:** `false`.
+- `editURL` {string} URL template for "edit this page" links.
+  **Default:** `'${GITHUB_EDIT_URL}/doc/api{path}.md'`.
+- `pageURL` {string} URL template for documentation page links.
+  **Default:** `'{baseURL}/latest-{version}/api{path}.html'`.
+- `remoteConfigUrl` {string} URL fetched client-side at runtime for remote site
+  config (currently used to power the announcement banner).
+  **Default:** `'https://nodejs.org/site.json'`.
+- `head` {Object} Configurable `<meta>`, `<link>`, and raw markup for the
+  document head. See [`head`](#head).
+- `imports` {Object} Object mapping `#theme/` aliases to component paths for
+  customization. See [Default `imports`](#default-imports).
+- `virtualImports` {Object} Additional virtual module mappings supplied to the
+  server and client builds. **Default:** `{}`.
+- `components` {Object} Maps JSX tag names to component imports, enabling
+  JSX-in-MDX. See [`components`](#components). **Default:** `{}`.
+- `navigation` {Object} Sidebar groups and navigation bar items. See
+  [`navigation`](#navigation). **Default:** `{}`.
+- `bundler` {WebBundler} Adapter that renders server entries and writes the
+  client and HTML output. See [Bundler adapters](#bundler-adapters).
+  **Default:** `createViteBundler()`.
 
 ### `head`
 
-The `head` object controls the project-specific markup injected into the
-document `<head>` (rendered into the template's `${head}` placeholder). It has
-three keys:
+- `meta` {Array} `<meta>` tags. Each entry is an attribute bag, e.g.
+  `{ name: 'description', content: '…' }`.
+- `links` {Array} `<link>` tags. Each entry is an attribute bag, e.g.
+  `{ rel: 'icon', href: '…' }`.
+- `html` {Array} Raw HTML strings appended verbatim — an escape hatch for
+  anything not expressible above.
 
-| Key     | Type    | Description                                                                                 |
-| ------- | ------- | ------------------------------------------------------------------------------------------- |
-| `meta`  | `array` | `<meta>` tags. Each entry is an attribute bag, e.g. `{ name: 'description', content: '…' }` |
-| `links` | `array` | `<link>` tags. Each entry is an attribute bag, e.g. `{ rel: 'icon', href: '…' }`            |
-| `html`  | `array` | Raw HTML strings appended verbatim — an escape hatch for anything not expressible above     |
+The `head` object controls the project-specific markup injected into the
+document `<head>` (rendered into the template's `${head}` placeholder).
 
 Each attribute bag is rendered as a tag: a boolean `true` becomes a valueless
 attribute (e.g. `crossorigin`), and `false`/`null`/`undefined` attributes are
@@ -74,21 +86,21 @@ export default {
 
 ### `navigation`
 
+- `sidebar` {Array} Sidebar groups, each `{ groupName, items }`. Defaults to one
+  `API Documentation` group holding every page.
+- `navbar` {Array} Navigation bar items, each `{ text, link, target? }`.
+  Defaults to none, which renders no items.
+
 The `navigation` object supplies the site's two navigation surfaces. Both keys
 are optional; omit either one to keep that component's default.
 
-| Key       | Type    | Description                                                                                                |
-| --------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `sidebar` | `array` | Sidebar groups, each `{ groupName, items }`. Defaults to one `API Documentation` group holding every page. |
-| `navbar`  | `array` | Navigation bar items, each `{ text, link, target? }`. Defaults to none, which renders no items.            |
-
 Sidebar items are `{ label, link }` and may nest through an `items` array of
 their own. A `label` is plain text, except that backticked spans render as
-`<code>` (``'`fs` Generator'``), matching how page headings are rendered. A
-`link` is a page path without its extension (`/fs`, `/generators/web`): it is
-resolved against the page being rendered, so it obeys `useAbsoluteURLs` and
-highlights while it is the current page. Links starting with `http://` or
-`https://` are used as authored.
+`<code>` (``'`fs`'``), matching how page headings are rendered. A `link` is a
+page path without its extension (`/fs`, `/generators/web`): it is resolved
+against the page being rendered, so it obeys `useAbsoluteURLs` and highlights
+while it is the current page. Links starting with `http://` or `https://` are
+used as authored.
 
 Navigation bar links are always used as authored, since they typically point
 outside the generated site. Give them a `target` of `'_blank'` to open in a new
@@ -124,14 +136,15 @@ omitted rather than rendered empty.
 
 ### Bundler adapters
 
-The `bundler` option accepts a small Doc Kit adapter rather than configuration
-for a particular build system:
+- `getEntryId` {Function} Return the module identifier placed in the populated
+  HTML for an API name.
+- `render` {Function} Bundle and execute the server `entries`, returning a `Map`
+  of API name to rendered HTML.
+- `build` {Function} Bundle the client `entries`, process the populated `pages`,
+  and write the complete output.
 
-| Method       | Responsibility                                                                            |
-| ------------ | ----------------------------------------------------------------------------------------- |
-| `getEntryId` | Return the module identifier placed in the populated HTML for an API name                 |
-| `render`     | Bundle and execute the server `entries`, returning a `Map` of API name to rendered HTML   |
-| `build`      | Bundle the client `entries`, process the populated `pages`, and write the complete output |
+The `bundler` option accepts a small Doc Kit adapter rather than configuration
+for a particular build system.
 
 Both `render` and `build` receive `{ entries, virtualImports, config }`; `build`
 also receives `pages`. Entry maps use `${api}.jsx` keys, rendered server results
@@ -229,14 +242,18 @@ runs on the main thread and does not serialize the bundler to a worker.
 
 ### Default `imports`
 
-| Alias               | Default                                      | Description                                         |
-| ------------------- | -------------------------------------------- | --------------------------------------------------- |
-| `#theme/Logo`       | `@node-core/ui-components/Common/NodejsLogo` | Logo rendered inside the navigation bar             |
-| `#theme/Navigation` | Built-in `NavBar` component                  | Top navigation bar                                  |
-| `#theme/Sidebar`    | Built-in `SideBar` component                 | Sidebar with version selector and page links        |
-| `#theme/Metabar`    | Built-in `MetaBar` component                 | Metadata bar displayed alongside page content       |
-| `#theme/Footer`     | Built-in `NoOp` component (renders nothing)  | Optional footer rendered at the bottom of each page |
-| `#theme/Layout`     | Built-in `Layout` component                  | Outermost wrapper around the full page              |
+- `#theme/Logo` {string} Logo rendered inside the navigation bar.
+  **Default:** `'@node-core/ui-components/Common/NodejsLogo'`.
+- `#theme/Navigation` {string} Top navigation bar. Defaults to the built-in
+  `NavBar` component.
+- `#theme/Sidebar` {string} Sidebar with version selector and page links.
+  Defaults to the built-in `SideBar` component.
+- `#theme/Metabar` {string} Metadata bar displayed alongside page content.
+  Defaults to the built-in `MetaBar` component.
+- `#theme/Footer` {string} Optional footer rendered at the bottom of each page.
+  Defaults to the built-in `NoOp` component, which renders nothing.
+- `#theme/Layout` {string} Outermost wrapper around the full page. Defaults to
+  the built-in `Layout` component.
 
 Override any alias in your config file to swap in a custom component:
 
@@ -312,20 +329,25 @@ import { project, repository, editURL } from '#theme/config';
 
 ### Available exports
 
-| Export                   | Type                           | Description                                                                                                           |
-| ------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `project`                | `string`                       | Project name (e.g. `'Node.js'`)                                                                                       |
-| `repository`             | `string`                       | GitHub repository in `owner/repo` format                                                                              |
-| `version`                | `string`                       | Current version label (e.g. `'v22.x'`)                                                                                |
-| `versions`               | `Array<{ url, label, major }>` | Pre-computed version entries with labels and URL templates (only `{path}` remains for per-page use)                   |
-| `editURL`                | `string`                       | Partially populated "edit this page" URL template (only `{path}` remains)                                             |
-| `pages`                  | `Array<[string, string]>`      | Sorted `[name, path]` tuples for sidebar navigation                                                                   |
-| `navigation`             | `object`                       | Mirrors the configured `navigation` (consumed by the built-in `SideBar` and `NavBar`)                                 |
-| `useAbsoluteURLs`        | `boolean`                      | Whether internal links use absolute URLs (mirrors config value)                                                       |
-| `baseURL`                | `string`                       | Base URL for the documentation site (used when `useAbsoluteURLs` is `true`)                                           |
-| `languageDisplayNameMap` | `Map<string, string>`          | Shiki language alias → display name map for code blocks                                                               |
-| `remoteConfigUrl`        | `string`                       | Mirrors the configured `remoteConfigUrl` (fetched client-side by `RemoteLoadableBanner` to load announcement banners) |
-| `server`                 | `boolean`                      | Whether the current bundle is the server build                                                                        |
+- `project` {string} Project name (e.g. `'Node.js'`).
+- `repository` {string} GitHub repository in `owner/repo` format.
+- `version` {string} Current version label (e.g. `'v22.x'`).
+- `versions` {Array} Pre-computed version entries, each `{ url, label, major }`,
+  with labels and URL templates (only `{path}` remains for per-page use).
+- `editURL` {string} Partially populated "edit this page" URL template (only
+  `{path}` remains).
+- `pages` {Array} Sorted `[name, path]` tuples for sidebar navigation.
+- `navigation` {Object} Mirrors the configured `navigation` (consumed by the
+  built-in `SideBar` and `NavBar`).
+- `useAbsoluteURLs` {boolean} Whether internal links use absolute URLs (mirrors
+  config value).
+- `baseURL` {string} Base URL for the documentation site (used when
+  `useAbsoluteURLs` is `true`).
+- `languageDisplayNameMap` {Map<string, string>} Shiki language alias → display
+  name map for code blocks.
+- `remoteConfigUrl` {string} Mirrors the configured `remoteConfigUrl` (fetched
+  client-side by `RemoteLoadableBanner` to load announcement banners).
+- `server` {boolean} Whether the current bundle is the server build.
 
 ### Usage in custom components
 
@@ -351,16 +373,14 @@ export default ({ metadata }) => (
 
 ## Layout props
 
-The `Layout` component receives the following props:
+- `metadata` {Object} Serialized page metadata — all YAML frontmatter properties
+  plus `addedIn`, `basename`, `path`, and any custom user-defined fields.
+- `headings` {Array} Pre-computed table of contents heading entries.
+- `readingTime` {string} Estimated reading time (e.g. `'5 min read'`).
+- `children` {ComponentChildren} Processed page content.
 
-| Prop          | Type                | Description                                                                                                                       |
-| ------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `metadata`    | `object`            | Serialized page metadata — all YAML frontmatter properties plus `addedIn`, `basename`, `path`, and any custom user-defined fields |
-| `headings`    | `Array`             | Pre-computed table of contents heading entries                                                                                    |
-| `readingTime` | `string`            | Estimated reading time (e.g. `'5 min read'`)                                                                                      |
-| `children`    | `ComponentChildren` | Processed page content                                                                                                            |
-
-Custom Layout components can use any combination of these props alongside `#theme/config` imports.
+The `Layout` component receives the props above. Custom Layout components can use
+any combination of them alongside `#theme/config` imports.
 
 ## HTML template
 
@@ -368,17 +388,18 @@ The HTML template file (set via `templatePath`) uses JavaScript template literal
 
 ### Available template variables
 
-| Variable           | Type     | Description                                                       |
-| ------------------ | -------- | ----------------------------------------------------------------- |
-| `title`            | `string` | Fully resolved page title (e.g. `'File system \| Node.js v22.x'`) |
-| `dehydrated`       | `string` | Server-rendered HTML for the page content                         |
-| `entrypoint`       | `string` | Adapter-provided module identifier for this page's hydration      |
-| `speculationRules` | `string` | Speculation rules JSON for prefetching                            |
-| `themeScript`      | `string` | Inline script that applies the saved theme before paint           |
-| `root`             | `string` | Relative or absolute path to the site root                        |
-| `metadata`         | `object` | Full page metadata (frontmatter, path, heading, etc.)             |
-| `config`           | `object` | The resolved web generator configuration                          |
-| `head`             | `string` | Pre-rendered `<meta>`/`<link>`/raw markup from the `head` config  |
+- `title` {string} Fully resolved page title (e.g.
+  `'File system | Node.js v22.x'`).
+- `dehydrated` {string} Server-rendered HTML for the page content.
+- `entrypoint` {string} Adapter-provided module identifier for this page's
+  hydration.
+- `speculationRules` {string} Speculation rules JSON for prefetching.
+- `themeScript` {string} Inline script that applies the saved theme before paint.
+- `root` {string} Relative or absolute path to the site root.
+- `metadata` {Object} Full page metadata (frontmatter, path, heading, etc.).
+- `config` {Object} The resolved web generator configuration.
+- `head` {string} Pre-rendered `<meta>`/`<link>`/raw markup from the `head`
+  config.
 
 Since the template supports arbitrary JS expressions, you can use conditionals and method calls:
 

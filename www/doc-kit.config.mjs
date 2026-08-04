@@ -15,7 +15,7 @@ const generatorItems = globSync('packages/core/src/generators/*/README.md', {
   .map(file => basename(dirname(file)))
   .sort()
   .map(name => ({
-    label: `\`${name}\` Generator`,
+    label: `\`${name}\``,
     link: `/generators/${name}`,
   }));
 
@@ -28,7 +28,7 @@ const DESCRIPTION =
 
 /** @type {import('../packages/core/src/utils/configuration/types').Configuration} */
 export default {
-  target: ['orama-db', 'web'],
+  target: ['orama-db', 'legacy-json', 'web'],
 
   global: {
     // `www/content/` is assembled by `scripts/build-docs-content.mjs`.
@@ -68,6 +68,8 @@ export default {
     // instead; a per-page link would need a `#theme/Metabar` override that maps
     // each slug back to its true origin.
     editURL: `https://github.com/${REPOSITORY}`,
+
+    pathsToCopy: [{ [join(ROOT, 'content')]: '.' }],
 
     navigation: {
       sidebar: [
