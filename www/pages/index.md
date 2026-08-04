@@ -1,71 +1,30 @@
 # `doc-kit`
 
-`doc-kit` is an opinionated Markdown parsing tool to structurally transform API
-documentation. It's the documentation toolchain behind the Node.js API
-reference, found at https://nodejs.org/docs/latest/api/. This site is built by
-`doc-kit`, from its own repository. The pages you are reading were produced by
-the `html` generator.
+`doc-kit` turns API-shaped Markdown into documentation.
 
-> 📣 `doc-kit` is in beta. We'd like feedback within the
-> [issue log](https://github.com/nodejs/doc-kit/issues) or by visiting the
-> [#nodejs-website Slack Channel](https://openjs-foundation.slack.com/archives/CVAMEJ4UV)
+> 📣 `doc-kit` is in beta. We'd love feedback in the
+> [issue tracker](https://github.com/nodejs/doc-kit/issues) or the
+> [#nodejs-website channel](https://openjs-foundation.slack.com/archives/CVAMEJ4UV)
 > on [the OpenJS Slack](http://slack.openjsf.org/).
 
-## `doc-kit` is a pipeline, not a Markdown converter
+## Quick Start
 
-`doc-kit` parses Markdown source files once, emitting output according to
-configured generators. You run any subset of them in one command, customize
-their logic, or even build your own generator.
-
-```
-Raw Markdown Files
-        │
-      [ast]           parse to MDAST
-        │
-    [metadata]        extract structured API metadata
-        │
-        ├─► [jsx-ast] ─► [html]       server-rendered site
-        ├─► [legacy-html] ─► …-all   classic HTML
-        ├─► [legacy-json] ─► …-all   JSON
-        ├─► [json-simple]            simplified JSON
-        ├─► [llms-txt]               llms.txt
-        ├─► [man-page]               man pages
-        ├─► [orama-db]               search index
-        └─► [sitemap]                sitemap.xml
+```bash
+npx doc-kit bootstrap
+npx doc-kit serve
 ```
 
-Only some of these are things you ask for by name. `ast`, `metadata`, and
-`jsx-ast` are internal stages — they run because something downstream depends on
-them, and they are not valid `-t` targets. Everything in the fan-out below
-`metadata` is a target you can pass to `-t`, and passing several at once reuses
-the one shared parse rather than repeating it. The full list is in the
-[generators reference](./generators/html.html).
-
-## The input contract
-
-Because `metadata` is looking for an API document, the shape of your Markdown
-matters more than it would in a typical static-site generator. The most
-important rule:
-
-> **Every page must begin with a level-one heading.** The first `#` becomes the
-> page's identity — its sidebar label and its output filename. A file without
-> one produces no page at all, and the build still exits `0`.
-
-See [the specification](./specification.html) for the full input format.
-
-## What's next
-
-- [Getting started](./getting-started.html) — render your first document.
-- [Commands](./commands.html) — the `doc-kit` CLI surface.
-- [Configuration](./configuration.html) — `doc-kit.config.mjs` reference.
-- [Creating generators](./generators.html) — extend the pipeline.
+`bootstrap` sets your project up; `serve` renders the site at `localhost:3000`
+and rebuilds as you edit. [Getting started](./getting-started.html) walks you
+through it.
 
 ## Showcase
 
-A couple places `doc-kit` is already in use. Feel free to PR yours.
+A few places `doc-kit` is already in use. Feel free to PR yours.
 
-- <https://nodejs.org/api> - `legacy-json`
-- <https://beta.docs.nodejs.org/> - `html`
-- <https://nodejs.org/learn> - `html`
-- <https://webpack-doc-kit.vercel.app/> - `html`
-- <https://undici.nodejs.org/> - `html`
+- <https://nodejs.org/api> - `legacy-html`, `legacy-json`
+- <https://nodejs.org/llms.txt> - `llms-txt`
+- <https://beta.docs.nodejs.org/> - `html`, `orama-db`, `llms-txt`
+- <https://nodejs.org/learn> - `html`, `orama-db`, `llms-txt`
+- <https://webpack-doc-kit.vercel.app/> - `html`, `orama-db`, `llms-txt`
+- <https://undici.nodejs.org/> - `html`, `orama-db`, `llms-txt`

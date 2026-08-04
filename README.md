@@ -46,16 +46,26 @@ $ node packages/core/bin/cli.mjs --help
 ```
 Usage: @nodejs/doc-kit [options] [command]
 
-CLI tool to generate the Node.js API documentation
+CLI tool to generate API documentation
 
 Options:
-  --log-level <level>  Log level (choices: "debug", "info", "warn", "error",
-                       "fatal", default: "info")
-  -h, --help           display help for command
+  --log-level <level>                  Log level (choices: "debug", "info",
+                                       "warn", "error", "fatal", default:
+                                       "info")
+  -h, --help                           display help for command
 
 Commands:
-  generate [options]   Generate API docs
-  help [command]       display help for command
+  bootstrap [options] [generators...]  Set up a project for doc-kit: a
+                                       configuration file wired to your
+                                       package.json, a documentation directory,
+                                       and the generator packages
+  generate [options]                   Generate API docs
+  install [options] [generators...]    Install the packages providing built-in
+                                       generators (defaults to the targets in
+                                       your configuration file)
+  serve [options]                      Generate API docs, serve them locally,
+                                       and regenerate on changes
+  help [command]                       display help for command
 ```
 
 ### `generate`
@@ -78,20 +88,90 @@ Options:
                                (json-simple, legacy-html, legacy-html-all,
                                man-page, legacy-json, legacy-json-all,
                                addon-verify, api-links, orama-db, llms-txt,
-                               sitemap, web) or an import specifier for a custom
-                               generator
+                               sitemap, html) or an import specifier for a
+                               custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory
   -p, --threads <number>       Number of threads to use (minimum: 1)
   --chunk-size <number>        Number of items to process per worker thread
                                (minimum: 1)
-  -v, --version <semver>       Target Node.js version
+  -v, --version <semver>       Target project version
   -c, --changelog <url>        Changelog URL or path
   --git-ref <ref>              Git ref
   --index <url>                index.md URL or path
   --minify                     Minify?
   --type-map <url>             Type map URL or path
   -h, --help                   display help for command
+```
+
+### `serve`
+
+Generates the documentation, serves it locally, and regenerates whenever the
+input files change — the fastest way to preview docs while writing them. It
+accepts the same configuration options as `generate`, plus:
+
+```
+Options:
+  --port <number>              Preferred port (falls back to the next available
+                               one) (default: 3000)
+  --static                     Serve the existing output as-is, without
+                               generating or watching
+```
+
+### `bootstrap`
+
+Sets a project up end to end: a `doc-kit.config.mjs` wired to your
+`package.json`, a documentation directory (detected, or created with a starter
+page), a `.gitignore` entry for the output, and the generator packages
+installed. Prompts for its few decisions on a TTY; `--yes` accepts the
+defaults. A new project only needs:
+
+```sh
+npx doc-kit bootstrap && npx doc-kit serve
+```
+
+```
+Usage: @nodejs/doc-kit bootstrap [options] [generators...]
+
+Set up a project for doc-kit: a configuration file wired to your package.json, a
+documentation directory, and the generator packages
+
+Arguments:
+  generators                Built-in generator names (json-simple, legacy-html,
+                            legacy-html-all, man-page, legacy-json,
+                            legacy-json-all, addon-verify, api-links, orama-db,
+                            llms-txt, sitemap, html)
+
+Options:
+  -y, --yes                 Accept all defaults without prompting
+  --dir <path>              The documentation directory
+  -o, --output <directory>  The output directory (default: "out")
+  --force                   Overwrite an existing configuration file
+  -h, --help                display help for command
+```
+
+### `install`
+
+Installs the packages providing built-in generators (e.g. `doc-kit install html`
+installs `@nodejs/doc-kit-generator-react`). Without arguments, it installs
+whatever the `target` in your configuration file needs. The package manager is
+detected from the project lockfile.
+
+```
+Usage: @nodejs/doc-kit install [options] [generators...]
+
+Install the packages providing built-in generators (defaults to the targets in
+your configuration file)
+
+Arguments:
+  generators            Built-in generator names (json-simple, legacy-html,
+                        legacy-html-all, man-page, legacy-json, legacy-json-all,
+                        addon-verify, api-links, orama-db, llms-txt, sitemap,
+                        html)
+
+Options:
+  --config-file <path>  Config file
+  -h, --help            display help for command
 ```
 
 ## Examples
@@ -126,5 +206,5 @@ npx doc-kit generate \
 > In order to use the search functionality, you _must_ serve the output directory.
 >
 > ```sh
-> npx serve out
+> npx doc-kit serve --static -o out
 > ```

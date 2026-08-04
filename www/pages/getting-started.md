@@ -1,141 +1,87 @@
 # Getting started
 
-This page takes you from an empty directory to a rendered documentation page.
+This page takes you from an initialized npm project to a live-previewed
+documentation site in two commands, then shows you where to go next.
 
-## Install
+**Prerequisites:** Node.js 22 or newer, and a project with a `package.json` (run
+`npm init -y` if you're starting fresh).
 
-From an initialized npm project, run this in your terminal.
-
-```bash
-npm install --save-dev @nodejs/doc-kit @nodejs/doc-kit-generator-legacy @nodejs/doc-kit-generator-react
-```
-
-`@nodejs/doc-kit` provides the engine and CLI; generators ship as separate
-packages, so install the ones for the output formats you need
-(`@nodejs/doc-kit-generator-legacy` and `@nodejs/doc-kit-generator-react` cover
-the targets used on this page).
-
-## Write a valid input document
-
-Create `docs/hello.md`:
-
-```markdown
-# hello
-
-A one-line description of the module.
-
-## `hello.greet(name)`
-
-- `name` {string} The name to greet.
-- Returns: {string}
-
-Greets `name`.
-```
-
-> If you omit the `#` heading, `doc-kit` emits no page for the file and still
-> exits successfully. An empty output directory almost always means a missing
-> level-one heading.
-
-## Render it
-
-The `legacy-html-all` target has no additional dependencies and is the quickest
-way to see output:
+## 1. Bootstrap
 
 ```bash
-npx doc-kit generate \
-  -t legacy-html-all \
-  -i "docs/*.md" \
-  -o out
+npx doc-kit bootstrap
 ```
 
-Open `out/all.html` in a browser. You'll notice the Node.js branding, however,
-that's fully customizable via [a configuration file][].
+`bootstrap` asks which generators you want (press Enter to accept `html`, the
+modern documentation site) and where your docs live, then sets everything up:
 
-## Render the modern site
+```text
+INFO (bootstrap): Created docs/hello.md (a starter page)
+INFO (bootstrap): Created doc-kit.config.mjs (wired to your package.json)
+INFO (bootstrap): Added out/ to .gitignore
+```
 
-The `html` target produces the server-rendered, client-hydrated site that
-[nodejs.org](https://nodejs.org) uses — and that this site is built with:
+It detects an existing `docs/` directory (or creates one with a starter page),
+writes a `doc-kit.config.mjs` whose name and version are imported straight from
+your `package.json`, and installs the generator packages. Pass `--yes` to accept
+every default without prompting.
+
+## 2. Serve
 
 ```bash
-npx doc-kit generate \
-  -t html \
-  -i "docs/*.md" \
-  -o out
+npx doc-kit serve
 ```
 
-Pair it with `orama-db` to add search:
+Open the printed URL (usually <http://localhost:3000>). You're looking at your
+documentation site — server-rendered pages, sidebar, dark mode, and search
+included.
+
+## 3. Edit
+
+Open `docs/hello.md`, change something, and save. `doc-kit` regenerates the
+site; refresh the browser to see it. The starter page is a complete example of
+the format: a title heading, a method entry, and a typed parameter list.
+
+When you want a production build instead of a preview:
 
 ```bash
-npx doc-kit generate -t html -t orama-db -i "docs/*.md" -o out
+npx doc-kit generate
 ```
 
-## Preview it locally
+The site is written to `out/`, ready for any static host.
 
-The `html` output uses import maps and client-side hydration, so it must be
-served over HTTP — opening the files directly with `file://` will not work. Any
-static server will do the trick; for example:
+## Manual setup
+
+Prefer to wire things yourself, or adding `doc-kit` to an existing project?
+`bootstrap` is only a convenience — the pieces are two packages and one file:
 
 ```bash
-npx serve out -p 3000
+npm install --save-dev @nodejs/doc-kit @nodejs/doc-kit-generator-react
 ```
 
-Then open the printed URL (usually <http://localhost:3000>). The
-`legacy-html-all` output from earlier has no such requirement — `out/all.html`
-opens straight from disk.
-
-## Customize the `html` generator output
-
-The power of the `html` generator comes from its customization hooks. Let's walk
-through a couple quick changes.
-
-Create a `doc-kit.config.mjs` file at the root of the project.
-
-```mjs
-import { join } from 'node:path';
-
-/** @type {import('@nodejs/doc-kit/src/utils/configuration/types').Configuration} */
+```js
+// doc-kit.config.mjs
+/** @type {import('@nodejs/doc-kit/utils/configuration/types').Configuration} */
 export default {
-  html: {
-    project: 'My Project', // Project name used in page titles and the version selector
-    remoteConfigUrl: '', // Suppress the Node.js default that sets the top banner based on Node.js news.
-    head: {
-      html: [
-        // re-write the brand color for effect
-        `<style>
-          :root {
-            --color-brand-100: #f7f1fb;
-            --color-brand-200: #ead9fb;
-            --color-brand-300: #dbbdf9;
-            --color-brand-400: #c79bf2;
-            --color-brand-600: #9756d6;
-            --color-brand-700: #7d3cbe;
-            --color-brand-800: #642b9e;
-            --color-brand-900: #361b52;
-          }
-        </style>`,
-      ],
-    },
-    // use a custom logo instead of the Node.js logo
-    // our logo.jsx file like this, just for the demo
-    // export default Logo = () =>
-    //   <svg height="30" width="30" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--color-brand-400)"/></svg>;
-    imports: {
-      '#theme/Logo': join(import.meta.dirname, './logo.jsx'),
-      // You can also change things such as `#theme/Layout`,
-      // and more!
-    },
+  target: ['html'],
+
+  global: {
+    input: ['docs/**/*.md'],
+    output: 'out',
   },
 };
 ```
 
-Re-build the project, serve, and you'll see how quickly you can change the
-experience, preserving core functionality.
+`doc-kit serve` and `doc-kit generate` read that configuration; every option can
+also be passed as a CLI flag. See the
+[configuration reference](./configuration.html) for everything the file accepts.
 
 ## Next steps
 
-- Explore [Configuration](./configuration.html) — consider moving your `-t`
-  target flags into a `doc-kit.config.mjs` file.
-- [Further customize the `html` generator](./generators/html.html) — give it a
-  custom sidenav or footer.
-- [Read the full input specification](./specification.html) — the full Markdown
-  contract.
+- [Writing documentation](./writing-docs.html) — the Markdown conventions that
+  make `doc-kit` more than a static-site generator.
+- [Customizing the site](./customization.html) — your name, logo, navigation,
+  and components instead of the defaults.
+- [Publishing your docs](./publishing.html) — production builds, base URLs, and
+  hosting.
+- [Troubleshooting](./troubleshooting.html) — if something didn't work.

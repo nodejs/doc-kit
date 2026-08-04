@@ -6,7 +6,7 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
   },
   webServer: {
-    command: 'npx serve out',
+    command: 'node packages/core/bin/cli.mjs serve --static -o out',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },
