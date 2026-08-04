@@ -2,6 +2,21 @@
 
 This page takes you from an empty directory to a rendered documentation page.
 
+## Quick start
+
+Two commands take an initialized npm project to a live-previewed docs site:
+
+```bash
+npx doc-kit bootstrap
+npx doc-kit serve
+```
+
+`bootstrap` writes a configuration file wired to your `package.json`, finds or
+creates your documentation directory (with a starter page), and installs the
+generator packages you pick. `serve` builds the site and rebuilds it as you
+edit. The rest of this page walks the same road manually, so you can see each
+moving part.
+
 ## Install
 
 From an initialized npm project, run this in your terminal.

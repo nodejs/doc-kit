@@ -63,6 +63,21 @@ Commands:
   help [command]                     display help for command
 ```
 
+### `bootstrap`
+
+The fastest way to adopt doc-kit in a project:
+
+```sh
+npx doc-kit bootstrap
+npx doc-kit serve
+```
+
+`bootstrap` writes a `doc-kit.config.mjs` wired to your `package.json`
+(naming, versioning, homepage), finds or creates your documentation
+directory, ignores the output directory, and installs the packages for the
+generators you pick. `serve` then gives you a live-reloading preview while
+you write.
+
 ### `generate`
 
 You must provide an input and at least one target through command-line options

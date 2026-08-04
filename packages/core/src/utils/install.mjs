@@ -1,10 +1,14 @@
 'use strict';
 
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
 
 import packageJson from '../../package.json' with { type: 'json' };
 import { allGenerators } from '../generators/index.mjs';
+import logger from '../logger/index.mjs';
+
+const installLogger = logger.child('install');
 
 /**
  * Lockfiles used to detect which package manager a project uses.
@@ -137,4 +141,47 @@ export const buildInstallArguments = (packageManager, packages, dev) => {
     : '--save-dev';
 
   return [subcommand, ...(dev ? [devFlag] : []), ...packages];
+};
+
+/**
+ * Installs the packages providing the given generators with the project's
+ * package manager.
+ *
+ * @param {string[]} names - Generator targets (see
+ * {@link resolveGeneratorPackages})
+ * @param {boolean} [allowSpecifiers=false] - Accept non-built-in targets
+ * @returns {string[]} The installed package names (empty when everything was
+ * already part of this package)
+ * @throws {Error} When the package manager exits unsuccessfully
+ */
+export const installGeneratorPackages = (names, allowSpecifiers = false) => {
+  const packages = resolveGeneratorPackages(names, allowSpecifiers);
+
+  if (!packages.length) {
+    return packages;
+  }
+
+  const packageManager = detectPackageManager(process.cwd());
+  const args = buildInstallArguments(
+    packageManager,
+    packages,
+    isDevInstall(process.cwd())
+  );
+
+  installLogger.info(`Running \`${packageManager} ${args.join(' ')}\``);
+
+  const { status, error } = spawnSync(packageManager, args, {
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (status !== 0) {
+    throw new Error(`\`${packageManager}\` exited with status ${status}`);
+  }
+
+  return packages;
 };
