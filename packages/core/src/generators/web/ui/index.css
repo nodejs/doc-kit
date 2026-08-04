@@ -16,7 +16,7 @@ island-slot {
 }
 
 /* TODO(@avivkeller): make this component's CSS more agnostic */
-is-land[data-component='SideBar'] {
+is-land[data-island-name='SideBar'] {
   display: flex;
   flex-direction: column;
 
