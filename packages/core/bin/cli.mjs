@@ -9,7 +9,7 @@ import { LogLevel } from '../src/logger/constants.mjs';
 import logger from '../src/logger/index.mjs';
 
 const program = new Command()
-  .name('@node-core/doc-kit')
+  .name('@nodejs/doc-kit')
   .description('CLI tool to generate the Node.js API documentation')
   .addOption(
     new Option('--log-level <level>', 'Log level')

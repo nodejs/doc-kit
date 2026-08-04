@@ -1,5 +1,5 @@
 {
-  "name": "@node-core/doc-kit-monorepo",
+  "name": "@nodejs/doc-kit-monorepo",
   "private": true,
   "type": "module",
   "workspaces": [

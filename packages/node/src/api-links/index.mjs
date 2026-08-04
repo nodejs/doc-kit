@@ -1,7 +1,8 @@
 'use strict';
 
+import { GITHUB_BLOB_URL } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
+
 import { generate } from './generate.mjs';
-import { GITHUB_BLOB_URL } from '../../utils/configuration/templates.mjs';
 
 /**
  * This generator is responsible for mapping publicly accessible functions in
@@ -21,7 +22,7 @@ export default {
 
   // Unlike the rest of the generators, this utilizes Javascript sources being
   // passed into the input field rather than Markdown.
-  dependsOn: '@node-core/doc-kit/ast-js',
+  dependsOn: '@nodejs/doc-kit/ast-js',
 
   defaultConfiguration: {
     sourceURL: `${GITHUB_BLOB_URL}lib/{fileName}`,

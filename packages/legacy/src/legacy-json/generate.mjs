@@ -2,9 +2,9 @@
 
 import { join } from 'node:path';
 
-import getConfig from '@node-core/doc-kit/utils/configuration/index.mjs';
-import { writeFile, withExt } from '@node-core/doc-kit/utils/file.mjs';
-import { groupNodesByModule } from '@node-core/doc-kit/utils/generators.mjs';
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { writeFile, withExt } from '@nodejs/doc-kit/utils/file.mjs';
+import { groupNodesByModule } from '@nodejs/doc-kit/utils/generators.mjs';
 
 import { createSectionBuilder } from './utils/buildSection.mjs';
 import { legacyToJSON } from '../utils/legacyToJSON.mjs';

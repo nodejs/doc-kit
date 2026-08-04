@@ -1,7 +1,7 @@
 import { cp } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 
-import logger from '@node-core/doc-kit/logger/index.mjs';
+import logger from '@nodejs/doc-kit/logger/index.mjs';
 
 /**
  * Copies static directories/files defined in `pathsToCopy` to the output directory.

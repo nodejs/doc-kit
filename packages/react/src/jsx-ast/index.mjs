@@ -12,7 +12,7 @@ export default {
 
   description: 'Generates JSX AST from the input MDAST',
 
-  dependsOn: '@node-core/doc-kit/metadata',
+  dependsOn: '@nodejs/doc-kit/metadata',
 
   defaultConfiguration: {
     ref: 'main',

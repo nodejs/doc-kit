@@ -1,5 +1,5 @@
-import getConfig from '@node-core/doc-kit/utils/configuration/index.mjs';
-import { groupNodesByModule } from '@node-core/doc-kit/utils/generators.mjs';
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { groupNodesByModule } from '@nodejs/doc-kit/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from './utils/buildContent.mjs';
@@ -14,7 +14,7 @@ import { buildIndexPage } from './utils/synthetic/index.mjs';
  * runs later in a worker (via `processChunk`), so the very large synthetic
  * `all` page is never built on the main thread.
  *
- * @param {Array<import('@node-core/doc-kit/generators/metadata/types').MetadataEntry>} input
+ * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} input
  */
 const buildSyntheticDescriptors = input => {
   const config = getConfig('jsx-ast');

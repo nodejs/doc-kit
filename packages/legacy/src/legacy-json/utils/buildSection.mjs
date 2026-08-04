@@ -1,7 +1,7 @@
-import { enforceArray } from '@node-core/doc-kit/utils/array.mjs';
-import { getRemarkRehype as remark } from '@node-core/doc-kit/utils/remark.mjs';
-import { parseList } from '@node-core/doc-kit/utils/signature/parseList.mjs';
-import { transformNodesToString } from '@node-core/doc-kit/utils/unist.mjs';
+import { enforceArray } from '@nodejs/doc-kit/utils/array.mjs';
+import { getRemarkRehype as remark } from '@nodejs/doc-kit/utils/remark.mjs';
+import { parseList } from '@nodejs/doc-kit/utils/signature/parseList.mjs';
+import { transformNodesToString } from '@nodejs/doc-kit/utils/unist.mjs';
 
 import { buildHierarchy } from './buildHierarchy.mjs';
 import { SECTION_TYPE_PLURALS, UNPROMOTED_KEYS } from '../constants.mjs';
@@ -34,7 +34,7 @@ export const promoteMiscChildren = (section, parent) => {
 export const createSectionBuilder = () => {
   /**
    * Creates metadata from a metadata entry.
-   * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} entry - The entry to create metadata from.
+   * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry - The entry to create metadata from.
    * @returns {import('../types.d.ts').Meta | undefined} The created metadata, or undefined if all fields are empty.
    */
   const createMeta = ({
@@ -74,8 +74,8 @@ export const createSectionBuilder = () => {
 
   /**
    * Creates a section from an entry and its heading.
-   * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} entry - The AST entry.
-   * @param {import('@node-core/doc-kit/generators/metadata/types').HeadingNode} head - The head node of the entry.
+   * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry - The AST entry.
+   * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingNode} head - The head node of the entry.
    * @returns {import('../types.d.ts').Section} The created section.
    */
   const createSection = (entry, head) => {
@@ -99,7 +99,7 @@ export const createSectionBuilder = () => {
    * Parses stability metadata and adds it to the section.
    * @param {import('../types.d.ts').Section} section - The section to update.
    * @param {Array} nodes - The remaining AST nodes.
-   * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} entry - The entry providing stability information.
+   * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry - The entry providing stability information.
    */
   const parseStability = (section, nodes, { stability, content }) => {
     if (stability) {
@@ -136,7 +136,7 @@ export const createSectionBuilder = () => {
    * Adds additional metadata to the section based on its type.
    * @param {import('../types.d.ts').Section} section - The section to update.
    * @param {import('../types.d.ts').Section} parent - The parent section.
-   * @param {import('@node-core/doc-kit/generators/metadata/types').HeadingNode} heading - The heading node of the section.
+   * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingNode} heading - The heading node of the section.
    */
   const addAdditionalMetadata = (section, parent, heading) => {
     if (!section.type || section.type === 'module') {
@@ -181,8 +181,8 @@ export const createSectionBuilder = () => {
 
   /**
    * Builds the module section from head metadata and entries.
-   * @param {import('@node-core/doc-kit/generators/metadata/types').MetadataEntry} head - The head metadata entry.
-   * @param {Array<import('@node-core/doc-kit/generators/metadata/types').MetadataEntry>} entries - The list of metadata entries.
+   * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} head - The head metadata entry.
+   * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries - The list of metadata entries.
    * @returns {import('../types.d.ts').ModuleSection} The constructed module section.
    */
   return (head, entries) => {

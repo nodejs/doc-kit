@@ -13,7 +13,7 @@ export default defineConfig([
     ignores: [
       'www/out',
       'out/',
-      'packages/core/src/generators/api-links/__tests__/fixtures/',
+      'packages/node/src/api-links/__tests__/fixtures/',
     ],
   },
   {

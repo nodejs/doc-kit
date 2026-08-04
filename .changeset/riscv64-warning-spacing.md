@@ -1,5 +1,5 @@
 ---
-'@node-core/doc-kit': patch
+'@nodejs/doc-kit': patch
 ---
 
 Fix missing spaces in the riscv64 multithreading warning message, which

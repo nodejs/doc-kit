@@ -2,7 +2,7 @@
 
 import { join } from 'node:path';
 
-import { GITHUB_EDIT_URL } from '@node-core/doc-kit/utils/configuration/templates.mjs';
+import { GITHUB_EDIT_URL } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
 
 import { generate, processChunk } from './generate.mjs';
 
@@ -22,7 +22,7 @@ export default {
   description:
     'Generates the legacy version of the API docs in HTML, with the assets and styles included as files',
 
-  dependsOn: '@node-core/doc-kit/metadata',
+  dependsOn: '@nodejs/doc-kit/metadata',
 
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.html'),

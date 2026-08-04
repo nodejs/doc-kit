@@ -1,4 +1,4 @@
-import { MetadataEntry } from '../metadata/types';
+import { MetadataEntry } from '@nodejs/doc-kit/generators/metadata/types';
 
 export type Generator = GeneratorMetadata<
   {

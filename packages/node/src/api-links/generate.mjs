@@ -2,12 +2,13 @@
 
 import { basename, join } from 'node:path';
 
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
+import { withExt, writeFile } from '@nodejs/doc-kit/utils/file.mjs';
+
 import { checkIndirectReferences } from './utils/checkIndirectReferences.mjs';
 import { extractExports } from './utils/extractExports.mjs';
 import { findDefinitions } from './utils/findDefinitions.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { populate } from '../../utils/configuration/templates.mjs';
-import { withExt, writeFile } from '../../utils/file.mjs';
 
 /**
  * Generates the `apilinks.json` file.

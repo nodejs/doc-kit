@@ -1,5 +1,5 @@
 ---
-'@node-core/doc-kit': patch
+'@nodejs/doc-kit': patch
 ---
 
 Fix `relative()` URL resolution when the target path is a prefix of the current

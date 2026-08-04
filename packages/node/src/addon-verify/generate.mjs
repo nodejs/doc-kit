@@ -3,6 +3,8 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
 import { visit } from 'unist-util-visit';
 
 import { EXTRACT_CODE_FILENAME_COMMENT } from './constants.mjs';
@@ -12,8 +14,6 @@ import {
   isBuildableSection,
   normalizeSectionName,
 } from './utils/section.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { writeFile } from '../../utils/file.mjs';
 
 /**
  * Generates a file list from code blocks.

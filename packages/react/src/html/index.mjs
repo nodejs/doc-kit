@@ -2,7 +2,7 @@
 
 import { join } from 'node:path';
 
-import { GITHUB_EDIT_URL } from '@node-core/doc-kit/utils/configuration/templates.mjs';
+import { GITHUB_EDIT_URL } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
 
 import { generate } from './generate.mjs';
 
@@ -33,7 +33,7 @@ export default {
   dependsOn: '@nodejs/doc-kit-generator-react/jsx-ast',
 
   /**
-   * @param {import('@node-core/doc-kit/utils/configuration/types').Configuration} config
+   * @param {import('@nodejs/doc-kit/utils/configuration/types').Configuration} config
    */
   defaultConfiguration: config => ({
     templatePath: join(import.meta.dirname, 'template.html'),
