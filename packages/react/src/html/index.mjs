@@ -56,6 +56,9 @@ export default {
       html: [],
     },
 
+    // Extra stylesheets
+    stylesheets: [],
+
     imports: {
       '#theme/Logo': join(import.meta.dirname, './ui/components/ProjectName'),
       '#theme/Navigation': join(import.meta.dirname, './ui/components/NavBar'),

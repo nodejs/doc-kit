@@ -28,6 +28,8 @@ its HTML or CSS.
   **Default:** none — no runtime fetch, no banner.
 - `head` {Object} Configurable `<meta>`, `<link>`, and raw markup for the
   document head. See [`head`](#head).
+- `stylesheets` {Array} Paths to extra stylesheets bundled after the built-in
+  one. See [`stylesheets`](#stylesheets). **Default:** `[]`.
 - `imports` {Object} Object mapping `#theme/` aliases to component paths for
   customization. See [Default `imports`](#default-imports).
 - `virtualImports` {Object} Additional virtual module mappings supplied to the
@@ -82,6 +84,44 @@ export default {
 > Structural and theme-bound tags are emitted by the template itself rather than
 > via `head`, including `og:title` (which mirrors the per-page title) and
 > `og:type`. The UI stylesheet bundles its fonts locally.
+
+### `stylesheets`
+
+Each entry is a path to a CSS file, bundled into the site's single stylesheet
+after the built-in one — so its rules and custom properties win. Relative paths
+resolve against the working directory; prefer absolute paths (e.g.
+`join(import.meta.dirname, 'theme.css')`) when the config file can be loaded
+from elsewhere.
+
+The built-in accent palette is a project-neutral grey. Rebrand the output by
+redefining the nine `--color-brand-*` custom properties, which the UI components
+use for links, focus rings, and active states:
+
+```css
+/* theme.css */
+:root {
+  --color-brand-100: #edf2eb;
+  --color-brand-200: #c5e5b4;
+  --color-brand-300: #99cc7d;
+  --color-brand-400: #84ba64;
+  --color-brand-500: #5fa04e;
+  --color-brand-600: #417e38;
+  --color-brand-700: #2c682c;
+  --color-brand-800: #2c682c;
+  --color-brand-900: #1a3f1d;
+}
+```
+
+```js
+// doc-kit.config.mjs
+import { join } from 'node:path';
+
+export default {
+  html: {
+    stylesheets: [join(import.meta.dirname, 'theme.css')],
+  },
+};
+```
 
 ### `navigation`
 

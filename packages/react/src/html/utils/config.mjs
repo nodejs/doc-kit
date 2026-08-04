@@ -97,6 +97,7 @@ export default function createConfigSource(input, server = false) {
         'index',
         'imports',
         'virtualImports',
+        'stylesheets',
         'components',
         'head',
         'bundler',

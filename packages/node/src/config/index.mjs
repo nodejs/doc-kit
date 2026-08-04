@@ -68,6 +68,8 @@ export default {
       ],
     },
 
+    stylesheets: [join(import.meta.dirname, 'theme.css')],
+
     imports: {
       '#theme/Logo': '@node-core/ui-components/Common/NodejsLogo',
     },

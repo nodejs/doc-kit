@@ -62,6 +62,8 @@ export type Configuration = {
   title: string;
   useAbsoluteURLs: boolean;
   head: HeadConfig;
+  // Paths to extra stylesheets
+  stylesheets: Array<string>;
   imports: Record<string, string>;
   virtualImports: Record<string, string>;
   // Maps a JSX tag name to its import, enabling JSX-in-MDX. The string shorthand
