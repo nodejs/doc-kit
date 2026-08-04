@@ -1,10 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { cpus } from 'node:os';
+import { dirname, isAbsolute, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { isMainThread } from 'node:worker_threads';
 
 import { cosmiconfig } from 'cosmiconfig';
 import { coerce } from 'semver';
 
-import { CHANGELOG_URL, populate } from './templates.mjs';
 import {
   loadGenerators,
   resolveGeneratorSpecifier,
@@ -16,6 +19,20 @@ import { leftHandAssign } from '../generators.mjs';
 import { deepMerge } from '../misc.mjs';
 
 const configExplorer = cosmiconfig('doc-kit');
+
+/**
+ * The name of the project being documented, from the manifest in the working
+ * directory. Generators use it for titles, logos, and templated text.
+ *
+ * @returns {string | undefined}
+ */
+const detectProject = () => {
+  try {
+    return JSON.parse(readFileSync('package.json', 'utf-8')).name;
+  } catch {
+    return undefined;
+  }
+};
 
 /**
  * Get's the default configuration for the loaded generators
@@ -37,15 +54,13 @@ export const getDefaultConfig = (generators, config) =>
     },
     /** @type {import('./types').Configuration} */ ({
       global: {
+        project: detectProject() ?? 'API Docs',
         version: process.version,
         minify: true,
-        repository: 'nodejs/node',
         ref: 'HEAD',
-        baseURL: 'https://nodejs.org/docs',
-        changelog: populate(CHANGELOG_URL, {
-          repository: 'nodejs/node',
-          ref: 'HEAD',
-        }),
+        // Without release history there is nothing to build a version picker
+        // from, so generators render single-version output.
+        changelog: [],
         pathsToCopy: ['assets', 'public', 'static'],
       },
 
@@ -59,6 +74,23 @@ export const getDefaultConfig = (generators, config) =>
   );
 
 /**
+ * Resolves an `extends` entry of a configuration file into an importable
+ * URL: relative paths resolve against the configuration file, anything else
+ * resolves as a package import specifier (e.g. `@node-core/doc-kit/config`).
+ *
+ * @param {string} specifier - The `extends` entry
+ * @param {string} configFilePath - The configuration file it appears in
+ * @returns {string} A `file:` URL to import
+ */
+const resolveConfigExtends = (specifier, configFilePath) => {
+  if (specifier.startsWith('.') || isAbsolute(specifier)) {
+    return pathToFileURL(resolve(dirname(configFilePath), specifier)).href;
+  }
+
+  return pathToFileURL(createRequire(configFilePath).resolve(specifier)).href;
+};
+
+/**
  * Loads an explicit configuration file or searches for one using cosmiconfig.
  *
  * @param {string} [filePath] - The path to an explicit configuration file
@@ -69,7 +101,19 @@ export const loadConfigFile = async filePath => {
     ? await configExplorer.load(filePath)
     : await configExplorer.search();
 
-  return result?.config ?? {};
+  if (!result) {
+    return {};
+  }
+
+  let { extends: presets, ...config } = result.config ?? {};
+
+  for (const preset of enforceArray(presets ?? []).toReversed()) {
+    const module = await import(resolveConfigExtends(preset, result.filepath));
+
+    config = deepMerge(module.default ?? module, config);
+  }
+
+  return config;
 };
 
 /**

@@ -99,12 +99,13 @@ describe('resolvePageRoot', () => {
 
   it('uses the configured base URL for synthetic pages with absolute URLs', async () => {
     getConfig('html').useAbsoluteURLs = true;
+    getConfig('html').baseURL = 'https://example.com/docs';
 
     const result = resolvePageRoot({
       path: '/404',
       synthetic: true,
     });
-    assert.strictEqual(result, 'https://nodejs.org/docs/');
+    assert.strictEqual(result, 'https://example.com/docs/');
 
     getConfig('html').useAbsoluteURLs = false;
   });

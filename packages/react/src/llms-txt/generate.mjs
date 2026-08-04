@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
 import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
 
 import { buildApiDocLink } from './utils/buildApiDocLink.mjs';
@@ -23,7 +24,7 @@ export async function generate(input) {
     .map(entry => `- ${buildApiDocLink(entry, config)}`)
     .join('\n');
 
-  const filledTemplate = `${template}${apiDocsLinks}`;
+  const filledTemplate = `${populate(template, config)}${apiDocsLinks}`;
 
   if (config.output) {
     await writeFile(join(config.output, 'llms.txt'), filledTemplate);

@@ -15,7 +15,7 @@ export default {
   dependsOn: '@nodejs/doc-kit/metadata',
 
   defaultConfiguration: {
-    indexURL: '{baseURL}/latest/api/',
+    indexURL: '{baseURL}/',
     pageURL: '{indexURL}{path}.html',
   },
 

@@ -14,18 +14,18 @@ its HTML or CSS.
 - `templatePath` {string} Path to the HTML template file.
   **Default:** `'template.html'`.
 - `project` {string} Project name used in page titles and the version selector.
-  **Default:** `'Node.js'`.
+  **Default:** inherited from `global.project`.
 - `title` {string} Title template for HTML pages (supports `{project}`,
   `{version}`). **Default:** `'{project} v{version} Documentation'`.
 - `useAbsoluteURLs` {boolean} When `true`, all internal links use absolute URLs
   based on `baseURL`. **Default:** `false`.
 - `editURL` {string} URL template for "edit this page" links.
-  **Default:** `'${GITHUB_EDIT_URL}/doc/api{path}.md'`.
+  **Default:** none — the "edit this page" link is omitted.
 - `pageURL` {string} URL template for documentation page links.
-  **Default:** `'{baseURL}/latest-{version}/api{path}.html'`.
+  **Default:** `'{baseURL}{path}.html'`.
 - `remoteConfigUrl` {string} URL fetched client-side at runtime for remote site
   config (currently used to power the announcement banner).
-  **Default:** `'https://nodejs.org/site.json'`.
+  **Default:** none — no runtime fetch, no banner.
 - `head` {Object} Configurable `<meta>`, `<link>`, and raw markup for the
   document head. See [`head`](#head).
 - `imports` {Object} Object mapping `#theme/` aliases to component paths for
@@ -58,8 +58,7 @@ omitted. Using arrays of attribute bags (rather than `name → value` maps) mean
 you can emit repeated tags (e.g. two `preconnect` links) and pick the right
 attribute (`name` vs `property`) per tag.
 
-The defaults are Node.js-branded — override `head` entirely to brand the output
-for any project:
+The default `head` is empty — brand the output by supplying your own tags:
 
 ```js
 // doc-kit.config.mjs
@@ -242,8 +241,8 @@ runs on the main thread and does not serialize the bundler to a worker.
 
 ### Default `imports`
 
-- `#theme/Logo` {string} Logo rendered inside the navigation bar.
-  **Default:** `'@node-core/ui-components/Common/NodejsLogo'`.
+- `#theme/Logo` {string} Logo rendered inside the navigation bar. Defaults to
+  the built-in `ProjectName` component, which renders `project` as plain text.
 - `#theme/Navigation` {string} Top navigation bar. Defaults to the built-in
   `NavBar` component.
 - `#theme/Sidebar` {string} Sidebar with version selector and page links.
@@ -330,7 +329,8 @@ import { project, repository, editURL } from '#theme/config';
 ### Available exports
 
 - `project` {string} Project name (e.g. `'Node.js'`).
-- `repository` {string} GitHub repository in `owner/repo` format.
+- `repository` {string} GitHub repository in `owner/repo` format, or
+  `undefined` when none is configured.
 - `version` {string} Current version label (e.g. `'v22.x'`).
 - `versions` {Array} Pre-computed version entries, each `{ url, label, major }`,
   with labels and URL templates (only `{path}` remains for per-page use).

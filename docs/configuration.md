@@ -23,7 +23,7 @@ uses the `doc-kit` property:
 ```json
 {
   "doc-kit": {
-    "target": ["json"],
+    "target": ["json-simple"],
     "global": {
       "input": "doc/api/*.md",
       "output": "out"
@@ -41,42 +41,57 @@ export default {
   // generator module (e.g. '@my-scope/my-package/my-generator').
   target: ['orama-db', 'html'],
   global: {
-    version: '20.0.0',
-    minify: true,
-    repository: 'nodejs/node',
-    ref: 'main',
-    baseURL: 'https://nodejs.org/docs/',
-    input: 'src/',
+    project: 'My Project',
+    version: '1.2.0',
+    input: 'docs/**/*.md',
     output: 'dist/',
     ignore: ['node_modules/', 'test/'],
-    changelog:
-      'https://raw.githubusercontent.com/nodejs/node/main/CHANGELOG.md',
-    index:
-      'https://raw.githubusercontent.com/nodejs/node/main/doc/api/index.md',
+    baseURL: 'https://example.com/docs/',
   },
 
   threads: 4,
   chunkSize: 10,
 
   // Generator-specific configurations
-  json: {
-    format: 'json',
-    minify: false, // Override global setting
-  },
-
   html: {
-    format: 'html',
+    title: '{project} Documentation',
   },
 
   metadata: {
     typeMap: {
-      String: 'string',
-      Number: 'number',
-      Boolean: 'boolean',
+      MyThing: 'https://example.com/docs/my-thing.html',
     },
   },
 };
 ```
+
+## Extending Presets
+
+A configuration file may declare `extends`: one or more presets whose values
+are merged underneath its own. Each entry is either an import specifier of a
+module whose default export is a configuration object, or a path relative to
+the configuration file:
+
+```mjs
+export default {
+  // Build the docs the way nodejs.org does — branding, URL layouts,
+  // and release history included
+  extends: '@node-core/doc-kit/config',
+
+  html: {
+    // Your own values still win over the preset
+    title: '{project} {version} API Reference',
+  },
+};
+```
+
+`extends` also accepts an array; later presets take precedence over earlier
+ones, and the configuration file itself wins over all of them.
+
+The built-in defaults are deliberately project-neutral: no repository,
+site URL, release history, or branding is assumed. The
+[`@node-core/doc-kit/config`](https://github.com/nodejs/doc-kit/tree/main/packages/node)
+preset opts back into everything Node.js-specific.
 
 ## Configuration Structure
 
@@ -84,27 +99,28 @@ export default {
 
 The `global` object contains settings that apply to all generators unless overridden:
 
-| Property     | Type               | Description                                | Default                                            |
-| ------------ | ------------------ | ------------------------------------------ | -------------------------------------------------- |
-| `version`    | `string \| SemVer` | Documentation version                      | `process.version`                                  |
-| `minify`     | `boolean`          | Whether to minify output                   | `true`                                             |
-| `repository` | `string`           | GitHub repository in `owner/repo` format   | `'nodejs/node'`                                    |
-| `ref`        | `string`           | Git reference (branch, tag, or commit SHA) | `'HEAD'`                                           |
-| `baseURL`    | `string \| URL`    | Base URL for documentation                 | `'https://nodejs.org/docs'`                        |
-| `input`      | `string[]`         | Input directory path                       | -                                                  |
-| `output`     | `string`           | Output directory path                      | -                                                  |
-| `ignore`     | `string[]`         | Patterns to ignore                         | `[]`                                               |
-| `changelog`  | `string \| URL`    | Changelog URL                              | Auto-generated URL based on `ref` and `repository` |
-| `index`      | `string \| URL`    | Index URL                                  | -                                                  |
+| Property     | Type                     | Description                                                                               | Default                           |
+| ------------ | ------------------------ | ----------------------------------------------------------------------------------------- | --------------------------------- |
+| `project`    | `string`                 | Name of the project being documented, used in titles, logos, and templated text           | The `name` in your `package.json` |
+| `version`    | `string \| SemVer`       | Documentation version                                                                     | `process.version`                 |
+| `minify`     | `boolean`                | Whether to minify output                                                                  | `true`                            |
+| `repository` | `string`                 | GitHub repository in `owner/repo` format; without one, repository UI is omitted           | -                                 |
+| `ref`        | `string`                 | Git reference (branch, tag, or commit SHA)                                                | `'HEAD'`                          |
+| `baseURL`    | `string \| URL`          | Base URL of the published site, used wherever absolute URLs are needed                    | -                                 |
+| `input`      | `string[]`               | Input directory path                                                                      | -                                 |
+| `output`     | `string`                 | Output directory path                                                                     | -                                 |
+| `ignore`     | `string[]`               | Patterns to ignore                                                                        | `[]`                              |
+| `changelog`  | `string \| URL \| Array` | Release history used for version selectors; a URL or path to parse, or a pre-parsed array | `[]` (single-version output)      |
+| `index`      | `string \| URL \| Array` | Index URL                                                                                 | -                                 |
 
 ### Generator-Specific Configuration
 
-Each generator (e.g., `json`, `html`, `markdown`) can have its own configuration that overrides global settings:
+Each generator (e.g., `html`, `legacy-json`) can have its own configuration that overrides global settings:
 
 ```javascript
 export default {
   global: {
-    version: '20.0.0',
+    version: '1.2.0',
     minify: true,
   },
 
@@ -121,7 +137,8 @@ precedence):
 
 1. **CLI options** (command-line arguments)
 2. **Configuration file** (discovered or selected with `--config-file`)
-3. **Default values** (built-in defaults)
+3. **Presets** (listed in the configuration file's `extends`)
+4. **Default values** (built-in defaults)
 
 ## CLI Options Mapping
 

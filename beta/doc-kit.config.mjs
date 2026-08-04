@@ -1,4 +1,6 @@
 export default {
+  extends: '@node-core/doc-kit/config',
+
   html: {
     remoteConfigUrl:
       'https://raw.githubusercontent.com/nodejs/doc-kit/main/beta/site.json',
