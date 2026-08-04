@@ -41,10 +41,8 @@ export default {
     baseURL: BASE_URL,
     minify: true,
 
-    // Both default to fetching from nodejs/node over the network. This site has
-    // no Node.js release matrix and no `index.md`, and an array short-circuits
-    // the parse step, so pass empty ones rather than paying for the request.
-    changelog: [],
+    // This site has no `index.md`; an array short-circuits the parse step.
+    // (An empty `changelog` is the default: no version picker.)
     index: [],
   },
 
@@ -58,10 +56,6 @@ export default {
   html: {
     project: 'doc-kit',
     title: '{project} documentation',
-
-    // The default is `{baseURL}/latest-{version}/api{path}.html`, which encodes
-    // Node.js's versioned-docs layout. This site publishes a single flat tree.
-    pageURL: `${BASE_URL}{path}.html`,
 
     // Pages are assembled into `www/content/` at build time, so there is no
     // single source file a `{path}` template could point at. Link to the repo

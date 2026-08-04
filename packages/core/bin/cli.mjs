@@ -10,7 +10,7 @@ import logger from '../src/logger/index.mjs';
 
 const program = new Command()
   .name('@nodejs/doc-kit')
-  .description('CLI tool to generate the Node.js API documentation')
+  .description('CLI tool to generate API documentation')
   .addOption(
     new Option('--log-level <level>', 'Log level')
       .default('info')

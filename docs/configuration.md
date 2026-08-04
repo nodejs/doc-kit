@@ -114,6 +114,34 @@ export default {
 };
 ```
 
+## Extending Presets
+
+A configuration file may declare `extends`: one or more presets whose values
+are merged underneath its own. Each entry is either an import specifier of a
+module whose default export is a configuration object, or a path relative to
+the configuration file:
+
+```mjs
+export default {
+  // Build the docs the way nodejs.org does — branding, URL layouts,
+  // and release history included
+  extends: '@node-core/doc-kit/config',
+
+  html: {
+    // Your own values still win over the preset
+    title: '{project} {version} API Reference',
+  },
+};
+```
+
+`extends` also accepts an array; later presets take precedence over earlier
+ones, and the configuration file itself wins over all of them.
+
+The built-in defaults are deliberately project-neutral: no repository,
+site URL, release history, or branding is assumed. The
+[`@node-core/doc-kit/config`](https://github.com/nodejs/doc-kit/tree/main/packages/node)
+preset opts back into everything Node.js-specific.
+
 ## Configuration Merging
 
 Configurations are merged in the following order (higher sources take
@@ -121,7 +149,8 @@ precedence):
 
 1. **CLI options** (command-line arguments)
 2. **Configuration file** (discovered or selected with `--config-file`)
-3. **Default values** (built-in defaults)
+3. **Presets** (listed in the configuration file's `extends`)
+4. **Default values** (built-in defaults)
 
 ## CLI Options Mapping
 

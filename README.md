@@ -46,16 +46,21 @@ $ node packages/core/bin/cli.mjs --help
 ```
 Usage: @nodejs/doc-kit [options] [command]
 
-CLI tool to generate the Node.js API documentation
+CLI tool to generate API documentation
 
 Options:
-  --log-level <level>  Log level (choices: "debug", "info", "warn", "error",
-                       "fatal", default: "info")
-  -h, --help           display help for command
+  --log-level <level>                Log level (choices: "debug", "info",
+                                     "warn", "error", "fatal", default: "info")
+  -h, --help                         display help for command
 
 Commands:
-  generate [options]   Generate API docs
-  help [command]       display help for command
+  generate [options]                 Generate API docs
+  install [options] [generators...]  Install the packages providing built-in
+                                     generators (defaults to the targets in your
+                                     configuration file)
+  serve [options]                    Generate API docs, serve them locally, and
+                                     regenerate on changes
+  help [command]                     display help for command
 ```
 
 ### `generate`
@@ -78,20 +83,31 @@ Options:
                                (json-simple, legacy-html, legacy-html-all,
                                man-page, legacy-json, legacy-json-all,
                                addon-verify, api-links, orama-db, llms-txt,
-                               sitemap, web) or an import specifier for a custom
-                               generator
+                               sitemap, html) or an import specifier for a
+                               custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory
   -p, --threads <number>       Number of threads to use (minimum: 1)
   --chunk-size <number>        Number of items to process per worker thread
                                (minimum: 1)
-  -v, --version <semver>       Target Node.js version
+  -v, --version <semver>       Target project version
   -c, --changelog <url>        Changelog URL or path
   --git-ref <ref>              Git ref
   --index <url>                index.md URL or path
   --minify                     Minify?
   --type-map <url>             Type map URL or path
   -h, --help                   display help for command
+```
+
+The defaults are project-neutral. To produce output styled and structured the
+way [nodejs.org](https://nodejs.org) builds its API docs, extend the Node.js
+preset in your configuration file — see
+[the configuration guide](docs/configuration.md#extending-presets):
+
+```mjs
+export default {
+  extends: '@node-core/doc-kit/config',
+};
 ```
 
 ### `install`

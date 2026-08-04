@@ -11,6 +11,7 @@
   "exports": {
     "./addon-verify": "./src/addon-verify/index.mjs",
     "./api-links": "./src/api-links/index.mjs",
+    "./config": "./src/config/index.mjs",
     "./man-page": "./src/man-page/index.mjs",
     "./package.json": "./package.json"
   },

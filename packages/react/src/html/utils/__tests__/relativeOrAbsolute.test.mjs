@@ -49,20 +49,21 @@ describe('relativeOrAbsolute (relative mode)', () => {
 describe('relativeOrAbsolute (absolute mode)', () => {
   beforeEach(() => {
     getConfig('html').useAbsoluteURLs = true;
+    getConfig('html').baseURL = 'https://example.com/docs';
   });
 
   it('returns an absolute URL to root', () => {
     const result = relativeOrAbsolute('/', '/api/fs');
-    assert.strictEqual(result, 'https://nodejs.org/docs/');
+    assert.strictEqual(result, 'https://example.com/docs/');
   });
 
   it('returns an absolute URL for a page path', () => {
     const result = relativeOrAbsolute('/http', '/fs');
-    assert.strictEqual(result, 'https://nodejs.org/docs/http');
+    assert.strictEqual(result, 'https://example.com/docs/http');
   });
 
   it('returns an absolute URL for a resource', () => {
     const result = relativeOrAbsolute('/orama-db.json', '/api/fs');
-    assert.strictEqual(result, 'https://nodejs.org/docs/orama-db.json');
+    assert.strictEqual(result, 'https://example.com/docs/orama-db.json');
   });
 });

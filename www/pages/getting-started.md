@@ -72,11 +72,11 @@ npx doc-kit generate -t html -t orama-db -i "docs/*.md" -o out
 ## Preview it locally
 
 The `html` output uses import maps and client-side hydration, so it must be
-served over HTTP — opening the files directly with `file://` will not work. Any
-static server will do the trick; for example:
+served over HTTP — opening the files directly with `file://` will not work.
+doc-kit ships one:
 
 ```bash
-npx serve out -p 3000
+npx doc-kit serve --static -o out
 ```
 
 Then open the printed URL (usually <http://localhost:3000>). The
@@ -95,9 +95,11 @@ import { join } from 'node:path';
 
 /** @type {import('@nodejs/doc-kit/src/utils/configuration/types').Configuration} */
 export default {
+  global: {
+    project: 'My Project', // Project name used in titles, the logo, and templates
+  },
+
   html: {
-    project: 'My Project', // Project name used in page titles and the version selector
-    remoteConfigUrl: '', // Suppress the Node.js default that sets the top banner based on Node.js news.
     head: {
       html: [
         // re-write the brand color for effect
@@ -115,7 +117,7 @@ export default {
         </style>`,
       ],
     },
-    // use a custom logo instead of the Node.js logo
+    // use a custom logo component instead of the plain project name
     // our logo.jsx file like this, just for the demo
     // export default Logo = () =>
     //   <svg height="30" width="30" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--color-brand-400)"/></svg>;

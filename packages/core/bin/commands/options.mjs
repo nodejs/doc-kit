@@ -30,7 +30,7 @@ export const createConfigurationOptions = () => [
     '--chunk-size <number>',
     'Number of items to process per worker thread (minimum: 1)'
   ),
-  new Option('-v, --version <semver>', 'Target Node.js version'),
+  new Option('-v, --version <semver>', 'Target project version'),
   new Option('-c, --changelog <url>', 'Changelog URL or path'),
   new Option('--git-ref <ref>', 'Git ref'),
   new Option('--index <url>', 'index.md URL or path'),
