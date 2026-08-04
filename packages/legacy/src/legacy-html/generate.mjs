@@ -3,14 +3,15 @@
 import { readFile, cp } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
+import getConfig from '@node-core/doc-kit/utils/configuration/index.mjs';
+import { writeFile } from '@node-core/doc-kit/utils/file.mjs';
+import { groupNodesByModule } from '@node-core/doc-kit/utils/generators.mjs';
+import { minifyHTML } from '@node-core/doc-kit/utils/html-minifier.mjs';
+import { getRemarkRehypeWithShiki as remark } from '@node-core/doc-kit/utils/remark.mjs';
+
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { writeFile } from '../../utils/file.mjs';
-import { groupNodesByModule } from '../../utils/generators.mjs';
-import { minifyHTML } from '../../utils/html-minifier.mjs';
-import { getRemarkRehypeWithShiki as remark } from '../../utils/remark.mjs';
 
 /**
  * Creates a heading object with the given name.

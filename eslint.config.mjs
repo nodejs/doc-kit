@@ -95,7 +95,7 @@ export default defineConfig([
   },
   {
     files: [
-      'packages/core/src/generators/legacy-html/assets/*.js',
+      'packages/legacy/src/legacy-html/assets/*.js',
       'packages/react/src/html/ui/**/*',
     ],
     languageOptions: {
