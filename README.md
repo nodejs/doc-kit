@@ -94,6 +94,19 @@ Options:
   -h, --help                   display help for command
 ```
 
+### `install`
+
+Built-in generators live in separate packages. `install` adds the packages
+providing the given generators, using the package manager your lockfile
+indicates:
+
+```sh
+npx doc-kit install html orama-db
+```
+
+Without arguments, it installs whatever the `target` in your configuration
+file needs.
+
 ### `serve`
 
 `serve` accepts the same options as `generate`, plus a `--port`. It generates
