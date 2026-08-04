@@ -1,5 +1,5 @@
 export default {
-  web: {
+  html: {
     remoteConfigUrl:
       'https://raw.githubusercontent.com/nodejs/doc-kit/main/beta/site.json',
 

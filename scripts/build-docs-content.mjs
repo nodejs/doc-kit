@@ -6,11 +6,11 @@
 //   www/pages/*.md              authored narrative pages, copied verbatim
 //   docs/*.md                   the existing reference docs
 //   packages/core/src/generators/*/README.md
-//                               per-generator config reference, written to
+//   packages/*/src/*/README.md  per-generator config reference, written to
 //                               `generators/<name>.md`
 //
 // `www/content/` is a build artifact and is gitignored. Run this before
-// invoking the `web` generator against it.
+// invoking the `html` generator against it.
 
 import { glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
@@ -23,6 +23,10 @@ const SOURCES = [
   { pattern: 'docs/*.md', rename: basename },
   {
     pattern: 'packages/core/src/generators/*/README.md',
+    rename: file => `generators/${basename(dirname(file))}.md`,
+  },
+  {
+    pattern: 'packages/*/src/*/README.md',
     rename: file => `generators/${basename(dirname(file))}.md`,
   },
 ];

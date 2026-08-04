@@ -35,7 +35,7 @@ scripts/comparators/
 
 Comparators can be reused across multiple generators. You specify which comparator to use in the workflow file using the `compare` field. For example:
 
-- `file-size.mjs` can compare output from `web`, `legacy-html`, or any generator
+- `file-size.mjs` can compare output from `html`, `legacy-html`, or any generator
 - `object-assertion.mjs` can compare JSON output from `legacy-json`, `json-simple`, etc.
 - `my-comparator.mjs` would be a custom comparator for specific needs
 

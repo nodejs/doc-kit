@@ -1,10 +1,5 @@
 'use strict';
 
-import rehypeShikiji from '@node-core/rehype-shiki/plugin';
-import recmaJsx from 'recma-jsx';
-import recmaStringify from 'recma-stringify';
-import rehypeRaw from 'rehype-raw';
-import rehypeRecma from 'rehype-recma';
 import rehypeStringify from 'rehype-stringify';
 import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
@@ -12,49 +7,24 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
-import { visit } from 'unist-util-visit';
 
-import syntaxHighlighter, { highlighter } from './highlighter.mjs';
+import syntaxHighlighter from './highlighter.mjs';
 import { lazy } from './misc.mjs';
-import {
-  typeAnnotationToHast,
-  typeAnnotationToHighlightedHast,
-} from './type-annotations/hast.mjs';
+import { typeAnnotationToHast } from './type-annotations/hast.mjs';
 import remarkTypeAnnotations from './type-annotations/remark.mjs';
-import { AST_NODE_TYPES } from '../generators/jsx-ast/constants.mjs';
-import transformAlerts from '../generators/jsx-ast/utils/plugins/alerts.mjs';
-import transformElements from '../generators/jsx-ast/utils/plugins/transformer.mjs';
 
-const passThrough = ['element', ...Object.values(AST_NODE_TYPES.MDX)];
-const codeMetaProperty = 'codeMeta';
-
-/**
- * Stores fenced code metadata on properties before rehypeRaw reparses the tree.
- */
-const preserveCodeMeta = () => tree => {
-  visit(tree, 'element', node => {
-    const meta = node.data?.meta;
-
-    if (node.tagName === 'code' && typeof meta === 'string') {
-      node.properties ||= {};
-      node.properties[codeMetaProperty] = meta;
-    }
-  });
-};
-
-/**
- * Restores fenced code metadata so the Shiki plugin can read displayName.
- */
-const restoreCodeMeta = () => tree => {
-  visit(tree, 'element', node => {
-    const meta = node.properties?.[codeMetaProperty];
-
-    if (node.tagName === 'code' && typeof meta === 'string') {
-      node.data = { ...node.data, meta };
-      delete node.properties[codeMetaProperty];
-    }
-  });
-};
+// MDX node types that may appear in trees parsed by `getRemarkMdx`; the
+// rehype pipelines pass them through untouched.
+const passThrough = [
+  'element',
+  'mdxJsxTextElement',
+  'mdxJsxFlowElement',
+  'mdxJsxAttribute',
+  'mdxJsxAttributeValueExpression',
+  'mdxFlowExpression',
+  'mdxTextExpression',
+  'mdxjsEsm',
+];
 
 /**
  * Retrieves an instance of Remark configured to parse GFM (GitHub Flavored Markdown)
@@ -124,35 +94,4 @@ export const getRemarkRehypeWithShiki = lazy(() =>
     // We allow dangerous HTML to be passed through, since we have HTML within our Markdown
     // and we trust the sources of the Markdown files
     .use(rehypeStringify, { allowDangerousHtml: true })
-);
-
-const singletonShiki = await rehypeShikiji({ highlighter });
-
-/**
- * Retrieves an instance of Remark configured to output JSX code.
- * including parsing Code Boxes with syntax highlighting
- */
-export const getRemarkRecma = lazy(() =>
-  unified()
-    .use(remarkParse)
-    .use(transformAlerts)
-    // We make Rehype ignore existing HTML nodes, and JSX nodes
-    // as these are nodes we manually created during the generation process
-    // We also allow dangerous HTML to be passed through, since we have HTML within our Markdown
-    // and we trust the sources of the Markdown files
-    .use(remarkRehype, {
-      allowDangerousHtml: true,
-      passThrough,
-      // The web pipeline gets Shiki-highlighted types with embedded links
-      handlers: { typeAnnotation: typeAnnotationToHighlightedHast },
-    })
-    .use(preserveCodeMeta)
-    // Any `raw` HTML in the markdown must be converted to AST in order for Recma to understand it
-    .use(rehypeRaw, { passThrough })
-    .use(restoreCodeMeta)
-    .use(() => singletonShiki)
-    .use(transformElements)
-    .use(rehypeRecma)
-    .use(recmaJsx)
-    .use(recmaStringify)
 );
