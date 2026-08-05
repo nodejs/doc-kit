@@ -38,6 +38,6 @@ npx doc-kit generate -t html -t orama-db -i "docs/**/*.md" -o out
 The `html` generator is deeply customizable — project name, page titles,
 `<head>` markup, sidebar and navigation bar, theme components, and even the
 bundler are all configuration. See the [`html` generator
-reference](https://doc-kit-docs.vercel.app/generators/html) and the
-[doc-kit documentation](https://doc-kit-docs.vercel.app/) for the full
+reference](https://doc-kit.nodejs.org/generators/html) and the
+[doc-kit documentation](https://doc-kit.nodejs.org) for the full
 options.

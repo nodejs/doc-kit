@@ -33,6 +33,6 @@ npx doc-kit generate -t legacy-html -t legacy-json -i "doc/api/*.md" -o out
 ```
 
 Unless you have consumers of these exact formats, prefer the modern
-[`html` generator](https://doc-kit-docs.vercel.app/generators/html) from
+[`html` generator](https://doc-kit.nodejs.org/generators/html) from
 `@nodejs/doc-kit-generator-react`. See the
-[doc-kit documentation](https://doc-kit-docs.vercel.app/) for details.
+[doc-kit documentation](https://doc-kit.nodejs.org) for details.

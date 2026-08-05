@@ -159,19 +159,22 @@ their man pages automatically.
 
 ## Pages that aren't API reference
 
-For guides, tutorials, and other prose, add a `type` directive under the
-title and write normal Markdown:
+Guides and tutorials need nothing special, most of the time. Headings that
+match none of the patterns above stay ordinary sections.
+
+The exception is a page whose headings _do_ look like signatures but aren't
+module exports. A `type` directive under the title reclassifies the whole
+document, so those entries render as conceptual sections instead:
 
 ```markdown
-# Migrating from v1
+# C++ addons
 
 <!--type=misc-->
 ```
 
-Without it, headings are interpreted as module exports. Frontmatter
-(`---`-delimited YAML) at the top of a file is also accepted and treated as
-metadata. And if a page needs real components — heroes, tabs, live examples
-— name it `.mdx` and use JSX directly; see
+Frontmatter (`---`-delimited YAML) at the top of a file is also accepted and
+treated as metadata. And if a page needs real components — heroes, tabs, live
+examples — name it `.mdx` and use JSX directly; see
 [Customizing the site](./customization.md#custom-components-and-mdx).
 
 ## The full contract

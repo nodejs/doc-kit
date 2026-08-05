@@ -20,9 +20,28 @@ export default {
 };
 ```
 
-`doc-kit generate` readsthat configuration; every option can also be passed as a
-CLI flag. See the [configuration reference](./configuration.html) for everything
-the file accepts.
+`doc-kit generate` reads that configuration; every option can also be passed as
+a CLI flag. See the [configuration reference](./configuration.html) for
+everything the file accepts.
+
+## Build and preview it
+
+With at least one Markdown file under `docs/`, build the site:
+
+```bash
+npx doc-kit generate
+```
+
+The pages land in `out/`. They use import maps and client-side hydration, so
+serve them over HTTP rather than opening the files from disk; any static server
+works:
+
+```bash
+npx serve out
+```
+
+Open the printed URL (usually <http://localhost:3000>) and your documentation is
+on screen.
 
 ## Next steps
 

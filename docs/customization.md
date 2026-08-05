@@ -81,7 +81,11 @@ html: {
       },
     ],
     navbar: [
-      { text: 'GitHub', link: 'https://github.com/me/project', target: '_blank' },
+      {
+        text: 'GitHub',
+        link: 'https://github.com/nodejs/doc-kit',
+        target: '_blank',
+      },
     ],
   },
 },
@@ -94,8 +98,8 @@ sidebar also shows a version selector when your configuration provides a
 
 ## Logo and theme components
 
-The page chrome is built from swappable components. Override any `#theme/*`
-alias with a path to your own:
+Every piece of the page surrounding your content is a component you can replace. Override any
+`#theme/*` alias with a path to your own:
 
 ```js
 html: {

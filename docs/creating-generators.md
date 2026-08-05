@@ -24,7 +24,7 @@ Raw Markdown Files
   [html] - Generate HTML/CSS/JS bundles
 ```
 
-Each generator declares its dependency using the `dependsOn` field, allowing automatic pipeline construction.
+Each generator declares its dependency using the `dependsOn` field, allowing automatic pipeline construction. Each stage is documented alongside the rest of the [generators](./generators.md#pipeline-stages).
 
 ## Generator Structure
 

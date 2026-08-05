@@ -4,7 +4,7 @@ The Node.js-specific generators for
 [doc-kit](https://github.com/nodejs/doc-kit): outputs consumed by the Node.js
 project's own build, release, and documentation processes. If you are not
 building Node.js itself (or something shaped exactly like it), you probably
-want one of the [general-purpose generators](https://doc-kit-docs.vercel.app/)
+want one of the [general-purpose generators](https://doc-kit.nodejs.org)
 instead.
 
 ## Install
@@ -27,5 +27,5 @@ npm install --save-dev @nodejs/doc-kit @node-core/doc-kit
 npx doc-kit generate -t man-page -i "doc/api/cli.md" -o out
 ```
 
-See the [doc-kit documentation](https://doc-kit-docs.vercel.app/) for
+See the [doc-kit documentation](https://doc-kit.nodejs.org) for
 configuration and the full generator references.

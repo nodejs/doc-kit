@@ -45,6 +45,18 @@ Outputs consumed by the Node.js project's own build and release processes.
 | [`api-links`](./generators/api-links.md)       | A map of API symbols to their source locations.     |
 | [`addon-verify`](./generators/addon-verify.md) | Extracted addon code samples, arranged for testing. |
 
+## Pipeline stages
+
+The targets above are built on a few shared stages, each of which is itself a
+generator.
+
+| Stage                                  | Produces                                              |
+| -------------------------------------- | ----------------------------------------------------- |
+| [`ast`](./generators/ast.md)           | Markdown parsed into MDAST, across worker threads.    |
+| [`ast-js`](./generators/ast-js.md)     | JavaScript sources parsed into an AST.                |
+| [`metadata`](./generators/metadata.md) | The flattened API entries every output is built from. |
+| [`jsx-ast`](./generators/jsx-ast.md)   | Those entries as JSX, ready for the web generators.   |
+
 ## Custom generators
 
 A target can also be an import specifier — a package export or a local file

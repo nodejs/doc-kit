@@ -9,9 +9,6 @@ const { version } = JSON.parse(
   readFileSync(join(REPO, 'packages', 'core', 'package.json'), 'utf-8')
 );
 
-// The public targets, in the order the generators overview presents them.
-// Internal pipeline stages (ast, metadata, jsx-ast, ...) have pages too, but
-// are reachable from the pages that mention them rather than the sidebar.
 const PUBLIC_GENERATORS = [
   'html',
   'orama-db',
@@ -36,7 +33,7 @@ const generatorItems = [
 ];
 
 const REPOSITORY = 'nodejs/doc-kit';
-const BASE_URL = 'https://doc-kit-docs.vercel.app';
+const BASE_URL = 'https://doc-kit.nodejs.org';
 
 const DESCRIPTION =
   'doc-kit turns API-shaped Markdown into documentation — a searchable ' +
