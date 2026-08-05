@@ -100,7 +100,6 @@ export default {
             { label: 'Writing documentation', link: '/writing-docs' },
             { label: 'Customizing the site', link: '/customization' },
             { label: 'Publishing your docs', link: '/publishing' },
-            { label: 'Troubleshooting', link: '/troubleshooting' },
           ],
         },
         {
