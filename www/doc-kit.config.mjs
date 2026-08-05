@@ -1,5 +1,5 @@
-import { globSync, readFileSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -9,22 +9,39 @@ const { version } = JSON.parse(
   readFileSync(join(REPO, 'packages', 'core', 'package.json'), 'utf-8')
 );
 
-const generatorItems = globSync('packages/core/src/generators/*/README.md', {
-  cwd: REPO,
-})
-  .map(file => basename(dirname(file)))
-  .sort()
-  .map(name => ({
+// The public targets, in the order the generators overview presents them.
+// Internal pipeline stages (ast, metadata, jsx-ast, ...) have pages too, but
+// are reachable from the pages that mention them rather than the sidebar.
+const PUBLIC_GENERATORS = [
+  'html',
+  'orama-db',
+  'llms-txt',
+  'sitemap',
+  'json-simple',
+  'legacy-html',
+  'legacy-html-all',
+  'legacy-json',
+  'legacy-json-all',
+  'man-page',
+  'api-links',
+  'addon-verify',
+];
+
+const generatorItems = [
+  { label: 'Overview', link: '/generators' },
+  ...PUBLIC_GENERATORS.map(name => ({
     label: `\`${name}\``,
     link: `/generators/${name}`,
-  }));
+  })),
+];
 
 const REPOSITORY = 'nodejs/doc-kit';
 const BASE_URL = 'https://doc-kit-docs.vercel.app';
 
 const DESCRIPTION =
-  'doc-kit is the documentation toolchain behind the Node.js API reference — ' +
-  'a pipeline that turns API-shaped Markdown into HTML, JSON, man pages and more.';
+  'doc-kit turns API-shaped Markdown into documentation — a searchable ' +
+  'site, JSON, llms.txt, man pages, and more. It is the toolchain behind ' +
+  'the Node.js API reference.';
 
 /** @type {import('../packages/core/src/utils/configuration/types').Configuration} */
 export default {
@@ -74,18 +91,52 @@ export default {
     navigation: {
       sidebar: [
         {
-          groupName: 'Pages',
+          groupName: 'Start',
           items: [
             { label: '`doc-kit`', link: '/index' },
             { label: 'Getting started', link: '/getting-started' },
+          ],
+        },
+        {
+          groupName: 'Guides',
+          items: [
+            { label: 'Writing documentation', link: '/writing-docs' },
+            { label: 'Customizing the site', link: '/customization' },
+            { label: 'Publishing your docs', link: '/publishing' },
+            { label: 'Troubleshooting', link: '/troubleshooting' },
+          ],
+        },
+        {
+          groupName: 'Reference',
+          items: [
+            { label: 'CLI', link: '/cli' },
             { label: 'Configuration', link: '/configuration' },
-            { label: 'Creating Commands', link: '/commands' },
-            { label: 'Creating Generators', link: '/generators' },
             { label: 'Specification', link: '/specification' },
-            { label: 'Creating Comparators', link: '/comparators' },
           ],
         },
         { groupName: 'Generators', items: generatorItems },
+        {
+          groupName: 'Packages',
+          items: [
+            { label: '`@nodejs/doc-kit`', link: '/packages/core' },
+            {
+              label: '`@nodejs/doc-kit-generator-react`',
+              link: '/packages/react',
+            },
+            {
+              label: '`@nodejs/doc-kit-generator-legacy`',
+              link: '/packages/legacy',
+            },
+            { label: '`@node-core/doc-kit`', link: '/packages/node' },
+          ],
+        },
+        {
+          groupName: 'Extending',
+          items: [
+            { label: 'Creating generators', link: '/creating-generators' },
+            { label: 'Creating comparators', link: '/comparators' },
+          ],
+        },
       ],
     },
 
