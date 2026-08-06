@@ -4,9 +4,12 @@
 // site — from three sources that live elsewhere in the repo:
 //
 //   www/pages/*.md              authored narrative pages, copied verbatim
-//   docs/*.md                   the existing reference docs
-//   packages/core/src/generators/*/README.md
-//   packages/*/src/*/README.md  per-generator config reference, written to
+//   docs/*.md                   the guides and reference docs
+//   packages/*/README.md        package READMEs, written to `packages/<dir>.md`
+//   packages/*/src/{,generators/}*/README.md
+//                               per-generator config reference (core nests its
+//                               generators under `src/generators/`, the other
+//                               packages directly under `src/`), written to
 //                               `generators/<name>.md`
 //
 // `www/content/` is a build artifact and is gitignored. Run this before
@@ -22,11 +25,11 @@ const SOURCES = [
   { pattern: 'www/pages/*.md', rename: basename },
   { pattern: 'docs/*.md', rename: basename },
   {
-    pattern: 'packages/core/src/generators/*/README.md',
-    rename: file => `generators/${basename(dirname(file))}.md`,
+    pattern: 'packages/*/README.md',
+    rename: file => `packages/${basename(dirname(file))}.md`,
   },
   {
-    pattern: 'packages/*/src/*/README.md',
+    pattern: 'packages/*/src/{,generators/}*/README.md',
     rename: file => `generators/${basename(dirname(file))}.md`,
   },
 ];
