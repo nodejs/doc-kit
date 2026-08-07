@@ -95,9 +95,11 @@ preset opts back into everything Node.js-specific.
 
 ## Configuration Structure
 
-### Global Configuration
+Three sources, in order of precedence:
 
-The `global` object contains settings that apply to all generators unless overridden:
+1. **CLI flags** (see the [CLI reference](./cli.md)) override
+2. **the configuration file**, which overrides
+3. **built-in defaults**.
 
 | Property     | Type                     | Description                                                                               | Default                           |
 | ------------ | ------------------------ | ----------------------------------------------------------------------------------------- | --------------------------------- |
@@ -113,19 +115,35 @@ The `global` object contains settings that apply to all generators unless overri
 | `changelog`  | `string \| URL \| Array` | Release history used for version selectors; a URL or path to parse, or a pre-parsed array | `[]` (single-version output)      |
 | `index`      | `string \| URL \| Array` | Index URL                                                                                 | -                                 |
 
-### Generator-Specific Configuration
+## Global options
 
 Each generator (e.g., `html`, `legacy-json`) can have its own configuration that overrides global settings:
 
-```javascript
+## Execution options
+
+Top-level, alongside `target` and `global`:
+
+| Property    | Type     | Description                         | Default        |
+| ----------- | -------- | ----------------------------------- | -------------- |
+| `threads`   | `number` | Worker threads used for generation. | Your CPU count |
+| `chunkSize` | `number` | Items processed per worker thread.  | `10`           |
+
+## Generator options
+
+Each generator documents its own options on its reference page — see the
+[generators overview](./generators.md). Two commonly configured ones:
+
+```js
 export default {
   global: {
     version: '1.2.0',
     minify: true,
   },
 
-  'legacy-json': {
-    minify: false, // Override: JSON output won't be minified
+  metadata: {
+    typeMap: {
+      MyThing: 'https://example.com/docs/my-thing.html',
+    },
   },
 };
 ```

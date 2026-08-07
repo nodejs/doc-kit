@@ -1,69 +1,40 @@
 # Getting started
 
-This page takes you from an empty directory to a rendered documentation page.
-
-## Install
-
-From an initialized npm project, run this in your terminal.
+First, install doc-kit and a generator, like so:
 
 ```bash
-npm install --save-dev @nodejs/doc-kit @nodejs/doc-kit-generator-legacy @nodejs/doc-kit-generator-react
+npm install --save-dev @nodejs/doc-kit @nodejs/doc-kit-generator-react
 ```
 
-`@nodejs/doc-kit` provides the engine and CLI; generators ship as separate
-packages, so install the ones for the output formats you need
-(`@nodejs/doc-kit-generator-legacy` and `@nodejs/doc-kit-generator-react` cover
-the targets used on this page).
+Then, create your configuration file set up for your project:
 
-## Write a valid input document
+```js displayName="doc-kit.config.mjs"
+/** @type {import('@nodejs/doc-kit/utils/configuration/types').Configuration} */
+export default {
+  target: ['html'],
 
-Create `docs/hello.md`:
-
-```markdown
-# hello
-
-A one-line description of the module.
-
-## `hello.greet(name)`
-
-- `name` {string} The name to greet.
-- Returns: {string}
-
-Greets `name`.
+  global: {
+    input: ['docs/**/*.md'],
+    output: 'out',
+  },
+};
 ```
 
-> If you omit the `#` heading, `doc-kit` emits no page for the file and still
-> exits successfully. An empty output directory almost always means a missing
-> level-one heading.
+`doc-kit generate` reads that configuration; every option can also be passed as
+a CLI flag. See the [configuration reference](./configuration.html) for
+everything the file accepts.
 
-## Render it
+## Build and preview it
 
-The `legacy-html-all` target has no additional dependencies and is the quickest
-way to see output:
+With at least one Markdown file under `docs/`, build the site:
 
 ```bash
-npx doc-kit generate \
-  -t legacy-html-all \
-  -i "docs/*.md" \
-  -o out
+npx doc-kit generate
 ```
 
-Open `out/all.html` in a browser. You'll notice the Node.js branding, however,
-that's fully customizable via [a configuration file][].
-
-## Render the modern site
-
-The `html` target produces the server-rendered, client-hydrated site that
-[nodejs.org](https://nodejs.org) uses — and that this site is built with:
-
-```bash
-npx doc-kit generate \
-  -t html \
-  -i "docs/*.md" \
-  -o out
-```
-
-Pair it with `orama-db` to add search:
+The pages land in `out/`. They use import maps and client-side hydration, so
+serve them over HTTP rather than opening the files from disk; any static server
+works:
 
 ```bash
 npx doc-kit generate -t html -t orama-db -i "docs/*.md" -o out
@@ -130,14 +101,14 @@ export default {
 };
 ```
 
-Re-build the project, serve, and you'll see how quickly you can change the
-experience, preserving core functionality.
+Open the printed URL (usually <http://localhost:3000>) and your documentation is
+on screen.
 
 ## Next steps
 
-- Explore [Configuration](./configuration.html) — consider moving your `-t`
-  target flags into a `doc-kit.config.mjs` file.
-- [Further customize the `html` generator](./generators/html.html) — give it a
-  custom sidenav or footer.
-- [Read the full input specification](./specification.html) — the full Markdown
-  contract.
+- [Writing documentation](./writing-docs.html) — the Markdown conventions that
+  make `doc-kit` more than a static-site generator.
+- [Customizing the site](./customization.html) — your name, logo, navigation,
+  and components instead of the defaults.
+- [Publishing your docs](./publishing.html) — production builds, base URLs, and
+  hosting.

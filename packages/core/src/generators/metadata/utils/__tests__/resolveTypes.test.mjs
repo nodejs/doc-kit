@@ -125,7 +125,7 @@ describe('resolveTypeAnnotations', () => {
         ],
         [
           'string',
-          'https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type',
+          'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type',
         ],
         ['Buffer', 'buffer.html#buffer'],
       ]
@@ -135,7 +135,7 @@ describe('resolveTypeAnnotations', () => {
 
   it('resolves every annotation in a nested tree', () => {
     const STRING_URL =
-      'https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type';
+      'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type';
 
     // Two per paragraph: a visitor that skips siblings still reaches the first
     const nodes = ['string', 'HTTP/2 Headers Object', 'string', 'string'].map(

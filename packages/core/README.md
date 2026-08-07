@@ -1,16 +1,30 @@
 # `@nodejs/doc-kit`
 
-The core of doc-kit: the CLI and the generators that turn API-shaped Markdown
-into HTML, JSON, man pages and more.
+The core of [doc-kit](https://github.com/nodejs/doc-kit): the CLI and the
+engine that turn API-shaped Markdown into documentation sites, JSON, man
+pages, and more. It powers the Node.js API reference, and it can document any
+project.
 
-See [the repository README](../../README.md) for usage details and examples,
-and [`docs/`](../../docs) for the configuration, generator, and command
-references.
+## Generators
 
-## Scripts
+Output formats are provided by generators. This package ships the shared
+pipeline stages and `json-simple`; the rest come from companion packages,
+installable with `doc-kit install <generator>`:
 
-Run these from this directory, or from the repository root with
-`npm run <script> --workspace @nodejs/doc-kit`.
+| Package                                                                                              | Generators                                                         |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [`@nodejs/doc-kit-generator-react`](https://www.npmjs.com/package/@nodejs/doc-kit-generator-react)   | `html` (the modern site), `orama-db`, `llms-txt`, `sitemap`        |
+| [`@nodejs/doc-kit-generator-legacy`](https://www.npmjs.com/package/@nodejs/doc-kit-generator-legacy) | `legacy-html`, `legacy-html-all`, `legacy-json`, `legacy-json-all` |
+| [`@node-core/doc-kit`](https://www.npmjs.com/package/@node-core/doc-kit)                             | `man-page`, `api-links`, `addon-verify` (Node.js-specific)         |
+
+Custom generators load by import specifier — any module whose default export
+is a generator works as a `--target`.
+
+## Contributing
+
+This package lives in the [nodejs/doc-kit](https://github.com/nodejs/doc-kit)
+monorepo. From this directory (or the repository root with
+`npm run <script> --workspace @nodejs/doc-kit`):
 
 ```sh
 # Run the CLI

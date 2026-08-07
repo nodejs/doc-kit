@@ -16,10 +16,12 @@ export default {
         {
           text: 'Contribute',
           link: 'https://github.com/nodejs/node/blob/main/CONTRIBUTING.md',
+          target: '_blank',
         },
         {
           text: 'Courses',
           link: 'https://training.linuxfoundation.org/openjs-certification-candidate-resources/',
+          target: '_blank',
         },
       ],
     },

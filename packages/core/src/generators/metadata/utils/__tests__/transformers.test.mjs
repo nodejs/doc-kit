@@ -11,7 +11,7 @@ describe('lookupTypeName', () => {
   it('resolves JavaScript primitives from the built-in map', () => {
     strictEqual(
       lookupTypeName('string'),
-      'https://developer.mozilla.org/docs/Web/JavaScript/Data_structures#string_type'
+      'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type'
     );
   });
 
