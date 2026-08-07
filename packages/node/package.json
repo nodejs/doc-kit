@@ -2,7 +2,7 @@
   "name": "@node-core/doc-kit",
   "type": "module",
   "version": "1.4.3",
-  "description": "Node.js-specific generators for @nodejs/doc-kit: api-links, addon-verify, and man-page",
+  "description": "Node.js-specific generators for @doc-kit/core: api-links, addon-verify, and man-page",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
@@ -24,7 +24,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@nodejs/doc-kit": "^0.0.0",
+    "@doc-kit/core": "^0.0.0",
     "dedent": "^1.7.2",
     "estree-util-visit": "^2.0.0",
     "unist-util-visit": "^5.1.0"

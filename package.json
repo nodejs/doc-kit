@@ -1,5 +1,5 @@
 {
-  "name": "@nodejs/doc-kit-monorepo",
+  "name": "@doc-kit/core-monorepo",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -21,8 +21,8 @@
     "test:watch": "node --test --experimental-test-module-mocks --watch \"packages/*/src/**/*.test.mjs\" \"scripts/**/*.test.mjs\"",
     "test:e2e": "playwright test",
     "prepare": "husky || exit 0",
-    "run": "node packages/core/bin/cli.mjs",
-    "watch": "node --watch packages/core/bin/cli.mjs",
+    "run": "node packages/cli/bin/cli.mjs",
+    "watch": "node --watch packages/cli/bin/cli.mjs",
     "docs:build": "bash scripts/vercel-docs-build.sh",
     "changeset": "changeset",
     "changeset:version": "changeset version",

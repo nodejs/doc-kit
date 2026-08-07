@@ -1,11 +1,11 @@
 'use strict';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 import {
   getCompatibleVersions,
   getVersionFromSemVer,
-} from '@nodejs/doc-kit/utils/generators.mjs';
+} from '@doc-kit/core/utils/generators.mjs';
 
 /**
  * Builds the Dropdown for the current Table of Contents
@@ -50,7 +50,7 @@ export const buildNavigation = navigationContents =>
  *
  * @param {string} path The current API node name
  * @param {string} added The version the API was added
- * @param {Array<import('@nodejs/doc-kit/parsers/types').ReleaseEntry>} versions All available Node.js releases
+ * @param {Array<import('@doc-kit/core/parsers/types').ReleaseEntry>} versions All available Node.js releases
  */
 export const buildVersions = (path, added, versions) => {
   const config = getConfig('legacy-html');

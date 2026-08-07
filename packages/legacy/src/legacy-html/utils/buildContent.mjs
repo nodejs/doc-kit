@@ -1,12 +1,12 @@
 'use strict';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import {
   GITHUB_BLOB_URL,
   populate,
-} from '@nodejs/doc-kit/utils/configuration/templates.mjs';
-import { UNIST } from '@nodejs/doc-kit/utils/queries/index.mjs';
-import { getRemarkRehypeWithShiki as remark } from '@nodejs/doc-kit/utils/remark.mjs';
+} from '@doc-kit/core/utils/configuration/templates.mjs';
+import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { getRemarkRehypeWithShiki as remark } from '@doc-kit/core/utils/remark.mjs';
 import { h as createElement } from 'hastscript';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
@@ -17,7 +17,7 @@ import { createLegacySlugger } from './slugger.mjs';
 /**
  * Builds a Markdown heading for a given node
  *
- * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingNode} node The node to build the Markdown heading for
+ * @param {import('@doc-kit/core/generators/metadata/types').HeadingNode} node The node to build the Markdown heading for
  * @param {number} index The index of the current node
  * @param {import('unist').Parent} parent The parent node of the current node
  * @returns {import('hast').Element} The HTML AST tree of the heading content
@@ -54,7 +54,7 @@ const buildHeading = ({ data, children, depth }, index, parent, legacySlug) => {
 /**
  * Builds an HTML Stability element
  *
- * @param {import('@nodejs/doc-kit/generators/metadata/types').StabilityNode} node The HTML AST tree of the Stability Index content
+ * @param {import('@doc-kit/core/generators/metadata/types').StabilityNode} node The HTML AST tree of the Stability Index content
  * @param {number} index The index of the current node
  * @param {import('unist').Parent} parent The parent node of the current node
  */
@@ -77,7 +77,7 @@ const buildStability = ({ children, data }, index, parent) => {
 /**
  * Creates a history table row.
  *
- * @param {import('@nodejs/doc-kit/generators/metadata/types').ChangeEntry} change
+ * @param {import('@doc-kit/core/generators/metadata/types').ChangeEntry} change
  */
 const createHistoryTableRow = ({ version: changeVersions, description }) => {
   const descriptionNode = remark().parse(description);
@@ -94,7 +94,7 @@ const createHistoryTableRow = ({ version: changeVersions, description }) => {
 /**
  * Builds the Metadata Properties into content
  *
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} node The node to build the properties from
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} node The node to build the properties from
  * @returns {import('unist').Parent} The HTML AST tree of the properties content
  */
 const buildMetadataElement = node => {
@@ -202,8 +202,8 @@ const buildMetadataElement = node => {
 /**
  * Builds the whole content of a given node (API module)
  *
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} headNodes The API metadata Nodes that are considered the "head" of each module
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} metadataEntries The API metadata Nodes to be transformed into HTML content
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} headNodes The API metadata Nodes that are considered the "head" of each module
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} metadataEntries The API metadata Nodes to be transformed into HTML content
  */
 export default (headNodes, metadataEntries) => {
   const getLegacySlug = createLegacySlugger();

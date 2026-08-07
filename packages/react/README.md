@@ -1,4 +1,4 @@
-# `@nodejs/doc-kit-generator-react`
+# `@doc-kit/generator-react`
 
 The modern web generators for [doc-kit](https://github.com/nodejs/doc-kit):
 a server-rendered, client-hydrated documentation site with search, plus the
@@ -7,7 +7,7 @@ machine-readable formats that usually accompany one.
 ## Install
 
 ```sh
-npm install --save-dev @nodejs/doc-kit @nodejs/doc-kit-generator-react
+npm install --save-dev @doc-kit/core @doc-kit/generator-react
 ```
 
 Or let doc-kit install it for you:

@@ -17,7 +17,7 @@ export default {
   description:
     'Generates the simple JSON version of the API docs, and returns it as a string',
 
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   generate,
 };

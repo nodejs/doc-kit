@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
 
-import { setConfig } from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';

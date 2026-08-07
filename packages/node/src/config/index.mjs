@@ -6,7 +6,7 @@ import {
   CHANGELOG_URL,
   GITHUB_EDIT_URL,
   populate,
-} from '@nodejs/doc-kit/utils/configuration/templates.mjs';
+} from '@doc-kit/core/utils/configuration/templates.mjs';
 
 const NODE_REPOSITORY = { repository: 'nodejs/node', ref: 'HEAD' };
 
@@ -23,7 +23,7 @@ const NODE_REPOSITORY = { repository: 'nodejs/node', ref: 'HEAD' };
  * };
  * ```
  *
- * @type {Partial<import('@nodejs/doc-kit/utils/configuration/types').Configuration>}
+ * @type {Partial<import('@doc-kit/core/utils/configuration/types').Configuration>}
  */
 export default {
   global: {

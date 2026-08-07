@@ -92,7 +92,7 @@ declare global {
      * The `ast-js` generator is the top-level parser for JavaScript files. It
      * passes the ASTs for any JavaScript files given in the input.
      *
-     * Declared as an import specifier (e.g. `@nodejs/doc-kit/metadata`),
+     * Declared as an import specifier (e.g. `@doc-kit/core/metadata`),
      * so a dependency may live in any installed package.
      */
     dependsOn: string | undefined;

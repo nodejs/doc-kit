@@ -2,14 +2,14 @@
 
 import process from 'node:process';
 
+import { LogLevel } from '@doc-kit/core/logger/constants.mjs';
+import logger from '@doc-kit/core/logger/index.mjs';
 import { Command, Option } from 'commander';
 
 import commands from './commands/index.mjs';
-import { LogLevel } from '../src/logger/constants.mjs';
-import logger from '../src/logger/index.mjs';
 
 const program = new Command()
-  .name('@nodejs/doc-kit')
+  .name('doc-kit')
   .description('CLI tool to generate the Node.js API documentation')
   .addOption(
     new Option('--log-level <level>', 'Log level')

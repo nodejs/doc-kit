@@ -3,9 +3,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { minifyHTML } from '@nodejs/doc-kit/utils/html-minifier.mjs';
-import { getRemarkRehype as remark } from '@nodejs/doc-kit/utils/remark.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
+import { getRemarkRehype as remark } from '@doc-kit/core/utils/remark.mjs';
 
 import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValues.mjs';
 import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';

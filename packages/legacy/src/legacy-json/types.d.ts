@@ -1,6 +1,6 @@
 import { ListItem } from '@types/mdast';
-import { MetadataEntry } from '@nodejs/doc-kit/generators/metadata/types';
-import { MethodSignature } from '@nodejs/doc-kit/utils/signature/types';
+import { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
+import { MethodSignature } from '@doc-kit/core/utils/signature/types';
 
 /**
  * A node in the entry hierarchy.

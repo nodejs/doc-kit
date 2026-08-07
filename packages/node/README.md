@@ -10,7 +10,7 @@ instead.
 ## Install
 
 ```sh
-npm install --save-dev @nodejs/doc-kit @node-core/doc-kit
+npm install --save-dev @doc-kit/core @node-core/doc-kit
 ```
 
 ## Generators

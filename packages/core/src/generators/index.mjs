@@ -10,35 +10,35 @@
  * which is how third-party generator packages are loaded.
  */
 export const publicGenerators = {
-  'json-simple': '@nodejs/doc-kit/json-simple',
-  'legacy-html': '@nodejs/doc-kit-generator-legacy/legacy-html',
-  'legacy-html-all': '@nodejs/doc-kit-generator-legacy/legacy-html-all',
+  'json-simple': '@doc-kit/core/json-simple',
+  'legacy-html': '@doc-kit/generator-legacy/legacy-html',
+  'legacy-html-all': '@doc-kit/generator-legacy/legacy-html-all',
   'man-page': '@node-core/doc-kit/man-page',
-  'legacy-json': '@nodejs/doc-kit-generator-legacy/legacy-json',
-  'legacy-json-all': '@nodejs/doc-kit-generator-legacy/legacy-json-all',
+  'legacy-json': '@doc-kit/generator-legacy/legacy-json',
+  'legacy-json-all': '@doc-kit/generator-legacy/legacy-json-all',
   'addon-verify': '@node-core/doc-kit/addon-verify',
   'api-links': '@node-core/doc-kit/api-links',
-  'orama-db': '@nodejs/doc-kit-generator-react/orama-db',
-  'llms-txt': '@nodejs/doc-kit-generator-react/llms-txt',
-  sitemap: '@nodejs/doc-kit-generator-react/sitemap',
-  html: '@nodejs/doc-kit-generator-react/html',
+  'orama-db': '@doc-kit/generator-react/orama-db',
+  'llms-txt': '@doc-kit/generator-react/llms-txt',
+  sitemap: '@doc-kit/generator-react/sitemap',
+  html: '@doc-kit/generator-react/html',
 };
 
 // These ones are special since they don't produce standard output,
 // and hence, we don't expose them to the CLI. They can still be referenced
 // by shorthand (e.g. as configuration keys or generator dependencies).
 const internalGenerators = {
-  ast: '@nodejs/doc-kit/ast',
-  metadata: '@nodejs/doc-kit/metadata',
-  'jsx-ast': '@nodejs/doc-kit-generator-react/jsx-ast',
-  'ast-js': '@nodejs/doc-kit/ast-js',
+  ast: '@doc-kit/core/ast',
+  metadata: '@doc-kit/core/metadata',
+  'jsx-ast': '@doc-kit/generator-react/jsx-ast',
+  'ast-js': '@doc-kit/core/ast-js',
 };
 
 // Former names kept resolvable for existing invocations and config files.
 // Unlike the maps above, keys here intentionally differ from the generator's
 // `name` property.
 export const deprecatedGenerators = {
-  web: '@nodejs/doc-kit-generator-react/html',
+  web: '@doc-kit/generator-react/html',
 };
 
 export const allGenerators = {

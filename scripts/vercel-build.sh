@@ -5,7 +5,7 @@ set -e
 # rather than the Node.js runtime version running this build (process.version).
 NODE_VERSION=$(cat .node-tag)
 
-node packages/core/bin/cli.mjs generate \
+node packages/cli/bin/cli.mjs generate \
   -t orama-db \
   -t legacy-json \
   -t llms-txt \

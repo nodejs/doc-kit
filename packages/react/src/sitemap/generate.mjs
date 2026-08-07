@@ -3,9 +3,9 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
-import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { writeFile } from '@doc-kit/core/utils/file.mjs';
 
 import { createPageSitemapEntry } from './utils/createPageSitemapEntry.mjs';
 

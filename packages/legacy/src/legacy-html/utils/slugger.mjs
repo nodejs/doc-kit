@@ -1,6 +1,6 @@
 'use strict';
 
-import { DEPRECATION_HEADING_REGEX } from '@nodejs/doc-kit/generators/metadata/constants.mjs';
+import { DEPRECATION_HEADING_REGEX } from '@doc-kit/core/generators/metadata/constants.mjs';
 
 /**
  * Creates a stateful slugger for legacy anchor links.

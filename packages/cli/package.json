@@ -1,0 +1,28 @@
+{
+  "name": "@doc-kit/cli",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "The doc-kit command-line interface: runs @doc-kit/core generators from the terminal",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs/doc-kit.git",
+    "directory": "packages/cli"
+  },
+  "scripts": {
+    "run": "node bin/cli.mjs",
+    "watch": "node --watch bin/cli.mjs"
+  },
+  "bin": {
+    "doc-kit": "./bin/cli.mjs"
+  },
+  "files": [
+    "bin",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "dependencies": {
+    "@doc-kit/core": "^0.0.0",
+    "commander": "^15.0.0"
+  }
+}
