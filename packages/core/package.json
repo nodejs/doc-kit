@@ -1,7 +1,7 @@
 {
   "name": "@nodejs/doc-kit",
   "type": "module",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
@@ -72,9 +72,9 @@
     "yaml": "^2.9.0"
   },
   "peerDependencies": {
-    "@node-core/doc-kit": "^1.4.3",
-    "@nodejs/doc-kit-generator-legacy": "^0.0.0",
-    "@nodejs/doc-kit-generator-react": "^0.0.0"
+    "@node-core/doc-kit": "^2.0.0",
+    "@nodejs/doc-kit-generator-legacy": "^1.0.0",
+    "@nodejs/doc-kit-generator-react": "^0.1.0"
   },
   "peerDependenciesMeta": {
     "@node-core/doc-kit": {
