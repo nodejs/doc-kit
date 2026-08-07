@@ -3,13 +3,13 @@
 First, install doc-kit and a generator, like so:
 
 ```bash
-npm install --save-dev @nodejs/doc-kit @doc-kit/generator-react
+npm install --save-dev @doc-kit/cli @doc-kit/generator-react
 ```
 
 Then, create your configuration file set up for your project:
 
 ```js displayName="doc-kit.config.mjs"
-/** @type {import('@nodejs/doc-kit/utils/configuration/types').Configuration} */
+/** @type {import('@doc-kit/core/utils/configuration/types').Configuration} */
 export default {
   target: ['html'],
 
@@ -64,7 +64,7 @@ Create a `doc-kit.config.mjs` file at the root of the project.
 ```mjs
 import { join } from 'node:path';
 
-/** @type {import('@nodejs/doc-kit/src/utils/configuration/types').Configuration} */
+/** @type {import('@doc-kit/core/src/utils/configuration/types').Configuration} */
 export default {
   global: {
     project: 'My Project', // Project name used in titles, the logo, and templates

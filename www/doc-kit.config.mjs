@@ -104,7 +104,8 @@ export default {
         {
           groupName: 'Packages',
           items: [
-            { label: '`@nodejs/doc-kit`', link: '/packages/core' },
+            { label: '`@doc-kit/cli`', link: '/packages/cli' },
+            { label: '`@doc-kit/core`', link: '/packages/core' },
             {
               label: '`@doc-kit/generator-react`',
               link: '/packages/react',

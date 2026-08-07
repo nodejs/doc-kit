@@ -2,10 +2,10 @@
 
 import { join } from 'node:path';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
-import { groupNodesByModule } from '@nodejs/doc-kit/utils/generators.mjs';
-import { transformNodeToString } from '@nodejs/doc-kit/utils/unist.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { writeFile } from '@doc-kit/core/utils/file.mjs';
+import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
+import { transformNodeToString } from '@doc-kit/core/utils/unist.mjs';
 import { create, save, insertMultiple } from '@orama/orama';
 
 import { SCHEMA } from './constants.mjs';

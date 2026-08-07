@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { minifyHTML } from '@nodejs/doc-kit/utils/html-minifier.mjs';
+import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
 import {
   build as viteBuild,
   defaultClientConditions,

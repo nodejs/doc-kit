@@ -1,5 +1,5 @@
 import type { JSXContent } from '../jsx-ast/utils/buildContent.mjs';
-import type { GlobalConfiguration } from '@nodejs/doc-kit/utils/configuration/types';
+import type { GlobalConfiguration } from '@doc-kit/core/utils/configuration/types';
 import type SideBar from '@node-core/ui-components/Containers/Sidebar';
 import type NavBar from '@node-core/ui-components/Containers/NavBar';
 import type { ComponentProps } from 'preact';

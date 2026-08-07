@@ -31,7 +31,7 @@ export default {
   dependsOn: '@doc-kit/generator-react/jsx-ast',
 
   /**
-   * @param {import('@nodejs/doc-kit/utils/configuration/types').Configuration} config
+   * @param {import('@doc-kit/core/utils/configuration/types').Configuration} config
    */
   defaultConfiguration: config => ({
     templatePath: join(import.meta.dirname, 'template.html'),

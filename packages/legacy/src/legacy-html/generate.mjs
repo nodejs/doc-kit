@@ -3,11 +3,11 @@
 import { readFile, cp } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
-import { groupNodesByModule } from '@nodejs/doc-kit/utils/generators.mjs';
-import { minifyHTML } from '@nodejs/doc-kit/utils/html-minifier.mjs';
-import { getRemarkRehypeWithShiki as remark } from '@nodejs/doc-kit/utils/remark.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { writeFile } from '@doc-kit/core/utils/file.mjs';
+import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
+import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
+import { getRemarkRehypeWithShiki as remark } from '@doc-kit/core/utils/remark.mjs';
 
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';

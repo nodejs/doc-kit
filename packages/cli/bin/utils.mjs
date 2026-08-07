@@ -1,4 +1,4 @@
-import logger from '../src/logger/index.mjs';
+import logger from '@doc-kit/core/logger/index.mjs';
 
 /**
  * Wraps a function to catch both synchronous and asynchronous errors.

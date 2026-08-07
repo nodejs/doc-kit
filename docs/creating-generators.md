@@ -1,6 +1,6 @@
 # Creating Generators
 
-This guide explains how to create new documentation generators for `@nodejs/doc-kit`.
+This guide explains how to create new documentation generators for `@doc-kit/core`.
 
 ## Generator Concepts
 
@@ -87,7 +87,7 @@ export default {
 
   // This generator depends on the metadata generator. Dependencies are
   // declared as import specifiers, so they can live in any package.
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   defaultConfiguration: {
     // If your generator supports a custom configuration, define the defaults here
@@ -168,8 +168,8 @@ the import specifier it resolves to:
 
 ```javascript
 export const publicGenerators = {
-  'json-simple': '@nodejs/doc-kit/json-simple',
-  'my-format': '@nodejs/doc-kit/my-format', // Add this
+  'json-simple': '@doc-kit/core/json-simple',
+  'my-format': '@doc-kit/core/my-format', // Add this
   // ... other generators
 };
 ```
@@ -196,7 +196,7 @@ export default {
 
   description: 'Processes data in parallel',
 
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   // Indicates this generator has a processChunk implementation
   hasParallelProcessor: true,
@@ -291,7 +291,7 @@ export default {
 
   description: 'Streams results as they are ready',
 
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   hasParallelProcessor: true,
 
@@ -395,7 +395,7 @@ export default {
 
   // This generator requires the metadata generator's output. The dependency
   // is an import specifier, so it may point at any installed package.
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   // ... other metadata
 

@@ -8,7 +8,7 @@ that depend on the classic HTML and JSON layouts.
 ## Install
 
 ```sh
-npm install --save-dev @nodejs/doc-kit @doc-kit/generator-legacy
+npm install --save-dev @doc-kit/core @doc-kit/generator-legacy
 ```
 
 Or let doc-kit install it for you:

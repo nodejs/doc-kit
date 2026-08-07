@@ -1,5 +1,5 @@
 ---
-'@nodejs/doc-kit': minor
+'@doc-kit/core': minor
 ---
 
 Make the `web` generator bundler-neutral through a custom adapter contract,

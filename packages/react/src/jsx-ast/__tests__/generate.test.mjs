@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import getConfig, {
   setConfig,
-} from '@nodejs/doc-kit/utils/configuration/index.mjs';
+} from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { generate, processChunk } from '../generate.mjs';
 

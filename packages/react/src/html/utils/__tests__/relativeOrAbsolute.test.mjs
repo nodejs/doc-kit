@@ -4,7 +4,7 @@ import { beforeEach, describe, it } from 'node:test';
 import {
   setConfig,
   default as getConfig,
-} from '@nodejs/doc-kit/utils/configuration/index.mjs';
+} from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { relativeOrAbsolute } from '../relativeOrAbsolute.mjs';
 

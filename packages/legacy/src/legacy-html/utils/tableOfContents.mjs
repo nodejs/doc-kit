@@ -8,8 +8,8 @@
  *
  * This generates a Markdown string containing a list as the ToC for the API documentation.
  *
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries The API metadata nodes to be used for the ToC
- * @param {{ maxDepth: number; parser: (metadata: import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry) => string }} options The optional ToC options
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries The API metadata nodes to be used for the ToC
+ * @param {{ maxDepth: number; parser: (metadata: import('@doc-kit/core/generators/metadata/types').MetadataEntry) => string }} options The optional ToC options
  */
 const tableOfContents = (entries, options) => {
   // Filter out the entries that have a name property / or that have empty content
@@ -33,7 +33,7 @@ const tableOfContents = (entries, options) => {
 /**
  * Builds the Label with extra metadata to be used in the ToC
  *
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} metadata The current node that is being parsed
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} metadata The current node that is being parsed
  */
 tableOfContents.parseNavigationNode = ({ api, heading }) =>
   `<a class="nav-${api}" href="${api}.html">${heading.data.name}</a>`;
@@ -41,7 +41,7 @@ tableOfContents.parseNavigationNode = ({ api, heading }) =>
 /**
  * Builds the Label with extra metadata to be used in the ToC
  *
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} metadata
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} metadata
  */
 tableOfContents.parseToCNode = ({ stability, api, heading }) => {
   const fullSlug = `${api}.html#${heading.data.slug}`;

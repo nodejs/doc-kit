@@ -1,6 +1,6 @@
 ---
 '@node-core/doc-kit': major
-'@nodejs/doc-kit': major
+'@doc-kit/core': major
 ---
 
 The Node.js-specific generators (`api-links`, `addon-verify`, and

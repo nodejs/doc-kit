@@ -17,7 +17,7 @@ npx doc-kit generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o out
 | [`llms-txt`](./generators/llms-txt.md) | An [`llms.txt`](https://llmstxt.org/) index for language models.     |
 | [`sitemap`](./generators/sitemap.md)   | A `sitemap.xml` for search engines.                                  |
 
-### JSON ([`@nodejs/doc-kit`](./packages/core.md))
+### JSON ([`@doc-kit/core`](./packages/core.md))
 
 | Target                                       | Output                                                   |
 | -------------------------------------------- | -------------------------------------------------------- |

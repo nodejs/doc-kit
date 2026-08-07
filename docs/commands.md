@@ -24,11 +24,11 @@ Each command consists of:
 
 ### Step 1: Create the Command File
 
-Create a new file in `packages/core/bin/commands/` with your command name:
+Create a new file in `packages/cli/bin/commands/` with your command name:
 
 ```javascript
-// packages/core/bin/commands/my-command.mjs
-import logger from '../../src/logger/index.mjs';
+// packages/cli/bin/commands/my-command.mjs
+import logger from '@doc-kit/core/logger/index.mjs';
 
 /**
  * @type {import('./types').Command}
@@ -53,7 +53,7 @@ export default {
 
 ### Step 2: Register the Command
 
-Add your command to the exports in `packages/core/bin/commands/index.mjs`:
+Add your command to the exports in `packages/cli/bin/commands/index.mjs`:
 
 ```javascript
 import generate from './generate.mjs';
@@ -67,7 +67,7 @@ export default [
 
 ### Step 3: Update CLI Entry Point
 
-The CLI in `packages/core/bin/cli.mjs` automatically loads commands from `packages/core/bin/commands/index.mjs`, so no changes are needed there if you followed step 2.
+The CLI in `packages/cli/bin/cli.mjs` automatically loads commands from `packages/cli/bin/commands/index.mjs`, so no changes are needed there if you followed step 2.
 
 ## Command Options
 

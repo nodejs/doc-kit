@@ -18,7 +18,7 @@ export default {
 
   description: 'Generates the legacy version of the JSON API docs.',
 
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   defaultConfiguration: {
     ref: 'main',

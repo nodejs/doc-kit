@@ -1,4 +1,4 @@
-import type { MetadataEntry } from '@nodejs/doc-kit/generators/metadata/types';
+import type { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 
 export interface TemplateValues {
   api: string;

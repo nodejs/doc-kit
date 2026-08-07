@@ -7,7 +7,7 @@ machine-readable formats that usually accompany one.
 ## Install
 
 ```sh
-npm install --save-dev @nodejs/doc-kit @doc-kit/generator-react
+npm install --save-dev @doc-kit/core @doc-kit/generator-react
 ```
 
 Or let doc-kit install it for you:

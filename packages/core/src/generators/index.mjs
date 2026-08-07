@@ -10,7 +10,7 @@
  * which is how third-party generator packages are loaded.
  */
 export const publicGenerators = {
-  'json-simple': '@nodejs/doc-kit/json-simple',
+  'json-simple': '@doc-kit/core/json-simple',
   'legacy-html': '@doc-kit/generator-legacy/legacy-html',
   'legacy-html-all': '@doc-kit/generator-legacy/legacy-html-all',
   'man-page': '@node-core/doc-kit/man-page',
@@ -28,10 +28,10 @@ export const publicGenerators = {
 // and hence, we don't expose them to the CLI. They can still be referenced
 // by shorthand (e.g. as configuration keys or generator dependencies).
 const internalGenerators = {
-  ast: '@nodejs/doc-kit/ast',
-  metadata: '@nodejs/doc-kit/metadata',
+  ast: '@doc-kit/core/ast',
+  metadata: '@doc-kit/core/metadata',
   'jsx-ast': '@doc-kit/generator-react/jsx-ast',
-  'ast-js': '@nodejs/doc-kit/ast-js',
+  'ast-js': '@doc-kit/core/ast-js',
 };
 
 // Former names kept resolvable for existing invocations and config files.

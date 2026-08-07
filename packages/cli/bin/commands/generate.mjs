@@ -1,11 +1,11 @@
-import { Command, Option } from 'commander';
-
-import { publicGenerators } from '../../src/generators/index.mjs';
-import createGenerator from '../../src/generators.mjs';
+import createGenerator from '@doc-kit/core';
+import { publicGenerators } from '@doc-kit/core/generators/index.mjs';
 import {
   assertRunnableOptions,
   setConfig,
-} from '../../src/utils/configuration/index.mjs';
+} from '@doc-kit/core/utils/configuration/index.mjs';
+import { Command, Option } from 'commander';
+
 import { errorWrap } from '../utils.mjs';
 
 const { runGenerators } = createGenerator();

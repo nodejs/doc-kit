@@ -1,10 +1,10 @@
-import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
+import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 
 /**
  * Builds an API doc sitemap url.
  *
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry
- * @param {import('@nodejs/doc-kit/utils/configuration/types').Configuration['sitemap']} config
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} entry
+ * @param {import('@doc-kit/core/utils/configuration/types').Configuration['sitemap']} config
  * @param {string} lastmod - Last-modified date as `YYYY-MM-DD`
  * @returns {import('../types').SitemapEntry}
  */

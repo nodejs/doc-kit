@@ -3,8 +3,8 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { writeFile } from '@doc-kit/core/utils/file.mjs';
 
 import {
   convertOptionToMandoc,
@@ -12,10 +12,10 @@ import {
 } from './utils/converter.mjs';
 
 /**
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} components
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} components
  * @param {number} start
  * @param {number} end
- * @param {(element: import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry) => string} convert
+ * @param {(element: import('@doc-kit/core/generators/metadata/types').MetadataEntry) => string} convert
  * @returns {string}
  */
 function extractMandoc(components, start, end, convert) {

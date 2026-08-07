@@ -1,9 +1,11 @@
-# `@nodejs/doc-kit`
+# `@doc-kit/core`
 
-The core of [doc-kit](https://github.com/nodejs/doc-kit): the CLI and the
-engine that turn API-shaped Markdown into documentation sites, JSON, man
-pages, and more. It powers the Node.js API reference, and it can document any
-project.
+The core of [doc-kit](https://github.com/nodejs/doc-kit): the engine that
+turns API-shaped Markdown into documentation sites, JSON, man pages, and
+more. It powers the Node.js API reference, and it can document any project.
+
+The command-line interface lives in the companion
+[`@doc-kit/cli`](https://www.npmjs.com/package/@doc-kit/cli) package.
 
 ## Generators
 
@@ -24,15 +26,12 @@ is a generator works as a `--target`.
 
 This package lives in the [nodejs/doc-kit](https://github.com/nodejs/doc-kit)
 monorepo. From this directory (or the repository root with
-`npm run <script> --workspace @nodejs/doc-kit`):
+`npm run <script> --workspace @doc-kit/core`):
 
 ```sh
-# Run the CLI
-npm run run -- generate --help
-
-# Re-run the CLI on every change
-npm run watch
-
 # Run this package's tests
 npm test
+
+# Re-run the tests on every change
+npm run test:watch
 ```

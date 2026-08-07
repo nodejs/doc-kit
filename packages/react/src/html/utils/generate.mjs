@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { JSX_IMPORTS, ROOT } from '../constants.mjs';
 
