@@ -33,14 +33,8 @@
 
 ## Usage
 
-Local invocation:
-
 ```sh
-$ npx doc-kit --help
-```
-
-```sh
-$ node packages/cli/bin/cli.mjs --help
+$ npx @doc-kit/cli --help
 ```
 
 ```
