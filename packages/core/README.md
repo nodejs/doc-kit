@@ -11,11 +11,11 @@ Output formats are provided by generators. This package ships the shared
 pipeline stages and `json-simple`; the rest come from companion packages,
 installable with `doc-kit install <generator>`:
 
-| Package                                                                                              | Generators                                                         |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Package                                                                                | Generators                                                         |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | [`@doc-kit/generator-react`](https://www.npmjs.com/package/@doc-kit/generator-react)   | `html` (the modern site), `orama-db`, `llms-txt`, `sitemap`        |
 | [`@doc-kit/generator-legacy`](https://www.npmjs.com/package/@doc-kit/generator-legacy) | `legacy-html`, `legacy-html-all`, `legacy-json`, `legacy-json-all` |
-| [`@node-core/doc-kit`](https://www.npmjs.com/package/@node-core/doc-kit)                             | `man-page`, `api-links`, `addon-verify` (Node.js-specific)         |
+| [`@node-core/doc-kit`](https://www.npmjs.com/package/@node-core/doc-kit)               | `man-page`, `api-links`, `addon-verify` (Node.js-specific)         |
 
 Custom generators load by import specifier — any module whose default export
 is a generator works as a `--target`.
