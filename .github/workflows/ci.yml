@@ -140,7 +140,7 @@ jobs:
           sparse-checkout: doc/api/assert.md
           path: node
 
-      - name: Build docs
+      - name: Build Node.js API docs
         run: npx doc-kit generate -t web -i "./node/doc/api/assert.md" -o out --config-file ./e2e/doc-kit.config.mjs
 
       - name: Install Playwright browsers
