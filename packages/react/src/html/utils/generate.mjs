@@ -51,7 +51,7 @@ export const createImportDeclaration = (
  */
 export default () => {
   // User-configured components (for JSX-in-MDX), merged with the built-ins.
-  const { components } = getConfig('html');
+  const { components, stylesheets } = getConfig('html');
 
   const componentImports = [
     ...Object.values(JSX_IMPORTS),
@@ -98,6 +98,12 @@ export default () => {
   // The client entry, shared verbatim by every page
   const clientProgram = [
     createImportDeclaration(null, resolve(ROOT, './ui/index.css')),
+
+    // Project stylesheets are bundled after the built-in one, so their rules
+    // and custom properties (e.g. `--color-brand-*`) win.
+    ...stylesheets.map(stylesheet =>
+      createImportDeclaration(null, resolve(stylesheet))
+    ),
 
     createImportDeclaration(
       'registerIslands',

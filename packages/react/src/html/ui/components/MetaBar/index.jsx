@@ -52,7 +52,7 @@ const HeadingValue = ({ value, stability }) => {
  * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime: string }} props
  */
 export default ({ metadata, headings = [], readingTime }) => {
-  const editThisPage = editURL.replace('{path}', metadata.path);
+  const editThisPage = editURL?.replace('{path}', metadata.path);
 
   const viewAs = [
     ['JSON', `${metadata.basename}.json`],
@@ -88,7 +88,7 @@ export default ({ metadata, headings = [], readingTime }) => {
             })}
           </ol>
         ),
-        Contribute: !metadata.synthetic && (
+        Contribute: !metadata.synthetic && editThisPage && (
           <>
             <GitHubIcon className="fill-neutral-700 dark:fill-neutral-100" />
 

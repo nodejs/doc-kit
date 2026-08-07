@@ -2,8 +2,6 @@
 
 import { join } from 'node:path';
 
-import { GITHUB_EDIT_URL } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
-
 import { generate } from './generate.mjs';
 
 /**
@@ -37,12 +35,9 @@ export default {
    */
   defaultConfiguration: config => ({
     templatePath: join(import.meta.dirname, 'template.html'),
-    project: 'Node.js',
     title: '{project} {version} Documentation',
     useAbsoluteURLs: false,
-    editURL: `${GITHUB_EDIT_URL}/doc/api{path}.md`,
-    pageURL: '{baseURL}/latest-{version}/api{path}.html',
-    remoteConfigUrl: 'https://nodejs.org/site.json',
+    pageURL: '{baseURL}{path}.html',
     // By default, the search box is only shown when we are _also_ building
     // search data. `target` holds resolved import specifiers, so match on the
     // subpath rather than an exact name.
@@ -56,38 +51,16 @@ export default {
     // hatch. Structural/theme tags such as `og:type` are hardcoded in the
     // template instead.
     head: {
-      meta: [
-        {
-          name: 'description',
-          content:
-            'Node.js® is a free, open-source, cross-platform JavaScript ' +
-            'runtime environment that lets developers create servers, web ' +
-            'apps, command line tools and scripts.',
-        },
-        {
-          property: 'og:description',
-          content:
-            'Node.js® is a free, open-source, cross-platform JavaScript ' +
-            'runtime environment that lets developers create servers, web ' +
-            'apps, command line tools and scripts.',
-        },
-        {
-          property: 'og:image',
-          content:
-            'https://nodejs.org/en/next-data/og/announcement/Node.js%20%E2%80%94%20Run%20JavaScript%20Everywhere',
-        },
-      ],
-      links: [
-        {
-          rel: 'icon',
-          href: 'https://nodejs.org/static/images/favicons/favicon.png',
-        },
-      ],
+      meta: [],
+      links: [],
       html: [],
     },
 
+    // Extra stylesheets
+    stylesheets: [],
+
     imports: {
-      '#theme/Logo': '@node-core/ui-components/Common/NodejsLogo',
+      '#theme/Logo': join(import.meta.dirname, './ui/components/ProjectName'),
       '#theme/Navigation': join(import.meta.dirname, './ui/components/NavBar'),
       '#theme/Sidebar': join(import.meta.dirname, './ui/components/SideBar'),
       '#theme/Metabar': join(import.meta.dirname, './ui/components/MetaBar'),

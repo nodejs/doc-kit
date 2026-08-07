@@ -1,4 +1,7 @@
 import assert from 'node:assert';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
 
 // Mock dependencies
@@ -95,6 +98,47 @@ describe('config.mjs', () => {
         'path/to/config.mjs'
       );
       assert.strictEqual(mockConfigSearch.mock.calls.length, 0);
+    });
+
+    it('should merge extends presets underneath the config file', async () => {
+      const dir = mkdtempSync(join(tmpdir(), 'doc-kit-config-'));
+
+      writeFileSync(
+        join(dir, 'base.mjs'),
+        'export default { global: { project: "Base", ref: "base" }, html: { a: 1 } };'
+      );
+      writeFileSync(
+        join(dir, 'other.mjs'),
+        'export default { global: { project: "Other" }, html: { b: 2 } };'
+      );
+
+      mockConfigLoad.mock.mockImplementationOnce(async () => ({
+        config: {
+          extends: ['./base.mjs', './other.mjs'],
+          global: { ref: 'own' },
+        },
+        filepath: join(dir, 'doc-kit.config.mjs'),
+      }));
+
+      const result = await loadConfigFile('any');
+
+      // Later presets win over earlier ones; the file itself wins over all
+      assert.deepStrictEqual(result, {
+        global: { project: 'Other', ref: 'own' },
+        html: { a: 1, b: 2 },
+      });
+    });
+
+    it('should resolve extends package specifiers from the config file', async () => {
+      mockConfigLoad.mock.mockImplementationOnce(async () => ({
+        config: { extends: '@node-core/doc-kit/config' },
+        filepath: join(process.cwd(), 'doc-kit.config.mjs'),
+      }));
+
+      const result = await loadConfigFile('any');
+
+      assert.strictEqual(result.global.project, 'Node.js');
+      assert.strictEqual(result.global.repository, 'nodejs/node');
     });
   });
 
@@ -248,6 +292,17 @@ describe('config.mjs', () => {
       assert.strictEqual(config.threads, 4);
       assert.strictEqual(mockConfigLoad.mock.calls.length, 0);
       assert.strictEqual(mockConfigSearch.mock.calls.length, 1);
+    });
+
+    it('should default to project-neutral values', async () => {
+      const config = await createRunConfiguration({});
+
+      // No repository, site, or release history is assumed; presets such as
+      // @node-core/doc-kit/config opt back into the Node.js values
+      assert.strictEqual(config.global.repository, undefined);
+      assert.strictEqual(config.global.baseURL, undefined);
+      assert.deepStrictEqual(config.global.changelog, []);
+      assert.strictEqual(typeof config.global.project, 'string');
     });
 
     it('should handle generator-specific overrides', async () => {

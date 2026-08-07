@@ -21,8 +21,14 @@ export type Configuration = {
 };
 
 export type GlobalConfiguration = {
-  // The repository
-  repository: string;
+  // The name of the project being documented, used for titles, logos, and
+  // templated text (defaults to the `name` in the working directory's
+  // `package.json`)
+  project: string;
+
+  // The repository (`owner/name`), used for source and edit links; when
+  // omitted, repository-specific UI (e.g. the GitHub link) is omitted
+  repository?: string;
 
   // The path to the input source files. This parameter accepts globs and can
   // be a glob when passed to a generator.
@@ -49,8 +55,9 @@ export type GlobalConfiguration = {
   // A list of all the titles of all the documentation files
   index: Array<{ section: string; api: string }>;
 
-  // The base URL
-  baseURL: string | URL;
+  // The base URL of the published site; templates referencing `{baseURL}`
+  // (e.g. sitemap and llms-txt page URLs) need it to produce absolute URLs
+  baseURL?: string | URL;
 
   // Git ref (i.e. HEAD)
   ref: string;

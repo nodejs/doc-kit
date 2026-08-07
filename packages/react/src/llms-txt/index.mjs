@@ -20,7 +20,7 @@ export default {
 
   defaultConfiguration: {
     templatePath: join(import.meta.dirname, 'template.txt'),
-    pageURL: '{baseURL}/latest/api{path}.md',
+    pageURL: '{baseURL}{path}.md',
   },
 
   generate,

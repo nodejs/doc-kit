@@ -22,12 +22,14 @@ export default ({ metadata }) => (
   >
     {showSearchBox && <SearchBox pathname={metadata.path} />}
     <ThemeToggle />
-    <a
-      href={`https://github.com/${repository}`}
-      aria-label={`View ${repository} on GitHub`}
-      className={styles.ghIconWrapper}
-    >
-      <GitHubIcon />
-    </a>
+    {repository && (
+      <a
+        href={`https://github.com/${repository}`}
+        aria-label={`View ${repository} on GitHub`}
+        className={styles.ghIconWrapper}
+      >
+        <GitHubIcon />
+      </a>
+    )}
   </NavBar>
 );

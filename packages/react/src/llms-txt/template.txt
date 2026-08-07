@@ -1,6 +1,6 @@
-# Node.js Documentation
+# {project} Documentation
 
-> Node.js is an open-source, cross-platform JavaScript runtime environment that executes JavaScript code outside a web browser. Node.js uses an event-driven, non-blocking I/O model that makes it lightweight and efficient for building scalable network applications.
+> API documentation for {project}.
 
 Below are the sections of the API documentation. Look out especially towards the links that point towards guidance/introduction to the structure of this documentation.
 

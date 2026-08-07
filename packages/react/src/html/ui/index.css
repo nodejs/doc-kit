@@ -4,10 +4,20 @@
 @import '@node-core/ui-components/styles/index.css';
 @import '@node-core/rehype-shiki/index.css';
 
-/* Fonts */
+/* Variables */
 :root {
   --font-open-sans: 'Open Sans Variable', sans-serif;
   --font-ibm-plex-mono: 'IBM Plex Mono', monospace;
+
+  --color-brand-100: #f4f4f5;
+  --color-brand-200: #e4e4e7;
+  --color-brand-300: #c9c9ce;
+  --color-brand-400: #a8a8af;
+  --color-brand-500: #83838c;
+  --color-brand-600: #62626b;
+  --color-brand-700: #4b4b53;
+  --color-brand-800: #3a3a41;
+  --color-brand-900: #27272b;
 }
 
 is-land,

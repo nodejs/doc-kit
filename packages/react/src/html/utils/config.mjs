@@ -76,13 +76,18 @@ export function buildLanguageDisplayNameMap() {
 export default function createConfigSource(input, server = false) {
   const { version: configVersion, ...config } = getConfig('html');
 
-  const editURL = populate(config.editURL, {
-    ...config,
-    version: `v${configVersion.version}`,
-  });
+  const editURL =
+    config.editURL &&
+    populate(config.editURL, {
+      ...config,
+      version: `v${configVersion.version}`,
+    });
   const pageURL = populate(config.pageURL, config);
 
   const exports = {
+    repository: undefined,
+    baseURL: undefined,
+    remoteConfigUrl: undefined,
     ...omitKeys(
       config,
       // These are large or build-time-only keys, or may contain functions, so
@@ -92,6 +97,7 @@ export default function createConfigSource(input, server = false) {
         'index',
         'imports',
         'virtualImports',
+        'stylesheets',
         'components',
         'head',
         'bundler',

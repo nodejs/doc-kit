@@ -1,35 +1,99 @@
 # Configuration
 
-`doc-kit` discovers configuration with
-[`cosmiconfig`](https://github.com/cosmiconfig/cosmiconfig): run the CLI
-from your project directory and it looks for a `doc-kit.config.mjs` (or
-`.js`/`.cjs`/`.ts`), a `.doc-kitrc` file (JSON or YAML, with any of the
-usual extensions), or a `doc-kit` property in `package.json`. Use
-`--config-file <path>` to load a specific file instead of searching.
+`doc-kit` uses [`cosmiconfig`](https://github.com/cosmiconfig/cosmiconfig) to
+discover and load configuration. Run the CLI from your project directory and it
+will automatically look for a `doc-kit` property in `package.json`, rc files
+such as `.doc-kitrc.yml`, and module files such as `doc-kit.config.mjs`.
 
-```mjs displayName="doc-kit.config.mjs"
-/** @type {import('@nodejs/doc-kit/utils/configuration/types').Configuration} */
+Use `--config-file <path>` to load a specific file instead of searching.
+
+## Configuration File Format
+
+Configuration files can be either:
+
+- **JavaScript** (`.js`, `.mjs`, `.cjs`)
+- **TypeScript** (`.ts`, when `typescript` is installed in the project)
+- **JSON** (`.json`)
+- **YAML** (`.yaml`, `.yml`, or an extensionless rc file)
+
+JavaScript and TypeScript configuration files export the configuration object.
+JSON and YAML files contain the object directly. A `package.json` configuration
+uses the `doc-kit` property:
+
+```json
+{
+  "doc-kit": {
+    "target": ["json-simple"],
+    "global": {
+      "input": "doc/api/*.md",
+      "output": "out"
+    }
+  }
+}
+```
+
+### Basic Example
+
+```javascript
 export default {
-  // Which generators to run. Built-in names, or import specifiers
-  // resolving to custom generator modules.
-  target: ['html', 'orama-db'],
-
+  // Targets, alternatively supplied by command line flags. Each entry is
+  // either a built-in shorthand name or an import specifier resolving to a
+  // generator module (e.g. '@my-scope/my-package/my-generator').
+  target: ['orama-db', 'html'],
   global: {
-    input: ['docs/**/*.md'],
-    output: 'out',
+    project: 'My Project',
     version: '1.2.0',
-    baseURL: 'https://example.com/docs',
-    changelog: [],
+    input: 'docs/**/*.md',
+    output: 'dist/',
+    ignore: ['node_modules/', 'test/'],
+    baseURL: 'https://example.com/docs/',
   },
 
-  // Generator-specific sections, keyed by generator name
+  threads: 4,
+  chunkSize: 10,
+
+  // Generator-specific configurations
   html: {
-    project: 'My Project',
+    title: '{project} Documentation',
+  },
+
+  metadata: {
+    typeMap: {
+      MyThing: 'https://example.com/docs/my-thing.html',
+    },
   },
 };
 ```
 
-## How values merge
+## Extending Presets
+
+A configuration file may declare `extends`: one or more presets whose values
+are merged underneath its own. Each entry is either an import specifier of a
+module whose default export is a configuration object, or a path relative to
+the configuration file:
+
+```mjs
+export default {
+  // Build the docs the way nodejs.org does — branding, URL layouts,
+  // and release history included
+  extends: '@node-core/doc-kit/config',
+
+  html: {
+    // Your own values still win over the preset
+    title: '{project} {version} API Reference',
+  },
+};
+```
+
+`extends` also accepts an array; later presets take precedence over earlier
+ones, and the configuration file itself wins over all of them.
+
+The built-in defaults are deliberately project-neutral: no repository,
+site URL, release history, or branding is assumed. The
+[`@node-core/doc-kit/config`](https://github.com/nodejs/doc-kit/tree/main/packages/node)
+preset opts back into everything Node.js-specific.
+
+## Configuration Structure
 
 Three sources, in order of precedence:
 
@@ -37,25 +101,23 @@ Three sources, in order of precedence:
 2. **the configuration file**, which overrides
 3. **built-in defaults**.
 
-Each generator's section starts from its own defaults, then inherits every
-`global` value it doesn't override. So `global.minify` applies to all
-targets, while `'legacy-json': { minify: false }` exempts one.
+| Property     | Type                     | Description                                                                               | Default                           |
+| ------------ | ------------------------ | ----------------------------------------------------------------------------------------- | --------------------------------- |
+| `project`    | `string`                 | Name of the project being documented, used in titles, logos, and templated text           | The `name` in your `package.json` |
+| `version`    | `string \| SemVer`       | Documentation version                                                                     | `process.version`                 |
+| `minify`     | `boolean`                | Whether to minify output                                                                  | `true`                            |
+| `repository` | `string`                 | GitHub repository in `owner/repo` format; without one, repository UI is omitted           | -                                 |
+| `ref`        | `string`                 | Git reference (branch, tag, or commit SHA)                                                | `'HEAD'`                          |
+| `baseURL`    | `string \| URL`          | Base URL of the published site, used wherever absolute URLs are needed                    | -                                 |
+| `input`      | `string[]`               | Input directory path                                                                      | -                                 |
+| `output`     | `string`                 | Output directory path                                                                     | -                                 |
+| `ignore`     | `string[]`               | Patterns to ignore                                                                        | `[]`                              |
+| `changelog`  | `string \| URL \| Array` | Release history used for version selectors; a URL or path to parse, or a pre-parsed array | `[]` (single-version output)      |
+| `index`      | `string \| URL \| Array` | Index URL                                                                                 | -                                 |
 
 ## Global options
 
-| Property      | Type                      | Description                                                                                                                                                                        | Default                          |
-| ------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `input`       | `string \| string[]`      | Glob patterns for the source Markdown files. Required (with `target`) to run.                                                                                                      | —                                |
-| `output`      | `string`                  | The directory generated files are written to.                                                                                                                                      | —                                |
-| `ignore`      | `string \| string[]`      | Glob patterns excluded from `input`.                                                                                                                                               | —                                |
-| `version`     | `string`                  | The version of the project being documented (coerced to semver).                                                                                                                   | `process.version`                |
-| `changelog`   | `string \| URL \| Array`  | Release history used to build version selectors. A URL or path to a `CHANGELOG.md` to parse, or a pre-parsed array — `[]` disables versioning (and the network fetch).             | The Node.js `CHANGELOG.md`       |
-| `index`       | `string \| URL \| Array`  | An `index.md` listing section titles, or a pre-parsed array.                                                                                                                       | —                                |
-| `baseURL`     | `string \| URL`           | The public URL of the published site; used wherever absolute links are needed (sitemaps, `llms.txt`, social metadata).                                                             | `'https://nodejs.org/docs'`      |
-| `repository`  | `string`                  | GitHub repository in `owner/repo` form, used for source and edit links.                                                                                                            | `'nodejs/node'`                  |
-| `ref`         | `string`                  | Git ref (branch, tag, or SHA) used in source links.                                                                                                                                | `'HEAD'`                         |
-| `minify`      | `boolean`                 | Minify the output, in whatever form it takes.                                                                                                                                      | `true`                           |
-| `pathsToCopy` | `Array<string \| Object>` | Extra files or directories copied into the output. A string copies to `output/<basename>`; a `{ source: destination }` object controls the target path. Missing paths are skipped. | `['assets', 'public', 'static']` |
+Each generator (e.g., `html`, `legacy-json`) can have its own configuration that overrides global settings:
 
 ## Execution options
 
@@ -73,8 +135,9 @@ Each generator documents its own options on its reference page — see the
 
 ```js
 export default {
-  html: {
-    project: 'My Project',
+  global: {
+    version: '1.2.0',
+    minify: true,
   },
 
   metadata: {
@@ -84,3 +147,32 @@ export default {
   },
 };
 ```
+
+## Configuration Merging
+
+Configurations are merged in the following order (higher sources take
+precedence):
+
+1. **CLI options** (command-line arguments)
+2. **Configuration file** (discovered or selected with `--config-file`)
+3. **Presets** (listed in the configuration file's `extends`)
+4. **Default values** (built-in defaults)
+
+## CLI Options Mapping
+
+CLI options map to configuration properties:
+
+| CLI Option             | Config Property    | Example                   |
+| ---------------------- | ------------------ | ------------------------- |
+| `--input <path>`       | `global.input`     | `--input src/`            |
+| `--output <path>`      | `global.output`    | `--output dist/`          |
+| `--ignore <pattern>`   | `global.ignore[]`  | `--ignore test/`          |
+| `--minify`             | `global.minify`    | `--minify`                |
+| `--git-ref <ref>`      | `global.ref`       | `--git-ref v20.0.0`       |
+| `--version <version>`  | `global.version`   | `--version 20.0.0`        |
+| `--changelog <url>`    | `global.changelog` | `--changelog https://...` |
+| `--index <url>`        | `global.index`     | `--index file://...`      |
+| `--type-map <map>`     | `metadata.typeMap` | `--type-map file://...`   |
+| `--target <generator>` | `target`           | `--target json`           |
+| `--threads <n>`        | `threads`          | `--threads 4`             |
+| `--chunk-size <n>`     | `chunkSize`        | `--chunk-size 10`         |
