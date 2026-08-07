@@ -14,7 +14,7 @@ export default {
   description:
     'Generates the `all.json` file from the `legacy-json` generator, which includes all the modules in one single file.',
 
-  dependsOn: '@nodejs/doc-kit-generator-legacy/legacy-json',
+  dependsOn: '@doc-kit/generator-legacy/legacy-json',
 
   defaultConfiguration: {
     minify: false,

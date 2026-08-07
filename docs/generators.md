@@ -8,7 +8,7 @@ npx doc-kit generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o out
 
 ## Built-in generators
 
-### Web ([`@nodejs/doc-kit-generator-react`](./packages/react.md))
+### Web ([`@doc-kit/generator-react`](./packages/react.md))
 
 | Target                                 | Output                                                               |
 | -------------------------------------- | -------------------------------------------------------------------- |
@@ -23,7 +23,7 @@ npx doc-kit generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o out
 | -------------------------------------------- | -------------------------------------------------------- |
 | [`json-simple`](./generators/json-simple.md) | A simplified JSON rendering of the parsed documentation. |
 
-### Legacy ([`@nodejs/doc-kit-generator-legacy`](./packages/legacy.md))
+### Legacy ([`@doc-kit/generator-legacy`](./packages/legacy.md))
 
 1:1 matches for Node.js's original documentation tooling, for consumers of
 the classic layouts.

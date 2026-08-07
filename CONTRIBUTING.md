@@ -78,9 +78,9 @@ holds the shared tooling (linting, formatting, tests, changesets); every
 published package lives under `packages/`:
 
 - `packages/core`: [`@nodejs/doc-kit`](packages/core) — the doc-kit engine and CLI
-- `packages/legacy`: [`@nodejs/doc-kit-generator-legacy`](packages/legacy) — the legacy-format generators
+- `packages/legacy`: [`@doc-kit/generator-legacy`](packages/legacy) — the legacy-format generators
 - `packages/node`: [`@node-core/doc-kit`](packages/node) — the Node.js-specific generators
-- `packages/react`: [`@nodejs/doc-kit-generator-react`](packages/react) — the React/JSX-based generators
+- `packages/react`: [`@doc-kit/generator-react`](packages/react) — the React/JSX-based generators
 
 Everything else at the root supports the repo rather than shipping to npm:
 `docs/` (the reference docs), `www/` (the documentation site), `scripts/` (build

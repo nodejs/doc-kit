@@ -236,7 +236,7 @@ directly and pass Vite's `UserConfig` to it:
 
 ```js
 // doc-kit.config.mjs
-import { createViteBundler } from '@nodejs/doc-kit-generator-react/html/bundlers/vite';
+import { createViteBundler } from '@doc-kit/generator-react/html/bundlers/vite';
 import myVitePlugin from './my-vite-plugin.mjs';
 
 export default {

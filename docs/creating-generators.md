@@ -350,7 +350,7 @@ export default {
 
   description: 'Requires all input at once',
 
-  dependsOn: '@nodejs/doc-kit-generator-react/jsx-ast',
+  dependsOn: '@doc-kit/generator-react/jsx-ast',
 
   generate,
 };

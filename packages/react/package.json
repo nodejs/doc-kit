@@ -1,5 +1,5 @@
 {
-  "name": "@nodejs/doc-kit-generator-react",
+  "name": "@doc-kit/generator-react",
   "type": "module",
   "version": "0.0.0",
   "description": "React/JSX-based generators for @nodejs/doc-kit: html, jsx-ast, llms-txt, sitemap, and orama-db",

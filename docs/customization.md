@@ -160,7 +160,7 @@ signature parsing while keeping headings, TOC, and sidebar behavior.
 Vite builds the site by default, and accepts your plugins and options:
 
 ```js
-import { createViteBundler } from '@nodejs/doc-kit-generator-react/html/bundlers/vite';
+import { createViteBundler } from '@doc-kit/generator-react/html/bundlers/vite';
 
 export default {
   html: {

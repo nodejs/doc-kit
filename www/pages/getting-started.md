@@ -3,7 +3,7 @@
 First, install doc-kit and a generator, like so:
 
 ```bash
-npm install --save-dev @nodejs/doc-kit @nodejs/doc-kit-generator-react
+npm install --save-dev @nodejs/doc-kit @doc-kit/generator-react
 ```
 
 Then, create your configuration file set up for your project:

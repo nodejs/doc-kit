@@ -11,17 +11,17 @@
  */
 export const publicGenerators = {
   'json-simple': '@nodejs/doc-kit/json-simple',
-  'legacy-html': '@nodejs/doc-kit-generator-legacy/legacy-html',
-  'legacy-html-all': '@nodejs/doc-kit-generator-legacy/legacy-html-all',
+  'legacy-html': '@doc-kit/generator-legacy/legacy-html',
+  'legacy-html-all': '@doc-kit/generator-legacy/legacy-html-all',
   'man-page': '@node-core/doc-kit/man-page',
-  'legacy-json': '@nodejs/doc-kit-generator-legacy/legacy-json',
-  'legacy-json-all': '@nodejs/doc-kit-generator-legacy/legacy-json-all',
+  'legacy-json': '@doc-kit/generator-legacy/legacy-json',
+  'legacy-json-all': '@doc-kit/generator-legacy/legacy-json-all',
   'addon-verify': '@node-core/doc-kit/addon-verify',
   'api-links': '@node-core/doc-kit/api-links',
-  'orama-db': '@nodejs/doc-kit-generator-react/orama-db',
-  'llms-txt': '@nodejs/doc-kit-generator-react/llms-txt',
-  sitemap: '@nodejs/doc-kit-generator-react/sitemap',
-  html: '@nodejs/doc-kit-generator-react/html',
+  'orama-db': '@doc-kit/generator-react/orama-db',
+  'llms-txt': '@doc-kit/generator-react/llms-txt',
+  sitemap: '@doc-kit/generator-react/sitemap',
+  html: '@doc-kit/generator-react/html',
 };
 
 // These ones are special since they don't produce standard output,
@@ -30,7 +30,7 @@ export const publicGenerators = {
 const internalGenerators = {
   ast: '@nodejs/doc-kit/ast',
   metadata: '@nodejs/doc-kit/metadata',
-  'jsx-ast': '@nodejs/doc-kit-generator-react/jsx-ast',
+  'jsx-ast': '@doc-kit/generator-react/jsx-ast',
   'ast-js': '@nodejs/doc-kit/ast-js',
 };
 
@@ -38,7 +38,7 @@ const internalGenerators = {
 // Unlike the maps above, keys here intentionally differ from the generator's
 // `name` property.
 export const deprecatedGenerators = {
-  web: '@nodejs/doc-kit-generator-react/html',
+  web: '@doc-kit/generator-react/html',
 };
 
 export const allGenerators = {

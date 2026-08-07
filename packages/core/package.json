@@ -73,17 +73,17 @@
   },
   "peerDependencies": {
     "@node-core/doc-kit": "^1.4.3",
-    "@nodejs/doc-kit-generator-legacy": "^0.0.0",
-    "@nodejs/doc-kit-generator-react": "^0.0.0"
+    "@doc-kit/generator-legacy": "^0.0.0",
+    "@doc-kit/generator-react": "^0.0.0"
   },
   "peerDependenciesMeta": {
     "@node-core/doc-kit": {
       "optional": true
     },
-    "@nodejs/doc-kit-generator-legacy": {
+    "@doc-kit/generator-legacy": {
       "optional": true
     },
-    "@nodejs/doc-kit-generator-react": {
+    "@doc-kit/generator-react": {
       "optional": true
     }
   }
