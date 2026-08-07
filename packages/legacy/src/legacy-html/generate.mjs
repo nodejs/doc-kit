@@ -168,7 +168,7 @@ export async function* generate(input, worker) {
   const misses = [];
 
   if (buildCache) {
-    const salt = await buildCache.chainSalt(GENERATOR_SPECIFIER);
+    const salt = buildCache.chainSalt(GENERATOR_SPECIFIER);
     const projectionHash = combine(
       hashData(navigation),
       hashValue(headNodesLite),
@@ -197,42 +197,32 @@ export async function* generate(input, worker) {
 
   const extra = { navigation, headNodesLite, apiTemplate };
 
-  // Drive the worker stream concurrently, resolving each miss's deferred as
-  // its chunk lands; results are stored write-behind under the miss's key.
-  const deferreds = new Map(
-    misses.map(({ item }) => [item.head.api, Promise.withResolvers()])
-  );
+  /** @type {Map<string, object>} Freshly built results by api */
+  const produced = new Map();
 
-  const pump = (async () => {
-    let index = 0;
+  let index = 0;
 
-    for await (const chunk of worker.stream(
-      misses.map(({ item }) => item),
-      extra
-    )) {
-      for (const result of chunk) {
-        const { key } = misses[index++];
+  // The worker yields chunks in submission order (parallel.mjs), so results
+  // pair with misses positionally; results are stored write-behind.
+  for await (const chunk of worker.stream(
+    misses.map(({ item }) => item),
+    extra
+  )) {
+    for (const result of chunk) {
+      const { key } = misses[index++];
 
-        if (buildCache && key) {
-          buildCache.store.put(key, JSON.stringify(result));
-        }
-
-        deferreds.get(result.api).resolve(result);
+      if (key) {
+        buildCache.store.put(key, JSON.stringify(result));
       }
-    }
-  })();
 
-  pump.catch(error => {
-    for (const { reject } of deferreds.values()) {
-      reject(error);
+      produced.set(result.api, result);
     }
-  });
+  }
 
   // Emit in canonical (sorted head-node) order regardless of the hit/miss
   // split, so downstream aggregation (legacy-html-all) is byte-stable.
   for (const head of headNodes) {
-    const result =
-      cached.get(head.api) ?? (await deferreds.get(head.api).promise);
+    const result = cached.get(head.api) ?? produced.get(head.api);
 
     if (config.output) {
       await writeFile(join(config.output, `${result.api}.html`), result.html);
@@ -240,6 +230,4 @@ export async function* generate(input, worker) {
 
     yield [result];
   }
-
-  await pump;
 }

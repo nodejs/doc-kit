@@ -26,18 +26,6 @@ describe('store', () => {
     const store = await createTempStore();
 
     assert.equal(await store.get(KEY_A), null);
-    assert.equal(store.stats.misses, 1);
-  });
-
-  it('counts hits and writes', async () => {
-    const store = await createTempStore();
-
-    store.put(KEY_A, 'value');
-    await store.flush();
-    await store.get(KEY_A);
-
-    assert.equal(store.stats.hits, 1);
-    assert.equal(store.stats.writes, 1);
   });
 
   it('memoizes: computes once, then serves from disk', async () => {

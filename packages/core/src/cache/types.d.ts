@@ -13,13 +13,6 @@ export interface Snapshot {
   digest: string;
 }
 
-export interface StoreStats {
-  hits: number;
-  misses: number;
-  writes: number;
-  bytesWritten: number;
-}
-
 export interface Store {
   get(key: string): Promise<string | null>;
   put(key: string, value: string): void;
@@ -32,7 +25,6 @@ export interface Store {
   ): Promise<string>;
   flush(): Promise<void>;
   prune(maxAgeDays: number): Promise<void>;
-  stats: StoreStats;
 }
 
 export interface OutputRecord {
@@ -65,10 +57,8 @@ export interface CacheConfiguration {
 export interface BuildCache {
   store: Store;
   dir: string;
-  /** Resolved targets this run may skip entirely (all-or-nothing) */
-  skippedTargets: Set<string>;
   /** Chain salt for per-item leaf-cache keys (code + config, no inputs) */
-  chainSalt(specifier: string): Promise<string>;
+  chainSalt(specifier: string): string;
   /** Content hash of the source file behind a module path (`/fs`), if known */
   sourceHash(modulePath: string): Promise<string | undefined>;
   /** Records an output file write (tracked writeFile / vite / copies) */

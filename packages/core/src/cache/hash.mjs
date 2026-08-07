@@ -12,55 +12,29 @@ import { hash } from 'node:crypto';
 export const hashData = data => hash('sha256', data, 'hex').slice(0, 32);
 
 /**
- * Serializes a value into a canonical JSON string: object keys sorted,
- * `undefined` treated as JSON does (omitted from objects, `null` in arrays),
- * functions by source text, cycles marked. Two structurally equal values
- * always produce the same string.
+ * Serializes a value into a canonical JSON string: a `JSON.stringify` pass
+ * whose replacer sorts object keys and serializes functions and bigints by
+ * source text. `undefined` behaves as JSON does (omitted from objects, `null`
+ * in arrays and at the top level). Cyclic values throw — callers treat any
+ * hashing failure as "disable caching", never "guess".
  *
  * @param {unknown} value - Value to serialize
- * @param {Set<object>} [seen] - Ancestry for cycle detection
  * @returns {string} Canonical JSON
  */
-export const canonicalJSON = (value, seen = new Set()) => {
-  if (value === undefined) {
-    return 'null';
-  }
-
-  if (typeof value === 'function') {
-    return JSON.stringify(String(value));
-  }
-
-  if (typeof value === 'bigint') {
-    return JSON.stringify(String(value));
-  }
-
-  if (value === null || typeof value !== 'object') {
-    return JSON.stringify(value);
-  }
-
-  if (seen.has(value)) {
-    return '"[circular]"';
-  }
-
-  seen.add(value);
-
-  try {
-    if (Array.isArray(value)) {
-      return `[${value.map(item => canonicalJSON(item, seen)).join(',')}]`;
+export const canonicalJSON = value =>
+  JSON.stringify(value, (_, val) => {
+    if (typeof val === 'function' || typeof val === 'bigint') {
+      return String(val);
     }
 
-    const entries = Object.entries(value)
-      .filter(([, val]) => val !== undefined)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(
-        ([key, val]) => `${JSON.stringify(key)}:${canonicalJSON(val, seen)}`
-      );
+    if (val === null || typeof val !== 'object' || Array.isArray(val)) {
+      return val;
+    }
 
-    return `{${entries.join(',')}}`;
-  } finally {
-    seen.delete(value);
-  }
-};
+    return Object.fromEntries(
+      Object.entries(val).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    );
+  }) ?? 'null';
 
 /**
  * Hashes any JSON-serializable value canonically.

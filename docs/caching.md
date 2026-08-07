@@ -33,18 +33,19 @@ scripting around it.
 
 ## How invalidation works
 
-Cache keys are content hashes — never timestamps. Every key is salted with:
-
-- each package's identity: the published version, or a content hash of its
-  `src/` tree when running from a workspace or `npm link` (so hacking on
-  doc-kit itself invalidates correctly);
-- the resolved configuration (including the parsed changelog, index, and the
-  fetched `typeMap` bytes);
-- the Node.js major version and a cache schema version.
+Cache keys are content hashes — never timestamps. Every key is salted with
+the resolved configuration (including the parsed changelog, index, and the
+fetched `typeMap` bytes) and a cache schema version.
 
 Anything the cache cannot fully account for (for example a theme `imports`
 alias pointing at a directory) makes the affected entries uncacheable rather
 than possibly stale.
+
+Generator _code_ is identified by the cache schema version alone: doc-kit
+bumps it in releases whose generated output changes, so releases that don't
+change output keep existing caches valid. When developing doc-kit or a custom
+generator locally, code edits do not invalidate the cache on their own —
+build with `--force` while iterating.
 
 ## Configuration
 
@@ -58,17 +59,13 @@ export default {
 };
 ```
 
-CLI flags and environment variables:
+CLI flags:
 
-| Surface                    | Effect                                        |
-| -------------------------- | --------------------------------------------- |
-| `--no-cache`               | Disable reads and writes for this run         |
-| `--force`                  | Ignore existing entries; still write new ones |
-| `--cache-dir <path>`       | Override the cache directory                  |
-| `DOC_KIT_NO_CACHE=1`       | Same as `--no-cache`                          |
-| `DOC_KIT_CACHE_FORCE=1`    | Same as `--force`                             |
-| `DOC_KIT_CACHE_DIR`        | Same as `--cache-dir`                         |
-| `DOC_KIT_CACHE_STATS_FILE` | Write machine-readable run stats as JSON      |
+| Flag                 | Effect                                        |
+| -------------------- | --------------------------------------------- |
+| `--no-cache`         | Disable reads and writes for this run         |
+| `--force`            | Ignore existing entries; still write new ones |
+| `--cache-dir <path>` | Override the cache directory                  |
 
 ## CI usage
 
@@ -87,10 +84,9 @@ content) turns unchanged-doc CI builds into sub-second no-ops:
 The output directory can always be deleted independently of the cache; a warm
 run regenerates it byte-for-byte.
 
-## Guarantees and verification
+## Guarantees
 
-`scripts/cache-verify/index.mjs` asserts the invariants end to end on every
-change: cold builds are byte-identical across runs and across
-threading/chunking topologies; cached builds are byte-identical to
-`--no-cache` builds; a wiped output directory or a corrupted cache silently
-recovers; and one-file edits rebuild exactly the affected outputs.
+Cold builds are byte-identical across runs and across threading/chunking
+topologies; cached builds are byte-identical to `--no-cache` builds; a wiped
+output directory or a corrupted cache silently recovers; and one-file edits
+rebuild exactly the affected outputs.

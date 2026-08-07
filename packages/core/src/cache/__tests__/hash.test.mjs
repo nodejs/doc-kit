@@ -42,11 +42,11 @@ describe('canonicalJSON', () => {
     assert.equal(canonicalJSON(fn), JSON.stringify(String(fn)));
   });
 
-  it('marks cycles instead of throwing', () => {
+  it('throws on cycles (callers disable caching)', () => {
     const value = { a: 1 };
     value.self = value;
 
-    assert.equal(canonicalJSON(value), '{"a":1,"self":"[circular]"}');
+    assert.throws(() => canonicalJSON(value));
   });
 
   it('allows shared (non-cyclic) references', () => {

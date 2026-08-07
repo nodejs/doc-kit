@@ -173,7 +173,7 @@ const renderServerPages = async (
     ? await ssrEnvironmentHash(config, serverVirtualImports)
     : null;
 
-  const salt = environment && (await buildCache.chainSalt(GENERATOR_SPECIFIER));
+  const salt = environment && buildCache.chainSalt(GENERATOR_SPECIFIER);
 
   const serverPages = new Map();
   const missEntries = new Map();
@@ -190,7 +190,7 @@ const renderServerPages = async (
     const key = salt && combine('html:ssr', salt, environment, contentHash);
     const hit = key && (await buildCache.store.get(key));
 
-    if (hit !== null && hit !== false && hit !== undefined) {
+    if (hit) {
       serverPages.set(data.api, hit);
 
       continue;

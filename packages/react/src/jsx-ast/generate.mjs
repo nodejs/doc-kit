@@ -141,7 +141,7 @@ export async function* generate(input, worker) {
   const misses = [];
 
   if (buildCache) {
-    const salt = await buildCache.chainSalt(GENERATOR_SPECIFIER);
+    const salt = buildCache.chainSalt(GENERATOR_SPECIFIER);
 
     for (const [index, descriptor] of descriptors.entries()) {
       const base = await itemKeyBase(descriptor, buildCache, moduleInput);
@@ -153,7 +153,7 @@ export async function* generate(input, worker) {
       const record = dataKey && (await buildCache.store.get(dataKey));
       const hasCode = codeKey && (await buildCache.store.touch(codeKey));
 
-      if (record !== null && record && hasCode) {
+      if (record && hasCode) {
         const { data, codeHash } = JSON.parse(record);
 
         cached.set(index, {
@@ -182,48 +182,37 @@ export async function* generate(input, worker) {
     );
   }
 
-  // Drive the worker stream concurrently, resolving each miss's deferred as
-  // its chunk lands; results are stored write-behind under the miss's keys.
-  const deferreds = new Map(
-    misses.map(({ index }) => [index, Promise.withResolvers()])
-  );
+  /** @type {Map<number, object>} Freshly built results by descriptor index */
+  const produced = new Map();
 
-  const pump = (async () => {
-    let at = 0;
+  let at = 0;
 
-    for await (const chunk of worker.stream(
-      misses.map(({ index }) => descriptors[index])
-    )) {
-      for (const result of chunk) {
-        const miss = misses[at++];
+  // The worker yields chunks in submission order (parallel.mjs), so results
+  // pair with misses positionally; results are stored write-behind.
+  for await (const chunk of worker.stream(
+    misses.map(({ index }) => descriptors[index])
+  )) {
+    for (const result of chunk) {
+      const miss = misses[at++];
 
-        if (buildCache && miss.dataKey) {
-          buildCache.store.put(
-            miss.dataKey,
-            JSON.stringify({
-              data: result.data,
-              codeHash: hashData(result.code),
-            })
-          );
-          buildCache.store.put(miss.codeKey, result.code);
-        }
-
-        deferreds.get(miss.index).resolve(result);
+      if (miss.dataKey) {
+        buildCache.store.put(
+          miss.dataKey,
+          JSON.stringify({
+            data: result.data,
+            codeHash: hashData(result.code),
+          })
+        );
+        buildCache.store.put(miss.codeKey, result.code);
       }
-    }
-  })();
 
-  pump.catch(error => {
-    for (const { reject } of deferreds.values()) {
-      reject(error);
+      produced.set(miss.index, result);
     }
-  });
+  }
 
   // Emit in canonical descriptor order regardless of the hit/miss split, so
   // downstream page ordering is byte-stable.
   for (const [index] of descriptors.entries()) {
-    yield [cached.get(index) ?? (await deferreds.get(index).promise)];
+    yield [cached.get(index) ?? produced.get(index)];
   }
-
-  await pump;
 }

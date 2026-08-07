@@ -28,23 +28,20 @@ let context = null;
 export const getBuildCache = () => context;
 
 /**
- * Resolves the cache directory: explicit configuration, environment override,
- * then `node_modules/.cache/doc-kit` when a `node_modules` exists, falling
- * back to `.doc-kit-cache`.
+ * Resolves the cache directory: explicit configuration, then
+ * `node_modules/.cache/doc-kit` when a `node_modules` exists, falling back
+ * to `.doc-kit-cache`.
  *
  * @param {string} [explicit] - Configured directory, if any
  * @returns {string} Absolute cache directory
  */
-export const resolveCacheDir = explicit => {
-  const dir =
+export const resolveCacheDir = explicit =>
+  resolve(
     explicit ||
-    process.env.DOC_KIT_CACHE_DIR ||
-    (existsSync('node_modules')
-      ? join('node_modules', '.cache', 'doc-kit')
-      : '.doc-kit-cache');
-
-  return resolve(dir);
-};
+      (existsSync('node_modules')
+        ? join('node_modules', '.cache', 'doc-kit')
+        : '.doc-kit-cache')
+  );
 
 /**
  * Checks that every output recorded by a previous run is still on disk with
@@ -100,7 +97,8 @@ const resolveTypeMap = async configuration => {
 /**
  * Sets up the durable build cache for one run: hashes input snapshots,
  * computes every target's aggregate key, and decides whether this invocation
- * can skip entirely because its outputs are already on disk and verified.
+ * can skip entirely because its outputs are already on disk and verified —
+ * in which case `{ skipped: true }` is returned and no cache is set up.
  *
  * Any failure disables the cache for the run (with a debug log) — the build
  * must never fail, or even get slower than a cold build, because of caching.
@@ -108,16 +106,14 @@ const resolveTypeMap = async configuration => {
  * @param {import('../utils/configuration/types').Configuration} configuration - Resolved configuration
  * @param {Map<string, GeneratorMetadata>} generators - Loaded generators
  * @param {string[]} targets - Resolved target specifiers
- * @returns {Promise<import('./types').BuildCache | null>}
+ * @returns {Promise<import('./types').BuildCache | { skipped: true } | null>}
  */
 export const setupBuildCache = async (configuration, generators, targets) => {
   const settings = { enabled: true, maxAgeDays: 7, ...configuration.cache };
 
-  if (settings.enabled === false || process.env.DOC_KIT_NO_CACHE) {
+  if (settings.enabled === false) {
     return (context = null);
   }
-
-  const force = settings.force || Boolean(process.env.DOC_KIT_CACHE_FORCE);
 
   try {
     const dir = resolveCacheDir(settings.dir);
@@ -187,44 +183,18 @@ export const setupBuildCache = async (configuration, generators, targets) => {
     // cheap instead.
     const profile = manifest.profiles[profileKey];
 
-    let skippedTargets = new Set();
-
     if (
-      !force &&
+      !settings.force &&
       profile?.complete &&
       targets.every(target => profile.targets[target] === targetKeys[target]) &&
       (await verifyOutputs(profile, outputDir))
     ) {
-      skippedTargets = new Set(targets);
+      cacheLogger.info(
+        `All ${targets.length} target(s) up to date; outputs verified on disk`
+      );
+
+      return { skipped: true };
     }
-
-    /** @type {Map<string, Promise<string>>} */
-    const chainSalts = new Map();
-
-    /**
-     * Memoized chain salt for a generator, for use in per-item leaf-cache
-     * keys: covers every code and configuration input in the generator's
-     * dependency chain, but not the input files (leaf keys add the specific
-     * file hashes they depend on).
-     *
-     * @param {string} specifier - Resolved generator specifier
-     * @returns {Promise<string>} Chain salt
-     */
-    const chainSaltFor = specifier => {
-      if (!chainSalts.has(specifier)) {
-        chainSalts.set(
-          specifier,
-          chainSalt(
-            specifier,
-            generators,
-            resolveDependency,
-            configuration
-          ).then(({ salt }) => salt)
-        );
-      }
-
-      return chainSalts.get(specifier);
-    };
 
     /** @type {Map<string, string> | null} */
     let sourceHashes = null;
@@ -283,10 +253,20 @@ export const setupBuildCache = async (configuration, generators, targets) => {
     context = {
       store,
       dir,
-      skippedTargets,
       recordOutput,
-      chainSalt: chainSaltFor,
       sourceHash: sourceHashFor,
+
+      /**
+       * Chain salt for a generator, for use in per-item leaf-cache keys:
+       * covers every code and configuration input in the generator's
+       * dependency chain, but not the input files (leaf keys add the
+       * specific file hashes they depend on).
+       *
+       * @param {string} specifier - Resolved generator specifier
+       * @returns {string} Chain salt
+       */
+      chainSalt: specifier =>
+        chainSalt(specifier, generators, resolveDependency, configuration).salt,
 
       /**
        * Tracked file write: records the output and skips byte-identical
@@ -324,8 +304,7 @@ export const setupBuildCache = async (configuration, generators, targets) => {
 
       /**
        * Flushes pending object writes, persists the run's profile (only on
-       * success, and only when the run actually executed), prunes stale
-       * objects, and reports stats.
+       * success), and prunes stale objects.
        *
        * @param {boolean} success - Whether the run completed without error
        * @returns {Promise<void>}
@@ -334,7 +313,7 @@ export const setupBuildCache = async (configuration, generators, targets) => {
         await store.flush().catch(() => undefined);
 
         try {
-          if (success && skippedTargets.size === 0) {
+          if (success) {
             await saveManifest(dir, {
               [profileKey]: {
                 completedAt: Date.now(),
@@ -350,32 +329,6 @@ export const setupBuildCache = async (configuration, generators, targets) => {
           cacheLogger.debug('Failed to persist cache manifest', {
             error: error.message,
           });
-        }
-
-        const stats = {
-          skippedTargets: [...skippedTargets],
-          targets: targetKeys,
-          outputsRecorded: outputs.size,
-          store: store.stats,
-        };
-
-        if (process.env.DOC_KIT_CACHE_STATS_FILE) {
-          await writeFile(
-            process.env.DOC_KIT_CACHE_STATS_FILE,
-            JSON.stringify(stats, null, 2)
-          ).catch(() => undefined);
-        }
-
-        if (skippedTargets.size > 0) {
-          cacheLogger.info(
-            `Skipped ${skippedTargets.size} up-to-date target(s); outputs verified on disk`
-          );
-        } else {
-          const { hits, misses, writes } = store.stats;
-
-          cacheLogger.info(
-            `${hits} hits, ${misses} misses, ${writes} objects written, ${outputs.size} outputs recorded`
-          );
         }
 
         context = null;

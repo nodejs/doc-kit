@@ -123,28 +123,25 @@ const createGenerator = () => {
       generators,
       targets
     );
-    const skipped = buildCache?.skippedTargets ?? new Set();
-    const active = targets.filter(specifier => !skipped.has(specifier));
+
+    // Skip is all-or-nothing: the cache verified every target's outputs are
+    // already on disk, so there is nothing to run.
+    if (buildCache?.skipped) {
+      return targets.map(() => SKIPPED);
+    }
 
     generatorsLogger.debug(`Starting pipeline`, {
       generators: targets.join(', '),
-      skipped: skipped.size,
       threads,
     });
 
     let success = false;
 
     try {
-      if (active.length === 0) {
-        success = true;
-
-        return targets.map(() => SKIPPED);
-      }
-
       // Compute consumer counts up front so dependencies can be evicted as
       // soon as their last consumer runs (must be ready before any generator
-      // starts). Skipped targets never run, so only active ones count.
-      cache.populateConsumerCounts(active, specifier => {
+      // starts).
+      cache.populateConsumerCounts(targets, specifier => {
         const { dependsOn } = generators.get(specifier);
 
         return dependsOn && resolveGeneratorSpecifier(dependsOn);
@@ -154,7 +151,7 @@ const createGenerator = () => {
       pool = createWorkerPool(threads);
 
       // Schedule all generators
-      for (const specifier of active) {
+      for (const specifier of targets) {
         scheduleGenerator(specifier, generators, configuration);
       }
 
@@ -162,9 +159,7 @@ const createGenerator = () => {
       // Consuming through the shared path lets the final read also trigger
       // eviction.
       const results = await Promise.all(
-        targets.map(specifier =>
-          skipped.has(specifier) ? SKIPPED : cache.consume(specifier)
-        )
+        targets.map(specifier => cache.consume(specifier))
       );
 
       await pool.destroy();

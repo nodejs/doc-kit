@@ -1,5 +1,6 @@
 'use strict';
 
+import { randomUUID } from 'node:crypto';
 import {
   mkdir,
   readFile,
@@ -33,10 +34,6 @@ export const createStore = dir => {
   /** @type {Set<Promise<void>>} */
   const pending = new Set();
 
-  const stats = { hits: 0, misses: 0, writes: 0, bytesWritten: 0 };
-
-  let tmpCounter = 0;
-
   /**
    * @param {string} key - Object key
    * @returns {string} Object path, sharded to keep directories small
@@ -49,19 +46,7 @@ export const createStore = dir => {
    * @param {string} key - Object key
    * @returns {Promise<string | null>} Stored value, or null
    */
-  const get = async key => {
-    try {
-      const value = await readFile(pathFor(key), 'utf-8');
-
-      stats.hits++;
-
-      return value;
-    } catch {
-      stats.misses++;
-
-      return null;
-    }
-  };
+  const get = key => readFile(pathFor(key), 'utf-8').catch(() => null);
 
   /**
    * Persists an object write-behind: failures are logged and swallowed —
@@ -73,15 +58,12 @@ export const createStore = dir => {
    */
   const put = (key, value) => {
     const write = (async () => {
-      const tmp = join(tmpDir, `${process.pid}-${tmpCounter++}`);
+      const tmp = join(tmpDir, randomUUID());
 
       await mkdir(dirname(pathFor(key)), { recursive: true });
       await mkdir(tmpDir, { recursive: true });
       await writeFile(tmp, value);
       await rename(tmp, pathFor(key));
-
-      stats.writes++;
-      stats.bytesWritten += Buffer.byteLength(value);
     })().catch(error =>
       storeLogger.debug(`Cache write failed for ${key}`, {
         error: error.message,
@@ -95,7 +77,6 @@ export const createStore = dir => {
   return {
     get,
     put,
-    stats,
 
     /**
      * Checks that an object exists without reading it, refreshing its mtime
@@ -158,30 +139,26 @@ export const createStore = dir => {
     prune: async maxAgeDays => {
       const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
 
-      let shards;
+      const entries = await readdir(objectsDir, {
+        recursive: true,
+        withFileTypes: true,
+      }).catch(() => []);
 
-      try {
-        shards = await readdir(objectsDir);
-      } catch {
-        return;
-      }
+      await Promise.all(
+        entries
+          .filter(entry => entry.isFile())
+          .map(async entry => {
+            const path = join(entry.parentPath, entry.name);
 
-      for (const shard of shards) {
-        const shardDir = join(objectsDir, shard);
-        const objects = await readdir(shardDir).catch(() => []);
-
-        for (const object of objects) {
-          const path = join(shardDir, object);
-
-          try {
-            if ((await stat(path)).mtimeMs < cutoff) {
-              await rm(path, { force: true });
+            try {
+              if ((await stat(path)).mtimeMs < cutoff) {
+                await rm(path, { force: true });
+              }
+            } catch {
+              // A concurrent process may have pruned it already.
             }
-          } catch {
-            // A concurrent process may have pruned it already.
-          }
-        }
-      }
+          })
+      );
     },
   };
 };
