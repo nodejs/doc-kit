@@ -43,6 +43,11 @@ export async function generate(input) {
     })
   );
 
+  // Orama otherwise mints `${timestamp}-${counter}` ids, which would make the
+  // saved database differ between byte-identical builds. Document order is
+  // deterministic, so positions are stable ids.
+  documents.forEach((document, index) => (document.id = String(index)));
+
   // Insert all documents
   await insertMultiple(db, documents);
 

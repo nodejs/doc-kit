@@ -1,7 +1,7 @@
-import { cp } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 
 import logger from '@nodejs/doc-kit/logger/index.mjs';
+import { copyPath } from '@nodejs/doc-kit/utils/file.mjs';
 
 /**
  * Copies static directories/files defined in `pathsToCopy` to the output directory.
@@ -24,7 +24,7 @@ export async function copyStaticAssets(config) {
 
       for (const { src, dest } of copyTasks) {
         try {
-          await cp(src, dest, { recursive: true, force: true });
+          await copyPath(src, dest);
         } catch (err) {
           if (err.code !== 'ENOENT') {
             logger.error(

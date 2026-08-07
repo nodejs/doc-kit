@@ -3,6 +3,9 @@ import { tmpdir } from 'node:os';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { hashData } from '@nodejs/doc-kit/cache/hash.mjs';
+import { getBuildCache } from '@nodejs/doc-kit/cache/index.mjs';
+import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
 import { minifyHTML } from '@nodejs/doc-kit/utils/html-minifier.mjs';
 import {
   build as viteBuild,
@@ -87,7 +90,9 @@ const createHTMLFinalizerPlugin = () => ({
   name: 'doc-kit:finalize-html',
   /**
    * Minifies every generated HTML entry after Vite has injected its scripts,
-   * stylesheets, and module preloads.
+   * stylesheets, and module preloads. Minification is memoized in the durable
+   * build cache by pre-minify content, so on warm builds only pages whose
+   * content actually changed pay the minifier.
    */
   generateBundle: {
     order: 'post',
@@ -96,6 +101,8 @@ const createHTMLFinalizerPlugin = () => ({
      * @param {Record<string, object>} bundle
      */
     async handler(_, bundle) {
+      const cache = getBuildCache();
+
       await Promise.all(
         Object.values(bundle)
           .filter(
@@ -107,7 +114,11 @@ const createHTMLFinalizerPlugin = () => ({
                 ? asset.source
                 : Buffer.from(asset.source).toString('utf8');
 
-            asset.source = await minifyHTML(source);
+            asset.source = cache
+              ? await cache.store.memo('html:minify', hashData(source), () =>
+                  minifyHTML(source)
+                )
+              : await minifyHTML(source);
           })
       );
     },
@@ -224,9 +235,12 @@ export const createViteConfig = ({
       ...vite.build,
 
       // Both builds are complete Vite outputs. SSR uses a private directory
-      // because its entries can share chunks; the client writes the final site.
+      // because its entries can share chunks and is executed from disk. The
+      // client bundle is written by `build()` below through the tracked
+      // writeFile, so byte-identical files are skipped (stable mtimes) and
+      // every output participates in cache verification.
       outDir: server ? serverOutDir : resolve(webConfig.output),
-      write: true,
+      write: server,
       emptyOutDir: false,
       copyPublicDir: false,
       watch: null,
@@ -374,7 +388,7 @@ export const build = async ({
     sources.set(id, code);
   }
 
-  await viteBuild(
+  const result = await viteBuild(
     createViteConfig({
       sources,
       input,
@@ -383,6 +397,20 @@ export const build = async ({
       vite,
     })
   );
+
+  const outDir = resolve(config.output);
+
+  // Write the bundle through the tracked writeFile: byte-identical files are
+  // skipped (unchanged pages and shared assets keep their mtimes) and every
+  // emitted file is recorded for whole-run cache verification.
+  for (const { output } of [result].flat()) {
+    for (const item of output) {
+      await writeFile(
+        join(outDir, item.fileName),
+        item.type === 'chunk' ? item.code : item.source
+      );
+    }
+  }
 };
 
 /**

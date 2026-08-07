@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
 
 const mockCp = mock.fn(() => Promise.resolve());
-mock.module('node:fs/promises', {
-  namedExports: { cp: mockCp },
+mock.module('@nodejs/doc-kit/utils/file.mjs', {
+  namedExports: { copyPath: mockCp },
 });
 
 const mockLogError = mock.fn();
@@ -48,13 +48,11 @@ describe('copyStaticAssets', () => {
     assert.deepStrictEqual(mockCp.mock.calls[0].arguments, [
       'src/assets',
       join('/out', 'assets'),
-      { recursive: true, force: true },
     ]);
 
     assert.deepStrictEqual(mockCp.mock.calls[1].arguments, [
       'docs/images',
       join('/out', 'images'),
-      { recursive: true, force: true },
     ]);
   });
 
@@ -76,13 +74,11 @@ describe('copyStaticAssets', () => {
     assert.deepStrictEqual(mockCp.mock.calls[0].arguments, [
       'src/custom',
       join('/out', 'dest-folder/custom'),
-      { recursive: true, force: true },
     ]);
 
     assert.deepStrictEqual(mockCp.mock.calls[1].arguments, [
       'src/another',
       join('/out', 'another-folder'),
-      { recursive: true, force: true },
     ]);
   });
 

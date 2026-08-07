@@ -1,9 +1,10 @@
 'use strict';
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
 import { minifyHTML } from '@nodejs/doc-kit/utils/html-minifier.mjs';
 import { getRemarkRehype as remark } from '@nodejs/doc-kit/utils/remark.mjs';
 

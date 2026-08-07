@@ -55,6 +55,8 @@ Options:
 
 Commands:
   generate [options]   Generate API docs
+  watch [options]      Generate API docs, rebuilding whenever an input file
+                       changes
   help [command]       display help for command
 ```
 
@@ -78,8 +80,8 @@ Options:
                                (json-simple, legacy-html, legacy-html-all,
                                man-page, legacy-json, legacy-json-all,
                                addon-verify, api-links, orama-db, llms-txt,
-                               sitemap, web) or an import specifier for a custom
-                               generator
+                               sitemap, html) or an import specifier for a
+                               custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory
   -p, --threads <number>       Number of threads to use (minimum: 1)
@@ -91,8 +93,28 @@ Options:
   --index <url>                index.md URL or path
   --minify                     Minify?
   --type-map <url>             Type map URL or path
+  --no-cache                   Disable the on-disk build cache entirely
+  --force                      Ignore existing cache entries (the cache is still
+                               written)
+  --cache-dir <path>           Build cache directory
   -h, --help                   display help for command
 ```
+
+### `watch`
+
+`watch` takes the same options as `generate`. It builds once, then rebuilds
+whenever a file matching `--input` changes, until you interrupt it.
+
+```sh
+npx doc-kit watch \
+  --input "doc/api/*.md" \
+  --target json-simple \
+  --output out
+```
+
+Rebuilds go through the same [build cache](docs/caching.md) as `generate`, so a
+rebuild only redoes the work the change actually affected. A document that
+fails to parse is reported without ending the session.
 
 ## Examples
 

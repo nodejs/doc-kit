@@ -1,71 +1,16 @@
-import { Command, Option } from 'commander';
+import { Command } from 'commander';
 
-import { publicGenerators } from '../../src/generators/index.mjs';
 import createGenerator from '../../src/generators.mjs';
 import {
   assertRunnableOptions,
   setConfig,
 } from '../../src/utils/configuration/index.mjs';
-import { errorWrap } from '../utils.mjs';
+import { errorWrap, insertCommonOptions } from '../utils.mjs';
 
 const { runGenerators } = createGenerator();
 
-/**
- * @typedef {Object} CLIOptions
- * @property {string} configFile
- * @property {string[]} input
- * @property {string[]} target
- * @property {string[]} ignore
- * @property {string} output
- * @property {number} threads
- * @property {number} chunkSize
- * @property {string} version
- * @property {string} changelog
- * @property {string} gitRef
- * @property {string} index
- * @property {boolean} minify
- * @property {string} typeMap
- */
-
-export default new Command('generate')
+export default insertCommonOptions(new Command('generate'))
   .description('Generate API docs')
-  .addOption(new Option('--config-file <path>', 'Config file'))
-
-  // Options that need to be converted into a configuration
-  .addOption(
-    new Option('-i, --input <patterns...>', 'Input file patterns (glob)')
-  )
-  .addOption(
-    new Option(
-      '-t, --target <generator...>',
-      'Target generator(s): a built-in name ' +
-        `(${Object.keys(publicGenerators).join(', ')}) ` +
-        'or an import specifier for a custom generator'
-    )
-  )
-  .addOption(
-    new Option('--ignore <patterns...>', 'Ignore file patterns (glob)')
-  )
-  .addOption(new Option('-o, --output <directory>', 'The output directory'))
-  .addOption(
-    new Option(
-      '-p, --threads <number>',
-      'Number of threads to use (minimum: 1)'
-    )
-  )
-  .addOption(
-    new Option(
-      '--chunk-size <number>',
-      'Number of items to process per worker thread (minimum: 1)'
-    )
-  )
-  .addOption(new Option('-v, --version <semver>', 'Target Node.js version'))
-  .addOption(new Option('-c, --changelog <url>', 'Changelog URL or path'))
-  .addOption(new Option('--git-ref <ref>', 'Git ref'))
-  .addOption(new Option('--index <url>', 'index.md URL or path'))
-  .addOption(new Option('--minify', 'Minify?'))
-  .addOption(new Option('--type-map <url>', 'Type map URL or path'))
-
   .action(
     errorWrap(async opts => {
       const config = await setConfig(opts);

@@ -97,6 +97,9 @@ export default {
           items: [
             { label: 'CLI', link: '/cli' },
             { label: 'Configuration', link: '/configuration' },
+            { label: 'Caching', link: '/caching' },
+            { label: 'Creating Commands', link: '/commands' },
+            { label: 'Creating Generators', link: '/generators' },
             { label: 'Specification', link: '/specification' },
           ],
         },

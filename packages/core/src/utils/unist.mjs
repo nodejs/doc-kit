@@ -54,6 +54,32 @@ export const transformNodesToString = (nodes, escape) => {
 };
 
 /**
+ * Stringifies a value while dropping every node (in any `children`-style
+ * array) that matches one of the given tests, without mutating the input.
+ * Deep removal equivalent to `unist-util-remove`, expressed as a
+ * `JSON.stringify` replacer so shared trees stay intact for other consumers.
+ *
+ * @param {unknown} value The value to stringify
+ * @param {Array<(node: import('unist').Node) => boolean>} tests Nodes matching any test are omitted
+ * @param {string | number} [space] Forwarded to `JSON.stringify`
+ * @returns {string} The filtered JSON string
+ */
+export const stringifyWithout = (value, tests, space) =>
+  JSON.stringify(
+    value,
+    (_, val) =>
+      Array.isArray(val)
+        ? val.filter(
+            node =>
+              node === null ||
+              typeof node !== 'object' ||
+              !tests.some(test => test(node))
+          )
+        : val,
+    space
+  );
+
+/**
  * This method is an utility that allows us to conditionally invoke/call a callback
  * based on test conditions related to a Node's position relative to another one
  * being before or not the other Node

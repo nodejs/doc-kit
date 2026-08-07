@@ -16,7 +16,7 @@ export default {
 
   defaultConfiguration: {
     ref: 'main',
-    generateAllPage: true,
+    generateAllPage: false,
     generateIndexPage: true,
     generateNotFoundPage: true,
   },

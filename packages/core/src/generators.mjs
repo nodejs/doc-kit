@@ -1,5 +1,6 @@
 'use strict';
 
+import { setupBuildCache } from './cache/index.mjs';
 import { createCache } from './caching.mjs';
 import {
   loadGenerators,
@@ -11,6 +12,14 @@ import createParallelWorker from './threading/parallel.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
 
 const generatorsLogger = logger.child('generators');
+
+/**
+ * Sentinel result for a target that was skipped because the durable cache
+ * verified its outputs are already on disk and up to date. Only ever returned
+ * for requested targets (whose results the CLI discards), never fed to a
+ * dependent generator.
+ */
+export const SKIPPED = Symbol('doc-kit:skipped');
 
 /**
  * Creates a generator orchestration system that manages the execution of
@@ -107,36 +116,67 @@ const createGenerator = () => {
     const targets = target.map(resolveGeneratorSpecifier);
     const generators = await loadGenerators(targets);
 
+    // Durable cross-run cache: hashes inputs and decides whether this
+    // invocation's outputs are already on disk. Null when disabled.
+    const buildCache = await setupBuildCache(
+      configuration,
+      generators,
+      targets
+    );
+    const skipped = buildCache?.skippedTargets ?? new Set();
+    const active = targets.filter(specifier => !skipped.has(specifier));
+
     generatorsLogger.debug(`Starting pipeline`, {
       generators: targets.join(', '),
+      skipped: skipped.size,
       threads,
     });
 
-    // Compute consumer counts up front so dependencies can be evicted as soon
-    // as their last consumer runs (must be ready before any generator starts).
-    cache.populateConsumerCounts(targets, specifier => {
-      const { dependsOn } = generators.get(specifier);
+    let success = false;
 
-      return dependsOn && resolveGeneratorSpecifier(dependsOn);
-    });
+    try {
+      if (active.length === 0) {
+        success = true;
 
-    // Create worker pool
-    pool = createWorkerPool(threads);
+        return targets.map(() => SKIPPED);
+      }
 
-    // Schedule all generators
-    for (const specifier of targets) {
-      scheduleGenerator(specifier, generators, configuration);
+      // Compute consumer counts up front so dependencies can be evicted as
+      // soon as their last consumer runs (must be ready before any generator
+      // starts). Skipped targets never run, so only active ones count.
+      cache.populateConsumerCounts(active, specifier => {
+        const { dependsOn } = generators.get(specifier);
+
+        return dependsOn && resolveGeneratorSpecifier(dependsOn);
+      });
+
+      // Create worker pool
+      pool = createWorkerPool(threads);
+
+      // Schedule all generators
+      for (const specifier of active) {
+        scheduleGenerator(specifier, generators, configuration);
+      }
+
+      // Start all collections in parallel (don't await sequentially).
+      // Consuming through the shared path lets the final read also trigger
+      // eviction.
+      const results = await Promise.all(
+        targets.map(specifier =>
+          skipped.has(specifier) ? SKIPPED : cache.consume(specifier)
+        )
+      );
+
+      await pool.destroy();
+
+      success = true;
+
+      return results;
+    } finally {
+      // Persist per-run cache state even on failure paths (writes that
+      // completed stay valid); the profile is only marked complete on success.
+      await buildCache?.finalize(success);
     }
-
-    // Start all collections in parallel (don't await sequentially). Consuming
-    // through the shared path lets the final read also trigger eviction.
-    const results = await Promise.all(
-      targets.map(specifier => cache.consume(specifier))
-    );
-
-    await pool.destroy();
-
-    return results;
   };
 
   return { runGenerators };

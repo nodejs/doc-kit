@@ -17,9 +17,11 @@ import { generate } from './generate.mjs';
  *
  * `jsx-ast` serializes each page's JSX AST to a `code` string inside its worker,
  * so this generator only ever handles small `{ data, code }` items — the heavy
- * ASTs (notably the giant `all` page) never reach the main thread. Bundling and
- * rendering run once over the accumulated code, since code-splitting and the
- * sidebar need every entry together.
+ * ASTs (notably the giant `all` page) never reach the main thread. Cached pages
+ * arrive as `{ data, codeRef }` and their code is only read from disk when
+ * server rendering actually misses the durable cache. Bundling runs once over
+ * the accumulated entries, since code-splitting and the sidebar need every
+ * entry together.
  *
  * @type {import('./types').Generator}
  */
