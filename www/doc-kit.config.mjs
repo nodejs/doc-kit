@@ -76,6 +76,7 @@ export default {
     pathsToCopy: [{ [join(ROOT, 'content')]: '.' }],
 
     navigation: {
+      showCrossLinks: true,
       sidebar: [
         {
           groupName: 'Start',
