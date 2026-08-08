@@ -70,6 +70,11 @@ export const getDefaultConfig = (generators, config) =>
       // See also https://github.com/nodejs/node/pull/60591
       threads: process.arch === 'riscv64' ? 1 : cpus().length,
       chunkSize: 10,
+
+      cache: {
+        enabled: true,
+        maxAgeDays: 7,
+      },
     })
   );
 
@@ -144,7 +149,7 @@ const transformConfig = async value => {
 
 /**
  * Converts CLI options into a config
- * @param {import('../../../bin/commands/generate.mjs').CLIOptions} options
+ * @param {import('../../../bin/utils.mjs').CLIOptions} options
  * @returns {import('./types').Configuration}
  */
 export const createConfigFromCLIOptions = options => ({
@@ -164,6 +169,18 @@ export const createConfigFromCLIOptions = options => ({
   target: options.target,
   threads: options.threads,
   chunkSize: options.chunkSize,
+
+  // Only carry explicitly-passed cache flags, so config-file settings are
+  // not clobbered by CLI defaults during the merge.
+  ...(options.cache === false || options.force || options.cacheDir
+    ? {
+        cache: {
+          ...(options.cache === false ? { enabled: false } : {}),
+          ...(options.force ? { force: true } : {}),
+          ...(options.cacheDir ? { dir: options.cacheDir } : {}),
+        },
+      }
+    : {}),
 });
 
 /**
@@ -189,7 +206,7 @@ export const assertRunnableOptions = config => {
  * Processes and validates configuration values including version coercion, changelog parsing,
  * and constraint enforcement for threads and chunk size.
  *
- * @param {import('../../../bin/commands/generate.mjs').CLIOptions} options - User-provided configuration options
+ * @param {import('../../../bin/utils.mjs').CLIOptions} options - User-provided configuration options
  * @returns {Promise<import('./types').Configuration>} The configuration
  */
 export const createRunConfiguration = async options => {
@@ -246,7 +263,7 @@ let config;
 
 /**
  * Configuration setter
- * @param {import('./types').Configuration | import('../../../bin/commands/generate.mjs').CLIOptions} options
+ * @param {import('./types').Configuration | import('../../../bin/utils.mjs').CLIOptions} options
  * @returns {Promise<import('./types').Configuration>}
  */
 export const setConfig = async options =>

@@ -28,9 +28,13 @@ export async function processChunk(fullInput, itemIndices, typeMap) {
 export async function* generate(inputs, worker) {
   const { metadata: config } = getConfig();
 
-  const typeMap = config.typeMap
-    ? JSON.parse(await loadFromURL(config.typeMap))
-    : {};
+  // The build cache resolves a string typeMap into its parsed object during
+  // setup (its content participates in cache keys); with the cache disabled
+  // the string arrives here untouched.
+  const typeMap =
+    typeof config.typeMap === 'string'
+      ? JSON.parse(await loadFromURL(config.typeMap))
+      : (config.typeMap ?? {});
 
   // Stream chunks as they complete - allows dependent generators
   // to start collecting/preparing while we're still processing

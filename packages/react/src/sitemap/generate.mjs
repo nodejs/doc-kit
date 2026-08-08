@@ -27,7 +27,9 @@ export async function generate(entries) {
     'utf-8'
   );
 
-  const lastmod = new Date().toISOString().split('T')[0];
+  // Only emitted when configured: stamping the build date would make every
+  // build differ and misstate when the content actually changed.
+  const lastmod = config.lastmod;
 
   const apiPages = entries
     .filter(entry => entry.heading.depth === 1)
@@ -49,7 +51,10 @@ export async function generate(entries) {
 
   const urlset = apiPages
     .map(page =>
-      entryTemplate
+      (page.lastmod
+        ? entryTemplate
+        : entryTemplate.replace(/\s*<lastmod>__LASTMOD__<\/lastmod>/, '')
+      )
         .replace('__LOC__', page.loc)
         .replace('__LASTMOD__', page.lastmod)
         .replace('__CHANGEFREQ__', page.changefreq)

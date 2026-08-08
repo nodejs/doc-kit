@@ -1,10 +1,12 @@
 'use strict';
 
-import { readFile, cp } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
+import { combine, hashData, hashValue } from '@nodejs/doc-kit/cache/hash.mjs';
+import { getBuildCache } from '@nodejs/doc-kit/cache/index.mjs';
 import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
+import { copyPath, writeFile } from '@nodejs/doc-kit/utils/file.mjs';
 import { groupNodesByModule } from '@nodejs/doc-kit/utils/generators.mjs';
 import { minifyHTML } from '@nodejs/doc-kit/utils/html-minifier.mjs';
 import { getRemarkRehypeWithShiki as remark } from '@nodejs/doc-kit/utils/remark.mjs';
@@ -12,6 +14,9 @@ import { getRemarkRehypeWithShiki as remark } from '@nodejs/doc-kit/utils/remark
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
 import tableOfContents from './utils/tableOfContents.mjs';
+
+const GENERATOR_SPECIFIER = '@nodejs/doc-kit-generator-legacy/legacy-html';
+const ITEM_NAMESPACE = 'legacy-html:item';
 
 /**
  * Creates a heading object with the given name.
@@ -21,19 +26,45 @@ import tableOfContents from './utils/tableOfContents.mjs';
 const getHeading = name => ({ depth: 1, data: { name } });
 
 /**
- * Process a chunk of items in a worker thread.
- * Builds HTML template objects - FS operations happen in generate().
+ * Narrows the head nodes to exactly what per-module rendering reads from
+ * other modules (`buildExtraContent`'s stability overview): a projection small
+ * enough to hash and send to every worker, and stable under body-only edits —
+ * which is what lets every other module's cache entry survive such an edit.
  *
- * Each item is pre-grouped {head, nodes, headNodes} - no need to
- * recompute groupNodesByModule for every chunk.
+ * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} headNodes - All depth-1 entries, sorted
+ * @returns {Array<object>} The narrowed projection
+ */
+const buildHeadNodesLite = headNodes =>
+  headNodes.map(({ api, heading, stability }) => ({
+    api,
+    heading: { data: { name: heading.data.name } },
+    stability: stability && {
+      data: {
+        index: stability.data.index,
+        description: stability.data.description,
+      },
+    },
+  }));
+
+/**
+ * Process a chunk of items in a worker thread: renders the module content
+ * (Shiki highlighting included), populates the page template, and minifies —
+ * so a cached module costs the main thread nothing but a file write.
+ *
+ * Each item is a pre-grouped `{ head, nodes }`; the shared navigation, the
+ * head-node projection, and the page template arrive once per chunk as extra.
  *
  * @type {import('./types').Generator['processChunk']}
  */
-export async function processChunk(slicedInput, itemIndices, navigation) {
+export async function processChunk(slicedInput, itemIndices, extra) {
+  const { navigation, headNodesLite, apiTemplate } = extra;
+
+  const config = getConfig('legacy-html');
+
   const results = [];
 
   for (const idx of itemIndices) {
-    const { head, nodes, headNodes } = slicedInput[idx];
+    const { head, nodes } = slicedInput[idx];
 
     const nav = navigation.replace(
       `class="nav-${head.api}"`,
@@ -49,7 +80,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
       )
     );
 
-    const content = buildContent(headNodes, nodes);
+    const content = buildContent(headNodesLite, nodes);
 
     const apiAsHeading = head.api.charAt(0).toUpperCase() + head.api.slice(1);
 
@@ -63,7 +94,13 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
       content,
     };
 
-    results.push(template);
+    let html = replaceTemplateValues(apiTemplate, template, config);
+
+    if (config.minify) {
+      html = await minifyHTML(html);
+    }
+
+    results.push({ ...template, html });
   }
 
   return results;
@@ -107,33 +144,90 @@ export async function* generate(input, worker) {
       const assetsFolder = join(config.output, basename(path));
 
       // Copy all files from assets folder to output
-      await cp(path, assetsFolder, { recursive: true });
+      await copyPath(path, assetsFolder);
     }
   }
 
-  // Create sliced input: each item contains head + its module's entries + headNodes reference
-  // This avoids sending all ~4900 entries to every worker and recomputing groupings
-  const entries = headNodes.map(head => ({
+  const headNodesLite = buildHeadNodesLite(headNodes);
+  const items = headNodes.map(head => ({
     head,
     nodes: groupedModules.get(head.api),
-    headNodes,
   }));
 
-  // Stream chunks as they complete - HTML files are written immediately
-  for await (const chunkResult of worker.stream(entries, navigation)) {
-    // Write files for this chunk in the generate method (main thread)
-    if (config.output) {
-      for (const template of chunkResult) {
-        let result = replaceTemplateValues(apiTemplate, template, config);
+  // Per-module leaf cache: a module's page is a pure function of its own
+  // source file, the two global projections (navigation string, head-node
+  // projection), the page template, and the chain salt (code + config). A
+  // body-only edit leaves both projections unchanged, so every other module
+  // hits and never runs Shiki or the minifier.
+  const buildCache = getBuildCache();
 
-        if (config.minify) {
-          result = await minifyHTML(result);
-        }
+  /** @type {Map<string, object>} Cached results by api */
+  const cached = new Map();
 
-        await writeFile(join(config.output, `${template.api}.html`), result);
+  /** @type {Array<{ item: object, key: string | null }>} */
+  const misses = [];
+
+  if (buildCache) {
+    const salt = buildCache.chainSalt(GENERATOR_SPECIFIER);
+    const projectionHash = combine(
+      hashData(navigation),
+      hashValue(headNodesLite),
+      hashData(apiTemplate)
+    );
+
+    for (const item of items) {
+      const source = await buildCache.sourceHash(item.head.path);
+
+      // Unknown provenance (no source file behind the entry) is uncacheable.
+      const key = source
+        ? combine(ITEM_NAMESPACE, salt, source, projectionHash)
+        : null;
+
+      const hit = key && (await buildCache.store.get(key));
+
+      if (hit) {
+        cached.set(item.head.api, JSON.parse(hit));
+      } else {
+        misses.push({ item, key });
       }
     }
+  } else {
+    misses.push(...items.map(item => ({ item, key: null })));
+  }
 
-    yield chunkResult;
+  const extra = { navigation, headNodesLite, apiTemplate };
+
+  /** @type {Map<string, object>} Freshly built results by api */
+  const produced = new Map();
+
+  let index = 0;
+
+  // The worker yields chunks in submission order (parallel.mjs), so results
+  // pair with misses positionally; results are stored write-behind.
+  for await (const chunk of worker.stream(
+    misses.map(({ item }) => item),
+    extra
+  )) {
+    for (const result of chunk) {
+      const { key } = misses[index++];
+
+      if (key) {
+        buildCache.store.put(key, JSON.stringify(result));
+      }
+
+      produced.set(result.api, result);
+    }
+  }
+
+  // Emit in canonical (sorted head-node) order regardless of the hit/miss
+  // split, so downstream aggregation (legacy-html-all) is byte-stable.
+  for (const head of headNodes) {
+    const result = cached.get(head.api) ?? produced.get(head.api);
+
+    if (config.output) {
+      await writeFile(join(config.output, `${result.api}.html`), result.html);
+    }
+
+    yield [result];
   }
 }

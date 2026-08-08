@@ -118,6 +118,10 @@ export async function* generate(_, worker) {
     ]);
   });
 
+  // Glob traversal order is not guaranteed; sort so the pipeline sees files
+  // in a deterministic order regardless of filesystem or platform.
+  files.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+
   // Parse markdown files in parallel using worker threads
   for await (const chunkResult of worker.stream(files)) {
     yield chunkResult;

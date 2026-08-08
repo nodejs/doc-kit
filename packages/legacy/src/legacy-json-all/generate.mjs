@@ -1,9 +1,9 @@
 'use strict';
 
-import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
 
 import { legacyToJSON } from '../utils/legacyToJSON.mjs';
 

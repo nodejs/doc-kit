@@ -98,34 +98,40 @@ export default function createParallelWorker(
 
       const runInOneGo = threads <= 1 || items.length <= 2;
 
-      // Submit all tasks to Piscina - each promise resolves to itself for removal
-      const pending = new Set(
-        chunks.map(indices => {
-          if (runInOneGo) {
-            const promise = generator
-              .processChunk(items, indices, extra)
-              .then(result => ({ promise, result }));
+      // In-process chunks get the same isolation the Piscina transfer gives
+      // worker chunks: sliced, remapped, and structured-cloned. Without the
+      // clone, generators sharing one process observe each other's (and their
+      // own cross-chunk) mutations of shared input — e.g. jsx-ast rewriting
+      // entry trees into JSX nodes that legacy-html then cannot compile.
+      const slices = runInOneGo
+        ? chunks.map(indices => structuredClone(indices.map(i => items[i])))
+        : null;
 
-            return promise;
-          }
-
-          const promise = pool
-            .run(
+      // Submit all tasks up front so every chunk is in flight at once
+      const tasks = chunks.map((indices, chunk) =>
+        runInOneGo
+          ? generator.processChunk(
+              slices[chunk],
+              indices.map((_, i) => i),
+              structuredClone(extra)
+            )
+          : pool.run(
               createTask(items, indices, extra, configuration, specifier, name)
             )
-            .then(result => ({ promise, result }));
-
-          return promise;
-        })
       );
 
-      // Yield results as they complete (true parallel collection)
+      // A chunk may reject while an earlier one is still being awaited; the
+      // rejection is re-observed at its `await` below.
+      tasks.forEach(task => task.catch(() => {}));
+
+      // Yield in submission order so collected results are deterministic
+      // run to run. Parallelism is unaffected (all tasks already run above),
+      // and consumers collect the full stream anyway, so completed-but-unyielded
+      // chunks cost no memory the collector wasn't about to hold.
       let completed = 0;
 
-      while (pending.size > 0) {
-        const { promise, result } = await Promise.race(pending);
-
-        pending.delete(promise);
+      for (const task of tasks) {
+        const result = await task;
 
         completed++;
 

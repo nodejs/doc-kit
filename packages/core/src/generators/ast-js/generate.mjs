@@ -44,9 +44,11 @@ export async function processChunk(inputSlice, itemIndices) {
 export async function* generate(_, worker) {
   const config = getConfig('ast-js');
 
-  const files = globSync(config.input, { ignore: config.ignore }).filter(
-    p => extname(p) === '.js'
-  );
+  const files = globSync(config.input, { ignore: config.ignore })
+    .filter(p => extname(p) === '.js')
+    // Glob traversal order is not guaranteed; api-links merges definitions
+    // last-write-wins, so file order must be deterministic.
+    .sort();
 
   // Parse the Javascript sources into ASTs in parallel using worker threads
   // source is both the items list and the fullInput since we use sliceInput

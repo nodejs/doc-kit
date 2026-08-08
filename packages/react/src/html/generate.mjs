@@ -5,15 +5,17 @@ import { readFile } from 'node:fs/promises';
 import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
 
 import { copyStaticAssets } from './utils/copying.mjs';
-import { createCodeConverter, processBundles } from './utils/processing.mjs';
+import { processBundles } from './utils/processing.mjs';
 
 /**
  * Main generation function that sends per-page JSX code to the web bundler.
  *
- * Receives `jsx-ast`'s output as `{ data, code }` items — the JSX AST was
- * already serialized to `code` in the jsx-ast worker, so no AST is held here.
- * Bundling and rendering then run once over the accumulated code, since shared
- * component chunks, CSS, and the sidebar need every entry together.
+ * Receives `jsx-ast`'s output as `{ data, code }` or `{ data, codeRef }`
+ * items — the JSX AST was already serialized to `code` in the jsx-ast worker,
+ * and for cached pages even the code string stays on disk behind the lazy
+ * `codeRef` until (and unless) server rendering actually needs it. Bundling
+ * runs once over the accumulated entries, since shared component chunks, CSS,
+ * and the sidebar need every entry together.
  *
  * @type {import('./types').Generator['generate']}
  */
@@ -22,17 +24,9 @@ export async function generate(input) {
 
   const template = await readFile(config.templatePath, 'utf-8');
 
-  const converter = createCodeConverter();
-
-  // Per-page metadata, in render order. Each item is already just
-  // `{ data, code }` — the heavy JSX AST was converted to `code` and discarded
-  // in the jsx-ast worker, so nothing large is held here.
-  const datas = [];
-
-  for (const item of input) {
-    converter.add(item);
-    datas.push(item.data);
-  }
+  // Per-page metadata, in render order. Each item is small — the heavy JSX
+  // AST was converted to `code` and discarded in the jsx-ast worker.
+  const datas = input.map(item => item.data);
 
   // Sidebar lists only the real module pages.
   const sidebarEntries = datas
@@ -40,8 +34,7 @@ export async function generate(input) {
     .map(data => ({ data }));
 
   await processBundles({
-    serverCodeMap: converter.serverCodeMap,
-    clientCodeMap: converter.clientCodeMap,
+    items: input,
     datas,
     sidebarEntries,
     template,
