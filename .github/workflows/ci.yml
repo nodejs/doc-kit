@@ -141,7 +141,7 @@ jobs:
           path: node
 
       - name: Build Node.js API docs
-        run: npx doc-kit generate -t web -i "./node/doc/api/assert.md" -o out --config-file ./e2e/doc-kit.config.mjs
+        run: npx @doc-kit/cli generate -t web -i "./node/doc/api/assert.md" -o out --config-file ./e2e/doc-kit.config.mjs
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps

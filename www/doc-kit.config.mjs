@@ -110,18 +110,27 @@ export default {
               label: '`@doc-kit/generator-react`',
               link: '/packages/react',
             },
-            {
-              label: '`@doc-kit/generator-legacy`',
-              link: '/packages/legacy',
-            },
             { label: '`@node-core/doc-kit`', link: '/packages/node' },
+            {
+              label: '`@node-core/doc-kit-legacy`',
+              link: '/packages/node-legacy',
+            },
           ],
         },
         {
           groupName: 'Extending',
           items: [
             { label: 'Creating generators', link: '/creating-generators' },
-            { label: 'Creating comparators', link: '/comparators' },
+          ],
+        },
+        {
+          groupName: 'Contributing',
+          items: [
+            { label: 'Creating commands', link: '/contributing/commands' },
+            {
+              label: 'Creating comparators',
+              link: '/contributing/comparators',
+            },
           ],
         },
       ],

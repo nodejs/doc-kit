@@ -67,14 +67,14 @@
   },
   "peerDependencies": {
     "@node-core/doc-kit": "^1.4.3",
-    "@doc-kit/generator-legacy": "^0.0.0",
+    "@node-core/doc-kit-legacy": "^0.0.0",
     "@doc-kit/generator-react": "^0.0.0"
   },
   "peerDependenciesMeta": {
     "@node-core/doc-kit": {
       "optional": true
     },
-    "@doc-kit/generator-legacy": {
+    "@node-core/doc-kit-legacy": {
       "optional": true
     },
     "@doc-kit/generator-react": {

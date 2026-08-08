@@ -10,12 +10,6 @@ machine-readable formats that usually accompany one.
 npm install --save-dev @doc-kit/core @doc-kit/generator-react
 ```
 
-Or let doc-kit install it for you:
-
-```sh
-npx doc-kit install html
-```
-
 ## Generators
 
 | Target     | Output                                                                                       |
@@ -32,7 +26,7 @@ target you invoke yourself.
 ## Usage
 
 ```sh
-npx doc-kit generate -t html -t orama-db -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t html -t orama-db -i "docs/**/*.md" -o out
 ```
 
 The `html` generator is deeply customizable — project name, page titles,

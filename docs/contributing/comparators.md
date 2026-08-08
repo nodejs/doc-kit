@@ -21,14 +21,18 @@ Comparators are scripts that:
 
 ## Comparator Structure
 
-Comparators are standalone ESM scripts located in `scripts/comparators/`:
+Comparators are standalone ESM scripts located in `scripts/comparators/`,
+sharing the `BASE`, `HEAD`, and `TITLE` constants from `scripts/constants.mjs`:
 
-```
-scripts/comparators/
-├── constants.mjs        # Shared constants (BASE, HEAD, TITLE paths)
-├── file-size.mjs        # Compare file sizes between builds
-├── object-assertion.mjs # Deep equality assertion for JSON objects
-└── your-comparator.mjs  # Your new comparator
+```text
+scripts/
+├── constants.mjs            # Shared constants (BASE, HEAD, TITLE)
+└── comparators/
+    ├── file-size.mjs        # Compare file sizes and performance between builds
+    ├── files.mjs            # Shared output-file listing helpers
+    ├── object-assertion.mjs # Deep equality assertion for JSON objects
+    ├── performance.mjs      # Compare benchmark measurements
+    └── your-comparator.mjs  # Your new comparator
 ```
 
 ### Naming Convention
@@ -49,16 +53,18 @@ runs and the performance section is omitted.
 
 ### Step 1: Create the Comparator File
 
-Create a new file in `scripts/compare-builds/` with the same name as your generator:
+Create a new file in `scripts/comparators/` with the same name as your generator:
 
-```javascript
-// scripts/compare-builds/my-format.mjs
+```mjs displayName="scripts/comparators/my-format.mjs"
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { BASE, HEAD, TITLE } from './utils.mjs';
+
+import { BASE, HEAD, TITLE } from '../constants.mjs';
 
 // Fetch files from both directories
-const [baseFiles, headFiles] = await Promise.all([BASE, HEAD].map(() => await readdir(dir)));
+const [baseFiles, headFiles] = await Promise.all(
+  [BASE, HEAD].map(dir => readdir(dir))
+);
 
 // Find all unique files across both builds
 const allFiles = [...new Set([...baseFiles, ...headFiles])];
@@ -89,8 +95,12 @@ const compareFile = async file => {
   } catch (error) {
     // File missing in one of the builds
     const exists = await Promise.all([
-      readFile(basePath, 'utf-8').then(() => true).catch(() => false),
-      readFile(headPath, 'utf-8').then(() => true).catch(() => false),
+      readFile(basePath, 'utf-8')
+        .then(() => true)
+        .catch(() => false),
+      readFile(headPath, 'utf-8')
+        .then(() => true)
+        .catch(() => false),
     ]);
 
     if (exists[0] && !exists[1]) {
@@ -144,7 +154,9 @@ if (differences.length > 0) {
     modified.forEach(({ file, baseSize, headSize }) => {
       const diff = headSize - baseSize;
       const sign = diff > 0 ? '+' : '';
-      console.log(`| \`${file}\` | ${baseSize} | ${headSize} | ${sign}${diff} |`);
+      console.log(
+        `| \`${file}\` | ${baseSize} | ${headSize} | ${sign}${diff} |`
+      );
     });
     console.log('');
   }
@@ -161,7 +173,7 @@ export BASE=path/to/base/output
 export HEAD=path/to/head/output
 
 # Run the comparator
-node scripts/compare-builds/my-format.mjs
+node scripts/comparators/my-format.mjs
 ```
 
 ### Step 3: Integrate with CI/CD

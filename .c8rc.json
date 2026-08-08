@@ -3,7 +3,7 @@
   "exclude": [
     "eslint.config.mjs",
     "**/fixtures",
-    "packages/legacy/src/legacy-html/assets",
+    "packages/node-legacy/src/legacy-html/assets",
     "packages/react/src/html/ui",
     "**/*.d.ts"
   ]

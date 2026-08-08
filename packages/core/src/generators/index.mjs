@@ -11,11 +11,11 @@
  */
 export const publicGenerators = {
   'json-simple': '@doc-kit/core/json-simple',
-  'legacy-html': '@doc-kit/generator-legacy/legacy-html',
-  'legacy-html-all': '@doc-kit/generator-legacy/legacy-html-all',
+  'legacy-html': '@node-core/doc-kit-legacy/legacy-html',
+  'legacy-html-all': '@node-core/doc-kit-legacy/legacy-html-all',
   'man-page': '@node-core/doc-kit/man-page',
-  'legacy-json': '@doc-kit/generator-legacy/legacy-json',
-  'legacy-json-all': '@doc-kit/generator-legacy/legacy-json-all',
+  'legacy-json': '@node-core/doc-kit-legacy/legacy-json',
+  'legacy-json-all': '@node-core/doc-kit-legacy/legacy-json-all',
   'addon-verify': '@node-core/doc-kit/addon-verify',
   'api-links': '@node-core/doc-kit/api-links',
   'orama-db': '@doc-kit/generator-react/orama-db',

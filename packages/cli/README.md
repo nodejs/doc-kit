@@ -8,8 +8,8 @@ API-shaped Markdown into documentation sites, JSON, man pages, and more.
 ## Usage
 
 ```sh
-npx doc-kit --help
-npx doc-kit generate --help
+npx @doc-kit/cli --help
+npx @doc-kit/cli generate --help
 ```
 
 You must provide an input and at least one target through command-line
@@ -18,7 +18,7 @@ using `cosmiconfig`, or you can select a file explicitly with
 `--config-file`.
 
 ```sh
-npx doc-kit generate \
+npx @doc-kit/cli generate \
   -t html \
   -i "path/to/docs/**/*.md" \
   -o out

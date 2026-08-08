@@ -95,7 +95,7 @@ Options:
 To generate a 1:1 match with the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the `legacy-html`, `legacy-json`, `legacy-html-all`, and `legacy-json-all` generators.
 
 ```sh
-npx doc-kit generate \
+npx @doc-kit/cli generate \
   -t legacy-html \
   -t legacy-json \
   -i "path/to/node/doc/api/*.md" \
@@ -108,7 +108,7 @@ npx doc-kit generate \
 To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling.vercel.app), use the `html` and `orama-db` (for search) generators. These generators live in the separate [`@doc-kit/generator-react`](packages/react) package, which must be installed alongside this one.
 
 ```sh
-npx doc-kit generate \
+npx @doc-kit/cli generate \
   -t html \
   -t orama-db \
   -i "path/to/node/doc/api/*.md" \

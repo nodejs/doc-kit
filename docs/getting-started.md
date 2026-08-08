@@ -8,7 +8,7 @@ npm install --save-dev @doc-kit/cli @doc-kit/generator-react
 
 Then, create your configuration file set up for your project:
 
-```js displayName="doc-kit.config.mjs"
+```mjs displayName="doc-kit.config.mjs"
 /** @type {import('@doc-kit/core/utils/configuration/types').Configuration} */
 export default {
   target: ['html'],
@@ -21,7 +21,7 @@ export default {
 ```
 
 `doc-kit generate` reads that configuration; every option can also be passed as
-a CLI flag. See the [configuration reference](./configuration.html) for
+a CLI flag. See the [configuration reference](./configuration.md) for
 everything the file accepts.
 
 ## Build and preview it
@@ -29,7 +29,7 @@ everything the file accepts.
 With at least one Markdown file under `docs/`, build the site:
 
 ```bash
-npx doc-kit generate
+npx @doc-kit/cli generate
 ```
 
 The pages land in `out/`. They use import maps and client-side hydration, so
@@ -37,7 +37,7 @@ serve them over HTTP rather than opening the files from disk; any static server
 works:
 
 ```bash
-npx doc-kit generate -t html -t orama-db -i "docs/*.md" -o out
+npx @doc-kit/cli generate -t html -t orama-db -i "docs/*.md" -o out
 ```
 
 ## Preview it locally
@@ -61,7 +61,7 @@ through a couple quick changes.
 
 Create a `doc-kit.config.mjs` file at the root of the project.
 
-```mjs
+```mjs displayName="doc-kit.config.mjs"
 import { join } from 'node:path';
 
 /** @type {import('@doc-kit/core/src/utils/configuration/types').Configuration} */
@@ -106,9 +106,9 @@ on screen.
 
 ## Next steps
 
-- [Writing documentation](./writing-docs.html) — the Markdown conventions that
+- [Writing documentation](./writing-docs.md) — the Markdown conventions that
   make `doc-kit` more than a static-site generator.
-- [Customizing the site](./customization.html) — your name, logo, navigation,
+- [Customizing the site](./customization.md) — your name, logo, navigation,
   and components instead of the defaults.
-- [Publishing your docs](./publishing.html) — production builds, base URLs, and
+- [Publishing your docs](./publishing.md) — production builds, base URLs, and
   hosting.

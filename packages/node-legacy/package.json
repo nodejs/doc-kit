@@ -1,12 +1,12 @@
 {
-  "name": "@doc-kit/generator-legacy",
+  "name": "@node-core/doc-kit-legacy",
   "type": "module",
   "version": "0.0.0",
-  "description": "Legacy-format generators for @doc-kit/core: legacy-html, legacy-html-all, legacy-json, and legacy-json-all",
+  "description": "Node.js legacy-format generators for @doc-kit/core: legacy-html, legacy-html-all, legacy-json, and legacy-json-all",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
-    "directory": "packages/legacy"
+    "directory": "packages/node-legacy"
   },
   "exports": {
     "./legacy-html": "./src/legacy-html/index.mjs",

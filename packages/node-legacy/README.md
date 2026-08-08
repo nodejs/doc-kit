@@ -1,20 +1,15 @@
-# `@doc-kit/generator-legacy`
+# `@node-core/doc-kit-legacy`
 
-The legacy-format generators for [doc-kit](https://github.com/nodejs/doc-kit):
-1:1 matches for the output of Node.js's [original documentation
+The Node.js legacy-format generators for
+[doc-kit](https://github.com/nodejs/doc-kit): 1:1 matches for the output of
+Node.js's [original documentation
 tooling](https://github.com/nodejs/node/tree/main/tools/doc), for consumers
 that depend on the classic HTML and JSON layouts.
 
 ## Install
 
 ```sh
-npm install --save-dev @doc-kit/core @doc-kit/generator-legacy
-```
-
-Or let doc-kit install it for you:
-
-```sh
-npx doc-kit install legacy-html
+npm install --save-dev @doc-kit/core @node-core/doc-kit-legacy
 ```
 
 ## Generators
@@ -29,7 +24,7 @@ npx doc-kit install legacy-html
 ## Usage
 
 ```sh
-npx doc-kit generate -t legacy-html -t legacy-json -i "doc/api/*.md" -o out
+npx @doc-kit/cli generate -t legacy-html -t legacy-json -i "doc/api/*.md" -o out
 ```
 
 Unless you have consumers of these exact formats, prefer the modern

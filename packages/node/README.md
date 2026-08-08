@@ -24,7 +24,7 @@ npm install --save-dev @doc-kit/core @node-core/doc-kit
 ## Usage
 
 ```sh
-npx doc-kit generate -t man-page -i "doc/api/cli.md" -o out
+npx @doc-kit/cli generate -t man-page -i "doc/api/cli.md" -o out
 ```
 
 See the [doc-kit documentation](https://doc-kit.nodejs.org) for

@@ -79,13 +79,20 @@ published package lives under `packages/`:
 
 - `packages/cli`: [`@doc-kit/cli`](packages/cli) — the doc-kit command-line interface
 - `packages/core`: [`@doc-kit/core`](packages/core) — the doc-kit engine
-- `packages/legacy`: [`@doc-kit/generator-legacy`](packages/legacy) — the legacy-format generators
 - `packages/node`: [`@node-core/doc-kit`](packages/node) — the Node.js-specific generators
+- `packages/node-legacy`: [`@node-core/doc-kit-legacy`](packages/node-legacy) — the Node.js legacy-format generators
 - `packages/react`: [`@doc-kit/generator-react`](packages/react) — the React/JSX-based generators
 
 Everything else at the root supports the repo rather than shipping to npm:
-`docs/` (the reference docs), `www/` (the documentation site), `scripts/` (build
-and comparison helpers), and `e2e/` (Playwright tests).
+`docs/` (every authored documentation page, from the landing page to the
+reference docs), `www/` (the documentation site build: its configuration and
+gitignored build artifacts), `scripts/` (build and comparison helpers), and
+`e2e/` (Playwright tests).
+
+Contributor-facing deep dives — [creating CLI
+commands](docs/contributing/commands.md) and [creating
+comparators](docs/contributing/comparators.md) — live under
+`docs/contributing/`; the rest of `docs/` is user-facing.
 
 ### Running the Tool Locally
 
