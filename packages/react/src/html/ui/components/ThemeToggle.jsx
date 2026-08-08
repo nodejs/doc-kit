@@ -7,10 +7,10 @@ import withIsland from '../islands/withIsland.jsx';
  * Theme switcher.
  */
 const Toggle = () => {
-  const [themePreference, setThemePreference] = useTheme();
+  const [currentTheme, setThemePreference] = useTheme();
 
   return (
-    <ThemeToggle onChange={setThemePreference} currentTheme={themePreference} />
+    <ThemeToggle onChange={setThemePreference} currentTheme={currentTheme} />
   );
 };
 
