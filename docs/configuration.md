@@ -20,7 +20,7 @@ JavaScript and TypeScript configuration files export the configuration object.
 JSON and YAML files contain the object directly. A `package.json` configuration
 uses the `doc-kit` property:
 
-```json
+```json displayName="package.json"
 {
   "doc-kit": {
     "target": ["json-simple"],
@@ -34,7 +34,7 @@ uses the `doc-kit` property:
 
 ### Basic Example
 
-```javascript
+```mjs displayName="doc-kit.config.mjs"
 export default {
   // Targets, alternatively supplied by command line flags. Each entry is
   // either a built-in shorthand name or an import specifier resolving to a
@@ -72,7 +72,7 @@ are merged underneath its own. Each entry is either an import specifier of a
 module whose default export is a configuration object, or a path relative to
 the configuration file:
 
-```mjs
+```mjs displayName="doc-kit.config.mjs"
 export default {
   // Build the docs the way nodejs.org does — branding, URL layouts,
   // and release history included
@@ -101,39 +101,46 @@ Three sources, in order of precedence:
 2. **the configuration file**, which overrides
 3. **built-in defaults**.
 
-| Property     | Type                     | Description                                                                               | Default                           |
-| ------------ | ------------------------ | ----------------------------------------------------------------------------------------- | --------------------------------- |
-| `project`    | `string`                 | Name of the project being documented, used in titles, logos, and templated text           | The `name` in your `package.json` |
-| `version`    | `string \| SemVer`       | Documentation version                                                                     | `process.version`                 |
-| `minify`     | `boolean`                | Whether to minify output                                                                  | `true`                            |
-| `repository` | `string`                 | GitHub repository in `owner/repo` format; without one, repository UI is omitted           | -                                 |
-| `ref`        | `string`                 | Git reference (branch, tag, or commit SHA)                                                | `'HEAD'`                          |
-| `baseURL`    | `string \| URL`          | Base URL of the published site, used wherever absolute URLs are needed                    | -                                 |
-| `input`      | `string[]`               | Input directory path                                                                      | -                                 |
-| `output`     | `string`                 | Output directory path                                                                     | -                                 |
-| `ignore`     | `string[]`               | Patterns to ignore                                                                        | `[]`                              |
-| `changelog`  | `string \| URL \| Array` | Release history used for version selectors; a URL or path to parse, or a pre-parsed array | `[]` (single-version output)      |
-| `index`      | `string \| URL \| Array` | Index URL                                                                                 | -                                 |
-
 ## Global options
 
-Each generator (e.g., `html`, `legacy-json`) can have its own configuration that overrides global settings:
+Everything under the `global` key applies to every generator:
+
+- `project` {string} Name of the project being documented, used in titles,
+  logos, and templated text. Defaults to the `name` in your `package.json`.
+- `version` {string|SemVer} Documentation version. **Default:**
+  `process.version`.
+- `minify` {boolean} Whether to minify output. **Default:** `true`.
+- `repository` {string} GitHub repository in `owner/repo` format; without
+  one, repository UI is omitted.
+- `ref` {string} Git reference (branch, tag, or commit SHA). **Default:**
+  `'HEAD'`.
+- `baseURL` {string|URL} Base URL of the published site, used wherever
+  absolute URLs are needed.
+- `input` {string[]} Input file patterns (glob).
+- `output` {string} Output directory path.
+- `ignore` {string[]} Patterns to ignore. **Default:** `[]`.
+- `changelog` {string|URL|Array} Release history used for version selectors;
+  a URL or path to parse, or a pre-parsed array. **Default:** `[]`
+  (single-version output).
+- `index` {string|URL|Array} Index URL.
+
+A generator's own section (e.g., `html`, `legacy-json`) can override any of
+these for that generator alone.
 
 ## Execution options
 
 Top-level, alongside `target` and `global`:
 
-| Property    | Type     | Description                         | Default        |
-| ----------- | -------- | ----------------------------------- | -------------- |
-| `threads`   | `number` | Worker threads used for generation. | Your CPU count |
-| `chunkSize` | `number` | Items processed per worker thread.  | `10`           |
+- `threads` {number} Worker threads used for generation. Defaults to your
+  CPU count.
+- `chunkSize` {number} Items processed per worker thread. **Default:** `10`.
 
 ## Generator options
 
 Each generator documents its own options on its reference page — see the
 [generators overview](./generators.md). Two commonly configured ones:
 
-```js
+```mjs displayName="doc-kit.config.mjs"
 export default {
   global: {
     version: '1.2.0',

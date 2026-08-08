@@ -1,5 +1,5 @@
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { relative } from '@nodejs/doc-kit/utils/url.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { relative } from '@doc-kit/core/utils/url.mjs';
 
 /**
  * Returns an absolute URL (based on baseURL) or a relative URL,

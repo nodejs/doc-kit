@@ -3,12 +3,12 @@
 A generator is an output format.
 
 ```bash
-npx doc-kit generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o out
 ```
 
 ## Built-in generators
 
-### Web ([`@nodejs/doc-kit-generator-react`](./packages/react.md))
+### Web ([`@doc-kit/generator-react`](./packages/react.md))
 
 | Target                                 | Output                                                               |
 | -------------------------------------- | -------------------------------------------------------------------- |
@@ -17,13 +17,13 @@ npx doc-kit generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o out
 | [`llms-txt`](./generators/llms-txt.md) | An [`llms.txt`](https://llmstxt.org/) index for language models.     |
 | [`sitemap`](./generators/sitemap.md)   | A `sitemap.xml` for search engines.                                  |
 
-### JSON ([`@nodejs/doc-kit`](./packages/core.md))
+### JSON ([`@doc-kit/core`](./packages/core.md))
 
 | Target                                       | Output                                                   |
 | -------------------------------------------- | -------------------------------------------------------- |
 | [`json-simple`](./generators/json-simple.md) | A simplified JSON rendering of the parsed documentation. |
 
-### Legacy ([`@nodejs/doc-kit-generator-legacy`](./packages/legacy.md))
+### Legacy ([`@node-core/doc-kit-legacy`](./packages/node-legacy.md))
 
 1:1 matches for Node.js's original documentation tooling, for consumers of
 the classic layouts.
@@ -63,7 +63,7 @@ A target can also be an import specifier — a package export or a local file
 whose default export is a generator:
 
 ```bash
-npx doc-kit generate -t @my-scope/my-generator -t ./generators/rss.mjs ...
+npx @doc-kit/cli generate -t @my-scope/my-generator -t ./generators/rss.mjs ...
 ```
 
 To build one, see [Creating generators](./creating-generators.md).

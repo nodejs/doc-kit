@@ -28,7 +28,7 @@ const getStabilityBadgeKind = index =>
  * Builds the Stability Overview table from module heads that declare a
  * top-level stability index, mirroring the `legacy-html-all` overview.
  *
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} headEntries
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} headEntries
  */
 export const buildStabilityOverview = headEntries =>
   createElement('table', [
@@ -64,7 +64,7 @@ export const buildStabilityOverview = headEntries =>
 /**
  * Builds the page descriptor for `index.html`
  *
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries
  */
 export const buildIndexPage = entries => {
   const head = createSyntheticHead('index', 'Index');

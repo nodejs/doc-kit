@@ -1,8 +1,8 @@
 {
-  "name": "@nodejs/doc-kit-generator-react",
+  "name": "@doc-kit/generator-react",
   "type": "module",
   "version": "0.0.0",
-  "description": "React/JSX-based generators for @nodejs/doc-kit: html, jsx-ast, llms-txt, sitemap, and orama-db",
+  "description": "React/JSX-based generators for @doc-kit/core: html, jsx-ast, llms-txt, sitemap, and orama-db",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
@@ -30,7 +30,7 @@
     "@fontsource-variable/open-sans": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@heroicons/react": "^2.2.0",
-    "@nodejs/doc-kit": "^0.0.0",
+    "@doc-kit/core": "^0.0.0",
     "@node-core/rehype-shiki": "^1.4.3",
     "@node-core/ui-components": "^1.7.4",
     "@orama/orama": "^3.1.18",

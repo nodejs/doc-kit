@@ -4,7 +4,7 @@
 is as simple as hosting the output directory.
 
 ```bash
-npx doc-kit generate
+npx @doc-kit/cli generate
 ```
 
 Everything lands in your configured `output` directory (`out/` by
@@ -29,7 +29,7 @@ Set `baseURL` to where the site will live. Generators that emit absolute
 URLs (e.g., `sitemap`, `llms-txt`) will need it in order to generate their
 output.
 
-```js displayName="doc-kit.config.mjs"
+```mjs displayName="doc-kit.config.mjs"
 export default {
   global: {
     baseURL: 'https://example.com/docs',
@@ -47,7 +47,7 @@ export default {
 Search engines and language models each get their own artifact — add the
 generators and they share the same parse:
 
-```js
+```mjs displayName="doc-kit.config.mjs"
 target: ['html', 'orama-db', 'sitemap', 'llms-txt'],
 ```
 

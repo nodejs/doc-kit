@@ -1,0 +1,183 @@
+# Creating Comparators
+
+This guide explains how to create build comparison scripts for `@doc-kit/core`. Comparators help identify differences between documentation builds, useful for CI/CD and regression testing.
+
+## Comparator Concepts
+
+Comparators are scripts that:
+
+1. **Compare** generated documentation between two builds (base vs. head)
+2. **Identify differences** in content, structure, file size, or performance
+3. **Report results** in a format suitable for CI/CD systems
+4. **Help catch regressions** before merging changes
+
+### When to Use Comparators
+
+- **Verify backward compatibility** - Ensure new code produces same output
+- **Track file size changes** - Monitor bundle size growth
+- **Catch performance regressions** - Compare elapsed time, CPU time, and peak memory
+- **Validate transformations** - Check that refactors don't alter output
+- **Debug generation issues** - Understand what changed between versions
+
+## Comparator Structure
+
+Comparators are standalone ESM scripts located in `scripts/comparators/`,
+sharing the `BASE`, `HEAD`, and `TITLE` constants from `scripts/constants.mjs`:
+
+```text
+scripts/
+├── constants.mjs            # Shared constants (BASE, HEAD, TITLE)
+└── comparators/
+    ├── file-size.mjs        # Compare file sizes and performance between builds
+    ├── files.mjs            # Shared output-file listing helpers
+    ├── object-assertion.mjs # Deep equality assertion for JSON objects
+    ├── performance.mjs      # Compare benchmark measurements
+    └── your-comparator.mjs  # Your new comparator
+```
+
+### Naming Convention
+
+Comparators can be reused across multiple generators. You specify which comparator to use in the workflow file using the `compare` field. For example:
+
+- `file-size.mjs` can compare output from `html`, `legacy-html`, or any generator
+- `object-assertion.mjs` can compare JSON output from `legacy-json`, `json-simple`, etc.
+- `my-comparator.mjs` would be a custom comparator for specific needs
+
+The generation workflow also stores timing, CPU, and peak resident memory in
+`benchmark.json`. The built-in comparators include these measurements in their
+Markdown report and exclude the metadata file from output comparisons. If a
+base artifact predates performance measurement, the output comparison still
+runs and the performance section is omitted.
+
+## Creating a Comparator
+
+### Step 1: Create the Comparator File
+
+Create a new file in `scripts/comparators/` with the same name as your generator:
+
+```mjs displayName="scripts/comparators/my-format.mjs"
+import { readdir, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import { BASE, HEAD, TITLE } from '../constants.mjs';
+
+// Fetch files from both directories
+const [baseFiles, headFiles] = await Promise.all(
+  [BASE, HEAD].map(dir => readdir(dir))
+);
+
+// Find all unique files across both builds
+const allFiles = [...new Set([...baseFiles, ...headFiles])];
+
+/**
+ * Compare a single file between base and head
+ * @param {string} file - Filename to compare
+ * @returns {Promise<Object|null>} Difference object or null if identical
+ */
+const compareFile = async file => {
+  const basePath = join(BASE, file);
+  const headPath = join(HEAD, file);
+
+  try {
+    const baseContent = await readFile(basePath, 'utf-8');
+    const headContent = await readFile(headPath, 'utf-8');
+
+    if (baseContent !== headContent) {
+      return {
+        file,
+        type: 'modified',
+        baseSize: baseContent.length,
+        headSize: headContent.length,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    // File missing in one of the builds
+    const exists = await Promise.all([
+      readFile(basePath, 'utf-8')
+        .then(() => true)
+        .catch(() => false),
+      readFile(headPath, 'utf-8')
+        .then(() => true)
+        .catch(() => false),
+    ]);
+
+    if (exists[0] && !exists[1]) {
+      return { file, type: 'removed' };
+    }
+    if (!exists[0] && exists[1]) {
+      return { file, type: 'added' };
+    }
+
+    return { file, type: 'error', error: error.message };
+  }
+};
+
+// Compare all files in parallel
+const results = await Promise.all(allFiles.map(compareFile));
+
+// Filter out null results (identical files)
+const differences = results.filter(Boolean);
+
+// Output markdown results
+if (differences.length > 0) {
+  console.log(TITLE);
+  console.log('');
+  console.log(`Found ${differences.length} difference(s):`);
+  console.log('');
+
+  // Group by type
+  const added = differences.filter(d => d.type === 'added');
+  const removed = differences.filter(d => d.type === 'removed');
+  const modified = differences.filter(d => d.type === 'modified');
+
+  if (added.length) {
+    console.log('### Added Files');
+    console.log('');
+    added.forEach(d => console.log(`- \`${d.file}\``));
+    console.log('');
+  }
+
+  if (removed.length) {
+    console.log('### Removed Files');
+    console.log('');
+    removed.forEach(d => console.log(`- \`${d.file}\``));
+    console.log('');
+  }
+
+  if (modified.length) {
+    console.log('### Modified Files');
+    console.log('');
+    console.log('| File | Base Size | Head Size | Diff |');
+    console.log('|-|-|-|-|');
+    modified.forEach(({ file, baseSize, headSize }) => {
+      const diff = headSize - baseSize;
+      const sign = diff > 0 ? '+' : '';
+      console.log(
+        `| \`${file}\` | ${baseSize} | ${headSize} | ${sign}${diff} |`
+      );
+    });
+    console.log('');
+  }
+}
+```
+
+### Step 2: Test Locally
+
+Run your comparator locally to verify it works:
+
+```bash
+# Set up BASE and HEAD directories
+export BASE=path/to/base/output
+export HEAD=path/to/head/output
+
+# Run the comparator
+node scripts/comparators/my-format.mjs
+```
+
+### Step 3: Integrate with CI/CD
+
+The comparator will automatically run in GitHub Actions when:
+
+1. Your generator is configured with `compare: <my-comparator>` in the workflow, which tells the system which comparator script to run

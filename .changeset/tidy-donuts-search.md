@@ -1,5 +1,5 @@
 ---
-'@nodejs/doc-kit': patch
+'@doc-kit/core': patch
 ---
 
 Sync the URL hash when following same-page search hits

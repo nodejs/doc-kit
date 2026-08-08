@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <code>@nodejs/doc-kit</code> is a tool to generate API documentation of Node.js. <a href="https://github.com/nodejs/node/issues/52343">See this issue</a> for more information.
+  <code>doc-kit</code> is a tool to generate API documentation of Node.js. <a href="https://github.com/nodejs/node/issues/52343">See this issue</a> for more information.
 </p>
 
 <p align="center">
@@ -33,18 +33,12 @@
 
 ## Usage
 
-Local invocation:
-
 ```sh
-$ npx doc-kit --help
-```
-
-```sh
-$ node packages/core/bin/cli.mjs --help
+$ npx @doc-kit/cli --help
 ```
 
 ```
-Usage: @nodejs/doc-kit [options] [command]
+Usage: doc-kit [options] [command]
 
 CLI tool to generate the Node.js API documentation
 
@@ -67,7 +61,7 @@ Running `generate` without the required values exits with an error pointing you
 to the help output.
 
 ```
-Usage: @nodejs/doc-kit generate [options]
+Usage: doc-kit generate [options]
 
 Generate API docs
 
@@ -78,8 +72,8 @@ Options:
                                (json-simple, legacy-html, legacy-html-all,
                                man-page, legacy-json, legacy-json-all,
                                addon-verify, api-links, orama-db, llms-txt,
-                               sitemap, web) or an import specifier for a custom
-                               generator
+                               sitemap, html) or an import specifier for a
+                               custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory
   -p, --threads <number>       Number of threads to use (minimum: 1)
@@ -101,7 +95,7 @@ Options:
 To generate a 1:1 match with the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the `legacy-html`, `legacy-json`, `legacy-html-all`, and `legacy-json-all` generators.
 
 ```sh
-npx doc-kit generate \
+npx @doc-kit/cli generate \
   -t legacy-html \
   -t legacy-json \
   -i "path/to/node/doc/api/*.md" \
@@ -111,10 +105,10 @@ npx doc-kit generate \
 
 ### Redesigned
 
-To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling.vercel.app), use the `html` and `orama-db` (for search) generators. These generators live in the separate [`@nodejs/doc-kit-generator-react`](packages/react) package, which must be installed alongside this one.
+To generate [our redesigned documentation pages](https://nodejs-api-docs-tooling.vercel.app), use the `html` and `orama-db` (for search) generators. These generators live in the separate [`@doc-kit/generator-react`](packages/react) package, which must be installed alongside this one.
 
 ```sh
-npx doc-kit generate \
+npx @doc-kit/cli generate \
   -t html \
   -t orama-db \
   -i "path/to/node/doc/api/*.md" \

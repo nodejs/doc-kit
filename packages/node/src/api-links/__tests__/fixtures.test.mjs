@@ -1,11 +1,11 @@
 import { basename, join, relative, sep } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { generate as astJsGenerate } from '@nodejs/doc-kit/generators/ast-js/generate.mjs';
-import { loadGenerator } from '@nodejs/doc-kit/generators/loader.mjs';
-import createWorkerPool from '@nodejs/doc-kit/threading/index.mjs';
-import createParallelWorker from '@nodejs/doc-kit/threading/parallel.mjs';
-import { setConfig } from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { generate as astJsGenerate } from '@doc-kit/core/generators/ast-js/generate.mjs';
+import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
+import createWorkerPool from '@doc-kit/core/threading/index.mjs';
+import createParallelWorker from '@doc-kit/core/threading/parallel.mjs';
+import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { globSync } from 'tinyglobby';
 
 import { generate as apiLinksGenerate } from '../generate.mjs';

@@ -28,10 +28,10 @@ export default {
 
   description: 'Generates HTML/CSS/JS bundles from JSX AST entries',
 
-  dependsOn: '@nodejs/doc-kit-generator-react/jsx-ast',
+  dependsOn: '@doc-kit/generator-react/jsx-ast',
 
   /**
-   * @param {import('@nodejs/doc-kit/utils/configuration/types').Configuration} config
+   * @param {import('@doc-kit/core/utils/configuration/types').Configuration} config
    */
   defaultConfiguration: config => ({
     templatePath: join(import.meta.dirname, 'template.html'),

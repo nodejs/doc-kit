@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 // Assembles `www/content/` — the input tree for the doc-kit documentation
-// site — from three sources that live elsewhere in the repo:
+// site — from sources that live elsewhere in the repo:
 //
-//   www/pages/*.md              authored narrative pages, copied verbatim
-//   docs/*.md                   the guides and reference docs
+//   docs/*.md                   the authored pages, guides, and reference docs
+//   docs/contributing/*.md      repo-contributor docs, kept under `contributing/`
 //   packages/*/README.md        package READMEs, written to `packages/<dir>.md`
 //   packages/*/src/{,generators/}*/README.md
 //                               per-generator config reference (core nests its
@@ -22,8 +22,11 @@ const ROOT = join(import.meta.dirname, '..');
 const CONTENT = join(ROOT, 'www', 'content');
 
 const SOURCES = [
-  { pattern: 'www/pages/*.md', rename: basename },
   { pattern: 'docs/*.md', rename: basename },
+  {
+    pattern: 'docs/contributing/*.md',
+    rename: file => `contributing/${basename(file)}`,
+  },
   {
     pattern: 'packages/*/README.md',
     rename: file => `packages/${basename(dirname(file))}.md`,

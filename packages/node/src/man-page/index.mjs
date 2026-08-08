@@ -15,7 +15,7 @@ export default {
 
   description: 'Generates the Node.js man-page.',
 
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   defaultConfiguration: {
     fileName: 'node.1',

@@ -1,4 +1,4 @@
-import { relative } from '@nodejs/doc-kit/utils/url.mjs';
+import { relative } from '@doc-kit/core/utils/url.mjs';
 
 import { useAbsoluteURLs, baseURL } from '#theme/config';
 

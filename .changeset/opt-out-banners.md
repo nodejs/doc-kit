@@ -1,5 +1,5 @@
 ---
-'@nodejs/doc-kit': minor
+'@doc-kit/core': minor
 ---
 
 Add banner opt-out

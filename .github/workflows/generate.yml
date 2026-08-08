@@ -149,7 +149,7 @@ jobs:
           /usr/bin/time \
             --output out/benchmark.json \
             --format '{"elapsedSeconds": %e, "userCpuSeconds": %U, "systemCpuSeconds": %S, "maxRssKiB": %M}' \
-            node packages/core/bin/cli.mjs generate \
+            node packages/cli/bin/cli.mjs generate \
             -t ${{ matrix.target }} \
             -i "${{ matrix.input }}" \
             -o out \

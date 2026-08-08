@@ -4,8 +4,8 @@ import { OVERRIDDEN_POSITIONS } from '../constants.mjs';
 
 /**
  * Sorts entries by OVERRIDDEN_POSITIONS and then heading name.
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} a
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} b
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} a
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} b
  * @returns {number}
  */
 const headingSortFn = (a, b) => {
@@ -29,8 +29,8 @@ const headingSortFn = (a, b) => {
 
 /**
  * Filters and sorts entries by OVERRIDDEN_POSITIONS and then heading name.
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries
- * @returns {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>}
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries
+ * @returns {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>}
  */
 export const getSortedHeadNodes = entries =>
   entries.filter(node => node.heading.depth === 1).toSorted(headingSortFn);

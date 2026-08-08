@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
 
-import { setConfig } from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { SemVer } from 'semver';
 
 mock.module('@node-core/rehype-shiki', {

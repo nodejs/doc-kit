@@ -2,9 +2,9 @@
 
 import { basename, join } from 'node:path';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
-import { withExt, writeFile } from '@nodejs/doc-kit/utils/file.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { withExt, writeFile } from '@doc-kit/core/utils/file.mjs';
 
 import { checkIndirectReferences } from './utils/checkIndirectReferences.mjs';
 import { extractExports } from './utils/extractExports.mjs';

@@ -1,7 +1,8 @@
 {
-  "name": "@nodejs/doc-kit",
+  "name": "@doc-kit/core",
   "type": "module",
   "version": "0.0.0",
+  "description": "The doc-kit engine: the pipeline and shared APIs that power the doc-kit generators and CLI",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
@@ -11,9 +12,7 @@
     "test": "node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
     "test:coverage": "c8 node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
     "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots \"src/**/*.test.mjs\"",
-    "test:watch": "node --test --experimental-test-module-mocks --watch \"src/**/*.test.mjs\"",
-    "run": "node bin/cli.mjs",
-    "watch": "node --watch bin/cli.mjs"
+    "test:watch": "node --test --experimental-test-module-mocks --watch \"src/**/*.test.mjs\""
   },
   "main": "./src/generators.mjs",
   "exports": {
@@ -27,14 +26,10 @@
     "./src/*": "./src/*",
     "./*": "./src/*"
   },
-  "bin": {
-    "doc-kit": "./bin/cli.mjs"
-  },
   "files": [
     "src",
     "!src/**/*.test.mjs",
     "!src/**/__tests__",
-    "bin",
     "shiki.config.mjs",
     "CHANGELOG.md",
     "LICENSE",
@@ -46,7 +41,6 @@
     "@swc/html-wasm": "^1.15.46",
     "@swc/wasm": "^1.15.46",
     "acorn": "^8.17.0",
-    "commander": "^15.0.0",
     "cosmiconfig": "^9.0.2",
     "dedent": "^1.7.2",
     "github-slugger": "^2.0.0",
@@ -73,17 +67,17 @@
   },
   "peerDependencies": {
     "@node-core/doc-kit": "^1.4.3",
-    "@nodejs/doc-kit-generator-legacy": "^0.0.0",
-    "@nodejs/doc-kit-generator-react": "^0.0.0"
+    "@node-core/doc-kit-legacy": "^0.0.0",
+    "@doc-kit/generator-react": "^0.0.0"
   },
   "peerDependenciesMeta": {
     "@node-core/doc-kit": {
       "optional": true
     },
-    "@nodejs/doc-kit-generator-legacy": {
+    "@node-core/doc-kit-legacy": {
       "optional": true
     },
-    "@nodejs/doc-kit-generator-react": {
+    "@doc-kit/generator-react": {
       "optional": true
     }
   }

@@ -12,7 +12,7 @@ export default {
 
   description: 'Generates a sitemap.xml file for search engine optimization',
 
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   defaultConfiguration: {
     indexURL: '{baseURL}/',

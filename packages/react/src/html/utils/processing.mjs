@@ -1,5 +1,5 @@
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { populate } from '@nodejs/doc-kit/utils/configuration/templates.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 
 import createConfigSource from './config.mjs';
 import createProgramBuilder from './generate.mjs';
@@ -11,7 +11,7 @@ import { THEME_SCRIPT } from '../ui/theme-script.mjs';
 /**
  * Creates the virtual imports for one bundle target.
  *
- * @param {Array<{ data: import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry }>} sidebarEntries
+ * @param {Array<{ data: import('@doc-kit/core/generators/metadata/types').MetadataEntry }>} sidebarEntries
  * @param {Record<string, string>} virtualImports
  * @param {boolean} server
  * @returns {Record<string, string>}
@@ -39,7 +39,7 @@ export const populateWithEvaluation = (template, config) => {
 };
 
 /**
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} data
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} data
  * @returns {string}
  */
 export const resolvePageRoot = data => {
@@ -92,7 +92,7 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
  * string upstream (in the `jsx-ast` worker), so the heavy AST never reaches
  * the main thread — only the code string and page metadata stream in here.
  *
- * @returns {{ add: (item: { data: import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry, code: string }) => void, serverCodeMap: Map<string, string>, clientCodeMap: Map<string, string> }}
+ * @returns {{ add: (item: { data: import('@doc-kit/core/generators/metadata/types').MetadataEntry, code: string }) => void, serverCodeMap: Map<string, string>, clientCodeMap: Map<string, string> }}
  */
 export function createCodeConverter() {
   const { buildServerProgram, clientProgram } = createProgramBuilder();
@@ -104,7 +104,7 @@ export function createCodeConverter() {
     /**
      * Records the server/client programs for a single page's JSX code.
      *
-     * @param {{ data: import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry, code: string }} item
+     * @param {{ data: import('@doc-kit/core/generators/metadata/types').MetadataEntry, code: string }} item
      */
     add: ({ data, code }) => {
       const fileName = `${data.api}.jsx`;
@@ -129,8 +129,8 @@ export function createCodeConverter() {
  * @param {object} params
  * @param {Map<string, string>} params.serverCodeMap - Server-side code per page.
  * @param {Map<string, string>} params.clientCodeMap - Client-side code per page.
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} params.datas - Per-page metadata, in render order.
- * @param {Array<{ data: import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry }>} params.sidebarEntries - Entries used to build the sidebar page list (real module pages only).
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} params.datas - Per-page metadata, in render order.
+ * @param {Array<{ data: import('@doc-kit/core/generators/metadata/types').MetadataEntry }>} params.sidebarEntries - Entries used to build the sidebar page list (real module pages only).
  * @param {string} params.template - The HTML template string for the output pages.
  */
 export async function processBundles({

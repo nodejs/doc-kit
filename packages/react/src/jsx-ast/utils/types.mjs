@@ -1,6 +1,6 @@
-import { QUERIES, UNIST } from '@nodejs/doc-kit/utils/queries/index.mjs';
-import { DEFAULT_EXPRESSION } from '@nodejs/doc-kit/utils/signature/constants.mjs';
-import { transformNodesToString } from '@nodejs/doc-kit/utils/unist.mjs';
+import { QUERIES, UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { DEFAULT_EXPRESSION } from '@doc-kit/core/utils/signature/constants.mjs';
+import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 import { u as createTree } from 'unist-builder';
 
 import { getRemarkRecma as remark } from './remark.mjs';

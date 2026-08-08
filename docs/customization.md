@@ -6,8 +6,7 @@ order they usually make them. The complete option list lives in the
 
 All of it goes in the `html` section of your configuration file:
 
-```js
-// doc-kit.config.mjs
+```mjs displayName="doc-kit.config.mjs"
 export default {
   target: ['html'],
   global: {
@@ -140,7 +139,7 @@ html: {
 },
 ```
 
-```md
+```md displayName="welcome.mdx"
 ---
 title: Welcome
 ---
@@ -159,8 +158,8 @@ signature parsing while keeping headings, TOC, and sidebar behavior.
 
 Vite builds the site by default, and accepts your plugins and options:
 
-```js
-import { createViteBundler } from '@nodejs/doc-kit-generator-react/html/bundlers/vite';
+```mjs displayName="doc-kit.config.mjs"
+import { createViteBundler } from '@doc-kit/generator-react/html/bundlers/vite';
 
 export default {
   html: {

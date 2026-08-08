@@ -1,13 +1,13 @@
 'use strict';
 
-import { enforceArray } from '@nodejs/doc-kit/utils/array.mjs';
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
+import { enforceArray } from '@doc-kit/core/utils/array.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import {
   GITHUB_BLOB_URL,
   populate,
-} from '@nodejs/doc-kit/utils/configuration/templates.mjs';
-import { omitKeys } from '@nodejs/doc-kit/utils/misc.mjs';
-import { UNIST } from '@nodejs/doc-kit/utils/queries/index.mjs';
+} from '@doc-kit/core/utils/configuration/templates.mjs';
+import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
+import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
 import readingTime from 'reading-time';
@@ -37,7 +37,7 @@ import {
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry - The metadata entry
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} entry - The metadata entry
  */
 export const gatherChangeEntries = entry => {
   // Lifecycle changes (e.g., added, deprecated)
@@ -61,7 +61,7 @@ export const gatherChangeEntries = entry => {
 
 /**
  * Creates a JSX ChangeHistory element or returns null if no changes.
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry - The metadata entry
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} entry - The metadata entry
  */
 export const createChangeElement = entry => {
   const changes = gatherChangeEntries(entry);
@@ -128,7 +128,7 @@ export const extractHeadingContent = content => {
 
 /**
  * Creates a heading wrapper element with anchors, icons, and optional change history.
- * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingNode} content - The content node to extract text from
+ * @param {import('@doc-kit/core/generators/metadata/types').HeadingNode} content - The content node to extract text from
  * @param {import('unist').Node|null} changeElement - The change history element, if available
  */
 export const createHeadingElement = (content, changeElement) => {
@@ -166,7 +166,7 @@ export const createHeadingElement = (content, changeElement) => {
 
 /**
  * Converts a stability note node to an AlertBox JSX element
- * @param {import('@nodejs/doc-kit/generators/metadata/types').StabilityNode} node - The stability node to transform
+ * @param {import('@doc-kit/core/generators/metadata/types').StabilityNode} node - The stability node to transform
  * @param {number} index - The index of the node in its parent's children array
  * @param {import('unist').Parent} parent - The parent node containing the stability node
  */
@@ -200,8 +200,8 @@ const getLevelFromDeprecationType = typeText => {
 
 /**
  * Transforms a heading node by injecting metadata, source links, and signatures.
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry - The API metadata entry
- * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingNode} node - The heading node to transform
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} entry - The API metadata entry
+ * @param {import('@doc-kit/core/generators/metadata/types').HeadingNode} node - The heading node to transform
  * @param {number} index - The index of the node in its parent's children array
  * @param {import('unist').Parent} parent - The parent node containing the heading
  */
@@ -250,7 +250,7 @@ export const transformHeadingNode = async (entry, node, index, parent) => {
 
 /**
  * Processes a single API documentation entry's content
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} entry - The API metadata entry to process
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} entry - The API metadata entry to process
  */
 export const processEntry = entry => {
   // Visit and transform stability nodes
@@ -276,7 +276,7 @@ export const processEntry = entry => {
 
 /**
  * Builds the overall document layout tree
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} entries - API documentation metadata entries
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - API documentation metadata entries
  * @param {Object} metadata - Raw page metadata from the head entry
  */
 export const createDocumentLayout = (entries, metadata) => {
@@ -295,11 +295,11 @@ export const createDocumentLayout = (entries, metadata) => {
 };
 
 /**
- * @typedef {import('estree').Node & { data: import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry }} JSXContent
+ * @typedef {import('estree').Node & { data: import('@doc-kit/core/generators/metadata/types').MetadataEntry }} JSXContent
  *
  * Transforms API metadata entries into processed MDX content
- * @param {Array<import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry>} metadataEntries - API documentation metadata entries
- * @param {import('@nodejs/doc-kit/generators/metadata/types').MetadataEntry} head - Main API metadata entry with version information
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} metadataEntries - API documentation metadata entries
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} head - Main API metadata entry with version information
  * @returns {Promise<JSXContent>}
  */
 const buildContent = async (metadataEntries, head) => {

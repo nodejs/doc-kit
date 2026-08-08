@@ -1,7 +1,7 @@
-import { highlighter } from '@nodejs/doc-kit/utils/highlighter.mjs';
-import { UNIST } from '@nodejs/doc-kit/utils/queries/index.mjs';
-import { parseListItem } from '@nodejs/doc-kit/utils/signature/parseList.mjs';
-import parseSignature from '@nodejs/doc-kit/utils/signature/parseSignature.mjs';
+import { highlighter } from '@doc-kit/core/utils/highlighter.mjs';
+import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { parseListItem } from '@doc-kit/core/utils/signature/parseList.mjs';
+import parseSignature from '@doc-kit/core/utils/signature/parseSignature.mjs';
 import { h as createElement } from 'hastscript';
 
 import { createJSXElement } from './ast.mjs';
@@ -12,7 +12,7 @@ import { JSX_IMPORTS } from '../../html/constants.mjs';
  * Generates a string representation of a function or class signature.
  *
  * @param {string} functionName - The name of the function or class.
- * @param {import('@nodejs/doc-kit/utils/signature/types').MethodSignature} signature - The parsed signature object.
+ * @param {import('@doc-kit/core/utils/signature/types').MethodSignature} signature - The parsed signature object.
  * @param {string} prefix - Optional prefix, i.e. `'new '` for constructors.
  */
 export const generateSignature = (
@@ -52,7 +52,7 @@ export const generateSignature = (
  * Creates a syntax-highlighted code block for a signature using rehype-shiki.
  *
  * @param {string} functionName - The function name to display.
- * @param {import('@nodejs/doc-kit/utils/signature/types').MethodSignature} signature - Signature object with parameter and return type info.
+ * @param {import('@doc-kit/core/utils/signature/types').MethodSignature} signature - Signature object with parameter and return type info.
  * @param {string} prefix - Optional prefix like `'new '`.
  */
 export const createSignatureCodeBlock = (functionName, signature, prefix) => {
@@ -66,7 +66,7 @@ export const createSignatureCodeBlock = (functionName, signature, prefix) => {
  * Infers the "real" function name from a heading node.
  * Useful when auto-generated headings differ from code tokens.
  *
- * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingData} heading - Metadata with name and text fields.
+ * @param {import('@doc-kit/core/generators/metadata/types').HeadingData} heading - Metadata with name and text fields.
  * @param {any} fallback - Fallback value if inference fails.
  */
 export const getFullName = ({ name, text }, fallback = name) => {
@@ -91,7 +91,7 @@ export const getFullName = ({ name, text }, fallback = name) => {
  * Mutates the `children` array by injecting the signature HAST node.
  *
  * @param {import('@types/mdast').Parent} parent - The parent MDAST node (usually a section).
- * @param {import('@nodejs/doc-kit/generators/metadata/types').HeadingNode} heading - The heading node with metadata.
+ * @param {import('@doc-kit/core/generators/metadata/types').HeadingNode} heading - The heading node with metadata.
  * @param {number} idx - The index at which the heading occurs in `parent.children`.
  */
 export const insertSignatureCodeBlock = ({ children }, { data }, idx) => {

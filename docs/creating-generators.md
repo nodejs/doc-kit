@@ -1,6 +1,6 @@
 # Creating Generators
 
-This guide explains how to create new documentation generators for `@nodejs/doc-kit`.
+This guide explains how to create new documentation generators for `@doc-kit/core`.
 
 ## Generator Concepts
 
@@ -12,7 +12,7 @@ Generators in `doc-kit` transform API documentation through a pipeline. Each gen
 
 ### Generator Pipeline
 
-```
+```text
 Raw Markdown Files
     ↓
   [ast] - Parse to MDAST
@@ -36,7 +36,7 @@ A generator is defined as a module exporting an object conforming to the `Genera
 
 Create a new directory in your project:
 
-```
+```text
 /
 ├── index.mjs         # Generator metadata (required)
 ├── generate.mjs      # Generator implementation (required)
@@ -50,7 +50,7 @@ Create a new directory in your project:
 
 Create a `types.d.ts` file containing a `Generator` export. Use this when typing your generator.
 
-```ts
+```typescript displayName="types.d.ts"
 export type Generator = GeneratorMetadata<
   {
     // If your generator supports a custom configuration,
@@ -72,7 +72,7 @@ export type Generator = GeneratorMetadata<
 A generator module's default export is a plain object with its metadata and
 implementation. Create it in `index.mjs`:
 
-```javascript
+```mjs displayName="index.mjs"
 import { generate } from './generate.mjs';
 
 /**
@@ -87,7 +87,7 @@ export default {
 
   // This generator depends on the metadata generator. Dependencies are
   // declared as import specifiers, so they can live in any package.
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   defaultConfiguration: {
     // If your generator supports a custom configuration, define the defaults here
@@ -106,7 +106,7 @@ export default {
 
 Create the generator implementation in `generate.mjs`:
 
-```javascript
+```mjs displayName="generate.mjs"
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -156,20 +156,20 @@ to a module whose default export is a generator works as a `--target`:
 
 ```bash
 # A package (subpath) export
-doc-kit generate -t @my-scope/my-package/my-format ...
+npx @doc-kit/cli generate -t @my-scope/my-package/my-format ...
 
 # A local file
-doc-kit generate -t ./generators/my-format/index.mjs ...
+npx @doc-kit/cli generate -t ./generators/my-format/index.mjs ...
 ```
 
 Built-in generators additionally get a shorthand alias in
 `packages/core/src/generators/index.mjs`, which maps the name users type to
 the import specifier it resolves to:
 
-```javascript
+```mjs displayName="packages/core/src/generators/index.mjs"
 export const publicGenerators = {
-  'json-simple': '@nodejs/doc-kit/json-simple',
-  'my-format': '@nodejs/doc-kit/my-format', // Add this
+  'json-simple': '@doc-kit/core/json-simple',
+  'my-format': '@doc-kit/core/my-format', // Add this
   // ... other generators
 };
 ```
@@ -185,7 +185,7 @@ For generators processing large datasets, implement parallel processing using wo
 
 First, define the generator metadata in `index.mjs`:
 
-```javascript
+```mjs displayName="index.mjs"
 import { generate, processChunk } from './generate.mjs';
 
 /**
@@ -196,7 +196,7 @@ export default {
 
   description: 'Processes data in parallel',
 
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   // Indicates this generator has a processChunk implementation
   hasParallelProcessor: true,
@@ -208,7 +208,7 @@ export default {
 
 Then, implement both `processChunk` and `generate` in `generate.mjs`:
 
-```javascript
+```mjs displayName="generate.mjs"
 import getConfig from '../../utils/configuration/index.mjs';
 
 /**
@@ -280,7 +280,7 @@ Generators can yield results as they're produced using async generators.
 
 Define the generator metadata in `index.mjs`:
 
-```javascript
+```mjs displayName="index.mjs"
 import { generate, processChunk } from './generate.mjs';
 
 /**
@@ -291,7 +291,7 @@ export default {
 
   description: 'Streams results as they are ready',
 
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   hasParallelProcessor: true,
 
@@ -302,7 +302,7 @@ export default {
 
 Implement the generator in `generate.mjs`:
 
-```javascript
+```mjs displayName="generate.mjs"
 /**
  * Process a chunk of data
  *
@@ -339,7 +339,7 @@ Some generators must collect all input before processing.
 
 Generator metadata in `index.mjs`:
 
-```javascript
+```mjs displayName="index.mjs"
 import { generate } from './generate.mjs';
 
 /**
@@ -350,7 +350,7 @@ export default {
 
   description: 'Requires all input at once',
 
-  dependsOn: '@nodejs/doc-kit-generator-react/jsx-ast',
+  dependsOn: '@doc-kit/generator-react/jsx-ast',
 
   generate,
 };
@@ -358,7 +358,7 @@ export default {
 
 Implementation in `generate.mjs`:
 
-```javascript
+```mjs displayName="generate.mjs"
 /**
  * Non-streaming - returns Promise instead of AsyncGenerator
  *
@@ -387,7 +387,7 @@ Use non-streaming when:
 
 In `index.mjs`:
 
-```javascript
+```mjs displayName="index.mjs"
 import { generate } from './generate.mjs';
 
 export default {
@@ -395,7 +395,7 @@ export default {
 
   // This generator requires the metadata generator's output. The dependency
   // is an import specifier, so it may point at any installed package.
-  dependsOn: '@nodejs/doc-kit/metadata',
+  dependsOn: '@doc-kit/core/metadata',
 
   // ... other metadata
 
@@ -405,7 +405,7 @@ export default {
 
 In `generate.mjs`:
 
-```javascript
+```mjs displayName="generate.mjs"
 export async function generate(input, worker) {
   // input contains the output from 'metadata' generator
 }
@@ -417,7 +417,7 @@ export async function generate(input, worker) {
 
 In `generate.mjs`:
 
-```javascript
+```mjs displayName="generate.mjs"
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -452,7 +452,7 @@ export async function generate(input, worker) {
 
 ### Copying Assets
 
-```javascript
+```mjs displayName="generate.mjs"
 import { cp } from 'node:fs/promises';
 import { join } from 'node:path';
 

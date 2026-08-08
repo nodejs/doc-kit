@@ -3,8 +3,8 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import getConfig from '@nodejs/doc-kit/utils/configuration/index.mjs';
-import { writeFile } from '@nodejs/doc-kit/utils/file.mjs';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { writeFile } from '@doc-kit/core/utils/file.mjs';
 import { visit } from 'unist-util-visit';
 
 import { EXTRACT_CODE_FILENAME_COMMENT } from './constants.mjs';
