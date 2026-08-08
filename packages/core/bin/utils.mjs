@@ -1,4 +1,4 @@
-import { Option } from 'commander';
+import { Command, Option } from 'commander';
 
 import { publicGenerators } from '../src/generators/index.mjs';
 import logger from '../src/logger/index.mjs';
@@ -43,15 +43,14 @@ export const errorWrap =
   };
 
 /**
- * Adds the options shared by every command that resolves a configuration and
- * runs generators.
+ * Creates a command carrying the options shared by every command that resolves
+ * a configuration and runs generators.
  *
- * @template {import('commander').Command} T
- * @param {T} cmd - The command to extend
- * @returns {T} The same command, for chaining
+ * @param {string} name - The command name
+ * @returns {import('commander').Command} The command, for chaining
  */
-export const insertCommonOptions = cmd =>
-  cmd
+export const createCommonCommand = name =>
+  new Command(name)
     .addOption(new Option('--config-file <path>', 'Config file'))
 
     // Options that need to be converted into a configuration

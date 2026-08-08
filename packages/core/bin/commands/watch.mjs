@@ -2,7 +2,6 @@ import { matchesGlob, resolve } from 'node:path';
 import process from 'node:process';
 
 import { watch } from 'chokidar';
-import { Command } from 'commander';
 import globParent from 'glob-parent';
 
 import createGenerator, { SKIPPED } from '../../src/generators.mjs';
@@ -11,7 +10,7 @@ import {
   assertRunnableOptions,
   setConfig,
 } from '../../src/utils/configuration/index.mjs';
-import { errorWrap, insertCommonOptions } from '../utils.mjs';
+import { createCommonCommand, errorWrap } from '../utils.mjs';
 
 const watchLogger = logger.child('watch');
 
@@ -95,7 +94,7 @@ const createScheduler = task => {
   };
 };
 
-export default insertCommonOptions(new Command('watch'))
+export default createCommonCommand('watch')
   .description('Generate API docs, rebuilding whenever an input file changes')
   .action(
     errorWrap(async opts => {
