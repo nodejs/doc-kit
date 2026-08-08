@@ -74,7 +74,12 @@ export default {
     components: {},
 
     // The SideBar and NavBar navigation items
-    navigation: {},
+    // along with other navigational settings (e.g. showCrossLinks)
+    navigation: {
+      // Whether or not to show the CrossLink component at the bottom of the
+      // default layout.
+      showCrossLinks: false,
+    },
 
     // When omitted, the Vite adapter is loaded lazily during generation.
     bundler: undefined,

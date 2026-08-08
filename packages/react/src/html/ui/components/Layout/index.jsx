@@ -1,8 +1,11 @@
+import CrossLink from '@node-core/ui-components/Common/BaseCrossLink';
 import TableOfContents from '@node-core/ui-components/Common/TableOfContents';
 import Article from '@node-core/ui-components/Containers/Article';
 
 import Banner from '../Banner';
+import styles from './index.module.css';
 
+import { navigation } from '#theme/config';
 import Footer from '#theme/Footer';
 import MetaBar from '#theme/Metabar';
 import NavBar from '#theme/Navigation';
@@ -17,25 +20,57 @@ import SideBar from '#theme/Sidebar';
  *
  * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime: string, children: import('preact').ComponentChildren }} props
  */
-export default ({ metadata, headings, readingTime, children }) => (
-  <>
-    <Banner />
-    <NavBar metadata={metadata} />
-    <Article>
-      <SideBar metadata={metadata} />
-      <div>
+export default ({ metadata, headings, readingTime, children }) => {
+  const crossLinkItems = navigation.sidebar.flatMap(({ items }) => items);
+
+  const currentItem = crossLinkItems.findIndex(
+    ({ link }) => link === metadata.path
+  );
+
+  const [previousCrossLink, nextCrossLink] = [
+    crossLinkItems[currentItem - 1],
+    crossLinkItems[currentItem + 1],
+  ];
+
+  return (
+    <>
+      <Banner />
+      <NavBar metadata={metadata} />
+      <Article>
+        <SideBar metadata={metadata} />
         <div>
-          <TableOfContents headings={headings} summaryTitle="On this page" />
-          <br />
-          <main>{children}</main>
+          <div>
+            <TableOfContents headings={headings} summaryTitle="On this page" />
+            <br />
+            <main>{children}</main>
+            <div className={styles.crossLinks}>
+              {(previousCrossLink && (
+                <CrossLink
+                  type="previous"
+                  label="Previous"
+                  text={previousCrossLink.label}
+                  link={previousCrossLink.link}
+                />
+              )) || <div />}
+
+              {nextCrossLink && (
+                <CrossLink
+                  type="next"
+                  label="Next"
+                  text={nextCrossLink.label}
+                  link={nextCrossLink.link}
+                />
+              )}
+            </div>
+          </div>
+          <MetaBar
+            metadata={metadata}
+            headings={headings}
+            readingTime={readingTime}
+          />
         </div>
-        <MetaBar
-          metadata={metadata}
-          headings={headings}
-          readingTime={readingTime}
-        />
-      </div>
-    </Article>
-    <Footer />
-  </>
-);
+      </Article>
+      <Footer />
+    </>
+  );
+};
