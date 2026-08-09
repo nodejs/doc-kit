@@ -77,7 +77,7 @@ export type Configuration = {
   navigation: {
     sidebar?: ComponentProps<typeof SideBar>['groups'];
     navbar?: ComponentProps<typeof NavBar>['navItems'];
-    // TODO(@avivkeller): `navigation.showCrossLinks`
+    showCrossLinks?: boolean;
   };
   // Optional bundler adapter. When omitted, the Vite adapter is loaded lazily.
   bundler?: WebBundler;
