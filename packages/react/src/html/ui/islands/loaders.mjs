@@ -8,4 +8,5 @@ export default {
   ThemeToggle: () => import('../components/ThemeToggle.jsx'),
   SearchBox: () => import('../components/SearchBox'),
   SideBar: () => import('#theme/Sidebar'),
+  StabilityBadge: () => import('../components/MetaBar/StabilityBadge.jsx'),
 };

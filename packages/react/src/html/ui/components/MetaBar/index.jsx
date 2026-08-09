@@ -1,9 +1,9 @@
 import { CodeBracketIcon, DocumentIcon } from '@heroicons/react/24/outline';
-import Badge from '@node-core/ui-components/Common/Badge';
 import MetaBar from '@node-core/ui-components/Containers/MetaBar';
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
 import styles from './index.module.css';
+import StabilityBadge from './StabilityBadge.jsx';
 
 import { editURL } from '#theme/config';
 
@@ -25,24 +25,19 @@ const HeadingValue = ({ value, stability }) => {
     return value;
   }
 
-  const ariaLabel = STABILITY_TOOLTIPS[stability]
-    ? `Stability: ${STABILITY_TOOLTIPS[stability]}`
-    : undefined;
+  const tooltip = STABILITY_TOOLTIPS[stability];
+  const ariaLabel = tooltip ? `Stability: ${tooltip}` : undefined;
 
   return (
     <>
       {value}
 
-      <Badge
-        size="small"
-        className={styles.badge}
+      <StabilityBadge
         kind={STABILITY_KINDS[stability]}
-        data-tooltip={STABILITY_TOOLTIPS[stability]}
-        aria-label={ariaLabel}
-        tabIndex={0}
-      >
-        {STABILITY_LABELS[stability]}
-      </Badge>
+        label={STABILITY_LABELS[stability]}
+        tooltip={tooltip}
+        ariaLabel={ariaLabel}
+      />
     </>
   );
 };
