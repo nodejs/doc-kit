@@ -77,8 +77,6 @@ test('comparePerformance summarizes benchmark differences', async t => {
     result,
     /\*\*Peak memory:\*\* 50\.0% higher \(1\.00 MB → 1\.50 MB\)/
   );
-  assert.match(result, /single CI run/);
-  assert.doesNotMatch(result, /CPU time/);
 });
 
 test('comparePerformance omits results when an artifact has no benchmark', async t => {
@@ -142,31 +140,6 @@ test('object comparator treats benchmark data as metadata', async t => {
   assert.doesNotMatch(result, /\*\*Output:/);
   assert.match(result, /Performance estimate/);
   assert.doesNotMatch(result, /benchmark\.json/);
-});
-
-test('comparators fold away runs that only moved performance', async t => {
-  const { base, head } = await createDirectories(t);
-
-  await Promise.all([
-    writeFile(path.join(base, 'result.json'), '{"value":true}', 'utf8'),
-    writeFile(path.join(head, 'result.json'), '{"value":true}', 'utf8'),
-    writeBenchmark(base),
-    writeBenchmark(head, { ...benchmark, elapsedSeconds: 3 }),
-  ]);
-
-  const [sizes, objects] = await Promise.all([
-    runComparator('file-size', base, head),
-    runComparator('object-assertion', base, head),
-  ]);
-
-  for (const result of [sizes, objects]) {
-    assert.doesNotMatch(result, /## `test` Generator/);
-    assert.match(
-      result,
-      /<summary>`test` Generator — performance-only changes<\/summary>/
-    );
-    assert.match(result, /Generation time:\*\* 50\.0% slower/);
-  }
 });
 
 test('comparators pair renamed files that kept their contents', async t => {

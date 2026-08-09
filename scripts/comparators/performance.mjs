@@ -77,7 +77,7 @@ const METRICS = [
  *
  * @param {string} baseDirectory - Base artifact directory
  * @param {string} headDirectory - Head artifact directory
- * @returns {Promise<string>} Markdown table, or an empty string
+ * @returns {Promise<string>} Markdown list, or an empty string
  */
 export const comparePerformance = async (
   baseDirectory = BASE,
@@ -102,7 +102,5 @@ export const comparePerformance = async (
     return `- **${label}:** ${formatChange(baseValue, headValue, change)} (${format(baseValue)} → ${format(headValue)})`;
   });
 
-  return ['**Performance estimate** <sub>(single CI run)</sub>', ...rows].join(
-    '\n'
-  );
+  return rows.join('\n');
 };

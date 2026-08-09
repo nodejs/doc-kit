@@ -1,6 +1,20 @@
 import { TITLE } from '../constants.mjs';
 
-const HEADLINE = TITLE.replace(/^#+\s*/, '');
+/**
+ * Folds the performance estimate
+ *
+ * @param {string} performance - Performance summary
+ * @returns {string} Collapsed Markdown section
+ */
+const fold = performance =>
+  [
+    '<details>',
+    '<summary><h3>Performance estimate</h3></summary>',
+    '',
+    performance,
+    '',
+    '</details>',
+  ].join('\n');
 
 /**
  * @typedef {{ base?: string, head?: string, identical: boolean }} Pair
@@ -39,24 +53,9 @@ export const count = (amount, singular, plural) =>
  * @returns {void}
  */
 export const report = (sections, performance) => {
-  if (sections.length) {
-    console.log(
-      `${TITLE}\n\n${[...sections, performance].filter(Boolean).join('\n\n')}\n`
-    );
+  const body = [...sections, performance && fold(performance)].filter(Boolean);
 
-    return;
-  }
-
-  if (performance) {
-    console.log(
-      [
-        '<details>',
-        `<summary>${HEADLINE} — performance-only changes</summary>`,
-        '',
-        performance,
-        '',
-        '</details>',
-      ].join('\n')
-    );
+  if (body.length) {
+    console.log(`${TITLE}\n\n${body.join('\n\n')}\n`);
   }
 };
