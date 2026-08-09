@@ -149,10 +149,7 @@ export interface SignatureSection extends SectionBase {
  * All possible types of sections.
  */
 export type Section =
-  | SignatureSection
-  | PropertySection
-  | EventSection
-  | MiscSection;
+  SignatureSection | PropertySection | EventSection | MiscSection;
 
 /**
  * Represents a property section in the API documentation.
