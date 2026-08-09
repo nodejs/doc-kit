@@ -256,7 +256,7 @@ export const createViteConfig = ({
           format: 'es',
 
           /**
-           *
+           * Determine the asset names for different files
            */
           assetFileNames: asset =>
             asset.names.some(name => name.endsWith('.woff2'))
