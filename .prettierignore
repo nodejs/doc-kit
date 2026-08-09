@@ -1,4 +1,4 @@
-npm-shrinkwrap.json
+pnpm-lock.yaml
 
 # Tests files
 packages/node/src/api-links/__tests__/fixtures/

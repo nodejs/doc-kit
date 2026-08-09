@@ -28,5 +28,9 @@
     "dedent": "^1.7.2",
     "estree-util-visit": "^2.0.0",
     "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "tinyglobby": "^0.2.17",
+    "unist-builder": "^4.0.0"
   }
 }

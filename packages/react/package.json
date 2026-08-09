@@ -53,5 +53,8 @@
     "unist-builder": "^4.0.0",
     "unist-util-visit": "^5.1.0",
     "vite": "~8.1.5"
+  },
+  "devDependencies": {
+    "dedent": "^1.7.2"
   }
 }
