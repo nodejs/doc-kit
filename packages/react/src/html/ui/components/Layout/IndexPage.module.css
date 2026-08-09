@@ -1,0 +1,22 @@
+.moduleIndex {
+  list-style: none;
+  padding: 0;
+
+  li {
+    padding: 0.5rem 0;
+  }
+
+  /* Draw a rule between items */
+  li + li {
+    border-top: 1px solid var(--color-brand-200);
+  }
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .moduleIndex li + li {
+  border-color: var(--color-brand-800);
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 0.25rem;
+}

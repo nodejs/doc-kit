@@ -1,65 +1,25 @@
 'use strict';
 
-import { h as createElement } from 'hastscript';
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { createSyntheticHead, wrapAsEntry } from './synthetic.mjs';
 import { JSX_IMPORTS } from '../../../html/constants.mjs';
 import { createJSXElement } from '../ast.mjs';
 import { getSortedHeadNodes } from '../getSortedHeadNodes.mjs';
 
-const STABILITY_BADGE_KINDS = [
-  'error',
-  'warning',
-  'default',
-  'info',
-  'neutral',
-  'neutral',
-];
-
 /**
- * Maps a Node.js stability index to a UI badge kind.
- *
- * @param {string} index
- */
-const getStabilityBadgeKind = index =>
-  STABILITY_BADGE_KINDS[parseInt(index, 10)] ?? 'neutral';
-
-/**
- * Builds the Stability Overview table from module heads that declare a
- * top-level stability index, mirroring the `legacy-html-all` overview.
+ * Maps the sorted module heads to the plain props consumed by the `IndexPage`
+ * component: display name, page href, and numeric stability index (defaulting
+ * to stable, mirroring the ToC).
  *
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} headEntries
  */
-export const buildStabilityOverview = headEntries =>
-  createElement('table', [
-    createElement('thead', [
-      createElement('tr', [
-        createElement('th', 'API'),
-        createElement('th', 'Stability'),
-      ]),
-    ]),
-    createElement(
-      'tbody',
-      headEntries.map(({ heading, api, stability }) =>
-        createElement('tr', [
-          createElement(
-            'td',
-            createElement('a', { href: `${api}.html` }, heading.data.name)
-          ),
-          createElement(
-            'td',
-            createJSXElement(JSX_IMPORTS.Badge.name, {
-              size: 'small',
-              kind: getStabilityBadgeKind(stability.data.index),
-              'aria-label': `Stability: ${stability.data.index}`,
-              children: stability.data.index,
-            }),
-            ` ${stability.data.description.split('. ')[0]}`
-          ),
-        ])
-      )
-    ),
-  ]);
+export const buildModuleProps = headEntries =>
+  headEntries.map(({ heading, api, stability }) => ({
+    name: heading.data.name,
+    href: `${api}.html`,
+    stability: parseInt(stability?.data.index ?? '2', 10),
+  }));
 
 /**
  * Builds the page descriptor for `index.html`
@@ -67,14 +27,20 @@ export const buildStabilityOverview = headEntries =>
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries
  */
 export const buildIndexPage = entries => {
-  const head = createSyntheticHead('index', 'Index');
-  const moduleEntries = getSortedHeadNodes(entries);
+  const config = getConfig('jsx-ast');
+  const head = createSyntheticHead(
+    'index',
+    `${config.project} Documentation Index`
+  );
 
   return {
     head,
     entries: [
       wrapAsEntry(head, [
-        buildStabilityOverview(moduleEntries.filter(entry => entry.stability)),
+        createJSXElement(JSX_IMPORTS.IndexPage.name, {
+          inline: false,
+          modules: buildModuleProps(getSortedHeadNodes(entries)),
+        }),
       ]),
     ],
   };

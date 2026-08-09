@@ -65,6 +65,10 @@ export const JSX_IMPORTS = {
     name: 'FunctionSignature',
     source: '@node-core/ui-components/Containers/FunctionSignature',
   },
+  IndexPage: {
+    name: 'IndexPage',
+    source: resolve(ROOT, './ui/components/Layout/IndexPage'),
+  },
   ArrowUpRightIcon: {
     name: 'ArrowUpRightIcon',
     source: '@heroicons/react/24/solid/ArrowUpRightIcon',
