@@ -24,7 +24,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@doc-kit/core": "^0.0.0",
+    "@doc-kit/core": "workspace:*",
     "hastscript": "^9.0.1",
     "unist-builder": "^4.0.0",
     "unist-util-visit": "^5.1.0"

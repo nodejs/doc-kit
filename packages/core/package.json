@@ -66,9 +66,9 @@
     "yaml": "^2.9.0"
   },
   "peerDependencies": {
-    "@node-core/doc-kit": "^1.4.3",
-    "@node-core/doc-kit-legacy": "^0.0.0",
-    "@doc-kit/generator-react": "^0.0.0"
+    "@node-core/doc-kit": "workspace:*",
+    "@node-core/doc-kit-legacy": "workspace:*",
+    "@doc-kit/generator-react": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@node-core/doc-kit": {

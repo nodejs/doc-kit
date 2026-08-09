@@ -2,9 +2,7 @@
   "name": "@doc-kit/core-monorepo",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
+  "packageManager": "pnpm@11.20.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git"
