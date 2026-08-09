@@ -29,8 +29,8 @@ git sparse-checkout set lib doc .
 # Move back out
 cd ..
 
-# Install npm dependencies
-npm ci
+# Install dependencies
+pnpm install --frozen-lockfile
 
 # Create the ./out directory
 mkdir -p out

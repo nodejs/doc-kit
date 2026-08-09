@@ -18,27 +18,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - name: Setup environment
+        uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
         with:
-          egress-policy: block
-          allowed-endpoints: >
-            github.com:443
-            registry.npmjs.org:443
-
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
+          use-version-file: true
+          pnpm: true
 
       - name: Run linting
         run: node --run lint
@@ -51,33 +35,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - name: Setup environment
+        uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
         with:
-          egress-policy: block
-          allowed-endpoints: >
-            cli.codecov.io:443
-            github.com:443
-            ingest.codecov.io:443
-            keybase.io:443
-            o26192.ingest.us.sentry.io:443
-            raw.githubusercontent.com:443
-            registry.npmjs.org:443
-            storage.googleapis.com:443
-
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
+          use-version-file: true
+          pnpm: true
 
       - name: Run tests with coverage
         run: node --run test:ci
@@ -100,37 +62,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - name: Setup environment
+        uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
         with:
-          egress-policy: block
-          allowed-endpoints: >
-            *.archive.ubuntu.com:80
-            *.microsoft.com:443
-            api.github.com:443
-            cdn.playwright.dev:443
-            dl.google.com:443
-            esm.ubuntu.com:443
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            raw.githubusercontent.com:443
-            registry.npmjs.org:443
-            storage.googleapis.com:443
-
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
+          use-version-file: true
+          pnpm: true
 
       - name: Checkout Node.js source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -141,10 +77,10 @@ jobs:
           path: node
 
       - name: Build Node.js API docs
-        run: npx @doc-kit/cli generate -t web -i "./node/doc/api/assert.md" -o out --config-file ./e2e/doc-kit.config.mjs
+        run: node packages/cli/bin/cli.mjs generate -t web -i "./node/doc/api/assert.md" -o out --config-file ./e2e/doc-kit.config.mjs
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: pnpm exec playwright install --with-deps
 
       - name: Run E2E tests
         run: node --run test:e2e

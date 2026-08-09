@@ -2,9 +2,7 @@
   "name": "@doc-kit/core-monorepo",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
+  "packageManager": "pnpm@11.20.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git"
@@ -32,6 +30,7 @@
     "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.31.1",
     "@eslint/js": "10.0.1",
+    "@node-core/doc-kit": "workspace:*",
     "@playwright/test": "~1.62.0",
     "@reporters/github": "~2.0.1",
     "@types/mdast": "~4.0.4",

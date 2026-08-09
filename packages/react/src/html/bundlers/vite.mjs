@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, isAbsolute, join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
 import {
@@ -13,6 +13,13 @@ import {
 
 const VIRTUAL_PREFIX = 'virtual:doc-kit/';
 const RESOLVED_VIRTUAL_PREFIX = '\0doc-kit:';
+const PACKAGE_ANCHOR = fileURLToPath(import.meta.url);
+
+/**
+ * Resolves a package specifier
+ */
+const resolveFromPackage = specifier =>
+  fileURLToPath(import.meta.resolve(specifier));
 
 /**
  * Returns the virtual Vite client entry imported by one HTML page.
@@ -50,16 +57,26 @@ export const createVirtualModulesPlugin = sources => {
     name: 'doc-kit:virtual-modules',
     enforce: 'pre',
     /**
-     * Resolves an exact in-memory identifier.
+     * Resolves an exact in-memory identifier, or anchors a virtual module's
+     * package imports to this package.
      *
      * @param {string} id
-     * @returns {string|undefined}
+     * @param {string} [importer]
+     * @returns {string|Promise<import('vite').Rollup.ResolvedId|null>|undefined}
      */
-    resolveId(id) {
+    resolveId(id, importer) {
       if (sources.has(id)) {
         return isAbsolute(id) && id.endsWith('.html')
           ? id
           : `${RESOLVED_VIRTUAL_PREFIX}${id}`;
+      }
+
+      if (
+        importer?.startsWith(RESOLVED_VIRTUAL_PREFIX) &&
+        !id.startsWith(VIRTUAL_PREFIX) &&
+        /^[@\w]/.test(id)
+      ) {
+        return this.resolve(id, PACKAGE_ANCHOR, { skipSelf: true });
       }
     },
     /**
@@ -193,10 +210,20 @@ export const createViteConfig = ({
           conditions: ['rolldown', ...conditions],
           dedupe: ['preact'],
 
-          // Vite applies string aliases to matching package subpaths too.
           alias: {
-            react: 'preact/compat',
-            'react-dom': 'preact/compat',
+            'react/jsx-runtime': resolveFromPackage(
+              'preact/compat/jsx-runtime'
+            ),
+            'react/jsx-dev-runtime': resolveFromPackage(
+              'preact/compat/jsx-dev-runtime'
+            ),
+            'react-dom/client': resolveFromPackage('preact/compat/client'),
+            'react-dom/server': resolveFromPackage('preact/compat/server'),
+            'react-dom/test-utils': resolveFromPackage(
+              'preact/compat/test-utils'
+            ),
+            'react-dom': resolveFromPackage('preact/compat'),
+            react: resolveFromPackage('preact/compat'),
             ...resolveThemeAliases(webConfig.imports, root),
           },
         },
