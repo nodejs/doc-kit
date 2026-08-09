@@ -1,9 +1,10 @@
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 
-import { BASE, HEAD, TITLE } from '../constants.mjs';
-import { listOutputFiles } from './files.mjs';
+import { BASE, HEAD } from '../constants.mjs';
+import { pairOutputFiles } from './files.mjs';
 import { comparePerformance } from './performance.mjs';
+import { count, isRename, pairName, report } from './report.mjs';
 
 const UNITS = ['B', 'KB', 'MB', 'GB'];
 
@@ -21,74 +22,85 @@ const formatBytes = bytes => {
   return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${UNITS[i]}`;
 };
 
-/**
- * Gets all files in a directory with their sizes
- * @param {string} dir - Directory path to scan
- * @returns {Promise<Map<string, number>>} Map of filename to size in bytes
- */
-const getStats = async dir => {
-  const files = await listOutputFiles(dir);
-  return new Map(
-    await Promise.all(
-      files.map(async f => [f, (await stat(path.join(dir, f))).size])
-    )
-  );
-};
+const sizeOf = async (directory, file) =>
+  file ? (await stat(path.join(directory, file))).size : 0;
 
-// Fetch stats for both directories in parallel
-const [baseStats, headStats] = await Promise.all([BASE, HEAD].map(getStats));
+const entries = await Promise.all(
+  (await pairOutputFiles(BASE, HEAD)).map(async pair => {
+    const [base, head] = await Promise.all([
+      sizeOf(BASE, pair.base),
+      sizeOf(HEAD, pair.head),
+    ]);
 
-const didChange = f => baseStats.get(f) !== headStats.get(f);
+    return { ...pair, baseSize: base, headSize: head, diff: head - base };
+  })
+);
 
-const toDiffObject = f => ({
-  file: f,
-  base: baseStats.get(f) ?? 0,
-  head: headStats.get(f) ?? 0,
-  diff: (headStats.get(f) ?? 0) - (baseStats.get(f) ?? 0),
-});
+// A renamed file that weighs the same weighs the same: its hash turned over,
+// which earns a line but not a row among the real size movements.
+const renamed = entries.filter(entry => isRename(entry) && !entry.diff);
 
 // Find files whose presence or size changed, then show the largest changes first.
-const changed = [...new Set([...baseStats.keys(), ...headStats.keys()])]
-  .filter(didChange)
-  .map(toDiffObject)
+const changed = entries
+  .filter(({ base, head, diff }) => diff || !base || !head)
   .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
 
 const sections = [];
 
 // Output markdown table if there are changes
-if (changed.length) {
+if (changed.length || renamed.length) {
   const totalDiff = changed.reduce((total, { diff }) => total + diff, 0);
   const totalSign = totalDiff > 0 ? '+' : '';
-  const rows = changed.map(({ file, base, head, diff }) => {
+
+  const rows = changed.map(entry => {
+    const { base, head, baseSize, headSize, diff } = entry;
     const sign = diff > 0 ? '+' : '';
     const percent =
-      base === 0 ? '' : ` (${sign}${((diff / base) * 100).toFixed(1)}%)`;
+      baseSize === 0
+        ? ''
+        : ` (${sign}${((diff / baseSize) * 100).toFixed(1)}%)`;
     const diffFormatted = `${sign}${formatBytes(diff)}${percent}`;
 
-    return `| \`${file}\` | ${baseStats.has(file) ? formatBytes(base) : '—'} | ${headStats.has(file) ? formatBytes(head) : '—'} | ${diffFormatted} |`;
+    return `| \`${pairName(entry)}\` | ${base ? formatBytes(baseSize) : '—'} | ${head ? formatBytes(headSize) : '—'} | ${diffFormatted} |`;
   });
+
+  const summary = [
+    changed.length &&
+      `${count(changed.length, 'file', 'files')} changed · net ${totalSign}${formatBytes(totalDiff)}`,
+    renamed.length && `${count(renamed.length, 'file', 'files')} renamed`,
+  ].filter(Boolean);
+
+  const details = [
+    changed.length &&
+      [
+        '| File | Main | PR | Change |',
+        '| --- | ---: | ---: | ---: |',
+        rows.join('\n'),
+      ].join('\n'),
+    renamed.length &&
+      [
+        '**Renamed** <sub>(identical contents unless noted)</sub>',
+        renamed
+          .map(
+            entry =>
+              `- \`${pairName(entry)}\`${entry.identical ? '' : ' <sub>(same size, different contents)</sub>'}`
+          )
+          .join('\n'),
+      ].join('\n'),
+  ].filter(Boolean);
 
   sections.push(
     [
-      `**Output size:** ${changed.length} ${changed.length === 1 ? 'file' : 'files'} changed · net ${totalSign}${formatBytes(totalDiff)}`,
+      `**Output size:** ${summary.join(' · ')}`,
       '',
       '<details>',
       '<summary>File size details</summary>',
       '',
-      '| File | Main | PR | Change |',
-      '| --- | ---: | ---: | ---: |',
-      rows.join('\n'),
+      details.join('\n\n'),
       '',
       '</details>',
     ].join('\n')
   );
 }
 
-const performance = await comparePerformance();
-if (performance) {
-  sections.push(performance);
-}
-
-if (sections.length) {
-  console.log(`${TITLE}\n\n${sections.join('\n\n')}\n`);
-}
+report(sections, await comparePerformance());

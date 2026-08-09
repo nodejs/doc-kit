@@ -139,10 +139,104 @@ test('object comparator treats benchmark data as metadata', async t => {
 
   const result = await runComparator('object-assertion', base, head);
 
-  assert.equal(result.match(/## `test` Generator/g)?.length, 1);
   assert.doesNotMatch(result, /\*\*Output:/);
   assert.match(result, /Performance estimate/);
   assert.doesNotMatch(result, /benchmark\.json/);
+});
+
+test('comparators fold away runs that only moved performance', async t => {
+  const { base, head } = await createDirectories(t);
+
+  await Promise.all([
+    writeFile(path.join(base, 'result.json'), '{"value":true}', 'utf8'),
+    writeFile(path.join(head, 'result.json'), '{"value":true}', 'utf8'),
+    writeBenchmark(base),
+    writeBenchmark(head, { ...benchmark, elapsedSeconds: 3 }),
+  ]);
+
+  const [sizes, objects] = await Promise.all([
+    runComparator('file-size', base, head),
+    runComparator('object-assertion', base, head),
+  ]);
+
+  for (const result of [sizes, objects]) {
+    assert.doesNotMatch(result, /## `test` Generator/);
+    assert.match(
+      result,
+      /<summary>`test` Generator — performance-only changes<\/summary>/
+    );
+    assert.match(result, /Generation time:\*\* 50\.0% slower/);
+  }
+});
+
+test('comparators pair renamed files that kept their contents', async t => {
+  const { base, head } = await createDirectories(t);
+  const baseAssets = path.join(base, 'assets');
+  const headAssets = path.join(head, 'assets');
+
+  await Promise.all([mkdir(baseAssets), mkdir(headAssets)]);
+  await Promise.all([
+    writeFile(
+      path.join(baseAssets, 'compat.module-2nt43HHR.mjs'),
+      'export const compat = 1;',
+      'utf8'
+    ),
+    writeFile(
+      path.join(headAssets, 'compat.module-CSTB7Jvj.mjs'),
+      'export const compat = 1;',
+      'utf8'
+    ),
+  ]);
+
+  const result = await runComparator('file-size', base, head);
+
+  assert.match(result, /Output size:\*\* 1 file renamed/);
+  assert.doesNotMatch(result, /changed · net/);
+  assert.match(
+    result,
+    /- `assets\/compat\.module-2nt43HHR\.mjs → assets\/compat\.module-CSTB7Jvj\.mjs`$/m
+  );
+});
+
+test('comparators weigh a renamed file against the one it replaced', async t => {
+  const { base, head } = await createDirectories(t);
+  const baseAssets = path.join(base, 'assets');
+  const headAssets = path.join(head, 'assets');
+
+  await Promise.all([mkdir(baseAssets), mkdir(headAssets)]);
+  await Promise.all([
+    writeFile(path.join(baseAssets, 'index-2nt43HHR.mjs'), 'a', 'utf8'),
+    writeFile(
+      path.join(headAssets, 'index-CSTB7Jvj.mjs'),
+      'a much longer',
+      'utf8'
+    ),
+  ]);
+
+  const result = await runComparator('file-size', base, head);
+
+  assert.match(result, /Output size:\*\* 1 file changed · net \+12\.00 B/);
+  assert.match(
+    result,
+    /`assets\/index-2nt43HHR\.mjs → assets\/index-CSTB7Jvj\.mjs` \| 1\.00 B \| 13\.00 B \| \+12\.00 B/
+  );
+  assert.doesNotMatch(result, /—/);
+});
+
+test('comparators keep unrelated files apart when only the name looks hashed', async t => {
+  const { base, head } = await createDirectories(t);
+
+  // Both names end in eight characters, but neither reads like a base64 hash.
+  await Promise.all([
+    writeFile(path.join(base, 'bundle-longname.mjs'), 'a', 'utf8'),
+    writeFile(path.join(head, 'bundle-nickname.mjs'), 'a much longer', 'utf8'),
+  ]);
+
+  const result = await runComparator('file-size', base, head);
+
+  assert.match(result, /2 files changed/);
+  assert.match(result, /`bundle-longname\.mjs` \| 1\.00 B \| —/);
+  assert.match(result, /`bundle-nickname\.mjs` \| — \| 13\.00 B/);
 });
 
 test('comparators report added and removed output files', async t => {

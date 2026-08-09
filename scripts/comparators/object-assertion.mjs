@@ -2,60 +2,66 @@ import assert from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BASE, HEAD, TITLE } from '../constants.mjs';
-import { listOutputFiles } from './files.mjs';
+import { BASE, HEAD } from '../constants.mjs';
+import { pairOutputFiles } from './files.mjs';
 import { comparePerformance } from './performance.mjs';
+import { count, isRename, pairName, report } from './report.mjs';
 
-const [baseFiles, headFiles] = await Promise.all(
-  [BASE, HEAD].map(directory => listOutputFiles(directory))
-);
-const baseFileSet = new Set(baseFiles);
-const headFileSet = new Set(headFiles);
-const files = [...new Set([...baseFiles, ...headFiles])];
+const pairs = await pairOutputFiles(BASE, HEAD);
 
 export const details = (summary, diff) =>
   `<details>\n<summary>${summary}</summary>\n\n\`\`\`diff\n${diff}\n\`\`\`\n\n</details>`;
 
-const getFileDiff = async file => {
-  if (!baseFileSet.has(file)) {
-    return `- \`${file}\` added`;
+const getFileDiff = async pair => {
+  const { base, head, identical } = pair;
+
+  if (!base) {
+    return `- \`${head}\` added`;
   }
 
-  if (!headFileSet.has(file)) {
-    return `- \`${file}\` removed`;
+  if (!head) {
+    return `- \`${base}\` removed`;
   }
 
-  const basePath = join(BASE, file);
-  const headPath = join(HEAD, file);
+  // The pair was matched on its bytes, so parsing it could only prove what the
+  // hashes already did.
+  if (identical) {
+    return null;
+  }
 
-  const baseContent = JSON.parse(await readFile(basePath, 'utf-8'));
-  const headContent = JSON.parse(await readFile(headPath, 'utf-8'));
+  const baseContent = JSON.parse(await readFile(join(BASE, base), 'utf-8'));
+  const headContent = JSON.parse(await readFile(join(HEAD, head), 'utf-8'));
 
   try {
     assert.deepStrictEqual(headContent, baseContent);
     return null;
   } catch ({ message }) {
-    return details(file, message);
+    return details(pairName(pair), message);
   }
 };
 
-const results = await Promise.all(files.map(getFileDiff));
+const results = await Promise.all(
+  pairs.map(async pair => ({ pair, diff: await getFileDiff(pair) }))
+);
 
-const filteredResults = results.filter(Boolean);
+const differences = results.filter(({ diff }) => diff).map(({ diff }) => diff);
+
+// A rename whose contents survived is already spelled out beside its diff, so
+// only the ones carrying no other news are counted here.
+const renamed = results.filter(({ pair, diff }) => !diff && isRename(pair));
 
 const sections = [];
-if (filteredResults.length) {
+if (differences.length || renamed.length) {
+  const summary = [
+    differences.length &&
+      count(differences.length, 'file differs', 'files differ'),
+    renamed.length && `${count(renamed.length, 'file', 'files')} renamed`,
+  ].filter(Boolean);
+
   sections.push(
-    `**Output:** ${filteredResults.length} ${filteredResults.length === 1 ? 'file differs' : 'files differ'}`,
-    filteredResults.join('\n')
+    `**Output:** ${summary.join(' · ')}`,
+    ...(differences.length ? [differences.join('\n')] : [])
   );
 }
 
-const performance = await comparePerformance();
-if (performance) {
-  sections.push(performance);
-}
-
-if (sections.length) {
-  console.log(`${TITLE}\n\n${sections.join('\n\n')}\n`);
-}
+report(sections, await comparePerformance());
