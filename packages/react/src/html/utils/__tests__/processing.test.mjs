@@ -6,7 +6,9 @@ import {
   setConfig,
 } from '@doc-kit/core/utils/configuration/index.mjs';
 
+import { FONTS } from '../../constants.mjs';
 import {
+  buildPreloads,
   buildHead,
   populateWithEvaluation,
   resolvePageRoot,
@@ -108,6 +110,36 @@ describe('resolvePageRoot', () => {
     assert.strictEqual(result, 'https://example.com/docs/');
 
     getConfig('html').useAbsoluteURLs = false;
+  });
+});
+
+describe('buildPreloads', () => {
+  it('resolves every shipped font against the page root', () => {
+    const result = buildPreloads('../');
+
+    // A hint per shipped face, or the unlisted ones load late after all.
+    assert.strictEqual(result.match(/rel="preload"/g).length, FONTS.length);
+
+    for (const font of FONTS) {
+      assert.ok(result.includes(`href="../assets/fonts/${font}"`));
+    }
+  });
+
+  it('keeps an absolute root absolute', () => {
+    const result = buildPreloads('https://nodejs.org/docs/');
+
+    assert.ok(
+      result.includes(`href="https://nodejs.org/docs/assets/fonts/${FONTS[0]}"`)
+    );
+  });
+
+  it('renders crossorigin valueless, since fonts are fetched in CORS mode', () => {
+    // Without it the stylesheet re-fetches the font instead of reusing it.
+    const hints = buildPreloads('./').split('\n');
+
+    for (const hint of hints) {
+      assert.match(hint, /as="font" type="font\/woff2" crossorigin \/>$/);
+    }
   });
 });
 
