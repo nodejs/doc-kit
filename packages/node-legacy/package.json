@@ -1,7 +1,7 @@
 {
   "name": "@node-core/doc-kit-legacy",
   "type": "module",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Node.js legacy-format generators for @doc-kit/core: legacy-html, legacy-html-all, legacy-json, and legacy-json-all",
   "repository": {
     "type": "git",
