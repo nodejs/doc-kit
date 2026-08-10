@@ -11,6 +11,8 @@ import {
   mergeConfig,
 } from 'vite';
 
+import { FONT_DIRECTORY } from '../constants.mjs';
+
 const VIRTUAL_PREFIX = 'virtual:doc-kit/';
 const RESOLVED_VIRTUAL_PREFIX = '\0doc-kit:';
 const PACKAGE_ANCHOR = fileURLToPath(import.meta.url);
@@ -279,6 +281,18 @@ export const createViteConfig = ({
         output: {
           ...vite.build?.rolldownOptions?.output,
           format: 'es',
+
+          /**
+           * Determine the asset names for different files
+           */
+          assetFileNames: asset =>
+            asset.names.some(name => name.endsWith('.woff2'))
+              ? // We need to know where the fonts are to preload
+                // them. Using a dynamic hash would make this
+                // difficult.
+                `${FONT_DIRECTORY}/[name][extname]`
+              : 'assets/[name]-[hash][extname]',
+
           ...(server
             ? {
                 entryFileNames: '[name].mjs',

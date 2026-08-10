@@ -72,6 +72,20 @@ export const JSX_IMPORTS = {
 };
 
 /**
+ * Where the bundler emits fonts
+ */
+export const FONT_DIRECTORY = 'assets/fonts';
+
+/**
+ * Fonts to preload
+ */
+export const FONTS = [
+  'open-sans-latin-wght-normal.woff2',
+  'open-sans-latin-wght-italic.woff2',
+  'ibm-plex-mono-latin-400-normal.woff2',
+];
+
+/**
  * Specification rules for resource hints like prerendering and prefetching.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Speculation_Rules_API
  */

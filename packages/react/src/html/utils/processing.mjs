@@ -5,7 +5,7 @@ import createConfigSource from './config.mjs';
 import createProgramBuilder from './generate.mjs';
 import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
 import { resolveBundler } from '../bundlers/index.mjs';
-import { SPECULATION_RULES } from '../constants.mjs';
+import { FONT_DIRECTORY, FONTS, SPECULATION_RULES } from '../constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
 
 /**
@@ -70,6 +70,20 @@ const renderTag = (tag, attrs) => {
 
   return `<${tag}${rendered} />`;
 };
+
+/**
+ * Renders the preload hints for a page
+ */
+export const buildPreloads = root =>
+  FONTS.map(font =>
+    renderTag('link', {
+      rel: 'preload',
+      href: `${root}${FONT_DIRECTORY}/${font}`,
+      as: 'font',
+      type: 'font/woff2',
+      crossorigin: true,
+    })
+  ).join('\n  ');
 
 /**
  * Builds the configurable `<head>` markup shared by every page from the
@@ -183,6 +197,7 @@ export async function processBundles({
           entrypoint: bundler.getEntryId(data.api),
           speculationRules: SPECULATION_RULES,
           themeScript: THEME_SCRIPT,
+          preloads: buildPreloads(root),
           root,
           metadata: data,
           config,
