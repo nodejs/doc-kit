@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import { getDisplayedTheme } from './theme.mjs';
-
 import { server } from '#theme/config';
 
 /** @returns {'dark'|'light'} The current OS-level color scheme. */
@@ -35,14 +33,6 @@ export const useTheme = () => {
   const [pref, setPref] = useState(() =>
     server ? 'system' : (localStorage.getItem('theme') ?? 'system')
   );
-  const [currentTheme, setCurrentTheme] = useState(() =>
-    server
-      ? 'system'
-      : getDisplayedTheme(
-          localStorage.getItem('theme') ?? 'system',
-          getSystemTheme() === 'dark'
-        )
-  );
 
   // Apply theme on every preference change, and if 'system',
   // also listen for OS-level color scheme changes.
@@ -54,13 +44,8 @@ export const useTheme = () => {
     }
 
     const mql = matchMedia('(prefers-color-scheme: dark)');
-    /** Synchronizes the icon when the OS-level color scheme changes. */
-    const handleSystemThemeChange = () => {
-      applySystemTheme();
-      setCurrentTheme(getSystemTheme());
-    };
-    mql.addEventListener('change', handleSystemThemeChange);
-    return () => mql.removeEventListener('change', handleSystemThemeChange);
+    mql.addEventListener('change', applySystemTheme);
+    return () => mql.removeEventListener('change', applySystemTheme);
   }, [pref]);
 
   /** Updates the preference in both React state and localStorage. */
@@ -68,9 +53,8 @@ export const useTheme = () => {
     setPref(next);
     if (!server) {
       localStorage.setItem('theme', next);
-      setCurrentTheme(getDisplayedTheme(next, getSystemTheme() === 'dark'));
     }
   }, []);
 
-  return [currentTheme, setTheme];
+  return [pref, setTheme];
 };

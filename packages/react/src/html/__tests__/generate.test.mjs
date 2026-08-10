@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
@@ -89,6 +96,28 @@ describe('web generate', () => {
     assert.doesNotMatch(notFoundHTML, /View As/);
     assert.match(fsHTML, /src=\.\.\/assets\//);
     assert.match(notFoundHTML, /src=\.\/assets\//);
+    assert.match(fsHTML, /data-theme-preference=system/);
+
+    const assets = await readdir(join(output, 'assets'));
+    const css = await Promise.all(
+      assets
+        .filter(asset => asset.endsWith('.css'))
+        .map(asset => readFile(join(output, 'assets', asset), 'utf8'))
+    );
+    const bundledCSS = css.join('\n');
+
+    assert.match(
+      bundledCSS,
+      /data-theme-preference=system[^{}]*button>svg\{opacity:0\}/
+    );
+    assert.match(
+      bundledCSS,
+      /\[data-theme=dark\][^{}]*\[data-theme-icon=light\]\{display:none\}/
+    );
+    assert.match(
+      bundledCSS,
+      /\[data-theme=dark\][^{}]*\[data-theme-icon=dark\]\{display:block\}/
+    );
   });
 
   it('renders the configurable head without hardcoded defaults', async context => {
