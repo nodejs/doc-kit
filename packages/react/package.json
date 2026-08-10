@@ -1,7 +1,7 @@
 {
   "name": "@doc-kit/generator-react",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "React/JSX-based generators for @doc-kit/core: html, jsx-ast, llms-txt, sitemap, and orama-db",
   "repository": {
     "type": "git",
