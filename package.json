@@ -21,7 +21,8 @@
     "prepare": "husky || exit 0",
     "run": "node packages/cli/bin/cli.mjs",
     "watch": "node --watch packages/cli/bin/cli.mjs",
-    "docs:build": "bash scripts/vercel-docs-build.sh",
+    "build:site": "bash scripts/deployments/site/main.sh",
+    "build:beta": "bash scripts/deployments/beta/main.sh",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "release": "changeset publish"

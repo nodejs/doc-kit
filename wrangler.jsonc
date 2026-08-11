@@ -1,0 +1,21 @@
+{
+  "name": "doc-kit-beta",
+  "compatibility_date": "2026-05-01",
+  "build": {
+    "command": "node --run build:beta"
+  },
+  "assets": {
+    "directory": "./out",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    {
+      "pattern": "beta.docs.nodejs.org",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
