@@ -48,6 +48,7 @@ export default (Component, { name, on }) => {
 
       <Component {...props}>
         {toChildArray(children).map((child, index) => (
+          // eslint-disable-next-line react-x/no-array-index-key -- static server-rendered children never reorder
           <island-slot defer-hydration key={index}>
             {child}
           </island-slot>

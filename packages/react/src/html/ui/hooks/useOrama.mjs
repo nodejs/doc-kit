@@ -14,6 +14,9 @@ export default pathname => {
   const loaded = useRef(null);
 
   useEffect(() => {
+    // Reset loaded state when pathname changes
+    loaded.current = null;
+
     // Create the database instance
     const db = create({
       schema: {},
@@ -45,8 +48,8 @@ export default pathname => {
       return search(db, options);
     };
 
-    setClient(db);
-  }, []);
+    queueMicrotask(() => setClient(db));
+  }, [pathname]);
 
   return client;
 };
