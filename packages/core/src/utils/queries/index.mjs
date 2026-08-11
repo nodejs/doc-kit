@@ -1,7 +1,7 @@
 'use strict';
 
 import { transformNodesToString } from '../unist.mjs';
-import { isTypedList } from './utils.mjs';
+import { isTypedListItem, isTypedList } from './utils.mjs';
 
 // This defines the actual REGEX Queries
 export const QUERIES = {
@@ -70,6 +70,12 @@ export const UNIST = {
    * @returns {boolean}
    */
   isLooselyTypedList: list => Boolean(isTypedList(list)),
+
+  /**
+   * @param {import('@types/mdast').ListItem} item
+   * @returns {boolean}
+   */
+  isTypedListItem,
 
   /**
    * @param {import('@types/mdast').List} list

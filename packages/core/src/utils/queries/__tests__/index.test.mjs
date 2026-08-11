@@ -178,4 +178,67 @@ describe('UNIST', () => {
       });
     });
   });
+
+  describe('isTypedListItem', () => {
+    it('returns false for undefined/null items', () => {
+      strictEqual(UNIST.isTypedListItem(undefined), false);
+      strictEqual(UNIST.isTypedListItem(null), false);
+    });
+
+    it('returns false for items without children', () => {
+      strictEqual(UNIST.isTypedListItem({}), false);
+    });
+
+    const cases = [
+      {
+        name: 'inlineCode with valid property name',
+        item: createTree('listItem', [
+          createTree('paragraph', [
+            createTree('inlineCode', 'actual'),
+            createTree('text', ' '),
+            createTree('typeAnnotation', 'Array|string'),
+          ]),
+        ]),
+        expected: true,
+      },
+      {
+        name: 'Returns prefix',
+        item: createTree('listItem', [
+          createTree('paragraph', [createTree('text', 'Returns: some value')]),
+        ]),
+        expected: true,
+      },
+      {
+        name: 'direct type annotation',
+        item: createTree('listItem', [
+          createTree('paragraph', [createTree('typeAnnotation', 'Type')]),
+        ]),
+        expected: true,
+      },
+      {
+        name: 'plain prose text (no typed prefix)',
+        item: createTree('listItem', [
+          createTree('paragraph', [
+            createTree('text', 'Algorithm complexity: O(N*D), where:'),
+          ]),
+        ]),
+        expected: false,
+      },
+      {
+        name: 'inlineCode with invalid property name',
+        item: createTree('listItem', [
+          createTree('paragraph', [
+            createTree('inlineCode', 'not a valid prop'),
+          ]),
+        ]),
+        expected: false,
+      },
+    ];
+
+    cases.forEach(({ name, item, expected }) => {
+      it(`returns ${expected} for ${name}`, () => {
+        strictEqual(UNIST.isTypedListItem(item), expected);
+      });
+    });
+  });
 });
