@@ -23,6 +23,7 @@
     "watch": "node --watch packages/cli/bin/cli.mjs",
     "build:site": "bash scripts/deployments/site/main.sh",
     "build:beta": "bash scripts/deployments/beta/main.sh",
+    "build": "node --run build:site",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "release": "changeset publish"
