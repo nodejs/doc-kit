@@ -2,58 +2,17 @@ import { VALID_JAVASCRIPT_PROPERTY } from './constants.mjs';
 import { QUERIES } from './index.mjs';
 
 /**
- * Checks whether a single list item looks like a typed parameter — i.e. it
- * starts with a property name (`inlineCode`), a Returns/Extends/Type prefix,
- * or a direct type annotation.
+ * Inspects the first phrasing node of a paragraph and returns how confidently
+ * it looks like the start of a typed parameter.
  *
- * @param {import('@types/mdast').ListItem} item
- * @returns {boolean}
- */
-export const isTypedListItem = item => {
-  const firstNode = item?.children?.[0]?.children?.[0];
-  if (!firstNode) {
-    return false;
-  }
-
-  const value = firstNode?.value?.trimStart();
-
-  // Typed list starters (strong signal)
-  if (value && QUERIES.typedListStarters.test(value)) {
-    return true;
-  }
-
-  // Direct type annotation: {Type}
-  if (firstNode.type === 'typeAnnotation') {
-    return true;
-  }
-
-  // inlineCode + space (weaker signal)
-  if (
-    firstNode.type === 'inlineCode' &&
-    value &&
-    VALID_JAVASCRIPT_PROPERTY.test(value)
-  ) {
-    return true;
-  }
-
-  return false;
-};
-
-/**
- * @param {import('@types/mdast').List} list
+ * @param {import('@types/mdast').PhrasingContent | undefined} firstNode
  * @returns {0 | 1 | 2} confidence
  *
- * 0: This is not a typed list
- * 1: This is a loosely typed list
- * 2: This is a strongly typed list
+ * 0: Not a typed parameter
+ * 1: Loosely typed (inlineCode + valid property name)
+ * 2: Strongly typed (typed list starter or direct type annotation)
  */
-export const isTypedList = list => {
-  if (!list || list.type !== 'list') {
-    return 0;
-  }
-
-  const firstNode = list.children?.[0]?.children?.[0]?.children[0];
-
+const getTypedConfidence = firstNode => {
   if (!firstNode) {
     return 0;
   }
@@ -80,4 +39,31 @@ export const isTypedList = list => {
   }
 
   return 0;
+};
+
+/**
+ * Checks whether a single list item looks like a typed parameter — i.e. it
+ * starts with a property name (`inlineCode`), a Returns/Extends/Type prefix,
+ * or a direct type annotation.
+ *
+ * @param {import('@types/mdast').ListItem} item
+ * @returns {boolean}
+ */
+export const isTypedListItem = item =>
+  Boolean(getTypedConfidence(item?.children?.[0]?.children?.[0]));
+
+/**
+ * @param {import('@types/mdast').List} list
+ * @returns {0 | 1 | 2} confidence
+ *
+ * 0: This is not a typed list
+ * 1: This is a loosely typed list
+ * 2: This is a strongly typed list
+ */
+export const isTypedList = list => {
+  if (!list || list.type !== 'list') {
+    return 0;
+  }
+
+  return getTypedConfidence(list.children?.[0]?.children?.[0]?.children?.[0]);
 };
