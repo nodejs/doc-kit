@@ -1,5 +1,6 @@
 ---
-'doc-kit': patch
+'@doc-kit/core': patch
+'@doc-kit/generator-react': patch
 ---
 
 Fix empty paragraphs in API docs when a typed parameter list contains trailing non-parameter items
