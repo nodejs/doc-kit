@@ -10,12 +10,11 @@ import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
-import readingTime from 'reading-time';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { createJSXElement } from './ast.mjs';
-import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
+import { extractHeadings } from './buildBarProps.mjs';
 import { annotateOverloads } from './overloads.mjs';
 import { getRemarkRecma as remark } from './remark.mjs';
 import { JSX_IMPORTS } from '../../html/constants.mjs';
@@ -310,7 +309,6 @@ export const createDocumentLayout = (entries, metadata) => {
     createJSXElement(JSX_IMPORTS.Layout.name, {
       metadata,
       headings: extractHeadings(entries),
-      readingTime: readingTime(extractTextContent(entries)).text,
       children: entries.map(processEntry),
     }),
   ]);

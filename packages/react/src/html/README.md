@@ -416,7 +416,6 @@ export default ({ metadata }) => (
 - `metadata` {Object} Serialized page metadata — all YAML frontmatter properties
   plus `addedIn`, `basename`, `path`, and any custom user-defined fields.
 - `headings` {Array} Pre-computed table of contents heading entries.
-- `readingTime` {string} Estimated reading time (e.g. `'5 min read'`).
 - `children` {ComponentChildren} Processed page content.
 
 The `Layout` component receives the props above. Custom Layout components can use

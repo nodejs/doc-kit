@@ -44,7 +44,7 @@ CLI tool to generate the Node.js API documentation
 
 Options:
   --log-level <level>  Log level (choices: "debug", "info", "warn", "error",
-                       "fatal", default: "info")
+                       "fatal", "silent", default: "info")
   -h, --help           display help for command
 
 Commands:

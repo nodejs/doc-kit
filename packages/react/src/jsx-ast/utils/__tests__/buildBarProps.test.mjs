@@ -1,36 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-const { extractTextContent, extractHeadings } =
-  await import('../buildBarProps.mjs');
-
-describe('extractTextContent', () => {
-  it('combines text and code node values from entries', () => {
-    const entries = [
-      {
-        content: {
-          type: 'root',
-          children: [
-            { type: 'text', value: 'Hello ' },
-            { type: 'code', value: 'world' },
-          ],
-        },
-      },
-      {
-        content: {
-          type: 'root',
-          children: [
-            { type: 'text', value: 'Another ' },
-            { type: 'code', value: 'example' },
-          ],
-        },
-      },
-    ];
-
-    const result = extractTextContent(entries);
-    assert.equal(result, 'Hello worldAnother example');
-  });
-});
+const { extractHeadings } = await import('../buildBarProps.mjs');
 
 describe('extractHeadings', () => {
   it('extracts headings from entries that qualify for ToC', () => {

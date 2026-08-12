@@ -9,6 +9,10 @@ export const LogLevel = {
   warn: 30,
   error: 40,
   fatal: 50,
+  // Threshold-only level: no message is ever emitted at `silent` (there is no
+  // logger method for it), so setting it suppresses all output. It has no
+  // entry in the tag/color maps below for the same reason.
+  silent: Infinity,
 };
 
 /**

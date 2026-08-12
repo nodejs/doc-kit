@@ -10,8 +10,8 @@ npx @doc-kit/cli [command] [options]
 
 One option applies to every command:
 
-- `--log-level <level>` {string} `debug`, `info`, `warn`, `error`, or
-  `fatal`. **Default:** `'info'`.
+- `--log-level <level>` {string} `debug`, `info`, `warn`, `error`, `fatal`,
+  or `silent` (no output at all). **Default:** `'info'`.
 
 ## `doc-kit generate`
 

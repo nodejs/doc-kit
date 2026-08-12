@@ -1,27 +1,11 @@
 'use strict';
 
-import { visit } from 'unist-util-visit';
-
 import { getFullName } from './signature.mjs';
 import { TOC_MAX_HEADING_DEPTH } from '../constants.mjs';
 
 // Callable heading types whose ToC label should be the bare function name
 // rather than the full signature.
 const FUNCTION_HEADING_TYPES = new Set(['method', 'ctor', 'classMethod']);
-
-/**
- * Generate a combined plain text string from all MDAST entries for estimating reading time.
- *
- * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - API documentation entries
- */
-export const extractTextContent = entries => {
-  return entries.reduce((acc, entry) => {
-    visit(entry.content, ['text', 'code'], node => {
-      acc += node.value || '';
-    });
-    return acc;
-  }, '');
-};
 
 /**
  * Determines if an entry should be included in the Table of Contents.

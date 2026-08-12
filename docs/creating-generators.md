@@ -162,6 +162,11 @@ npx @doc-kit/cli generate -t @my-scope/my-package/my-format ...
 npx @doc-kit/cli generate -t ./generators/my-format/index.mjs ...
 ```
 
+Package specifiers are resolved from wherever doc-kit is installed, then from
+the invoking project's `node_modules`, then from the npm global root — so
+one-shot runs (`npx @doc-kit/cli`) find generator packages installed either
+in your project or globally.
+
 Built-in generators additionally get a shorthand alias in
 `packages/core/src/generators/index.mjs`, which maps the name users type to
 the import specifier it resolves to:

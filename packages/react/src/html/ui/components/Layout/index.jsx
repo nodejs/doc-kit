@@ -18,9 +18,9 @@ import SideBar from '#theme/Sidebar';
  * main content, meta bar, and footer. Override via `#theme/Layout` in your
  * configuration's `imports` to customize the entire page structure.
  *
- * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime: string, children: import('preact').ComponentChildren }} props
+ * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, children: import('preact').ComponentChildren }} props
  */
-export default ({ metadata, headings, readingTime, children }) => {
+export default ({ metadata, headings, children }) => {
   const crossLinkItems = navigation.showCrossLinks
     ? (navigation.sidebar?.flatMap(({ items }) => items) ?? [])
     : [];
@@ -67,11 +67,7 @@ export default ({ metadata, headings, readingTime, children }) => {
               </div>
             )}
           </div>
-          <MetaBar
-            metadata={metadata}
-            headings={headings}
-            readingTime={readingTime}
-          />
+          <MetaBar metadata={metadata} headings={headings} />
         </div>
       </Article>
       <Footer />

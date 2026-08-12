@@ -173,13 +173,26 @@ describe('createLogger', () => {
     });
   });
 
-  it('should filter all messages when minimum level is set above FATAL', t => {
+  it('should filter all messages when level is SILENT', t => {
     const transport = t.mock.fn();
 
-    // silent logs
-    const logger = createLogger(transport, 100);
+    const logger = createLogger(transport, LogLevel.silent);
 
-    Object.keys(LogLevel).forEach(level => {
+    ['debug', 'info', 'warn', 'error', 'fatal'].forEach(level => {
+      logger[level]('Hello, World!');
+    });
+
+    strictEqual(transport.mock.callCount(), 0);
+  });
+
+  it('should filter all messages when SILENT is set by name at runtime', t => {
+    const transport = t.mock.fn();
+
+    const logger = createLogger(transport, LogLevel.info);
+
+    logger.setLogLevel('silent');
+
+    ['debug', 'info', 'warn', 'error', 'fatal'].forEach(level => {
       logger[level]('Hello, World!');
     });
 

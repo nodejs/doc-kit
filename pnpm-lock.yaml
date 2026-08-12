@@ -236,8 +236,8 @@ importers:
         specifier: ^1.4.3
         version: 1.4.3(supports-color@7.2.0)
       '@node-core/ui-components':
-        specifier: ^1.7.4
-        version: 1.7.4(@orama/core@1.2.19)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(supports-color@7.2.0)
+        specifier: ^1.7.5
+        version: 1.7.5(@orama/core@1.2.19)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(supports-color@7.2.0)
       '@orama/orama':
         specifier: ^3.1.18
         version: 3.1.18
@@ -262,9 +262,6 @@ importers:
       preact-render-to-string:
         specifier: ^6.7.0
         version: 6.7.0(preact@10.29.8)
-      reading-time:
-        specifier: ^1.5.0
-        version: 1.5.0
       recma-jsx:
         specifier: ^1.0.1
         version: 1.0.1(acorn@8.18.0)
@@ -707,8 +704,8 @@ packages:
     resolution: {integrity: sha512-3LnysU0F1MacdHc+1VHswySfD+smk2bHGob2IlqtHc9VrL5yCC+gbIBbALZYtOOSdmY9J65XvJilFm8XbXJZgA==}
     engines: {node: '>=20'}
 
-  '@node-core/ui-components@1.7.4':
-    resolution: {integrity: sha512-HmSqvXKOk8xBBpFAjWzx6FNCVYmyWSvqwqwfUVaJVAbNGyRNwtziV6HaBjW/ebhD8pqJlhIsrTYO5SFdnQ8WIQ==}
+  '@node-core/ui-components@1.7.5':
+    resolution: {integrity: sha512-BVSpgyjl84yLHU+KHrFs5d+zJdlj8cQSGfkzltPmB3W3daDcUdY1CNGwsVbDc60dAvzzHzpKR8ovgVqAA5UIpg==}
     engines: {node: '>=20'}
 
   '@nodelib/fs.scandir@2.1.5':
@@ -2975,9 +2972,6 @@ packages:
     resolution: {integrity: sha512-VIMnQi/Z4HT2Fxuwg5KrY174U1VdUIASQVWXXyqtNRtxSr9IYkn1rsI6Tb6HsrHCmB7gVpNwX6JxPTHcH6IoTA==}
     engines: {node: '>=6'}
 
-  reading-time@1.5.0:
-    resolution: {integrity: sha512-onYyVhBNr4CmAxFsKS7bz+uTLRakypIe4R+5A824vBSkQy/hB3fZepoVEf8OVAxzLvK+H/jm9TzpI3ETSm64Kg==}
-
   recma-jsx@1.0.1:
     resolution: {integrity: sha512-huSIy7VU2Z5OLv6oFLosQGGDqPqdO1iq6bWNAdhzMxSJP7RAso4fCZ1cKu8j9YHCZf3TPrq4dw3okhrylgcd7w==}
     peerDependencies:
@@ -4044,7 +4038,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@node-core/ui-components@1.7.4(@orama/core@1.2.19)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(supports-color@7.2.0)':
+  '@node-core/ui-components@1.7.5(@orama/core@1.2.19)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(supports-color@7.2.0)':
     dependencies:
       '@heroicons/react': 2.2.0(react@19.2.8)
       '@orama/orama': 3.1.18
@@ -6652,8 +6646,6 @@ snapshots:
       js-yaml: 3.15.1
       pify: 4.0.1
       strip-bom: 3.0.0
-
-  reading-time@1.5.0: {}
 
   recma-jsx@1.0.1(acorn@8.18.0):
     dependencies:
