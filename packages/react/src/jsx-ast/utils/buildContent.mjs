@@ -264,11 +264,33 @@ export const processEntry = entry => {
   // Transform typed lists into property tables. Skipped for MDX pages, whose
   // lists are authored prose rather than API type signatures.
   if (!entry.mdx) {
-    visit(
-      entry.content,
-      UNIST.isStronglyTypedList,
-      (node, idx, parent) => (parent.children[idx] = createSignatureTable(node))
-    );
+    visit(entry.content, UNIST.isStronglyTypedList, (node, idx, parent) => {
+      // A typed list may contain trailing non-parameter items (e.g. prose
+      // bullets that happen to share the same loose list in the source
+      // markdown). Split those off so they render as regular content instead
+      // of being silently swallowed by the signature table.
+      const firstNonTyped = node.children.findIndex(
+        item => !UNIST.isTypedListItem(item)
+      );
+
+      if (firstNonTyped === -1) {
+        parent.children[idx] = createSignatureTable(node);
+        return;
+      }
+
+      const typedItems = node.children.slice(0, firstNonTyped);
+      const restItems = node.children.slice(firstNonTyped);
+
+      const replacements = [];
+      if (typedItems.length > 0) {
+        replacements.push(
+          createSignatureTable({ ...node, children: typedItems })
+        );
+      }
+      replacements.push({ ...node, children: restItems });
+
+      parent.children.splice(idx, 1, ...replacements);
+    });
   }
 
   return entry.content;
