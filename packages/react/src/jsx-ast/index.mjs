@@ -18,6 +18,7 @@ export default {
     ref: 'main',
     generateAllPage: true,
     generateNotFoundPage: true,
+    showReadingTime: true,
   },
 
   hasParallelProcessor: true,
