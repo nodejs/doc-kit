@@ -121,6 +121,12 @@ main {
       div[role='menu'] {
         left: 0;
       }
+
+      /* Prevent long labels from overflowing dropdown width */
+      div[role='menu'] > a[role='menuitem'] > div {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
     }
   }
 
