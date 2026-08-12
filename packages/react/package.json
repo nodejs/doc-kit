@@ -10,6 +10,7 @@
   },
   "exports": {
     "./html": "./src/html/index.mjs",
+    "./html/ui/*": "./src/html/ui/*",
     "./html/bundlers/vite": "./src/html/bundlers/vite.mjs",
     "./jsx-ast": "./src/jsx-ast/index.mjs",
     "./llms-txt": "./src/llms-txt/index.mjs",
