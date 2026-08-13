@@ -13,20 +13,28 @@ import { JSX_IMPORTS } from '../../html/constants.mjs';
  *
  * @param {string} functionName - The name of the function or class.
  * @param {import('@doc-kit/core/utils/signature/types').MethodSignature} signature - The parsed signature object.
- * @param {string} prefix - Optional prefix, i.e. `'new '` for constructors.
+ * @param {import('@doc-kit/core/generators/metadata/types').HeadingData} [heading] - Metadata of the heading being documented.
  */
 export const generateSignature = (
   functionName,
   { params, return: returnType, extends: extendsType },
-  prefix = ''
+  heading
 ) => {
+  const isConstructor = heading?.type === 'ctor';
+  const prefix = isConstructor ? 'new ' : '';
+
   // Class with `extends` clause
   if (extendsType) {
     return `class ${prefix}${functionName} extends ${extendsType.type}`;
   }
 
+  // A constructor always yields an instance of its own class, so `void` is
+  // never a correct fallback for one. Node's docs omit the `Returns:` line on
+  // constructors by convention, so infer it from the class name instead.
+  const fallbackReturn = isConstructor ? functionName : 'void';
+
   // Function or method
-  const returnStr = (returnType ? `: ${returnType.type}` : ': void')
+  const returnStr = `: ${returnType?.type ?? fallbackReturn}`
     .split('|')
     .map(part => part.trim())
     .filter(Boolean)
@@ -53,10 +61,10 @@ export const generateSignature = (
  *
  * @param {string} functionName - The function name to display.
  * @param {import('@doc-kit/core/utils/signature/types').MethodSignature} signature - Signature object with parameter and return type info.
- * @param {string} prefix - Optional prefix like `'new '`.
+ * @param {import('@doc-kit/core/generators/metadata/types').HeadingData} [heading] - Metadata of the heading being documented.
  */
-export const createSignatureCodeBlock = (functionName, signature, prefix) => {
-  const sig = generateSignature(functionName, signature, prefix);
+export const createSignatureCodeBlock = (functionName, signature, heading) => {
+  const sig = generateSignature(functionName, signature, heading);
   const highlighted = highlighter.highlightToHast(sig, 'typescript');
 
   return createElement('div', { class: 'signature' }, [highlighted]);
@@ -123,11 +131,7 @@ export const insertSignatureCodeBlock = ({ children }, { data }, idx) => {
   children.splice(
     idx,
     0,
-    createSignatureCodeBlock(
-      displayName,
-      signature,
-      data.type === 'ctor' ? 'new ' : ''
-    )
+    createSignatureCodeBlock(displayName, signature, data)
   );
 };
 
