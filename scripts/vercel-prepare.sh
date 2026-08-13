@@ -27,6 +27,7 @@ cd node
 git sparse-checkout set lib doc .
 
 sed 's/STABILITY_OVERVIEW_SLOT_BEGIN/DOCUMENTATION_INDEX/g' ./doc/api/documentation.md > ./doc/api/index.md
+rm ./doc/api/documentation.md
 
 # Move back out
 cd ..
