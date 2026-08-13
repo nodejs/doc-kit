@@ -8,6 +8,7 @@ import {
 } from '@doc-kit/core/utils/configuration/templates.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
 import readingTime from 'reading-time';
@@ -44,14 +45,10 @@ import {
  * @param {string} markdown - The markdown string to convert.
  * @returns {string} The plain text representation.
  */
-const toPlainText = markdown => {
-  const tree = unified().use(remarkParse).parse(markdown);
-  let text = '';
-  visit(tree, ['text', 'inlineCode'], node => {
-    text += node.value || '';
-  });
-  return text.trim();
-};
+const toPlainText = markdown =>
+  transformNodesToString(
+    unified().use(remarkParse).parse(markdown).children
+  ).trim();
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
