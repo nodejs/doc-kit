@@ -10,7 +10,12 @@ The `jsx-ast` generator converts MDAST (Markdown Abstract Syntax Tree) to JSX AS
   documentation structure.
 - `generateAllPage` {boolean} When `true`, creates a synthetic JSX AST entry
   for `all.html`. **Default:** `true`.
-- `generateIndexPage` {boolean} When `true`, creates a synthetic JSX AST entry
-  for `index.html`. **Default:** `true`.
 - `generateNotFoundPage` {boolean} When `true`, creates a synthetic JSX AST
   entry for `404.html`. **Default:** `true`.
+
+## Index page
+
+`index.html` is generated when an `index` document is part of the input, and
+is rendered from that document like any other page. A section containing a
+`<!-- DOCUMENTATION_INDEX -->` comment additionally receives the Stability
+Overview table of all modules.
