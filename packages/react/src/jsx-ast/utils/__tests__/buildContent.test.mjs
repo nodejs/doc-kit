@@ -3,7 +3,10 @@ import { describe, it } from 'node:test';
 
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 
-import { transformHeadingNode } from '../buildContent.mjs';
+import {
+  transformHeadingNode,
+  createHeadingElement,
+} from '../buildContent.mjs';
 
 const heading = {
   type: 'heading',
@@ -65,5 +68,35 @@ describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
 
     assert.equal(alert.name, 'AlertBox');
     assert.equal(levelAttr.value, 'danger');
+  });
+});
+
+describe('createHeadingElement (Overloads Layout)', () => {
+  it('returns a hidden span for subsequent overloads to prevent UI noise', () => {
+    const content = {
+      depth: 3,
+      data: { type: 'method', slug: 'factorizemodule-1', isOverload: true },
+    };
+
+    const result = createHeadingElement(content, null);
+
+    assert.equal(result.type, 'element');
+    assert.equal(result.tagName, 'span');
+    assert.equal(result.properties.id, 'factorizemodule-1');
+    assert.equal(result.properties.style, 'display: none;');
+  });
+
+  it('returns a full heading element for normal methods (non-overloads)', () => {
+    const content = {
+      depth: 3,
+      data: { type: 'method', slug: 'factorizemodule' },
+    };
+
+    const result = createHeadingElement(content, null);
+
+    assert.equal(result.tagName, 'div');
+    const h3 = result.children.find(child => child.tagName === 'h3');
+    assert.ok(h3);
+    assert.equal(h3.properties.id, 'factorizemodule');
   });
 });
