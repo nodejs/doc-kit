@@ -132,7 +132,11 @@ export const extractHeadingContent = content => {
  * @param {import('unist').Node|null} changeElement - The change history element, if available
  */
 export const createHeadingElement = (content, changeElement) => {
-  const { type, slug } = content.data;
+  const { type, slug, isOverload } = content.data;
+
+  if (isOverload) {
+    return createElement('span', { id: slug, style: 'display: none;' });
+  }
 
   let headingContent = extractHeadingContent(content);
 
