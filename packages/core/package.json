@@ -21,6 +21,14 @@
     "./ast-js": "./src/generators/ast-js/index.mjs",
     "./json-simple": "./src/generators/json-simple/index.mjs",
     "./metadata": "./src/generators/metadata/index.mjs",
+    "./metadata/types": {
+      "types": "./src/generators/metadata/types.d.ts",
+      "default": "./src/generators/metadata/types.d.ts"
+    },
+    "./generators/metadata/types": {
+      "types": "./src/generators/metadata/types.d.ts",
+      "default": "./src/generators/metadata/types.d.ts"
+    },
     "./package.json": "./package.json",
     "./shiki.config.mjs": "./shiki.config.mjs",
     "./src/*": "./src/*",
