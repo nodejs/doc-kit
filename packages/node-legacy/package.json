@@ -8,6 +8,7 @@
     "url": "git+https://github.com/nodejs/doc-kit.git",
     "directory": "packages/node-legacy"
   },
+  "license": "MIT",
   "exports": {
     "./legacy-html": "./src/legacy-html/index.mjs",
     "./legacy-html-all": "./src/legacy-html-all/index.mjs",

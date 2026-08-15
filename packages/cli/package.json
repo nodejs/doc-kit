@@ -8,6 +8,7 @@
     "url": "git+https://github.com/nodejs/doc-kit.git",
     "directory": "packages/cli"
   },
+  "license": "MIT",
   "scripts": {
     "run": "node bin/cli.mjs",
     "watch": "node --watch bin/cli.mjs"
