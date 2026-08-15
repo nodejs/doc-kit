@@ -8,12 +8,18 @@ on:
 permissions:
   contents: read
   actions: read
-  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
 
 jobs:
   aggregate:
     name: Aggregate Comparison Results
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -40,24 +46,41 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      # `github.event.workflow_run.pull_requests` is only populated for PRs from
-      # branches in this repository; for fork PRs it is empty, so we resolve the
-      # PR number from the head repository and branch instead.
-      - name: Resolve PR number
+      - name: Resolve Pull Request Number
         id: pr
         if: steps.combine.outputs.combined
-        env:
-          GH_TOKEN: ${{ github.token }}
-          HEAD_REPO: ${{ github.event.workflow_run.head_repository.login }}
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-        run: |
-          PR_NUMBER=$(gh api \
-            "repos/${GITHUB_REPOSITORY}/pulls?head=${HEAD_REPO}:${HEAD_BRANCH}" \
-            --jq '[.[] | select(.state == "open")][0].number // .[0].number // empty')
-          echo "number=${PR_NUMBER:-}" >> "$GITHUB_OUTPUT"
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+
+            // 1. For same-repo Pull Requests the run is already linked to its PR(s).
+            if (run.pull_requests && run.pull_requests.length) {
+              core.setOutput('number', run.pull_requests[0].number);
+              return;
+            }
+
+            // 2. For forks that list is empty, so find the open Pull Request who has the
+            // correct branch information
+            const match = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${run.head_repository.owner.login}:${run.head_branch}`,
+              sort: 'updated',
+              direction: 'desc',
+              per_page: 1,
+            }).then(r => r.data[0]);
+
+            if (!match) {
+              core.info(`No open pull request found for HEAD ${run.head_sha}`);
+              return;
+            }
+
+            core.setOutput('number', match.number);
 
       - name: Add Comment to PR
-        if: steps.combine.outputs.combined && steps.pr.outputs.number
+        if: steps.combine.outputs.combined && steps.pr.outputs.number != ''
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
         with:
           comment-tag: compared
