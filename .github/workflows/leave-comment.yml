@@ -40,9 +40,26 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Add Comment to PR
+      # `github.event.workflow_run.pull_requests` is only populated for PRs from
+      # branches in this repository; for fork PRs it is empty, so we resolve the
+      # PR number from the head repository and branch instead.
+      - name: Resolve PR number
+        id: pr
         if: steps.combine.outputs.combined
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REPO: ${{ github.event.workflow_run.head_repository.login }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          PR_NUMBER=$(gh api \
+            "repos/${GITHUB_REPOSITORY}/pulls?head=${HEAD_REPO}:${HEAD_BRANCH}" \
+            --jq '[.[] | select(.state == "open")][0].number // .[0].number // empty')
+          echo "number=${PR_NUMBER:-}" >> "$GITHUB_OUTPUT"
+
+      - name: Add Comment to PR
+        if: steps.combine.outputs.combined && steps.pr.outputs.number
         uses: ./.github/actions/comment-pull-request
         with:
           comment-tag: compared
           message: ${{ steps.combine.outputs.combined }}
+          pr-number: ${{ steps.pr.outputs.number }}
