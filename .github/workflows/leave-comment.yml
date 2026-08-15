@@ -42,8 +42,7 @@ jobs:
 
       - name: Add Comment to PR
         if: steps.combine.outputs.combined
-        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
+        uses: ./.github/actions/comment-pull-request
         with:
           comment-tag: compared
           message: ${{ steps.combine.outputs.combined }}
-          pr-number: ${{ github.event.workflow_run.pull_requests[0].number }}
