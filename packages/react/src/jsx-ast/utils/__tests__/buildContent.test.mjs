@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 
-import { transformHeadingNode } from '../buildContent.mjs';
+import { transformHeadingNode, gatherChangeEntries } from '../buildContent.mjs';
 
 const heading = {
   type: 'heading',
@@ -65,5 +65,80 @@ describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
 
     assert.equal(alert.name, 'AlertBox');
     assert.equal(levelAttr.value, 'danger');
+  });
+});
+
+describe('gatherChangeEntries', () => {
+  it('returns empty array when entry has no changes', () => {
+    assert.deepEqual(gatherChangeEntries({}), []);
+  });
+
+  it('collects lifecycle changes with formatted labels', () => {
+    const result = gatherChangeEntries({
+      added: ['v20.0.0', 'v18.0.0'],
+      deprecated: 'v22.0.0',
+    });
+
+    assert.equal(result.length, 2);
+    assert.deepEqual(result[0], {
+      versions: ['v20.0.0', 'v18.0.0'],
+      label: 'Added in: v20.0.0, v18.0.0',
+    });
+    assert.deepEqual(result[1], {
+      versions: ['v22.0.0'],
+      label: 'Deprecated in: v22.0.0',
+    });
+  });
+
+  it('extracts plain text labels from markdown descriptions', () => {
+    const result = gatherChangeEntries({
+      changes: [
+        {
+          version: 'v25.0.0',
+          description:
+            'Add `modifyPrototype` option to conditionally modify the prototype.',
+          'pr-url': 'https://github.com/nodejs/node/pull/123',
+        },
+      ],
+    });
+
+    assert.equal(result.length, 1);
+    assert.equal(
+      result[0].label,
+      'Add `modifyPrototype` option to conditionally modify the prototype.'
+    );
+    assert.equal(result[0].url, 'https://github.com/nodejs/node/pull/123');
+    assert.deepEqual(result[0].versions, ['v25.0.0']);
+  });
+
+  it('produces a string label, not an object (regression for [object Object])', () => {
+    const result = gatherChangeEntries({
+      changes: [
+        {
+          version: 'v1.0.0',
+          description: 'Some **bold** and _italic_ text.',
+        },
+      ],
+    });
+
+    assert.equal(typeof result[0].label, 'string');
+    assert.equal(result[0].label, 'Some **bold** and _italic_ text.');
+  });
+
+  it('combines lifecycle changes and explicit changes', () => {
+    const result = gatherChangeEntries({
+      added: 'v20.0.0',
+      changes: [
+        {
+          version: 'v21.0.0',
+          description: 'Added new feature.',
+          'pr-url': 'https://example.com/pr/1',
+        },
+      ],
+    });
+
+    assert.equal(result.length, 2);
+    assert.equal(result[0].label, 'Added in: v20.0.0');
+    assert.equal(result[1].label, 'Added new feature.');
   });
 });
