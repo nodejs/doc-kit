@@ -8,9 +8,12 @@ import {
 } from '@doc-kit/core/utils/configuration/templates.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
 import readingTime from 'reading-time';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
@@ -36,6 +39,18 @@ import {
 } from './signature.mjs';
 
 /**
+ * Converts a markdown string to plain text by parsing it and extracting
+ * text and inline code values.
+ *
+ * @param {string} markdown - The markdown string to convert.
+ * @returns {string} The plain text representation.
+ */
+const toPlainText = markdown =>
+  transformNodesToString(
+    unified().use(remarkParse).parse(markdown).children
+  ).trim();
+
+/**
  * Processes lifecycle and change history data into a sorted array of change entries.
  * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} entry - The metadata entry
  */
@@ -48,11 +63,10 @@ export const gatherChangeEntries = entry => {
       label: `${label}: ${enforceArray(entry[field]).join(', ')}`,
     }));
 
-  // Explicit changes with parsed JSX labels
+  // Explicit changes with plain-text labels extracted from markdown
   const explicitChanges = (entry.changes || []).map(change => ({
     versions: enforceArray(change.version),
-    label: remark().runSync(remark().parse(change.description)).body[0]
-      .expression,
+    label: toPlainText(change.description),
     url: change['pr-url'],
   }));
 
