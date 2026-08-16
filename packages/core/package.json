@@ -25,7 +25,10 @@
     "./package.json": "./package.json",
     "./shiki.config.mjs": "./shiki.config.mjs",
     "./src/*": "./src/*",
-    "./*": "./src/*"
+    "./*": [
+      "./src/*",
+      "./src/*.d.ts"
+    ]
   },
   "files": [
     "src",
