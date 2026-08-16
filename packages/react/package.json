@@ -8,6 +8,7 @@
     "url": "git+https://github.com/nodejs/doc-kit.git",
     "directory": "packages/react"
   },
+  "license": "MIT",
   "exports": {
     "./html": "./src/html/index.mjs",
     "./html/ui/*": "./src/html/ui/*",

@@ -8,6 +8,7 @@
     "url": "git+https://github.com/nodejs/doc-kit.git",
     "directory": "packages/node"
   },
+  "license": "MIT",
   "exports": {
     "./addon-verify": "./src/addon-verify/index.mjs",
     "./api-links": "./src/api-links/index.mjs",

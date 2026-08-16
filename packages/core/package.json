@@ -8,6 +8,7 @@
     "url": "git+https://github.com/nodejs/doc-kit.git",
     "directory": "packages/core"
   },
+  "license": "MIT",
   "scripts": {
     "test": "node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
     "test:coverage": "c8 node --test --experimental-test-module-mocks \"src/**/*.test.mjs\"",
