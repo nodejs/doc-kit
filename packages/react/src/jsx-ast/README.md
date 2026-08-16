@@ -12,6 +12,8 @@ The `jsx-ast` generator converts MDAST (Markdown Abstract Syntax Tree) to JSX AS
   for `all.html`. **Default:** `true`.
 - `generateNotFoundPage` {boolean} When `true`, creates a synthetic JSX AST
   entry for `404.html`. **Default:** `true`.
+- `showReadingTime` {boolean} When `true`, computes an estimated reading time
+  for each page and displays it in the MetaBar. **Default:** `false`.
 
 ## Index page
 

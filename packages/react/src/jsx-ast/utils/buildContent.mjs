@@ -11,7 +11,6 @@ import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
 import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
-import readingTime from 'reading-time';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { u as createTree } from 'unist-builder';
@@ -49,6 +48,12 @@ const toPlainText = markdown =>
   transformNodesToString(
     unified().use(remarkParse).parse(markdown).children
   ).trim();
+
+/**
+ *
+ */
+const readingTime = text =>
+  import('reading-time').then(({ default: rt }) => rt(text).text);
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
@@ -315,16 +320,20 @@ export const processEntry = entry => {
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - API documentation metadata entries
  * @param {Object} metadata - Raw page metadata from the head entry
  */
-export const createDocumentLayout = (entries, metadata) => {
+export const createDocumentLayout = async (entries, metadata) => {
   // Collapse overloaded function headings into one stable ToC entry, tagging the
   // underlying headings with compact anchors / overload flags read just below.
   annotateOverloads(entries);
+
+  const { showReadingTime } = getConfig('jsx-ast');
 
   return createTree('root', [
     createJSXElement(JSX_IMPORTS.Layout.name, {
       metadata,
       headings: extractHeadings(entries),
-      readingTime: readingTime(extractTextContent(entries)).text,
+      readingTime: showReadingTime
+        ? await readingTime(extractTextContent(entries))
+        : undefined,
       children: entries.map(processEntry),
     }),
   ]);
@@ -348,7 +357,7 @@ const buildContent = async (metadataEntries, head) => {
   ]);
 
   // Create root document AST with all layout components and processed content
-  const root = createDocumentLayout(metadataEntries, metadata);
+  const root = await createDocumentLayout(metadataEntries, metadata);
 
   // Run remark processor to transform AST (parse markdown, plugins, etc.)
   const ast = await remark().run(root);
