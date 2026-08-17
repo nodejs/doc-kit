@@ -1,5 +1,8 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
+import {
+  getEntryDescription,
+  groupNodesByModule,
+} from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import { DOCUMENTATION_INDEX_TAG } from './constants.mjs';
@@ -20,11 +23,11 @@ const buildDocumentationIndex = moduleEntries =>
     inline: false,
     entries: getSortedHeadNodes(moduleEntries)
       .filter(entry => entry.stability)
-      .map(({ api, heading, stability, llm_description }) => ({
-        api,
-        name: heading.data.name,
-        index: stability.data.index,
-        description: llm_description,
+      .map(entry => ({
+        api: entry.api,
+        name: entry.heading.data.name,
+        index: entry.stability.data.index,
+        description: getEntryDescription(entry),
       })),
   });
 

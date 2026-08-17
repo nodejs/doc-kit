@@ -8,6 +8,7 @@ import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
  * @property {string} api - Basename of the document, linked as `${api}.html`
  * @property {string} name - Human-readable name from the document's heading
  * @property {string} index - Stability index (e.g. `'2'` or `'1.1'`)
+ * @property {string} [description] - The document's `llm_description`, or its first paragraph
  */
 
 /**
