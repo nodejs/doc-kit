@@ -189,6 +189,9 @@ export const AST_NODE_TYPES = {
   },
 };
 
+// `<!-- DOCUMENTATION_INDEX -->` comment in a source document = a stability index
+export const DOCUMENTATION_INDEX_TAG = 'DOCUMENTATION_INDEX';
+
 // These positions are explicity before anything else
 export const OVERRIDDEN_POSITIONS = [
   'index', // https://github.com/nodejs/node/blob/main/doc/api/index.md

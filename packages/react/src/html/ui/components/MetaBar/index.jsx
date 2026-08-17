@@ -4,6 +4,7 @@ import MetaBar from '@node-core/ui-components/Containers/MetaBar';
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
 import styles from './index.module.css';
+import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
 
 import { editURL } from '#theme/config';
 
@@ -11,10 +12,6 @@ const iconMap = {
   JSON: CodeBracketIcon,
   MD: DocumentIcon,
 };
-
-const STABILITY_KINDS = ['error', 'warning', null, 'info'];
-const STABILITY_LABELS = ['D', 'E', null, 'L'];
-const STABILITY_TOOLTIPS = ['Deprecated', 'Experimental', null, 'Legacy'];
 
 /**
  * Renders a heading value with an optional stability badge
@@ -25,9 +22,7 @@ const HeadingValue = ({ value, stability }) => {
     return value;
   }
 
-  const ariaLabel = STABILITY_TOOLTIPS[stability]
-    ? `Stability: ${STABILITY_TOOLTIPS[stability]}`
-    : undefined;
+  const label = STABILITY_LABELS[stability];
 
   return (
     <>
@@ -37,11 +32,11 @@ const HeadingValue = ({ value, stability }) => {
         size="small"
         className={styles.badge}
         kind={STABILITY_KINDS[stability]}
-        data-tooltip={STABILITY_TOOLTIPS[stability]}
-        aria-label={ariaLabel}
+        data-tooltip={label}
+        aria-label={label ? `Stability: ${label}` : undefined}
         tabIndex={0}
       >
-        {STABILITY_LABELS[stability]}
+        {label?.[0]}
       </Badge>
     </>
   );
