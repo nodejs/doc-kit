@@ -8,7 +8,6 @@ import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
  * @property {string} api - Basename of the document, linked as `${api}.html`
  * @property {string} name - Human-readable name from the document's heading
  * @property {string} index - Stability index (e.g. `'2'` or `'1.1'`)
- * @property {string} description - Stability description from the document
  */
 
 /**
@@ -17,11 +16,6 @@ import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
 const IndexEntry = ({ api, name, index, description }) => {
   const level = parseInt(index, 10);
   const label = STABILITY_LABELS[level] ?? index;
-
-  const summary = description
-    .replace(new RegExp(`^${label}[.:\\s-]*`, 'i'), '')
-    .split('. ')[0]
-    .replace(/\.$/, '');
 
   return (
     <a className={styles.entry} href={`${api}.html`}>
@@ -37,9 +31,7 @@ const IndexEntry = ({ api, name, index, description }) => {
         </Badge>
       </span>
 
-      <code className={styles.api}>{api}</code>
-
-      {summary && <span className={styles.summary}>{summary}</span>}
+      {description && <span className={styles.summary}>{description}</span>}
     </a>
   );
 };

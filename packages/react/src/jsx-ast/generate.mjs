@@ -20,11 +20,11 @@ const buildDocumentationIndex = moduleEntries =>
     inline: false,
     entries: getSortedHeadNodes(moduleEntries)
       .filter(entry => entry.stability)
-      .map(({ api, heading, stability }) => ({
+      .map(({ api, heading, stability, llm_description }) => ({
         api,
         name: heading.data.name,
         index: stability.data.index,
-        description: stability.data.description,
+        description: llm_description,
       })),
   });
 

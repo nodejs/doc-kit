@@ -51,17 +51,6 @@
   color: var(--color-white);
 }
 
-.api {
-  align-self: flex-start;
-  font-family: var(--font-ibm-plex-mono);
-  font-size: 0.75rem;
-  color: var(--color-neutral-800);
-}
-
-:where([data-theme='dark'], [data-theme='dark'] *) .api {
-  color: var(--color-neutral-600);
-}
-
 .summary {
   font-size: 0.875rem;
   color: var(--color-neutral-800);
