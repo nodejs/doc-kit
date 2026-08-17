@@ -9,6 +9,15 @@ import { remove } from 'unist-util-remove';
 import { selectAll } from 'unist-util-select';
 import { SKIP, visit } from 'unist-util-visit';
 
+import {
+  DEPRECATION_HEADING_REGEX,
+  IGNORE_STABILITY_STEMS,
+} from '#generators/metadata/constants.mjs';
+import { UNIST } from '#utils/queries/index.mjs';
+import { getRemark as remark } from '#utils/remark.mjs';
+import { relative } from '#utils/url.mjs';
+
+import { resolveTypeAnnotations } from './resolveTypes.mjs';
 import createNodeSlugger from './slugger.mjs';
 import { transformNodeToHeading } from './transformers.mjs';
 import {
@@ -18,14 +27,6 @@ import {
   visitTextWithUnixManualNode,
   visitYAML,
 } from './visitors.mjs';
-import { UNIST } from '../../../utils/queries/index.mjs';
-import { getRemark as remark } from '../../../utils/remark.mjs';
-import { relative } from '../../../utils/url.mjs';
-import {
-  DEPRECATION_HEADING_REGEX,
-  IGNORE_STABILITY_STEMS,
-} from '../constants.mjs';
-import { resolveTypeAnnotations } from './resolveTypes.mjs';
 
 /**
  * This generator generates a flattened list of metadata entries from a API doc

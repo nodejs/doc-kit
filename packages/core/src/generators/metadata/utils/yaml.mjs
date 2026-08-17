@@ -2,7 +2,7 @@
 
 import yaml from 'yaml';
 
-import { QUERIES } from '../../../utils/queries/index.mjs';
+import { QUERIES } from '#utils/queries/index.mjs';
 
 /**
  * Extracts raw YAML content from a node

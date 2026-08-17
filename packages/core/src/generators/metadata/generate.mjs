@@ -1,8 +1,9 @@
 'use strict';
 
+import getConfig from '#utils/configuration/index.mjs';
+import { loadFromURL } from '#utils/loaders.mjs';
+
 import { parseApiDoc } from './utils/parse.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { loadFromURL } from '../../utils/loaders.mjs';
 
 /**
  * Process a chunk of API doc files in a worker thread.

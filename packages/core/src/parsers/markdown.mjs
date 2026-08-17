@@ -2,7 +2,7 @@
 
 import { coerce } from 'semver';
 
-import { loadFromURL } from '../utils/loaders.mjs';
+import { loadFromURL } from '#utils/loaders.mjs';
 
 // A ReGeX for retrieving Node.js version headers from the CHANGELOG.md
 const NODE_VERSIONS_REGEX = /\* \[Node\.js ([0-9.]+)\]\S+ (.*)\r?\n/g;
