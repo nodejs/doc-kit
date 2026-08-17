@@ -31,22 +31,13 @@
     ]
   },
   "imports": {
-    "#generators/*": [
-      "./src/generators/*",
-      "./src/generators/*.d.ts"
-    ],
-    "#logger/*": [
-      "./src/logger/*",
-      "./src/logger/*.d.ts"
-    ],
+    "#generators/*": "./src/generators/*",
+    "#logger/*": "./src/logger/*",
     "#parsers/*": [
       "./src/parsers/*",
       "./src/parsers/*.d.ts"
     ],
-    "#utils/*": [
-      "./src/utils/*",
-      "./src/utils/*.d.ts"
-    ]
+    "#utils/*": "./src/utils/*"
   },
   "files": [
     "src",
