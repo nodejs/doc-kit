@@ -2,10 +2,14 @@
 
 import { h as createElement } from 'hastscript';
 
-import { createSyntheticHead, wrapAsEntry } from './synthetic.mjs';
-import { JSX_IMPORTS } from '../../../html/constants.mjs';
-import { createJSXElement } from '../ast.mjs';
-import { getSortedHeadNodes } from '../getSortedHeadNodes.mjs';
+import { createJSXElement } from './ast.mjs';
+import { getSortedHeadNodes } from './getSortedHeadNodes.mjs';
+import { JSX_IMPORTS } from '../../html/constants.mjs';
+
+// The metadata parser turns bare HTML comments into entry tags, so a
+// `<!-- DOCUMENTATION_INDEX -->` comment in a source document surfaces as
+// this tag on the entry for the section containing it.
+export const DOCUMENTATION_INDEX_TAG = 'DOCUMENTATION_INDEX';
 
 const STABILITY_BADGE_KINDS = [
   'error',
@@ -62,20 +66,21 @@ export const buildStabilityOverview = headEntries =>
   ]);
 
 /**
- * Builds the page descriptor for `index.html`
+ * Places the Stability Overview into every entry whose source section
+ * contains a `<!-- DOCUMENTATION_INDEX -->` comment. The parser strips the
+ * comment itself, so the table lands at the end of the tagged section.
  *
- * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - Entries to scan for the tag
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} moduleEntries - Entries providing the module heads for the overview
  */
-export const buildIndexPage = entries => {
-  const head = createSyntheticHead('index', 'Index');
-  const moduleEntries = getSortedHeadNodes(entries);
+export const injectDocumentationIndex = (entries, moduleEntries) => {
+  const headEntries = getSortedHeadNodes(moduleEntries).filter(
+    entry => entry.stability
+  );
 
-  return {
-    head,
-    entries: [
-      wrapAsEntry(head, [
-        buildStabilityOverview(moduleEntries.filter(entry => entry.stability)),
-      ]),
-    ],
-  };
+  for (const entry of entries) {
+    if (entry.tags?.includes(DOCUMENTATION_INDEX_TAG)) {
+      entry.content.children.push(buildStabilityOverview(headEntries));
+    }
+  }
 };

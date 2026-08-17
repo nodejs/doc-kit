@@ -16,7 +16,6 @@ node packages/cli/bin/cli.mjs generate \
   -c "./node/CHANGELOG.md" \
   -v "$NODE_VERSION" \
   --type-map "./node/doc/type-map.json" \
-  --index "./node/doc/api/index.md" \
   --config-file "./beta/doc-kit.config.mjs" \
   --log-level debug
 

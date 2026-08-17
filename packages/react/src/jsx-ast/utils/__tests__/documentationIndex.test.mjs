@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { buildIndexPage, buildStabilityOverview } from '../index.mjs';
+import {
+  buildStabilityOverview,
+  injectDocumentationIndex,
+} from '../documentationIndex.mjs';
 
 const fakeHead = (api, name, stabilityIndex, depth = 1) => ({
   api,
@@ -20,31 +23,58 @@ const fakeHead = (api, name, stabilityIndex, depth = 1) => ({
 const findChild = (node, tagName) =>
   node.children.find(child => child.tagName === tagName);
 
-describe('buildIndexPage', () => {
-  it('returns a synthetic `index` head with an "Index" heading', () => {
-    const { head } = buildIndexPage([]);
+describe('injectDocumentationIndex', () => {
+  const createEntry = tags => ({
+    ...fakeHead('index', 'Index', null),
+    tags,
+    content: { type: 'root', children: [] },
+  });
 
-    assert.equal(head.api, 'index');
-    assert.equal(head.path, '/index');
-    assert.equal(head.basename, 'index');
-    assert.equal(head.heading.data.name, 'Index');
-    assert.equal(head.synthetic, true);
+  it('appends the overview to entries tagged DOCUMENTATION_INDEX', () => {
+    const tagged = createEntry(['DOCUMENTATION_INDEX']);
+    const untagged = createEntry(undefined);
+
+    injectDocumentationIndex(
+      [tagged, untagged],
+      [fakeHead('fs', 'fs', 2), fakeHead('assert', 'assert', 2)]
+    );
+
+    const table = findChild(tagged.content, 'table');
+    assert.equal(findChild(table, 'tbody').children.length, 2);
+    assert.equal(untagged.content.children.length, 0);
   });
 
   it('sorts the stability overview rows alphabetically by API name', () => {
-    const { entries } = buildIndexPage([
-      fakeHead('fs', 'fs', 2),
-      fakeHead('assert', 'assert', 2),
-      fakeHead('crypto', 'crypto', 2),
-    ]);
+    const entry = createEntry(['DOCUMENTATION_INDEX']);
 
-    const table = findChild(entries[0].content, 'table');
+    injectDocumentationIndex(
+      [entry],
+      [
+        fakeHead('fs', 'fs', 2),
+        fakeHead('assert', 'assert', 2),
+        fakeHead('crypto', 'crypto', 2),
+      ]
+    );
+
+    const table = findChild(entry.content, 'table');
     const rows = findChild(table, 'tbody').children;
     const names = rows.map(
       row => row.children[0].children[0].children[0].value
     );
 
     assert.deepEqual(names, ['assert', 'crypto', 'fs']);
+  });
+
+  it('excludes module heads without a stability index', () => {
+    const entry = createEntry(['DOCUMENTATION_INDEX']);
+
+    injectDocumentationIndex(
+      [entry],
+      [fakeHead('fs', 'fs', 2), fakeHead('synopsis', 'Usage', null)]
+    );
+
+    const table = findChild(entry.content, 'table');
+    assert.equal(findChild(table, 'tbody').children.length, 1);
   });
 });
 

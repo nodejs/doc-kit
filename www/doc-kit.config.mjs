@@ -57,13 +57,6 @@ export default {
     minify: true,
   },
 
-  'jsx-ast': {
-    // `jsx-ast` otherwise synthesizes an `index.html` holding the Node.js API
-    // stability overview, and it silently overrides an authored `index.md`.
-    // This site has no stability metadata, so that page would render empty.
-    generateIndexPage: false,
-  },
-
   html: {
     title: '{project} documentation',
 
