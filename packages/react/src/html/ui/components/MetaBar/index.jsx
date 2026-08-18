@@ -37,7 +37,7 @@ const HeadingValue = ({ value, stability }) => {
         size="small"
         className={styles.badge}
         kind={STABILITY_KINDS[stability]}
-        data-tooltip={STABILITY_TOOLTIPS[stability]}
+        title={STABILITY_TOOLTIPS[stability]}
         aria-label={ariaLabel}
         tabIndex={0}
       >
