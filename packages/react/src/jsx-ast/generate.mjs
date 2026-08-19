@@ -1,35 +1,11 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import {
-  getEntryDescription,
-  groupNodesByModule,
-} from '@doc-kit/core/utils/generators.mjs';
+import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
-import { DOCUMENTATION_INDEX_TAG } from './constants.mjs';
-import { createJSXElement } from './utils/ast.mjs';
 import buildContent from './utils/buildContent.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
-import { JSX_IMPORTS } from '../html/constants.mjs';
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
 import { buildAllPage } from './utils/synthetic/all.mjs';
-
-/**
- * Builds the `<DocumentationIndex />` element
- *
- * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} moduleEntries
- */
-const buildDocumentationIndex = moduleEntries =>
-  createJSXElement(JSX_IMPORTS.DocumentationIndex.name, {
-    inline: false,
-    entries: getSortedHeadNodes(moduleEntries)
-      .filter(entry => entry.stability)
-      .map(entry => ({
-        api: entry.api,
-        name: entry.heading.data.name,
-        index: entry.stability.data.index,
-        description: getEntryDescription(entry),
-      })),
-  });
 
 /**
  * Builds the `{ head, entries }` page descriptors for all configured synthetic
@@ -83,16 +59,8 @@ export async function processChunk(slicedInput, itemIndices) {
  */
 export async function* generate(input, worker) {
   // The `index` page is only generated when an `index` document is part of
-  // the input; the module list for the synthetic pages and the documentation
-  // index excludes it.
+  // the input; the module list for the synthetic pages excludes it.
   const moduleInput = input.filter(entry => entry.api !== 'index');
-
-  // Sections tagged with a `<!-- DOCUMENTATION_INDEX -->` build an index
-  for (const entry of input) {
-    if (entry.tags?.includes(DOCUMENTATION_INDEX_TAG)) {
-      entry.content.children.push(buildDocumentationIndex(moduleInput));
-    }
-  }
 
   // Create sliced input: each item contains head + its module's entries
   // This avoids sending all 4700+ entries to every worker

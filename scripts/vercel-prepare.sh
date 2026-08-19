@@ -26,7 +26,19 @@ cd node
 # Enable sparse checkout and specify the folder
 git sparse-checkout set lib doc .
 
-sed 's/STABILITY_OVERVIEW_SLOT_BEGIN/DOCUMENTATION_INDEX/g' ./doc/api/documentation.md > ./doc/api/index.md
+# TODO(@avivkeller): Remove this rewrite once nodejs/node embeds
+# `<DocumentationIndex />` directly.
+INTRODUCED_IN=$(sed -n 's/^<!--introduced_in=\(.*\)-->$/\1/p' ./doc/api/documentation.md)
+
+{
+  printf -- '---\nmdx: true\ntype: misc---\n'
+  sed \
+    -e 's|<!-- STABILITY_OVERVIEW_SLOT_BEGIN -->|<DocumentationIndex />|' \
+    -e '/^<!--.*-->$/d' \
+    -e '/^<!-- YAML$/,/^-->$/d' \
+    ./doc/api/documentation.md
+} > ./doc/api/index.md
+
 rm ./doc/api/documentation.md
 
 # Move back out

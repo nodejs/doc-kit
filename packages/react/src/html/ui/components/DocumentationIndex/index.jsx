@@ -3,6 +3,8 @@ import Badge from '@node-core/ui-components/Common/Badge';
 import styles from './index.module.css';
 import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
 
+import { documentationIndex } from '#theme/config';
+
 /**
  * @typedef {Object} DocumentationIndexEntry
  * @property {string} api - Basename of the document, linked as `${api}.html`
@@ -37,12 +39,9 @@ const IndexEntry = ({ api, name, index, description }) => {
   );
 };
 
-/**
- * @param {{ entries: Array<DocumentationIndexEntry> }} props
- */
-export default ({ entries = [] }) => (
+export default () => (
   <nav className={styles.documentationIndex} aria-label="Documentation index">
-    {entries.map(entry => (
+    {documentationIndex.map(entry => (
       <IndexEntry key={entry.api} {...entry} />
     ))}
   </nav>

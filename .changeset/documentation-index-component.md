@@ -2,4 +2,4 @@
 '@doc-kit/generator-react': patch
 ---
 
-Render `<!-- DOCUMENTATION_INDEX -->` with a new `DocumentationIndex` UI component
+Add a `<DocumentationIndex />` MDX component that renders the stability overview of every module, backed by a new `documentationIndex` export on `#theme/config` (replaces the `<!-- DOCUMENTATION_INDEX -->` comment)

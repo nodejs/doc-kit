@@ -358,6 +358,11 @@ title: Welcome
 There are {stats.length} APIs documented.
 ```
 
+The built-in components are available without registration. Notably,
+`<DocumentationIndex />` renders an index of every documented module with its
+stability badge and description, sourced from the `documentationIndex` export
+of [`#theme/config`](#themeconfig-virtual-module).
+
 ## `#theme/config` virtual module
 
 The `html` generator provides a `#theme/config` virtual module that exposes pre-computed configuration as named exports. Any component (including custom overrides) can import the values it needs, and tree-shaking removes the rest.
@@ -377,6 +382,9 @@ import { project, repository, editURL } from '#theme/config';
 - `editURL` {string} Partially populated "edit this page" URL template (only
   `{path}` remains).
 - `pages` {Array} Sorted `[name, path]` tuples for sidebar navigation.
+- `documentationIndex` {Array} Entries rendered by the built-in
+  `<DocumentationIndex />` component — every page with a stability index, each
+  `{ api, name, index, description }`.
 - `navigation` {Object} Mirrors the configured `navigation` (consumed by the
   built-in `SideBar` and `NavBar`).
 - `useAbsoluteURLs` {boolean} Whether internal links use absolute URLs (mirrors

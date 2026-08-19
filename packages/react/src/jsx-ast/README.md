@@ -16,6 +16,6 @@ The `jsx-ast` generator converts MDAST (Markdown Abstract Syntax Tree) to JSX AS
 ## Index page
 
 `index.html` is generated when an `index` document is part of the input, and
-is rendered from that document like any other page. A section containing a
-`<!-- DOCUMENTATION_INDEX -->` comment additionally receives the Stability
-Overview table of all modules.
+is rendered from that document like any other page. An MDX `index` document
+can render the stability overview of every module by using the built-in
+`<DocumentationIndex />` component (see the `html` generator's README).
