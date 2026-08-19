@@ -312,14 +312,64 @@ export const processEntry = entry => {
 };
 
 /**
- * Builds a page's content: every entry processed and wrapped in one JSX
- * fragment, plus the table of contents and reading time the layout needs.
- *
- * The layout itself (`<Layout>`) is not part of the content. The `html`
- * generator wraps each page in it, which lets a page be assembled from other
- * pages' content — `all.html` is the module pages concatenated — without
- * building those modules a second time.
- *
+ * Groups consecutive overloaded function API entries into a single OverloadTabs component.
+ * @param {Array<import('estree').Node>} processedChildren - The processed JSX AST nodes for the API entries
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} originalEntries - The original API metadata entries containing the overload flags
+ * @returns {Array<import('estree').Node>} The final array of layout children with overloads grouped
+ */
+export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
+  const finalChildren = [];
+
+  /**
+   * Wraps the AST children of a function entry in a standard panel div.
+   * @param {import('estree').Node} rootNode - The AST node representing the function content
+   * @returns {import('estree').Node} A new div JSX element AST node containing the children
+   */
+  const wrapInDiv = rootNode => {
+    return createJSXElement('div', {
+      inline: false,
+      className: 'overload-panel',
+      children: rootNode.children || [],
+    });
+  };
+
+  for (const [i, current] of processedChildren.entries()) {
+    if (originalEntries[i].heading?.data?.isOverload) {
+      const last = finalChildren.pop();
+
+      if (last && last.name === JSX_IMPORTS.OverloadTabs.name) {
+        current.children.shift();
+        last.children.push(wrapInDiv(current));
+        finalChildren.push(last);
+      } else {
+        const firstHeading = last.children.shift();
+        current.children.shift();
+
+        finalChildren.push(firstHeading);
+        finalChildren.push({
+          type: 'heading',
+          depth: (firstHeading.depth || 2) + 1,
+          children: [{ type: 'text', value: 'Overloads' }],
+        });
+
+        finalChildren.push(
+          createJSXElement(JSX_IMPORTS.OverloadTabs.name, {
+            inline: false,
+            children: [wrapInDiv(last), wrapInDiv(current)],
+          })
+        );
+      }
+    } else {
+      finalChildren.push(current);
+    }
+  }
+
+  return finalChildren;
+};
+
+/**
+ * Builds the overall document layout tree
+
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - API documentation metadata entries
  */
 export const createDocumentContent = async entries => {
@@ -337,7 +387,7 @@ export const createDocumentContent = async entries => {
     root: createTree('root', [
       createJSXElement(null, {
         inline: false,
-        children: entries.map(processEntry),
+        children: groupOverloadsIntoTabs(entries.map(processEntry), entries),
       }),
     ]),
   };

@@ -1,0 +1,21 @@
+.panelContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.panel {
+  grid-column: 1;
+  grid-row: 1;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.2s ease;
+  margin-top: calc(var(--spacing, 0.25rem) * 2);
+}
+
+.panel[data-state="inactive"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
