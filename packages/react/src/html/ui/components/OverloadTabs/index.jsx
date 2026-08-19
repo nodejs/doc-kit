@@ -1,3 +1,4 @@
+/* eslint-disable react-x/no-array-index-key */
 import Tabs from '@node-core/ui-components/Common/Tabs';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 
