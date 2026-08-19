@@ -49,7 +49,7 @@ const HeadingValue = ({ value, stability }) => {
 
 /**
  * MetaBar component that displays table of contents and page metadata
- * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime: string }} props
+ * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime?: string }} props
  */
 export default ({ metadata, headings = [], readingTime }) => {
   const editThisPage = editURL?.replace('{path}', metadata.path);
