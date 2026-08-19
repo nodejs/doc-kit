@@ -3,7 +3,11 @@ import { describe, it } from 'node:test';
 
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 
-import { transformHeadingNode, gatherChangeEntries } from '../buildContent.mjs';
+import {
+  transformHeadingNode,
+  gatherChangeEntries,
+  groupOverloadsIntoTabs,
+} from '../buildContent.mjs';
 
 const heading = {
   type: 'heading',
@@ -188,5 +192,70 @@ describe('gatherChangeEntries', () => {
     assert.equal(result.length, 2);
     assert.equal(result[0].label, 'Added in: v20.0.0');
     assert.equal(result[1].label, 'Added new feature.');
+  });
+});
+
+describe('groupOverloadsIntoTabs', () => {
+  it('groups consecutive overloads into a single OverloadTabs component', () => {
+    const originalEntries = [
+      { heading: { data: { name: 'funcA', isOverload: false } } },
+      { heading: { depth: 3, data: { name: 'funcB', isOverload: false } } },
+      { heading: { depth: 3, data: { name: 'funcB', isOverload: true } } },
+      { heading: { depth: 3, data: { name: 'funcB', isOverload: true } } },
+      { heading: { data: { name: 'funcC', isOverload: false } } },
+    ];
+
+    const makeNode = (className, bodyText) => ({
+      type: 'element',
+      tagName: 'div',
+      properties: { className },
+      children: [
+        { type: 'element', tagName: 'h3', depth: 3 }, // The heading to be stripped
+        { type: 'text', value: bodyText },
+      ],
+    });
+
+    const processedChildren = [
+      makeNode('entry-a', 'body a'),
+      makeNode('entry-b1', 'body b1'),
+      makeNode('entry-b2', 'body b2'),
+      makeNode('entry-b3', 'body b3'),
+      makeNode('entry-c', 'body c'),
+    ];
+
+    const result = groupOverloadsIntoTabs(processedChildren, originalEntries);
+
+    // 0: funcA, 1: funcB-heading, 2: Overloads-heading, 3: OverloadTabs(funcB), 4: funcC
+    assert.equal(result.length, 5);
+
+    // First element is untouched
+    assert.equal(result[0].properties.className, 'entry-a');
+
+    // Second element is the extracted heading
+    assert.equal(result[1].tagName, 'h3');
+
+    // Third element is the "Overloads" heading
+    assert.equal(result[2].children[0].value, 'Overloads');
+
+    // Fourth element is the OverloadTabs component
+    const tabsComponent = result[3];
+    assert.equal(tabsComponent.name, 'OverloadTabs');
+    assert.equal(tabsComponent.children.length, 3); // 3 tab panels
+
+    // Check that the h3 was removed from the overloads and they are wrapped in overload-panel
+    const panel1 = tabsComponent.children[0];
+    const classAttr1 = panel1.attributes.find(a => a.name === 'className');
+    assert.equal(classAttr1.value, 'overload-panel');
+    assert.equal(panel1.children[0].type, 'text');
+    assert.equal(panel1.children[0].value, 'body b1');
+
+    const panel2 = tabsComponent.children[1];
+    const classAttr2 = panel2.attributes.find(a => a.name === 'className');
+    assert.equal(classAttr2.value, 'overload-panel');
+    assert.equal(panel2.children[0].type, 'text');
+    assert.equal(panel2.children[0].value, 'body b2');
+
+    // Fifth element is untouched
+    assert.equal(result[4].properties.className, 'entry-c');
   });
 });
