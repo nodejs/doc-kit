@@ -14,7 +14,7 @@
   margin-top: calc(var(--spacing, 0.25rem) * 2);
 }
 
-.panel[data-state="inactive"] {
+.panel[data-state='inactive'] {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
