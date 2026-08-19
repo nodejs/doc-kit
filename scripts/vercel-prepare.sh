@@ -31,7 +31,11 @@ git sparse-checkout set lib doc .
 INTRODUCED_IN=$(sed -n 's/^<!--introduced_in=\(.*\)-->$/\1/p' ./doc/api/documentation.md)
 
 {
-  printf -- '---\nmdx: true\ntype: misc---\n'
+  printf -- '---\nmdx: true\ntype: misc\n'
+  if [ -n "$INTRODUCED_IN" ]; then
+    printf -- 'introduced_in: %s\n' "$INTRODUCED_IN"
+  fi
+  printf -- '---\n'
   sed \
     -e 's|<!-- STABILITY_OVERVIEW_SLOT_BEGIN -->|<DocumentationIndex />|' \
     -e '/^<!--.*-->$/d' \
