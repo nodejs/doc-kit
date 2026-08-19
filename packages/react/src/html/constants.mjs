@@ -30,6 +30,10 @@ export const JSX_IMPORTS = {
     name: 'DocumentationIndex',
     source: resolve(ROOT, './ui/components/DocumentationIndex'),
   },
+  OverloadTabs: {
+    name: 'OverloadTabs',
+    source: resolve(ROOT, './ui/components/OverloadTabs'),
+  },
   MDXTooltip: {
     name: 'MDXTooltip',
     isDefaultExport: false,

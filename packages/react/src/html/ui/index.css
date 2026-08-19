@@ -78,6 +78,12 @@ main {
     }
   }
 
+  .overload-panel {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing) * 6);
+  }
+
   table {
     td {
       word-break: break-all;
