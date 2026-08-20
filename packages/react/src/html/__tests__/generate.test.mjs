@@ -70,9 +70,12 @@ describe('web generate', () => {
     const { output } = await createTestConfiguration(context);
     const fs = createEntry('fs', 'File system');
     fs.path = '/api/fs';
+    const experimental = createEntry('experimental', 'Experimental API');
+    experimental.heading.depth = 2;
+    experimental.stability = { data: { index: '1' } };
     const notFoundPage = buildNotFoundPage();
     const contents = await Promise.all([
-      buildContent([fs], fs),
+      buildContent([fs, experimental], fs),
       buildContent(notFoundPage.entries, notFoundPage.head),
     ]);
 
@@ -86,6 +89,8 @@ describe('web generate', () => {
     assert.match(fsHTML, /View As/);
     assert.match(fsHTML, /href=fs\.json/);
     assert.match(fsHTML, /href=fs\.md/);
+    assert.match(fsHTML, /title=Experimental/);
+    assert.doesNotMatch(fsHTML, /data-tooltip=Experimental/);
     assert.doesNotMatch(notFoundHTML, /View As/);
     assert.match(fsHTML, /src=\.\.\/assets\//);
     assert.match(notFoundHTML, /src=\.\/assets\//);
