@@ -9,6 +9,7 @@ import {
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 import { LANGS } from '@node-core/rehype-shiki';
 
+import { toPlainText } from '../../jsx-ast/utils/buildContent.mjs';
 import { getSortedHeadNodes } from '../../jsx-ast/utils/getSortedHeadNodes.mjs';
 
 /**
@@ -58,7 +59,7 @@ export function buildDocumentationIndex(input) {
       api: entry.api,
       name: entry.heading.data.name,
       index: entry.stability.data.index,
-      description: getEntryDescription(entry),
+      description: toPlainText(getEntryDescription(entry)),
     }));
 }
 

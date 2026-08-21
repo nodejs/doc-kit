@@ -44,7 +44,7 @@ import {
  * @param {string} markdown - The markdown string to convert.
  * @returns {string} The plain text representation.
  */
-const toPlainText = markdown =>
+export const toPlainText = markdown =>
   transformNodesToString(
     unified().use(remarkParse).parse(markdown).children
   ).trim();
