@@ -2,6 +2,36 @@
 
 import { coerce, major } from 'semver';
 
+import { transformNodeToString } from './unist.mjs';
+
+/**
+ * Retrieves the description of a given API doc entry. It first checks whether
+ * the entry has a llm_description property. If not, it extracts the first
+ * paragraph from the entry's content.
+ *
+ * @param {import('../generators/metadata/types').MetadataEntry} entry
+ * @returns {string}
+ */
+export const getEntryDescription = entry => {
+  if (entry.llm_description) {
+    return entry.llm_description.trim();
+  }
+
+  const descriptionNode = entry.content.children.find(
+    child => child.type === 'paragraph'
+  );
+
+  if (!descriptionNode) {
+    return '';
+  }
+
+  return (
+    transformNodeToString(descriptionNode)
+      // Remove newlines and extra spaces
+      .replace(/[\r\n]+/g, '')
+  );
+};
+
 /**
  * Groups all the API metadata nodes by module (`api` property) so that we can process each different file
  * based on the module it belongs to.

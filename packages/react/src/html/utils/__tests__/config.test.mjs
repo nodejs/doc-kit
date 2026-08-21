@@ -14,8 +14,12 @@ mock.module('@node-core/rehype-shiki', {
   },
 });
 
-const { buildVersionEntries, buildPageList, buildLanguageDisplayNameMap } =
-  await import('../config.mjs');
+const {
+  buildVersionEntries,
+  buildPageList,
+  buildDocumentationIndex,
+  buildLanguageDisplayNameMap,
+} = await import('../config.mjs');
 
 await setConfig({
   version: 'v22.0.0',
@@ -120,6 +124,66 @@ describe('buildPageList', () => {
 
     assert.equal(result.length, 1);
     assert.deepStrictEqual(result[0], ['File System', '/fs']);
+  });
+});
+
+describe('buildDocumentationIndex', () => {
+  it('lists only pages with a stability index, with their descriptions', () => {
+    const input = [
+      {
+        data: {
+          api: 'fs',
+          path: '/fs',
+          heading: { depth: 1, data: { name: 'File System' } },
+          stability: { data: { index: '2' } },
+          content: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'File system APIs.' }],
+              },
+            ],
+          },
+        },
+      },
+      {
+        data: {
+          api: 'index',
+          path: '/index',
+          heading: { depth: 1, data: { name: 'Index' } },
+          stability: null,
+          content: { type: 'root', children: [] },
+        },
+      },
+      {
+        data: {
+          api: 'quic',
+          path: '/quic',
+          heading: { depth: 1, data: { name: 'QUIC' } },
+          stability: { data: { index: '1.1' } },
+          llm_description: 'QUIC protocol support.',
+          content: { type: 'root', children: [] },
+        },
+      },
+    ];
+
+    const result = buildDocumentationIndex(input);
+
+    assert.deepStrictEqual(result, [
+      {
+        api: 'fs',
+        name: 'File System',
+        index: '2',
+        description: 'File system APIs.',
+      },
+      {
+        api: 'quic',
+        name: 'QUIC',
+        index: '1.1',
+        description: 'QUIC protocol support.',
+      },
+    ]);
   });
 });
 

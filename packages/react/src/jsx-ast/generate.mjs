@@ -3,7 +3,6 @@ import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from './utils/buildContent.mjs';
-import { injectDocumentationIndex } from './utils/documentationIndex.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
 import { buildAllPage } from './utils/synthetic/all.mjs';
@@ -60,13 +59,8 @@ export async function processChunk(slicedInput, itemIndices) {
  */
 export async function* generate(input, worker) {
   // The `index` page is only generated when an `index` document is part of
-  // the input; the module list for the synthetic pages and the stability
-  // overview excludes it.
+  // the input; the module list for the synthetic pages excludes it.
   const moduleInput = input.filter(entry => entry.api !== 'index');
-
-  // Sections tagged with a `<!-- DOCUMENTATION_INDEX -->` comment (e.g. in
-  // the `index` document) receive the Stability Overview of all modules.
-  injectDocumentationIndex(input, moduleInput);
 
   // Create sliced input: each item contains head + its module's entries
   // This avoids sending all 4700+ entries to every worker

@@ -13,18 +13,33 @@ import { lazy } from './misc.mjs';
 import { typeAnnotationToHast } from './type-annotations/hast.mjs';
 import remarkTypeAnnotations from './type-annotations/remark.mjs';
 
-// MDX node types that may appear in trees parsed by `getRemarkMdx`; the
-// rehype pipelines pass them through untouched.
-const passThrough = [
-  'element',
-  'mdxJsxTextElement',
-  'mdxJsxFlowElement',
-  'mdxJsxAttribute',
-  'mdxJsxAttributeValueExpression',
-  'mdxFlowExpression',
-  'mdxTextExpression',
-  'mdxjsEsm',
-];
+// Nodes the rehype pipelines pass through untouched.
+const passThrough = ['element'];
+
+/**
+ * Renders an MDX JSX element as just its children, so the surrounding prose
+ * still renders in HTML-string output.
+ *
+ * @param {import('mdast-util-to-hast').State} state
+ * @param {import('unist').Parent} node
+ */
+const mdxElementToChildren = (state, node) => state.all(node);
+
+/**
+ * Drops a node from HTML-string output.
+ */
+const dropNode = () => undefined;
+
+// The HTML-string pipelines cannot render MDX nodes (rendering those is the
+// React generators' job): JSX elements degrade to their children so the
+// surrounding prose still renders, and expressions/ESM are dropped.
+const mdxToHastHandlers = {
+  mdxJsxTextElement: mdxElementToChildren,
+  mdxJsxFlowElement: mdxElementToChildren,
+  mdxFlowExpression: dropNode,
+  mdxTextExpression: dropNode,
+  mdxjsEsm: dropNode,
+};
 
 /**
  * Retrieves an instance of Remark configured to parse GFM (GitHub Flavored Markdown)
@@ -64,7 +79,7 @@ export const getRemarkRehype = lazy(() =>
     .use(remarkRehype, {
       allowDangerousHtml: true,
       passThrough,
-      handlers: { typeAnnotation: typeAnnotationToHast },
+      handlers: { typeAnnotation: typeAnnotationToHast, ...mdxToHastHandlers },
     })
     // We allow dangerous HTML to be passed through, since we have HTML within our Markdown
     // and we trust the sources of the Markdown files
@@ -86,7 +101,7 @@ export const getRemarkRehypeWithShiki = lazy(() =>
       allowDangerousHtml: true,
       passThrough,
       // legacy-html gets the minimal (unhighlighted) type rendering
-      handlers: { typeAnnotation: typeAnnotationToHast },
+      handlers: { typeAnnotation: typeAnnotationToHast, ...mdxToHastHandlers },
     })
     // This is a custom ad-hoc within the Shiki Rehype plugin, used to highlight code
     // and transform them into HAST nodes

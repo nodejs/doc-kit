@@ -2,7 +2,10 @@
 
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
-import { getVersionFromSemVer } from '@doc-kit/core/utils/generators.mjs';
+import {
+  getEntryDescription,
+  getVersionFromSemVer,
+} from '@doc-kit/core/utils/generators.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 import { LANGS } from '@node-core/rehype-shiki';
 
@@ -39,6 +42,24 @@ export function buildVersionEntries(changelog, pageURLBase) {
 export function buildPageList(input) {
   const headNodes = getSortedHeadNodes(input.map(e => e.data));
   return headNodes.map(node => [node.heading.data.name, node.path]);
+}
+
+/**
+ * Pre-compute the entries rendered by the `<DocumentationIndex />` component:
+ * every page with a stability index, plus its description.
+ *
+ * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input
+ * @returns {Array<{api: string, name: string, index: string, description: string}>}
+ */
+export function buildDocumentationIndex(input) {
+  return getSortedHeadNodes(input.map(e => e.data))
+    .filter(entry => entry.stability)
+    .map(entry => ({
+      api: entry.api,
+      name: entry.heading.data.name,
+      index: entry.stability.data.index,
+      description: getEntryDescription(entry),
+    }));
 }
 
 /**
@@ -107,6 +128,7 @@ export default function createConfigSource(input, server = false) {
     versions: buildVersionEntries(config.changelog, pageURL),
     editURL,
     pages: buildPageList(input),
+    documentationIndex: buildDocumentationIndex(input),
     server,
   };
 

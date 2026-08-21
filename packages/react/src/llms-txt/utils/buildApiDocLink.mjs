@@ -1,33 +1,5 @@
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
-import { transformNodeToString } from '@doc-kit/core/utils/unist.mjs';
-
-/**
- * Retrieves the description of a given API doc entry. It first checks whether
- * the entry has a llm_description property. If not, it extracts the first
- * paragraph from the entry's content.
- *
- * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} entry
- * @returns {string}
- */
-export const getEntryDescription = entry => {
-  if (entry.llm_description) {
-    return entry.llm_description.trim();
-  }
-
-  const descriptionNode = entry.content.children.find(
-    child => child.type === 'paragraph'
-  );
-
-  if (!descriptionNode) {
-    return '';
-  }
-
-  return (
-    transformNodeToString(descriptionNode)
-      // Remove newlines and extra spaces
-      .replace(/[\r\n]+/g, '')
-  );
-};
+import { getEntryDescription } from '@doc-kit/core/utils/generators.mjs';
 
 /**
  * Builds a markdown link for an API doc entry

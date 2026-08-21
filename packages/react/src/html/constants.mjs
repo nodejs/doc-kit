@@ -26,6 +26,10 @@ export const JSX_IMPORTS = {
     name: 'CodeTabs',
     source: resolve(ROOT, './ui/components/CodeTabs'),
   },
+  DocumentationIndex: {
+    name: 'DocumentationIndex',
+    source: resolve(ROOT, './ui/components/DocumentationIndex'),
+  },
   MDXTooltip: {
     name: 'MDXTooltip',
     isDefaultExport: false,

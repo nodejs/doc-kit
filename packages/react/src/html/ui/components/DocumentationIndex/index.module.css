@@ -1,0 +1,61 @@
+.documentationIndex {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1rem;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.entry:hover,
+.entry:focus-visible {
+  border-color: var(--color-neutral-400);
+  background-color: var(--color-neutral-100);
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .entry {
+  border-color: var(--color-neutral-900);
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .entry:hover,
+:where([data-theme='dark'], [data-theme='dark'] *) .entry:focus-visible {
+  border-color: var(--color-neutral-700);
+  background-color: var(--color-neutral-950);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.name {
+  font-weight: 600;
+  color: var(--color-neutral-900);
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .name {
+  color: var(--color-white);
+}
+
+.summary {
+  font-size: 0.875rem;
+  color: var(--color-neutral-800);
+}
+
+:where([data-theme='dark'], [data-theme='dark'] *) .summary {
+  color: var(--color-neutral-600);
+}
