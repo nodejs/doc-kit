@@ -2,8 +2,8 @@
 
 import { styleText } from 'node:util';
 
-import { prettifyLevel } from '../utils/colors.mjs';
-import { prettifyTimestamp } from '../utils/time.mjs';
+import { prettifyLevel } from '#logger/utils/colors.mjs';
+import { prettifyTimestamp } from '#logger/utils/time.mjs';
 
 /**
  * Logs a formatted message to stdout for human-friendly CLI output.

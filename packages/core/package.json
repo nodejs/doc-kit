@@ -30,6 +30,15 @@
       "./src/*.d.ts"
     ]
   },
+  "imports": {
+    "#generators/*": "./src/generators/*",
+    "#logger/*": "./src/logger/*",
+    "#parsers/*": [
+      "./src/parsers/*",
+      "./src/parsers/*.d.ts"
+    ],
+    "#utils/*": "./src/utils/*"
+  },
   "files": [
     "src",
     "!src/**/*.test.mjs",

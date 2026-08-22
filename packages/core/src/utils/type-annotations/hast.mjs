@@ -1,6 +1,6 @@
 'use strict';
 
-import { highlighter } from '../highlighter.mjs';
+import { highlighter } from '#utils/highlighter.mjs';
 
 const [lightTheme, darkTheme] = highlighter.shiki.getLoadedThemes();
 

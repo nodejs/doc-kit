@@ -2,7 +2,7 @@
 
 import { styleText } from 'node:util';
 
-import { levelTags, levelToColorMap } from '../constants.mjs';
+import { levelTags, levelToColorMap } from '#logger/constants.mjs';
 
 /**
  * Returns a styled, uppercase log level tag for CLI output with color mapping

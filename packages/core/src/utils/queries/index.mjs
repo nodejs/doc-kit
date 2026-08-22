@@ -1,6 +1,7 @@
 'use strict';
 
-import { transformNodesToString } from '../unist.mjs';
+import { transformNodesToString } from '#utils/unist.mjs';
+
 import { isTypedListItem, isTypedList } from './utils.mjs';
 
 // This defines the actual REGEX Queries

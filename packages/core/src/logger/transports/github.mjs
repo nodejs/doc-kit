@@ -2,9 +2,9 @@
 
 import { debug, notice, warning, error } from '@actions/core';
 
-import { LogLevel } from '../constants.mjs';
-import { prettifyLevel } from '../utils/colors.mjs';
-import { prettifyTimestamp } from '../utils/time.mjs';
+import { LogLevel } from '#logger/constants.mjs';
+import { prettifyLevel } from '#logger/utils/colors.mjs';
+import { prettifyTimestamp } from '#logger/utils/time.mjs';
 
 const actions = {
   [LogLevel.debug]: debug,

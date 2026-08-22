@@ -11,12 +11,12 @@ import { coerce } from 'semver';
 import {
   loadGenerators,
   resolveGeneratorSpecifier,
-} from '../../generators/loader.mjs';
-import logger from '../../logger/index.mjs';
-import { parseChangelog, parseIndex } from '../../parsers/markdown.mjs';
-import { enforceArray } from '../array.mjs';
-import { leftHandAssign } from '../generators.mjs';
-import { deepMerge } from '../misc.mjs';
+} from '#generators/loader.mjs';
+import logger from '#logger/index.mjs';
+import { parseChangelog, parseIndex } from '#parsers/markdown.mjs';
+import { enforceArray } from '#utils/array.mjs';
+import { leftHandAssign } from '#utils/generators.mjs';
+import { deepMerge } from '#utils/misc.mjs';
 
 const configExplorer = cosmiconfig('doc-kit');
 

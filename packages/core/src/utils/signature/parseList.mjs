@@ -1,12 +1,13 @@
+import { leftHandAssign } from '#utils/generators.mjs';
+import { QUERIES, UNIST } from '#utils/queries/index.mjs';
+import { transformNodesToString } from '#utils/unist.mjs';
+
 import {
   DEFAULT_EXPRESSION,
   LEADING_HYPHEN,
   NAME_EXPRESSION,
 } from './constants.mjs';
 import parseSignature from './parseSignature.mjs';
-import { leftHandAssign } from '../generators.mjs';
-import { QUERIES, UNIST } from '../queries/index.mjs';
-import { transformNodesToString } from '../unist.mjs';
 
 /**
  * Extracts and removes a specific pattern from a text string while storing the result in a key of the `current` object.

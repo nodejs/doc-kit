@@ -4,9 +4,9 @@ import { join } from 'node:path';
 
 import { remove } from 'unist-util-remove';
 
-import getConfig from '../../utils/configuration/index.mjs';
-import { writeFile } from '../../utils/file.mjs';
-import { UNIST } from '../../utils/queries/index.mjs';
+import getConfig from '#utils/configuration/index.mjs';
+import { writeFile } from '#utils/file.mjs';
+import { UNIST } from '#utils/queries/index.mjs';
 
 /**
  * Generates the simplified JSON version of the API docs

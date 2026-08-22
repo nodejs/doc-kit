@@ -2,11 +2,12 @@
 
 import { SKIP } from 'unist-util-visit';
 
+import { QUERIES } from '#utils/queries/index.mjs';
+import { getRemark as remark } from '#utils/remark.mjs';
+import { transformNodesToString } from '#utils/unist.mjs';
+
 import { transformUnixManualToLink } from './transformers.mjs';
 import { extractYamlContent, parseYAMLIntoMetadata } from './yaml.mjs';
-import { QUERIES } from '../../../utils/queries/index.mjs';
-import { getRemark as remark } from '../../../utils/remark.mjs';
-import { transformNodesToString } from '../../../utils/unist.mjs';
 
 /**
  * Updates a Markdown link into a HTML link for API docs
