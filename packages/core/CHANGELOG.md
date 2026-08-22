@@ -1,5 +1,22 @@
 # @doc-kit/core
 
+## 2.0.0
+
+### Patch Changes
+
+- [#1023](https://github.com/nodejs/doc-kit/pull/1023) [`27a412a`](https://github.com/nodejs/doc-kit/commit/27a412ac35ab06e977b03b559e6525c0c5c5356c) Thanks [@btea](https://github.com/btea)! - Fix empty paragraphs in API docs when a typed parameter list contains trailing non-parameter items
+
+  When a loose markdown list in the API docs starts with typed parameters (e.g. `actual`, `expected`, `Returns`) but also contains plain prose bullets (e.g. algorithm complexity notes), the entire list was previously treated as a parameter signature table. The non-parameter items had no name or type, causing them to render as empty `<section>` blocks on the built site.
+
+  The fix splits the list at the first non-parameter item: typed items become the `FunctionSignature` table, and the remaining items render as regular markdown content.
+
+- [#1045](https://github.com/nodejs/doc-kit/pull/1045) [`4a22c85`](https://github.com/nodejs/doc-kit/commit/4a22c85dca917f52c773aba084191da7c622687e) Thanks [@avivkeller](https://github.com/avivkeller)! - MDX nodes in the HTML-string pipelines are now dropped, and do not crash.
+
+- Updated dependencies [[`2a106f3`](https://github.com/nodejs/doc-kit/commit/2a106f3b40729b4ec9f6dbec739d14c67c1bd28b), [`49cb713`](https://github.com/nodejs/doc-kit/commit/49cb713d359cd1dd04268781b382d75297d23cdc), [`4a22c85`](https://github.com/nodejs/doc-kit/commit/4a22c85dca917f52c773aba084191da7c622687e), [`27a412a`](https://github.com/nodejs/doc-kit/commit/27a412ac35ab06e977b03b559e6525c0c5c5356c), [`7670a78`](https://github.com/nodejs/doc-kit/commit/7670a782dc6dd532c5c3744b1e6ff35a1d15a152), [`81b6224`](https://github.com/nodejs/doc-kit/commit/81b6224dc7cbe50dc1b2958a9430ea6c94e78ff3)]:
+  - @doc-kit/generator-react@0.2.0
+  - @node-core/doc-kit@2.0.1
+  - @node-core/doc-kit-legacy@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
