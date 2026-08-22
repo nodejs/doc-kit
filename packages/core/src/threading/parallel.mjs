@@ -1,6 +1,6 @@
 'use strict';
 
-import logger from '../logger/index.mjs';
+import logger from '#logger/index.mjs';
 
 const parallelLogger = logger.child('parallel');
 

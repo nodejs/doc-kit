@@ -1,6 +1,6 @@
 import Piscina from 'piscina';
 
-import logger from '../logger/index.mjs';
+import logger from '#logger/index.mjs';
 
 const poolLogger = logger.child('WorkerPool');
 

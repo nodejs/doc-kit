@@ -2,11 +2,12 @@ import {
   DOC_MAN_BASE_URL,
   DOC_API_HEADING_TYPES,
   MODULE_QUALIFIED_NAME,
-} from '../constants.mjs';
+} from '#generators/metadata/constants.mjs';
+import BUILTIN_TYPE_MAP from '#generators/metadata/maps/builtin.json' with { type: 'json' };
+import MDN_TYPE_MAP from '#generators/metadata/maps/mdn.json' with { type: 'json' };
+import { transformNodesToString } from '#utils/unist.mjs';
+
 import { slug } from './slugger.mjs';
-import { transformNodesToString } from '../../../utils/unist.mjs';
-import BUILTIN_TYPE_MAP from '../maps/builtin.json' with { type: 'json' };
-import MDN_TYPE_MAP from '../maps/mdn.json' with { type: 'json' };
 
 /**
  * @param {string} text The inner text

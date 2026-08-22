@@ -6,7 +6,7 @@ import { extname } from 'node:path';
 import { parse } from 'acorn';
 import { globSync } from 'tinyglobby';
 
-import getConfig from '../../utils/configuration/index.mjs';
+import getConfig from '#utils/configuration/index.mjs';
 
 /**
  * Process a chunk of JavaScript files in a worker thread.

@@ -1,5 +1,5 @@
-import { loadGenerator } from '../generators/loader.mjs';
-import { setConfig } from '../utils/configuration/index.mjs';
+import { loadGenerator } from '#generators/loader.mjs';
+import { setConfig } from '#utils/configuration/index.mjs';
 
 /**
  * Processes a chunk of items using the specified generator's processChunk method.

@@ -7,11 +7,12 @@ import globParent from 'glob-parent';
 import { globSync } from 'tinyglobby';
 import { parse as parseYaml } from 'yaml';
 
+import getConfig from '#utils/configuration/index.mjs';
+import { withExt } from '#utils/file.mjs';
+import { QUERIES } from '#utils/queries/index.mjs';
+import { getRemark as remark, getRemarkMdx } from '#utils/remark.mjs';
+
 import { STABILITY_INDEX_URL } from './constants.mjs';
-import getConfig from '../../utils/configuration/index.mjs';
-import { withExt } from '../../utils/file.mjs';
-import { QUERIES } from '../../utils/queries/index.mjs';
-import { getRemark as remark, getRemarkMdx } from '../../utils/remark.mjs';
 
 /**
  * Determines whether a file should be parsed as MDX. A `.mdx` extension opts in

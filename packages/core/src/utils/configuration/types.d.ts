@@ -1,5 +1,5 @@
 import type { SemVer } from 'semver';
-import type { ReleaseEntry } from '../../parsers/types';
+import type { ReleaseEntry } from '#parsers/types';
 
 export type Configuration = {
   global: GlobalConfiguration;

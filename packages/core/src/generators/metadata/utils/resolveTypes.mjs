@@ -1,9 +1,10 @@
 import { parseSync } from '@swc/wasm';
 import { visit } from 'unist-util-visit';
 
+import logger from '#logger/index.mjs';
+import { walk } from '#utils/swc.mjs';
+
 import { lookupTypeName, resolveTypeReference } from './transformers.mjs';
-import logger from '../../../logger/index.mjs';
-import { walk } from '../../../utils/swc.mjs';
 
 // `null` is a keyword kind in SWC, unlike most parsers which treat it as a literal type
 const KEYWORDS = new Set([
