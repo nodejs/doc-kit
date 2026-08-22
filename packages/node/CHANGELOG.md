@@ -1,5 +1,12 @@
 # @node-core/doc-kit
 
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [[`27a412a`](https://github.com/nodejs/doc-kit/commit/27a412ac35ab06e977b03b559e6525c0c5c5356c), [`4a22c85`](https://github.com/nodejs/doc-kit/commit/4a22c85dca917f52c773aba084191da7c622687e)]:
+  - @doc-kit/core@2.0.0
+
 ## 2.0.0
 
 ### Major Changes

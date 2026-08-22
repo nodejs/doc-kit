@@ -1,5 +1,37 @@
 # @doc-kit/generator-react
 
+## 0.2.0
+
+### Minor Changes
+
+- [#1043](https://github.com/nodejs/doc-kit/pull/1043) [`81b6224`](https://github.com/nodejs/doc-kit/commit/81b6224dc7cbe50dc1b2958a9430ea6c94e78ff3) Thanks [@avivkeller](https://github.com/avivkeller)! - Make reading time opt-in via `showReadingTime`
+
+### Patch Changes
+
+- [#1034](https://github.com/nodejs/doc-kit/pull/1034) [`2a106f3`](https://github.com/nodejs/doc-kit/commit/2a106f3b40729b4ec9f6dbec739d14c67c1bd28b) Thanks [@btea](https://github.com/btea)! - Fix `[object Object]` in ChangeHistory aria-label and dropdown horizontal scrollbar
+
+  - Change history labels were passing a JSX AST object instead of a plain text
+    string to the `ChangeHistory` component, causing `aria-label` to render as
+    `[object Object]`. Labels are now extracted as plain text via `remark-parse`.
+  - The ChangeHistory dropdown could show a horizontal scrollbar when label text
+    overflowed the fixed-width container. Added `overflow-wrap` and `word-break`
+    rules to prevent this.
+
+- [#1037](https://github.com/nodejs/doc-kit/pull/1037) [`49cb713`](https://github.com/nodejs/doc-kit/commit/49cb713d359cd1dd04268781b382d75297d23cdc) Thanks [@pmarkert](https://github.com/pmarkert)! - Constructors now render their own class as the return type instead of `void`
+
+- [#1045](https://github.com/nodejs/doc-kit/pull/1045) [`4a22c85`](https://github.com/nodejs/doc-kit/commit/4a22c85dca917f52c773aba084191da7c622687e) Thanks [@avivkeller](https://github.com/avivkeller)! - Add a `<DocumentationIndex />` MDX component that renders the stability overview of every module, backed by a new `documentationIndex` export on `#theme/config` (replaces the `<!-- DOCUMENTATION_INDEX -->` comment)
+
+- [#1023](https://github.com/nodejs/doc-kit/pull/1023) [`27a412a`](https://github.com/nodejs/doc-kit/commit/27a412ac35ab06e977b03b559e6525c0c5c5356c) Thanks [@btea](https://github.com/btea)! - Fix empty paragraphs in API docs when a typed parameter list contains trailing non-parameter items
+
+  When a loose markdown list in the API docs starts with typed parameters (e.g. `actual`, `expected`, `Returns`) but also contains plain prose bullets (e.g. algorithm complexity notes), the entire list was previously treated as a parameter signature table. The non-parameter items had no name or type, causing them to render as empty `<section>` blocks on the built site.
+
+  The fix splits the list at the first non-parameter item: typed items become the `FunctionSignature` table, and the remaining items render as regular markdown content.
+
+- [#1036](https://github.com/nodejs/doc-kit/pull/1036) [`7670a78`](https://github.com/nodejs/doc-kit/commit/7670a782dc6dd532c5c3744b1e6ff35a1d15a152) Thanks [@avivkeller](https://github.com/avivkeller)! - Generate `index.html` from the input `index` document instead of a synthetic page
+
+- Updated dependencies [[`27a412a`](https://github.com/nodejs/doc-kit/commit/27a412ac35ab06e977b03b559e6525c0c5c5356c), [`4a22c85`](https://github.com/nodejs/doc-kit/commit/4a22c85dca917f52c773aba084191da7c622687e)]:
+  - @doc-kit/core@2.0.0
+
 ## 0.1.0
 
 ### Minor Changes
