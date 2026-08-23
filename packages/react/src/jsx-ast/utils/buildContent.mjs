@@ -6,6 +6,7 @@ import {
   GITHUB_BLOB_URL,
   populate,
 } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { highlighter } from '@doc-kit/core/utils/highlighter.mjs';
 import { parseInline } from '@doc-kit/core/utils/inline.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
@@ -325,11 +326,12 @@ export const processEntry = entry => {
  */
 export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
   const finalChildren = [];
+  let activeOverloadGroup = null;
 
   /**
-   * Wraps the AST children of a function entry in a standard panel div.
-   * @param {import('estree').Node} rootNode - The AST node representing the function content
-   * @returns {import('estree').Node} A new div JSX element AST node containing the children
+   * Wraps an AST node's children in a styled panel `div` for tab rendering.
+   * @param {import('estree').Node} rootNode - The root node whose children will be wrapped.
+   * @returns {import('estree').Node} The new `div` AST node containing the children.
    */
   const wrapInDiv = rootNode => {
     return createJSXElement('div', {
@@ -339,36 +341,100 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
     });
   };
 
+  /**
+   * Extracts the raw signature string from an API entry node and removes the signature node from its children.
+   * @param {import('estree').Node} node - The AST node representing the API entry.
+   * @returns {string|null} The raw TypeScript signature string, or null if not found.
+   */
+  const extractSignature = node => {
+    const sigIdx = (node.children || []).findIndex(
+      c =>
+        c.properties?.className?.includes('signature') ||
+        c.properties?.class === 'signature'
+    );
+    if (sigIdx !== -1) {
+      const sigNode = node.children.splice(sigIdx, 1)[0];
+      return sigNode.properties?.dataSignatureRaw;
+    }
+    return null;
+  };
+
+  /**
+   * Finalizes the active overload group by generating a combined signatures block
+   */
+  const pushOverloadGroup = () => {
+    if (!activeOverloadGroup) {
+      return;
+    }
+
+    // Build the combined signature raw string
+    const combinedSigRaw = activeOverloadGroup.signatures
+      .map((sig, idx) => `// Overload #${idx + 1}\n${sig}`)
+      .join('\n\n');
+
+    const highlighted = highlighter.highlightToHast(
+      combinedSigRaw,
+      'typescript'
+    );
+    const combinedSigNode = createElement('div', { class: 'signature' }, [
+      highlighted,
+    ]);
+
+    // Push combined signatures
+    finalChildren.push(combinedSigNode);
+    // Push the tabs
+    finalChildren.push(activeOverloadGroup.tabsNode);
+
+    activeOverloadGroup = null;
+  };
+
+  /**
+   * Processes a single API entry node belonging to an overload group.
+   * It extracts its signature and pushes its remaining content into a new tab panel.
+   * @param {import('estree').Node} node - The AST node to process and add to the active group.
+   */
+  const processOverloadNode = node => {
+    const sigRaw = extractSignature(node);
+    if (sigRaw) {
+      activeOverloadGroup.signatures.push(sigRaw);
+    }
+    activeOverloadGroup.tabsNode.children.push(wrapInDiv(node));
+  };
+
   for (const [i, current] of processedChildren.entries()) {
     if (originalEntries[i].heading?.data?.isOverload) {
-      const last = finalChildren.pop();
-
-      if (last && last.name === JSX_IMPORTS.OverloadTabs.name) {
+      if (activeOverloadGroup) {
         current.children.shift();
-        last.children.push(wrapInDiv(current));
-        finalChildren.push(last);
+        processOverloadNode(current);
       } else {
-        const firstHeading = last.children.shift();
+        const last = finalChildren.pop();
+        activeOverloadGroup = {
+          firstHeading: last.children.shift(),
+          signatures: [],
+          tabsNode: createJSXElement(JSX_IMPORTS.OverloadTabs.name, {
+            inline: false,
+            children: [],
+          }),
+        };
         current.children.shift();
 
-        finalChildren.push(firstHeading);
+        processOverloadNode(last);
+        processOverloadNode(current);
+
+        finalChildren.push(activeOverloadGroup.firstHeading);
         finalChildren.push({
           type: 'heading',
-          depth: (firstHeading.depth || 2) + 1,
+          depth: (activeOverloadGroup.firstHeading.depth || 2) + 1,
           children: [{ type: 'text', value: 'Overloads' }],
         });
-
-        finalChildren.push(
-          createJSXElement(JSX_IMPORTS.OverloadTabs.name, {
-            inline: false,
-            children: [wrapInDiv(last), wrapInDiv(current)],
-          })
-        );
       }
     } else {
+      pushOverloadGroup();
       finalChildren.push(current);
     }
   }
+
+  pushOverloadGroup();
 
   return finalChildren;
 };

@@ -8,7 +8,7 @@ import withIsland from '../../islands/withIsland.jsx';
 const OverloadTabs = ({ children }) => {
   const tabs = children.map((_, index) => ({
     key: `${index + 1}`,
-    label: `${index + 1}`,
+    label: `Overload #${index + 1}`,
   }));
 
   return (
