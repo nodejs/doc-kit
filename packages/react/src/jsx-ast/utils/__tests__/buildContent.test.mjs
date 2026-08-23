@@ -205,28 +205,47 @@ describe('groupOverloadsIntoTabs', () => {
       { heading: { data: { name: 'funcC', isOverload: false } } },
     ];
 
-    const makeNode = (className, bodyText) => ({
-      type: 'element',
-      tagName: 'div',
-      properties: { className },
-      children: [
+    const getText = node => {
+      if (node.type === 'text') {
+        return node.value;
+      }
+      return (node.children || []).map(getText).join('');
+    };
+
+    const makeNode = (className, bodyText, sigText = null) => {
+      const children = [
         { type: 'element', tagName: 'h3', depth: 3 }, // The heading to be stripped
         { type: 'text', value: bodyText },
-      ],
-    });
+      ];
+
+      if (sigText) {
+        children.push({
+          type: 'element',
+          tagName: 'div',
+          properties: { class: 'signature', dataSignatureRaw: sigText },
+        });
+      }
+
+      return {
+        type: 'element',
+        tagName: 'div',
+        properties: { className },
+        children,
+      };
+    };
 
     const processedChildren = [
       makeNode('entry-a', 'body a'),
-      makeNode('entry-b1', 'body b1'),
-      makeNode('entry-b2', 'body b2'),
-      makeNode('entry-b3', 'body b3'),
+      makeNode('entry-b1', 'body b1', 'function funcB(arg1);'),
+      makeNode('entry-b2', 'body b2', 'function funcB(arg1, arg2);'),
+      makeNode('entry-b3', 'body b3', 'function funcB(arg1, arg2, arg3);'),
       makeNode('entry-c', 'body c'),
     ];
 
     const result = groupOverloadsIntoTabs(processedChildren, originalEntries);
 
-    // 0: funcA, 1: funcB-heading, 2: Overloads-heading, 3: OverloadTabs(funcB), 4: funcC
-    assert.equal(result.length, 5);
+    // 0: funcA, 1: funcB-heading, 2: Overloads-heading, 3: CombinedSignatures, 4: OverloadTabs(funcB), 5: funcC
+    assert.equal(result.length, 6);
 
     // First element is untouched
     assert.equal(result[0].properties.className, 'entry-a');
@@ -237,8 +256,21 @@ describe('groupOverloadsIntoTabs', () => {
     // Third element is the "Overloads" heading
     assert.equal(result[2].children[0].value, 'Overloads');
 
-    // Fourth element is the OverloadTabs component
-    const tabsComponent = result[3];
+    // Fourth element is the combined signatures block
+    const combinedSigBlock = result[3];
+    assert.deepEqual(combinedSigBlock.properties.className, ['signature']);
+
+    // Assert that the combined signatures contain the formatted 'Overload #X' text
+    const combinedText = getText(combinedSigBlock);
+    assert.match(combinedText, /Overload #1/);
+    assert.match(combinedText, /function funcB\(arg1\);/);
+    assert.match(combinedText, /Overload #2/);
+    assert.match(combinedText, /function funcB\(arg1, arg2\);/);
+    assert.match(combinedText, /Overload #3/);
+    assert.match(combinedText, /function funcB\(arg1, arg2, arg3\);/);
+
+    // Fifth element is the OverloadTabs component
+    const tabsComponent = result[4];
     assert.equal(tabsComponent.name, 'OverloadTabs');
     assert.equal(tabsComponent.children.length, 3); // 3 tab panels
 
@@ -246,16 +278,15 @@ describe('groupOverloadsIntoTabs', () => {
     const panel1 = tabsComponent.children[0];
     const classAttr1 = panel1.attributes.find(a => a.name === 'className');
     assert.equal(classAttr1.value, 'overload-panel');
-    assert.equal(panel1.children[0].type, 'text');
+
+    // Second panel child should be the text we inserted
     assert.equal(panel1.children[0].value, 'body b1');
+    assert.equal(result[5].properties.className, 'entry-c');
 
     const panel2 = tabsComponent.children[1];
     const classAttr2 = panel2.attributes.find(a => a.name === 'className');
     assert.equal(classAttr2.value, 'overload-panel');
     assert.equal(panel2.children[0].type, 'text');
     assert.equal(panel2.children[0].value, 'body b2');
-
-    // Fifth element is untouched
-    assert.equal(result[4].properties.className, 'entry-c');
   });
 });
