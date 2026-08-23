@@ -185,6 +185,29 @@ describe('buildDocumentationIndex', () => {
       },
     ]);
   });
+
+  it('renders descriptions to HTML, without the links entries cannot nest', () => {
+    const input = [
+      {
+        data: {
+          api: 'fs',
+          path: '/fs',
+          heading: { depth: 1, data: { name: 'File System' } },
+          stability: { data: { index: '2' } },
+          llm_description:
+            'Enables interacting with the `file system`, see [fs](/fs).',
+          content: { type: 'root', children: [] },
+        },
+      },
+    ];
+
+    const [{ description }] = buildDocumentationIndex(input);
+
+    assert.equal(
+      description,
+      'Enables interacting with the <code>file system</code>, see fs.'
+    );
+  });
 });
 
 describe('buildLanguageDisplayNameMap', () => {

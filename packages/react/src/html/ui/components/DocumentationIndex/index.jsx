@@ -10,7 +10,8 @@ import { documentationIndex } from '#theme/config';
  * @property {string} api - Basename of the document, linked as `${api}.html`
  * @property {string} name - Human-readable name from the document's heading
  * @property {string} index - Stability index (e.g. `'2'` or `'1.1'`)
- * @property {string} [description] - The document's `llm_description`, or its first paragraph
+ * @property {string} [description] - The document's `llm_description`, or its
+ * first paragraph, rendered to HTML at build time
  */
 
 /**
@@ -34,7 +35,13 @@ const IndexEntry = ({ api, name, index, description }) => {
         </Badge>
       </span>
 
-      {description && <span className={styles.summary}>{description}</span>}
+      {description && (
+        <span
+          className={styles.summary}
+          // Rendered from the document's own markdown at build time
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
+      )}
     </a>
   );
 };

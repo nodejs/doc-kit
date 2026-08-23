@@ -6,13 +6,12 @@ import {
   GITHUB_BLOB_URL,
   populate,
 } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { parseInline } from '@doc-kit/core/utils/inline.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
 import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
@@ -20,6 +19,7 @@ import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
 import { annotateOverloads } from './overloads.mjs';
 import { getRemarkRecma as remark } from './remark.mjs';
+import { renderAsJSX } from './render.mjs';
 import { JSX_IMPORTS } from '../../html/constants.mjs';
 import {
   STABILITY_LEVELS,
@@ -36,18 +36,6 @@ import {
   createSignatureTable,
   getFullName,
 } from './signature.mjs';
-
-/**
- * Converts a markdown string to plain text by parsing it and extracting
- * text and inline code values.
- *
- * @param {string} markdown - The markdown string to convert.
- * @returns {string} The plain text representation.
- */
-const toPlainText = markdown =>
-  transformNodesToString(
-    unified().use(remarkParse).parse(markdown).children
-  ).trim();
 
 /**
  *
@@ -68,12 +56,21 @@ export const gatherChangeEntries = entry => {
       label: `${label}: ${enforceArray(entry[field]).join(', ')}`,
     }));
 
-  // Explicit changes with plain-text labels extracted from markdown
-  const explicitChanges = (entry.changes || []).map(change => ({
-    versions: enforceArray(change.version),
-    label: toPlainText(change.description),
-    url: change['pr-url'],
-  }));
+  // Explicit changes, whose markdown descriptions are rendered as JSX
+  const explicitChanges = (entry.changes || []).map(change => {
+    const url = change['pr-url'];
+    const nodes = parseInline(change.description, Boolean(url));
+
+    return {
+      versions: enforceArray(change.version),
+      // The plain text backs the change's `aria-label` and React key
+      label: transformNodesToString(nodes).trim(),
+      // `content` takes a ReactNode, so inline code, emphasis and links are
+      // displayed as markup instead of as their markdown source
+      content: renderAsJSX(nodes),
+      url,
+    };
+  });
 
   return [...lifecycleChanges, ...explicitChanges];
 };
