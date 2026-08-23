@@ -22,6 +22,18 @@ const makeParent = typeText => ({
   ],
 });
 
+/**
+ * Collects the tag names of every JSX element within a JSX AST node.
+ *
+ * @param {import('estree-jsx').JSXFragment} node
+ */
+const jsxElementNames = node =>
+  (node.children ?? []).flatMap(child =>
+    child.type === 'JSXElement'
+      ? [child.openingElement.name.name, ...jsxElementNames(child)]
+      : jsxElementNames(child)
+  );
+
 await setConfig({});
 
 describe('transformHeadingNode (deprecation Type -> AlertBox level)', () => {
@@ -109,6 +121,42 @@ describe('gatherChangeEntries', () => {
     );
     assert.equal(result[0].url, 'https://github.com/nodejs/node/pull/123');
     assert.deepEqual(result[0].versions, ['v25.0.0']);
+  });
+
+  it('renders the markdown description as JSX content', () => {
+    const [change] = gatherChangeEntries({
+      changes: [
+        {
+          version: 'v25.0.0',
+          description: 'Add `modifyPrototype` option.',
+        },
+      ],
+    });
+
+    assert.equal(change.content.type, 'JSXFragment');
+    assert.deepEqual(jsxElementNames(change.content), ['code']);
+  });
+
+  it('unwraps description links when the change links to its pull request', () => {
+    const description = 'Superseded by [DEP0111](#DEP0111).';
+
+    const [linked] = gatherChangeEntries({
+      changes: [
+        {
+          version: 'v1.0.0',
+          description,
+          'pr-url': 'https://example.com/pr/1',
+        },
+      ],
+    });
+
+    const [unlinked] = gatherChangeEntries({
+      changes: [{ version: 'v1.0.0', description }],
+    });
+
+    assert.deepEqual(jsxElementNames(linked.content), []);
+    assert.deepEqual(jsxElementNames(unlinked.content), ['a']);
+    assert.equal(linked.label, 'Superseded by DEP0111.');
   });
 
   it('produces a string label, not an object (regression for [object Object])', () => {

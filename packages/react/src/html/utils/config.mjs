@@ -6,6 +6,7 @@ import {
   getEntryDescription,
   getVersionFromSemVer,
 } from '@doc-kit/core/utils/generators.mjs';
+import { parseInline, renderAsHTML } from '@doc-kit/core/utils/inline.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 import { LANGS } from '@node-core/rehype-shiki';
 
@@ -58,7 +59,7 @@ export function buildDocumentationIndex(input) {
       api: entry.api,
       name: entry.heading.data.name,
       index: entry.stability.data.index,
-      description: getEntryDescription(entry),
+      description: renderAsHTML(parseInline(getEntryDescription(entry), true)),
     }));
 }
 

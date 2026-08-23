@@ -34,7 +34,7 @@
     "@heroicons/react": "^2.2.0",
     "@doc-kit/core": "workspace:*",
     "@node-core/rehype-shiki": "^1.4.3",
-    "@node-core/ui-components": "^1.7.4",
+    "@node-core/ui-components": "^1.7.6",
     "@orama/orama": "^3.1.18",
     "@orama/ui": "^1.5.4",
     "estree-util-to-js": "^2.0.0",

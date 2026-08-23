@@ -1,9 +1,8 @@
 import { QUERIES, UNIST } from '@doc-kit/core/utils/queries/index.mjs';
 import { DEFAULT_EXPRESSION } from '@doc-kit/core/utils/signature/constants.mjs';
 import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
-import { u as createTree } from 'unist-builder';
 
-import { getRemarkRecma as remark } from './remark.mjs';
+import { renderAsJSX } from './render.mjs';
 import { TRIMMABLE_PADDING_REGEX } from '../constants.mjs';
 
 /**
@@ -70,8 +69,7 @@ export const extractTypeAnnotation = nodes => {
     return undefined;
   }
 
-  return remark().runSync(createTree('root', [nodes.shift()])).body[0]
-    .expression;
+  return renderAsJSX([nodes.shift()]);
 };
 
 /**
@@ -101,9 +99,7 @@ export const parseListIntoProperties = node =>
         transformNodesToString(children)
       );
 
-      current.description = remark().runSync(
-        createTree('root', children)
-      ).body[0].expression;
+      current.description = renderAsJSX(children);
     }
 
     current.children = parseListIntoProperties(

@@ -236,8 +236,8 @@ importers:
         specifier: ^1.4.3
         version: 1.4.3(supports-color@7.2.0)
       '@node-core/ui-components':
-        specifier: ^1.7.4
-        version: 1.7.4(@orama/core@1.2.19)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(supports-color@7.2.0)
+        specifier: ^1.7.6
+        version: 1.7.6(@orama/core@1.2.19)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(supports-color@7.2.0)
       '@orama/orama':
         specifier: ^3.1.18
         version: 3.1.18
@@ -707,8 +707,8 @@ packages:
     resolution: {integrity: sha512-3LnysU0F1MacdHc+1VHswySfD+smk2bHGob2IlqtHc9VrL5yCC+gbIBbALZYtOOSdmY9J65XvJilFm8XbXJZgA==}
     engines: {node: '>=20'}
 
-  '@node-core/ui-components@1.7.4':
-    resolution: {integrity: sha512-HmSqvXKOk8xBBpFAjWzx6FNCVYmyWSvqwqwfUVaJVAbNGyRNwtziV6HaBjW/ebhD8pqJlhIsrTYO5SFdnQ8WIQ==}
+  '@node-core/ui-components@1.7.6':
+    resolution: {integrity: sha512-4HUQKbcSAAXF/wBVHdfGrf0FW2krKfdtVDMRWWR/cELEEgVWV5TLBVqvYA9+NbiOnNvPkpTgBlMjjCJpVh7tAg==}
     engines: {node: '>=20'}
 
   '@nodelib/fs.scandir@2.1.5':
@@ -4044,7 +4044,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@node-core/ui-components@1.7.4(@orama/core@1.2.19)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(supports-color@7.2.0)':
+  '@node-core/ui-components@1.7.6(@orama/core@1.2.19)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(supports-color@7.2.0)':
     dependencies:
       '@heroicons/react': 2.2.0(react@19.2.8)
       '@orama/orama': 3.1.18
