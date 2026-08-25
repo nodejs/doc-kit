@@ -4,5 +4,11 @@ packages:
 allowBuilds:
   unrs-resolver: false
 
+minimumReleaseAge: 10080
+
+blockExoticSubdeps: true
+
+trustPolicy: no-downgrade
+
 minimumReleaseAgeExclude:
   - '@node-core/ui-components@1.7.6'
