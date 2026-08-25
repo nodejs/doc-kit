@@ -81,13 +81,13 @@ importers:
         specifier: ^3.0.0
         version: 3.0.1
       '@doc-kit/generator-react':
-        specifier: workspace:*
+        specifier: workspace:>=0.1.0
         version: link:../react
       '@node-core/doc-kit':
-        specifier: workspace:*
+        specifier: workspace:>=2.0.0
         version: link:../node
       '@node-core/doc-kit-legacy':
-        specifier: workspace:*
+        specifier: workspace:>=1.0.0
         version: link:../node-legacy
       '@node-core/rehype-shiki':
         specifier: ^1.4.3
