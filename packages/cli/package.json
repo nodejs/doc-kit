@@ -1,7 +1,7 @@
 {
   "name": "@doc-kit/cli",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The doc-kit command-line interface: runs @doc-kit/core generators from the terminal",
   "repository": {
     "type": "git",

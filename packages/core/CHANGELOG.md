@@ -1,5 +1,19 @@
 # @doc-kit/core
 
+## 1.0.1
+
+### Patch Changes
+
+- [#1023](https://github.com/nodejs/doc-kit/pull/1023) [`27a412a`](https://github.com/nodejs/doc-kit/commit/27a412ac35ab06e977b03b559e6525c0c5c5356c) Thanks [@btea](https://github.com/btea)! - Fix empty paragraphs in API docs when a typed parameter list contains trailing non-parameter items
+
+  When a loose markdown list in the API docs starts with typed parameters (e.g. `actual`, `expected`, `Returns`) but also contains plain prose bullets (e.g. algorithm complexity notes), the entire list was previously treated as a parameter signature table. The non-parameter items had no name or type, causing them to render as empty `<section>` blocks on the built site.
+
+  The fix splits the list at the first non-parameter item: typed items become the `FunctionSignature` table, and the remaining items render as regular markdown content.
+
+- [#1045](https://github.com/nodejs/doc-kit/pull/1045) [`4a22c85`](https://github.com/nodejs/doc-kit/commit/4a22c85dca917f52c773aba084191da7c622687e) Thanks [@avivkeller](https://github.com/avivkeller)! - MDX nodes in the HTML-string pipelines are now dropped, and do not crash.
+
+- [#1049](https://github.com/nodejs/doc-kit/pull/1049) [`8cc1fd0`](https://github.com/nodejs/doc-kit/commit/8cc1fd010ac38b16dd3c9bcd422c0ce0e5eb483d) Thanks [@avivkeller](https://github.com/avivkeller)! - Render markdown summaries as markup instead of as their source
+
 ## 1.0.0
 
 ### Major Changes

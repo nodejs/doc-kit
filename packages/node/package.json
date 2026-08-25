@@ -1,7 +1,7 @@
 {
   "name": "@node-core/doc-kit",
   "type": "module",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Node.js-specific generators for @doc-kit/core: api-links, addon-verify, and man-page",
   "repository": {
     "type": "git",
