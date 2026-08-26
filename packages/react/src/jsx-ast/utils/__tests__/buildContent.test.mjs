@@ -244,8 +244,8 @@ describe('groupOverloadsIntoTabs', () => {
 
     const result = groupOverloadsIntoTabs(processedChildren, originalEntries);
 
-    // 0: funcA, 1: funcB-heading, 2: Overloads-heading, 3: CombinedSignatures, 4: OverloadTabs(funcB), 5: funcC
-    assert.equal(result.length, 6);
+    // 0: funcA, 1: funcB-heading, 2: CombinedSignatures, 3: CodeTabs(funcB), 4: funcC
+    assert.equal(result.length, 5);
 
     // First element is untouched
     assert.equal(result[0].properties.className, 'entry-a');
@@ -253,25 +253,27 @@ describe('groupOverloadsIntoTabs', () => {
     // Second element is the extracted heading
     assert.equal(result[1].tagName, 'h3');
 
-    // Third element is the "Overloads" heading
-    assert.equal(result[2].children[0].value, 'Overloads');
-
-    // Fourth element is the combined signatures block
-    const combinedSigBlock = result[3];
+    // Third element is the combined signatures block
+    const combinedSigBlock = result[2];
     assert.deepEqual(combinedSigBlock.properties.className, ['signature']);
 
-    // Assert that the combined signatures contain the formatted 'Overload #X' text
+    // Assert that the combined signatures contain the raw signatures without comments
     const combinedText = getText(combinedSigBlock);
-    assert.match(combinedText, /Overload #1/);
     assert.match(combinedText, /function funcB\(arg1\);/);
-    assert.match(combinedText, /Overload #2/);
     assert.match(combinedText, /function funcB\(arg1, arg2\);/);
-    assert.match(combinedText, /Overload #3/);
     assert.match(combinedText, /function funcB\(arg1, arg2, arg3\);/);
 
-    // Fifth element is the OverloadTabs component
-    const tabsComponent = result[4];
-    assert.equal(tabsComponent.name, 'OverloadTabs');
+    // Fourth element is the CodeTabs component
+    const tabsComponent = result[3];
+    assert.equal(tabsComponent.name, 'CodeTabs');
+    const languagesAttr = tabsComponent.attributes.find(
+      a => a.name === 'languages'
+    );
+    const displayNamesAttr = tabsComponent.attributes.find(
+      a => a.name === 'displayNames'
+    );
+    assert.equal(languagesAttr.value, 'overload|overload|overload');
+    assert.equal(displayNamesAttr.value, 'Overload #1|Overload #2|Overload #3');
     assert.equal(tabsComponent.children.length, 3); // 3 tab panels
 
     // Check that the h3 was removed from the overloads and they are wrapped in overload-panel
@@ -281,7 +283,7 @@ describe('groupOverloadsIntoTabs', () => {
 
     // Second panel child should be the text we inserted
     assert.equal(panel1.children[0].value, 'body b1');
-    assert.equal(result[5].properties.className, 'entry-c');
+    assert.equal(result[4].properties.className, 'entry-c');
 
     const panel2 = tabsComponent.children[1];
     const classAttr2 = panel2.attributes.find(a => a.name === 'className');
