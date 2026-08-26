@@ -425,7 +425,7 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
       } else {
         const last = finalChildren.pop();
         activeOverloadGroup = {
-          firstHeading: last.children.shift(),
+          firstHeading: last?.children?.shift?.(),
           signatures: [],
           tabsNode: createJSXElement(JSX_IMPORTS.CodeTabs.name, {
             inline: false,
@@ -437,7 +437,9 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
         processOverloadNode(last);
         processOverloadNode(current);
 
-        finalChildren.push(activeOverloadGroup.firstHeading);
+        if (activeOverloadGroup.firstHeading) {
+          finalChildren.push(activeOverloadGroup.firstHeading);
+        }
       }
     } else {
       pushOverloadGroup();
