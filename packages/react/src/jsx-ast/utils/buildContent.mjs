@@ -16,7 +16,7 @@ import { slice } from 'mdast-util-slice-markdown';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
-import { createJSXElement } from './ast.mjs';
+import { createJSXElement, createAttributeNode } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
 import { annotateOverloads } from './overloads.mjs';
 import { getRemarkRecma as remark } from './remark.mjs';
@@ -367,10 +367,9 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
       return;
     }
 
-    // Build the combined signature raw string
-    const combinedSigRaw = activeOverloadGroup.signatures
-      .map((sig, idx) => `// Overload #${idx + 1}\n${sig}`)
-      .join('\n\n');
+    // Deduplicate signatures and join with a single newline
+    const uniqueSignatures = [...new Set(activeOverloadGroup.signatures)];
+    const combinedSigRaw = uniqueSignatures.join('\n');
 
     const highlighted = highlighter.highlightToHast(
       combinedSigRaw,
@@ -382,6 +381,23 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
 
     // Push combined signatures
     finalChildren.push(combinedSigNode);
+
+    // Inject properties needed by CodeTabs component
+    const count = activeOverloadGroup.signatures.length;
+
+    const languagesArr = [];
+    const displayNamesArr = [];
+
+    for (let i = 0; i < count; i++) {
+      languagesArr.push('overload');
+      displayNamesArr.push(`Overload #${i + 1}`);
+    }
+
+    activeOverloadGroup.tabsNode.attributes.push(
+      createAttributeNode('languages', languagesArr.join('|')),
+      createAttributeNode('displayNames', displayNamesArr.join('|'))
+    );
+
     // Push the tabs
     finalChildren.push(activeOverloadGroup.tabsNode);
 
@@ -411,7 +427,7 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
         activeOverloadGroup = {
           firstHeading: last.children.shift(),
           signatures: [],
-          tabsNode: createJSXElement(JSX_IMPORTS.OverloadTabs.name, {
+          tabsNode: createJSXElement(JSX_IMPORTS.CodeTabs.name, {
             inline: false,
             children: [],
           }),
@@ -422,11 +438,6 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
         processOverloadNode(current);
 
         finalChildren.push(activeOverloadGroup.firstHeading);
-        finalChildren.push({
-          type: 'heading',
-          depth: (activeOverloadGroup.firstHeading.depth || 2) + 1,
-          children: [{ type: 'text', value: 'Overloads' }],
-        });
       }
     } else {
       pushOverloadGroup();
