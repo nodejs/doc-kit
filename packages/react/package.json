@@ -32,7 +32,6 @@
     "@fontsource-variable/open-sans": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@heroicons/react": "^2.2.0",
-    "@radix-ui/react-tabs": "^1.1.0",
     "@doc-kit/core": "workspace:*",
     "@node-core/rehype-shiki": "^1.4.3",
     "@node-core/ui-components": "^1.7.6",
