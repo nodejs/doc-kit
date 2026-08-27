@@ -28,10 +28,23 @@ declare module '#theme/config' {
   }>;
   export const editURL: string;
   export const pages: Array<[string, string]>;
+  export const chunks: Record<string, ChunkGroup>;
   export const languageDisplayNameMap: Map<string[], string>;
   export const remoteConfigUrl: string;
   export const server: boolean;
 }
+
+// A module's section pages, nested by heading depth (see `chunked`)
+export type ChunkSection = {
+  label: string;
+  path: string;
+  items?: Array<ChunkSection>;
+};
+
+export type ChunkGroup = {
+  label: string;
+  items: Array<ChunkSection>;
+};
 
 // Omit Primitives from Metadata
 type Primitive = string | number | boolean | symbol | bigint | null | undefined;

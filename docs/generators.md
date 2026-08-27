@@ -16,6 +16,7 @@ npx @doc-kit/cli generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o ou
 | [`orama-db`](./generators/orama-db.md) | The search index behind the `html` site's search box.                |
 | [`llms-txt`](./generators/llms-txt.md) | An [`llms.txt`](https://llmstxt.org/) index for language models.     |
 | [`sitemap`](./generators/sitemap.md)   | A `sitemap.xml` for search engines.                                  |
+| [`chunked`](./generators/chunked.md)   | The `html` site and sitemap, plus one page per section of a module.  |
 
 ### JSON ([`@doc-kit/core`](./packages/core.md))
 

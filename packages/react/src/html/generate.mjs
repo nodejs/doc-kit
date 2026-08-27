@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { copyStaticAssets } from './utils/copying.mjs';
+import { createPageMinifier } from './utils/minify.mjs';
 import { createCodeConverter, processBundles } from './utils/processing.mjs';
 
 /**
@@ -13,11 +14,13 @@ import { createCodeConverter, processBundles } from './utils/processing.mjs';
  * Receives `jsx-ast`'s output as `{ data, code }` items — the JSX AST was
  * already serialized to `code` in the jsx-ast worker, so no AST is held here.
  * Bundling and rendering then run once over the accumulated code, since shared
- * component chunks, CSS, and the sidebar need every entry together.
+ * component chunks, CSS, and the sidebar need every entry together. The
+ * worker pool only comes back into play for the final minification of the
+ * rendered pages.
  *
  * @type {import('./types').Generator['generate']}
  */
-export async function generate(input) {
+export async function generate(input, worker) {
   const config = getConfig('html');
 
   const template = await readFile(config.templatePath, 'utf-8');
@@ -34,17 +37,12 @@ export async function generate(input) {
     datas.push(item.data);
   }
 
-  // Sidebar lists only the real module pages.
-  const sidebarEntries = datas
-    .filter(data => data.synthetic !== true)
-    .map(data => ({ data }));
-
   await processBundles({
     serverCodeMap: converter.serverCodeMap,
-    clientCodeMap: converter.clientCodeMap,
+    clientProgram: converter.clientProgram,
     datas,
-    sidebarEntries,
     template,
+    minifyPages: createPageMinifier(worker),
   });
 
   await copyStaticAssets(config);

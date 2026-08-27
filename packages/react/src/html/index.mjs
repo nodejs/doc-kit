@@ -3,6 +3,7 @@
 import { join } from 'node:path';
 
 import { generate } from './generate.mjs';
+import { processChunk } from './utils/minify.mjs';
 
 /**
  * Web generator - transforms JSX AST entries into complete web bundles.
@@ -86,4 +87,10 @@ export default {
   }),
 
   generate,
+
+  // Minifying the rendered pages is the one step of the bundle that scales
+  // with the page count, so it is farmed out to the worker pool.
+  hasParallelProcessor: true,
+
+  processChunk,
 };

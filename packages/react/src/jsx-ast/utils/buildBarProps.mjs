@@ -43,7 +43,7 @@ const shouldIncludeEntryInToC = ({ heading }) =>
  *
  * @param {import('@doc-kit/core/generators/metadata/types').HeadingData} data
  */
-const headingLabel = data => {
+export const headingLabel = data => {
   if (FUNCTION_HEADING_TYPES.has(data.type)) {
     const name = getFullName(data, data.name);
 

@@ -411,6 +411,63 @@ export async function generate(input, worker) {
 }
 ```
 
+### Declaring a dependent
+
+`dependsOn` pulls another generator's output _in_. The inverse, `dependent`,
+pushes a generator's output _into_ another generator's pipeline:
+
+```mjs displayName="index.mjs"
+export default {
+  name: 'chunked',
+
+  dependsOn: '@doc-kit/core/metadata',
+
+  // Deliver this generator's output through `html`
+  dependent: '@doc-kit/generator-react/html',
+
+  generate,
+};
+```
+
+The pipeline splices such a generator in front of the first generator on the
+way to its dependent that consumes the same `dependsOn`. Here `html` depends on
+`jsx-ast`, which depends on `metadata` — so `jsx-ast` is rewired to read from
+`chunked` instead:
+
+```text
+ast → metadata → chunked → jsx-ast → html
+```
+
+Requesting a generator that declares a dependent runs the dependent's whole
+pipeline, and the run's result is the dependent's output — `-t chunked`
+produces the `html` site. Several generators may splice in at the same point;
+they form a chain. A generator whose dependent pipeline never consumes its
+`dependsOn` is an error.
+
+`dependent` also accepts an array. The generator is spliced into every listed
+pipeline; when requested, it is delivered through the dependents that are
+already part of the run, or through all of them when none is:
+
+```mjs displayName="index.mjs"
+export default {
+  name: 'chunked',
+  dependsOn: '@doc-kit/core/metadata',
+  dependent: [
+    '@doc-kit/generator-react/html',
+    '@doc-kit/generator-react/sitemap',
+  ],
+  generate,
+};
+```
+
+With this, `-t chunked` builds the site and the sitemap, while
+`-t html -t chunked` builds just the site.
+
+Use a dependent when a generator transforms an intermediate representation
+(adding, filtering, or rewriting entries) rather than producing a new output
+format of its own. See the [`chunked`](./generators/chunked.md) generator for
+a worked example.
+
 ## File Output
 
 ### Writing Output Files

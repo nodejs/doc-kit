@@ -59,8 +59,11 @@ export async function processChunk(slicedInput, itemIndices) {
  */
 export async function* generate(input, worker) {
   // The `index` page is only generated when an `index` document is part of
-  // the input; the module list for the synthetic pages excludes it.
-  const moduleInput = input.filter(entry => entry.api !== 'index');
+  // the input; the module list for the synthetic pages excludes it, as well
+  // as chunk pages, whose content the full module pages already carry.
+  const moduleInput = input.filter(
+    entry => entry.api !== 'index' && !entry.chunk
+  );
 
   // Create sliced input: each item contains head + its module's entries
   // This avoids sending all 4700+ entries to every worker

@@ -22,6 +22,7 @@ export const publicGenerators = {
   'llms-txt': '@doc-kit/generator-react/llms-txt',
   sitemap: '@doc-kit/generator-react/sitemap',
   html: '@doc-kit/generator-react/html',
+  chunked: '@doc-kit/generator-react/chunked',
 };
 
 // These ones are special since they don't produce standard output,

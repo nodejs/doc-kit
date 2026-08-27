@@ -175,20 +175,24 @@ omitted rather than rendered empty.
 
 ### Bundler adapters
 
-- `getEntryId` {Function} Return the module identifier placed in the populated
-  HTML for an API name.
+- `getEntryId` {Function} Return the module identifier placed in every
+  populated HTML page's client script tag.
 - `render` {Function} Bundle and execute the server `entries`, returning a `Map`
   of API name to rendered HTML.
-- `build` {Function} Bundle the client `entries`, process the populated `pages`,
+- `build` {Function} Bundle the client `entry`, process the populated `pages`,
   and write the complete output.
 
 The `bundler` option accepts a small Doc Kit adapter rather than configuration
 for a particular build system.
 
-Both `render` and `build` receive `{ entries, virtualImports, config }`; `build`
-also receives `pages`. Entry maps use `${api}.jsx` keys, rendered server results
-use `api` keys, and page maps use output-relative HTML file names. `config` is
-the resolved `html` configuration.
+`render` receives `{ entries, virtualImports, config }`; `build` receives
+`{ entry, virtualImports, pages, minifyPages, config }`. The server entry map
+uses `${api}.jsx` keys and rendered server results use `api` keys. The client
+`entry` is a single program shared by every page, served at the identifier
+`getEntryId` returns. Page maps use output-relative HTML file names;
+`minifyPages` takes such a map and returns its minified counterpart, spreading
+the work across Doc Kit's worker pool — call it on the final HTML when
+`config.minify` is set. `config` is the resolved `html` configuration.
 
 The adapter must compile the generated Preact JSX and CSS imports and resolve
 the supplied theme aliases and virtual modules. The generated `#theme/config`
@@ -201,16 +205,17 @@ adding webpack to Doc Kit:
 ```js
 // webpack-bundler.mjs
 export const createWebpackBundler = webpackOptions => ({
-  getEntryId: api => `virtual:doc-kit/client/${api}.jsx`,
+  getEntryId: () => 'virtual:doc-kit/client/index.jsx',
 
   async render({ entries, virtualImports, config }) {
     // Materialize or load the in-memory modules, run webpack's server target,
     // execute each emitted entry, and return Map<api, renderedHtml>.
   },
 
-  async build({ entries, virtualImports, pages, config }) {
+  async build({ entry, virtualImports, pages, minifyPages, config }) {
     // Run webpack's browser target, inject its emitted assets into `pages`,
-    // and write the HTML and assets to config.output.
+    // minify them with `minifyPages` when `config.minify` is set, and write
+    // the HTML and assets to config.output.
   },
 });
 ```
@@ -385,6 +390,11 @@ import { project, repository, editURL } from '#theme/config';
 - `documentationIndex` {Array} Entries rendered by the built-in
   `<DocumentationIndex />` component — every page with a stability index, each
   `{ api, name, index, description }`.
+- `chunks` {Object} Per-module section pages produced by the
+  [`chunked`](./chunked.md) generator, keyed by the module's path: each
+  `{ label, items }`, where `items` is the module's section tree — `{ label,
+path, items? }` entries nested by heading depth, in document order. Empty
+  unless `chunked` ran.
 - `navigation` {Object} Mirrors the configured `navigation` (consumed by the
   built-in `SideBar` and `NavBar`).
 - `useAbsoluteURLs` {boolean} Whether internal links use absolute URLs (mirrors
@@ -422,7 +432,9 @@ export default ({ metadata }) => (
 ## Layout props
 
 - `metadata` {Object} Serialized page metadata — all YAML frontmatter properties
-  plus `addedIn`, `basename`, `path`, and any custom user-defined fields.
+  plus `addedIn`, `basename`, `path`, and any custom user-defined fields. Pages
+  produced by the [`chunked`](./chunked.md) generator also carry `chunk`, which
+  describes the module and section they were split from.
 - `headings` {Array} Pre-computed table of contents heading entries.
 - `readingTime` {string|undefined} Estimated reading time (e.g. `'5 min read'`).
   Only present when the `jsx-ast` generator's `showReadingTime` option is

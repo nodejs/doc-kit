@@ -4,12 +4,57 @@ import Article from '@node-core/ui-components/Containers/Article';
 
 import Banner from '../Banner';
 import styles from './index.module.css';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 
-import { navigation } from '#theme/config';
+import { navigation, chunks } from '#theme/config';
 import Footer from '#theme/Footer';
 import MetaBar from '#theme/Metabar';
 import NavBar from '#theme/Navigation';
 import SideBar from '#theme/Sidebar';
+
+/**
+ * Flattens a section tree into document order.
+ *
+ * @param {Array<{ label: string, path: string, items?: Array }>} sections
+ * @returns {Array<{ label: string, path: string }>}
+ */
+const flatten = sections =>
+  sections.flatMap(({ items = [], ...section }) => [
+    section,
+    ...flatten(items),
+  ]);
+
+/**
+ * Builds the ordered list of pages the previous/next links step through.
+ *
+ * A module that was split into chunks (and each of its chunk pages) steps
+ * through the module itself followed by its sections, in document order.
+ * Otherwise the configured sidebar order is used, when cross links are on.
+ *
+ * @param {import('../../types').SerializedMetadata} metadata
+ * @returns {Array<{ label: string, link: string, path: string }>}
+ */
+const getCrossLinkItems = metadata => {
+  const modulePath = metadata.chunk?.path ?? metadata.path;
+  const group = chunks[modulePath];
+
+  if (group) {
+    const toLink = path => `${relativeOrAbsolute(path, metadata.path)}.html`;
+
+    return [
+      { label: group.label, path: modulePath },
+      ...flatten(group.items),
+    ].map(({ label, path }) => ({ label, link: toLink(path), path }));
+  }
+
+  if (!navigation.showCrossLinks) {
+    return [];
+  }
+
+  return (navigation.sidebar?.flatMap(({ items }) => items) ?? []).map(
+    item => ({ ...item, path: item.link })
+  );
+};
 
 /**
  * Default page Layout component.
@@ -21,12 +66,10 @@ import SideBar from '#theme/Sidebar';
  * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime?: string, children: import('preact').ComponentChildren }} props
  */
 export default ({ metadata, headings, readingTime, children }) => {
-  const crossLinkItems = navigation.showCrossLinks
-    ? (navigation.sidebar?.flatMap(({ items }) => items) ?? [])
-    : [];
+  const crossLinkItems = getCrossLinkItems(metadata);
 
   const currentItem = crossLinkItems.findIndex(
-    ({ link }) => link === metadata.path
+    ({ path }) => path === metadata.path
   );
 
   const [previousCrossLink, nextCrossLink] = [

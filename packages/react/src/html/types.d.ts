@@ -39,18 +39,22 @@ export type ServerBundleOptions = {
 };
 
 export type ClientBundleOptions = {
-  // Client-side JSX programs keyed by `${api}.jsx`.
-  entries: Map<string, string>;
-  // In-memory modules that the bundler must make available to the entries.
+  // The client-side program every page loads, hydrating its server-rendered
+  // markup; the bundler serves it at the identifier `getEntryId()` returns.
+  entry: string;
+  // In-memory modules that the bundler must make available to the entry.
   virtualImports: Record<string, string>;
   // Populated HTML keyed by its output-relative file name.
   pages: Map<string, string>;
+  // Minifies final pages (keyed like `pages`) across the worker pool. Bundlers
+  // call it on the HTML they are about to write when `config.minify` is set.
+  minifyPages: (pages: Map<string, string>) => Promise<Map<string, string>>;
   config: ResolvedWebConfiguration;
 };
 
 export type WebBundler = {
-  // Returns the module identifier embedded in one page's client script tag.
-  getEntryId(api: string): string;
+  // Returns the module identifier embedded in every page's client script tag.
+  getEntryId(): string;
   // Returns rendered HTML keyed by API name.
   render(options: ServerBundleOptions): Promise<Map<string, string>>;
   // Bundles the client entries and writes the complete site.

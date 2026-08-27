@@ -5,6 +5,7 @@ import {
   loadGenerators,
   resolveGeneratorSpecifier,
 } from './generators/loader.mjs';
+import { resolvePipeline } from './generators/pipeline.mjs';
 import logger from './logger/index.mjs';
 import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
@@ -44,9 +45,12 @@ const createGenerator = () => {
    *
    * @param {string} specifier - Resolved generator specifier to schedule
    * @param {Map<string, GeneratorMetadata>} generators - Loaded generators
+   * @param {Map<string, string | undefined>} inputOf - Each generator's
+   * effective input generator (its dependency, unless another generator was
+   * spliced in front of it via `dependent`)
    * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
    */
-  const scheduleGenerator = (specifier, generators, configuration) => {
+  const scheduleGenerator = (specifier, generators, inputOf, configuration) => {
     if (cache.has(specifier)) {
       return;
     }
@@ -54,12 +58,11 @@ const createGenerator = () => {
     const generator = generators.get(specifier);
     const { name, generate, hasParallelProcessor } = generator;
 
-    const dependsOn =
-      generator.dependsOn && resolveGeneratorSpecifier(generator.dependsOn);
+    const dependsOn = inputOf.get(specifier);
 
     // Schedule dependency first
     if (dependsOn && !cache.has(dependsOn)) {
-      scheduleGenerator(dependsOn, generators, configuration);
+      scheduleGenerator(dependsOn, generators, inputOf, configuration);
     }
 
     generatorsLogger.debug(`Scheduling "${name}"`, {
@@ -104,8 +107,16 @@ const createGenerator = () => {
 
     // Resolve shorthand names and load the full dependency closure up front,
     // so scheduling below is fully synchronous.
-    const targets = target.map(resolveGeneratorSpecifier);
-    const generators = await loadGenerators(targets);
+    const generators = await loadGenerators(
+      target.map(resolveGeneratorSpecifier)
+    );
+
+    // Work out who reads from whom once generators declaring a `dependent`
+    // have been spliced in, and which generators the run finally collects.
+    const { targets, inputOf } = resolvePipeline(
+      target.map(resolveGeneratorSpecifier),
+      generators
+    );
 
     generatorsLogger.debug(`Starting pipeline`, {
       generators: targets.join(', '),
@@ -114,18 +125,14 @@ const createGenerator = () => {
 
     // Compute consumer counts up front so dependencies can be evicted as soon
     // as their last consumer runs (must be ready before any generator starts).
-    cache.populateConsumerCounts(targets, specifier => {
-      const { dependsOn } = generators.get(specifier);
-
-      return dependsOn && resolveGeneratorSpecifier(dependsOn);
-    });
+    cache.populateConsumerCounts(targets, specifier => inputOf.get(specifier));
 
     // Create worker pool
     pool = createWorkerPool(threads);
 
     // Schedule all generators
     for (const specifier of targets) {
-      scheduleGenerator(specifier, generators, configuration);
+      scheduleGenerator(specifier, generators, inputOf, configuration);
     }
 
     // Start all collections in parallel (don't await sequentially). Consuming

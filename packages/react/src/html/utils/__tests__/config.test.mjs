@@ -15,39 +15,44 @@ mock.module('@node-core/rehype-shiki', {
 });
 
 const {
+  default: createConfigSource,
   buildVersionEntries,
   buildPageList,
+  buildChunkGroups,
   buildDocumentationIndex,
   buildLanguageDisplayNameMap,
 } = await import('../config.mjs');
 
-await setConfig({
+const config = await setConfig({
   version: 'v22.0.0',
   changelog: [
     { version: new SemVer('20.0.0'), isLts: true, isCurrent: false },
     { version: new SemVer('22.0.0'), isLts: false, isCurrent: true },
   ],
-  generators: {
-    html: {
-      title: 'Node.js',
-      repository: 'nodejs/node',
-      ref: 'main',
-      baseURL: 'https://nodejs.org/docs',
-      editURL: 'https://github.com/nodejs/node/edit/main/doc/api{path}.md',
-      pageURL: '{baseURL}/latest-{version}/api{path}.html',
-    },
-  },
 });
 
+// Loading the real `html` generator would pull in the full rendering stack
+// (which the `rehype-shiki` mock above cannot satisfy), so its resolved
+// configuration is stubbed in directly.
+config.html = {
+  ...config.global,
+  title: 'Node.js',
+  repository: 'nodejs/node',
+  ref: 'main',
+  baseURL: 'https://nodejs.org/docs',
+  editURL: 'https://github.com/nodejs/node/edit/main/doc/api{path}.md',
+  pageURL: '{baseURL}/latest-{version}/api{path}.html',
+  navigation: {},
+};
+
 /**
- * Helper to create a minimal JSX content entry.
+ * Helper to create a minimal page metadata entry.
  */
-const makeEntry = (api, name, path) => ({
-  data: {
-    api,
-    path,
-    heading: { depth: 1, data: { name } },
-  },
+const makeEntry = (api, name, path, extra = {}) => ({
+  api,
+  path,
+  heading: { depth: 1, data: { name } },
+  ...extra,
 });
 
 describe('buildVersionEntries', () => {
@@ -112,11 +117,9 @@ describe('buildPageList', () => {
     const input = [
       makeEntry('fs', 'File System', '/fs'),
       {
-        data: {
-          api: 'http',
-          path: '/http',
-          heading: { depth: 2, data: { name: 'HTTP' } },
-        },
+        api: 'http',
+        path: '/http',
+        heading: { depth: 2, data: { name: 'HTTP' } },
       },
     ];
 
@@ -131,40 +134,34 @@ describe('buildDocumentationIndex', () => {
   it('lists only pages with a stability index, with their descriptions', () => {
     const input = [
       {
-        data: {
-          api: 'fs',
-          path: '/fs',
-          heading: { depth: 1, data: { name: 'File System' } },
-          stability: { data: { index: '2' } },
-          content: {
-            type: 'root',
-            children: [
-              {
-                type: 'paragraph',
-                children: [{ type: 'text', value: 'File system APIs.' }],
-              },
-            ],
-          },
+        api: 'fs',
+        path: '/fs',
+        heading: { depth: 1, data: { name: 'File System' } },
+        stability: { data: { index: '2' } },
+        content: {
+          type: 'root',
+          children: [
+            {
+              type: 'paragraph',
+              children: [{ type: 'text', value: 'File system APIs.' }],
+            },
+          ],
         },
       },
       {
-        data: {
-          api: 'index',
-          path: '/index',
-          heading: { depth: 1, data: { name: 'Index' } },
-          stability: null,
-          content: { type: 'root', children: [] },
-        },
+        api: 'index',
+        path: '/index',
+        heading: { depth: 1, data: { name: 'Index' } },
+        stability: null,
+        content: { type: 'root', children: [] },
       },
       {
-        data: {
-          api: 'quic',
-          path: '/quic',
-          heading: { depth: 1, data: { name: 'QUIC' } },
-          stability: { data: { index: '1.1' } },
-          llm_description: 'QUIC protocol support.',
-          content: { type: 'root', children: [] },
-        },
+        api: 'quic',
+        path: '/quic',
+        heading: { depth: 1, data: { name: 'QUIC' } },
+        stability: { data: { index: '1.1' } },
+        llm_description: 'QUIC protocol support.',
+        content: { type: 'root', children: [] },
       },
     ];
 
@@ -189,15 +186,13 @@ describe('buildDocumentationIndex', () => {
   it('renders descriptions to HTML, without the links entries cannot nest', () => {
     const input = [
       {
-        data: {
-          api: 'fs',
-          path: '/fs',
-          heading: { depth: 1, data: { name: 'File System' } },
-          stability: { data: { index: '2' } },
-          llm_description:
-            'Enables interacting with the `file system`, see [fs](/fs).',
-          content: { type: 'root', children: [] },
-        },
+        api: 'fs',
+        path: '/fs',
+        heading: { depth: 1, data: { name: 'File System' } },
+        stability: { data: { index: '2' } },
+        llm_description:
+          'Enables interacting with the `file system`, see [fs](/fs).',
+        content: { type: 'root', children: [] },
       },
     ];
 
@@ -207,6 +202,60 @@ describe('buildDocumentationIndex', () => {
       description,
       'Enables interacting with the <code>file system</code>, see fs.'
     );
+  });
+});
+
+describe('buildChunkGroups', () => {
+  const chunk = (name, index, depth = 2, label = name) =>
+    makeEntry(`fs-${name}`, name, `/fs/${name}`, {
+      title: label,
+      chunk: { api: 'fs', path: '/fs', slug: name, index, depth },
+    });
+
+  it('nests chunk pages under their module by depth, in document order', () => {
+    const groups = buildChunkGroups([
+      chunk('readFile', 2, 3, 'fs.readFile'),
+      makeEntry('fs', 'File System', '/fs'),
+      chunk('notes', 3, 2, 'Notes'),
+      chunk('callback-api', 1, 2, 'Callback API'),
+      makeEntry('http', 'HTTP', '/http'),
+    ]);
+
+    assert.deepStrictEqual(groups, {
+      '/fs': {
+        label: 'File System',
+        items: [
+          {
+            label: 'Callback API',
+            path: '/fs/callback-api',
+            items: [{ label: 'fs.readFile', path: '/fs/readFile' }],
+          },
+          { label: 'Notes', path: '/fs/notes' },
+        ],
+      },
+    });
+  });
+
+  it('returns no groups when nothing was chunked', () => {
+    assert.deepStrictEqual(
+      buildChunkGroups([makeEntry('fs', 'File System', '/fs')]),
+      {}
+    );
+  });
+});
+
+describe('createConfigSource', () => {
+  it('lists only real module pages, and exposes the chunk groups', () => {
+    const source = createConfigSource([
+      makeEntry('fs', 'File System', '/fs'),
+      makeEntry('all', 'All', '/all', { synthetic: true }),
+      makeEntry('fs-notes', 'Notes', '/fs/notes', {
+        chunk: { api: 'fs', path: '/fs', slug: 'notes', index: 0, depth: 2 },
+      }),
+    ]);
+
+    assert.match(source, /export const pages = \[\["File System","\/fs"\]\];/);
+    assert.match(source, /export const chunks = \{"\/fs":/);
   });
 });
 

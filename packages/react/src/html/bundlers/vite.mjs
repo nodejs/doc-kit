@@ -3,7 +3,6 @@ import { tmpdir } from 'node:os';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
 import {
   build as viteBuild,
   defaultClientConditions,
@@ -12,24 +11,22 @@ import {
 } from 'vite';
 
 import { FONT_DIRECTORY } from '../constants.mjs';
+import { createPageMinifier } from '../utils/minify.mjs';
 
 const VIRTUAL_PREFIX = 'virtual:doc-kit/';
 const RESOLVED_VIRTUAL_PREFIX = '\0doc-kit:';
 const PACKAGE_ANCHOR = fileURLToPath(import.meta.url);
+
+// The single client entry every HTML page loads. One identifier means one
+// entry chunk (plus its shared dependencies) for the whole site, rather than
+// a copy per page.
+const CLIENT_ENTRY_ID = `${VIRTUAL_PREFIX}client/index.jsx`;
 
 /**
  * Resolves a package specifier
  */
 const resolveFromPackage = specifier =>
   fileURLToPath(import.meta.resolve(specifier));
-
-/**
- * Returns the virtual Vite client entry imported by one HTML page.
- *
- * @param {string} api
- * @returns {string}
- */
-const getViteEntryId = api => `${VIRTUAL_PREFIX}client/${api}.jsx`;
 
 /**
  * Resolves relative theme aliases against Vite's configured project root.
@@ -55,6 +52,11 @@ const resolveThemeAliases = (aliases, root) =>
  * @returns {import('vite').Plugin}
  */
 export const createVirtualModulesPlugin = sources => {
+  // Package imports are anchored to the same importer whichever virtual
+  // module they come from, so each specifier resolves the same way every
+  // time: resolve it once, not once per page that imports it.
+  const anchored = new Map();
+
   return {
     name: 'doc-kit:virtual-modules',
     enforce: 'pre',
@@ -78,7 +80,14 @@ export const createVirtualModulesPlugin = sources => {
         !id.startsWith(VIRTUAL_PREFIX) &&
         /^[@\w]/.test(id)
       ) {
-        return this.resolve(id, PACKAGE_ANCHOR, { skipSelf: true });
+        if (!anchored.has(id)) {
+          anchored.set(
+            id,
+            this.resolve(id, PACKAGE_ANCHOR, { skipSelf: true })
+          );
+        }
+
+        return anchored.get(id);
       }
     },
     /**
@@ -100,13 +109,15 @@ export const createVirtualModulesPlugin = sources => {
 /**
  * Finalizes Vite's generated HTML before its normal write phase.
  *
+ * @param {import('../types').ClientBundleOptions['minifyPages']} minifyPages
  * @returns {import('vite').Plugin}
  */
-const createHTMLFinalizerPlugin = () => ({
+const createHTMLFinalizerPlugin = minifyPages => ({
   name: 'doc-kit:finalize-html',
   /**
    * Minifies every generated HTML entry after Vite has injected its scripts,
-   * stylesheets, and module preloads.
+   * stylesheets, and module preloads. The pages are handed over as one batch
+   * so the minifier can spread them across the worker pool.
    */
   generateBundle: {
     order: 'post',
@@ -115,44 +126,42 @@ const createHTMLFinalizerPlugin = () => ({
      * @param {Record<string, object>} bundle
      */
     async handler(_, bundle) {
-      await Promise.all(
-        Object.values(bundle)
-          .filter(
-            item => item.type === 'asset' && item.fileName.endsWith('.html')
-          )
-          .map(async asset => {
-            const source =
-              typeof asset.source === 'string'
-                ? asset.source
-                : Buffer.from(asset.source).toString('utf8');
-
-            asset.source = await minifyHTML(source);
-          })
+      const assets = Object.values(bundle).filter(
+        item => item.type === 'asset' && item.fileName.endsWith('.html')
       );
+
+      const minified = await minifyPages(
+        new Map(
+          assets.map(asset => [
+            asset.fileName,
+            typeof asset.source === 'string'
+              ? asset.source
+              : Buffer.from(asset.source).toString('utf8'),
+          ])
+        )
+      );
+
+      for (const asset of assets) {
+        asset.source = minified.get(asset.fileName);
+      }
     },
   },
 });
 
 /**
- * Converts generated page programs into named Vite inputs and virtual modules.
+ * Converts generated page programs into named Vite inputs and virtual modules
+ * for the SSR build: each page needs a distinct virtual JSX path of its own.
  *
  * @param {Map<string, string>} codeMap
- * @param {'client'|'server'} environment
  */
-const createBuildEntries = (codeMap, environment) => {
+const createServerEntries = codeMap => {
   const input = {};
   const sources = new Map();
 
   for (const [fileName, code] of codeMap) {
-    const name = basename(fileName, '.jsx');
-    // Client IDs must match entrypoints embedded in rendered HTML; server IDs
-    // only need a distinct virtual JSX path for the SSR build.
-    const id =
-      environment === 'client'
-        ? getViteEntryId(name)
-        : `${VIRTUAL_PREFIX}server/${fileName}`;
+    const id = `${VIRTUAL_PREFIX}server/${fileName}`;
 
-    input[name] = id;
+    input[basename(fileName, '.jsx')] = id;
     sources.set(id, code);
   }
 
@@ -168,6 +177,7 @@ const createBuildEntries = (codeMap, environment) => {
  * @param {Record<string, string>|Array<string>} options.input
  * @param {boolean} options.server
  * @param {string} [options.serverOutDir]
+ * @param {import('../types').ClientBundleOptions['minifyPages']} [options.minifyPages]
  * @param {import('../types').ResolvedWebConfiguration} options.config
  * @param {import('vite').UserConfig} options.vite
  * @returns {import('vite').InlineConfig}
@@ -177,6 +187,7 @@ export const createViteConfig = ({
   input,
   server,
   serverOutDir,
+  minifyPages = createPageMinifier(),
   config: webConfig,
   vite = {},
 }) => {
@@ -202,7 +213,9 @@ export const createViteConfig = ({
     plugins: [
       createVirtualModulesPlugin(sources),
       ...(vite.plugins ?? []),
-      ...(!server && webConfig.minify ? [createHTMLFinalizerPlugin()] : []),
+      ...(!server && webConfig.minify
+        ? [createHTMLFinalizerPlugin(minifyPages)]
+        : []),
     ],
 
     resolve: mergeConfig(
@@ -341,7 +354,7 @@ export const render = async ({
   config,
   vite = {},
 }) => {
-  const { input, sources } = createBuildEntries(entries, 'server');
+  const { input, sources } = createServerEntries(entries);
 
   for (const [id, code] of Object.entries(virtualImports)) {
     sources.set(id, code);
@@ -387,21 +400,23 @@ export const render = async ({
  * hashed scripts, stylesheets, and module preloads, then writes the site.
  *
  * @param {object} options
- * @param {Map<string, string>} options.entries
+ * @param {string} options.entry
  * @param {Record<string, string>} options.virtualImports
  * @param {Map<string, string>} options.pages
+ * @param {import('../types').ClientBundleOptions['minifyPages']} [options.minifyPages]
  * @param {import('../types').ResolvedWebConfiguration} options.config
  * @param {import('vite').UserConfig} options.vite
  * @returns {Promise<void>}
  */
 export const build = async ({
-  entries,
+  entry,
   virtualImports,
   pages,
+  minifyPages,
   config,
   vite = {},
 }) => {
-  const { sources } = createBuildEntries(entries, 'client');
+  const sources = new Map([[CLIENT_ENTRY_ID, entry]]);
   const root = resolve(vite.root ?? process.cwd());
   const input = [];
 
@@ -420,6 +435,7 @@ export const build = async ({
       sources,
       input,
       server: false,
+      minifyPages,
       config,
       vite,
     })
@@ -433,7 +449,10 @@ export const build = async ({
  * @returns {import('../types').WebBundler}
  */
 export const createViteBundler = (options = {}) => ({
-  getEntryId: getViteEntryId,
+  /**
+   * The client entry every page loads.
+   */
+  getEntryId: () => CLIENT_ENTRY_ID,
   /**
    * Runs the Vite server build.
    *

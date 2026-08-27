@@ -121,6 +121,23 @@ export interface StabilityData extends Data {
 export type StabilityNode = NodeWithData<Blockquote, StabilityData>;
 
 /**
+ * Describes a chunk page: a section of a module rendered as a page of its own
+ * (see the `chunked` generator). Present on every entry of a chunk page.
+ */
+export interface ChunkInfo {
+  /** The `api` of the module the chunk was split from */
+  api: string;
+  /** The `path` of the module the chunk was split from */
+  path: string;
+  /** The section's anchor on the full module page */
+  slug: string;
+  /** The chunk's position within the module, in document order */
+  index: number;
+  /** The original depth of the chunk's heading */
+  depth: number;
+}
+
+/**
  * Complete metadata entry for a single API documentation element.
  *
  * This represents the processed result of parsing a section of API
@@ -136,6 +153,8 @@ export interface MetadataEntry extends YAMLProperties {
   synthetic?: boolean;
   /** Whether this page was authored as MDX (JSX-in-Markdown). */
   mdx?: boolean;
+  /** Set when this entry belongs to a chunk page rather than a full page. */
+  chunk?: ChunkInfo;
   /** Processed heading with metadata */
   heading: HeadingNode;
   /** Stability classification information */
