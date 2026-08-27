@@ -1,5 +1,12 @@
+import { workerData } from 'node:worker_threads';
+
 import { loadGenerator } from '#generators/loader.mjs';
+import logger from '#logger/index.mjs';
 import { setConfig } from '#utils/configuration/index.mjs';
+
+if (workerData?.logLevel !== undefined) {
+  logger.setLogLevel(workerData.logLevel);
+}
 
 /**
  * Processes a chunk of items using the specified generator's processChunk method.
