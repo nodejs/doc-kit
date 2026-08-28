@@ -69,7 +69,7 @@ const toTree = sections => {
 };
 
 /**
- * Pre-compute the per-module section trees (see the `chunked` generator):
+ * Pre-compute the per-module section trees (see the `section-pages` generator):
  * each module page's path maps to its label and its chunk pages, nested by
  * heading depth and in document order, for the sidebar's section list and the
  * previous/next links.

@@ -7,9 +7,9 @@ import { describe, it } from 'node:test';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
-import { generate as chunk } from '../../chunked/generate.mjs';
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
+import { generate as chunk } from '../../section-pages/generate.mjs';
 import { createViteBundler } from '../bundlers/vite.mjs';
 import { generate } from '../generate.mjs';
 
@@ -98,11 +98,11 @@ describe('web generate', () => {
 
   it('renders chunk pages with navigation back to their module', async context => {
     const { config, output } = await createTestConfiguration(context, [
-      'chunked',
+      'section-pages',
     ]);
 
     // `fs.readFile()` is at depth 3
-    config.chunked.maxDepth = 3;
+    config['section-pages'].maxDepth = 3;
 
     const entries = [
       createEntry('fs', 'File system'),

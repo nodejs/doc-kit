@@ -1,6 +1,6 @@
-# `chunked` Generator
+# `section-pages` Generator
 
-The `chunked` generator splits every documented module into per-section pages.
+The `section-pages` generator splits every documented module into per-section pages.
 It leaves the full module page untouched and adds one extra page for each
 section next to it:
 
@@ -28,12 +28,12 @@ contents, and search. On top of that:
   point at to whichever page it landed on, and relative links are re-based.
 
 ```bash
-npx @doc-kit/cli generate -t chunked -i "doc/api/*.md" -o out
+npx @doc-kit/cli generate -t section-pages -i "doc/api/*.md" -o out
 ```
 
 ## How it works
 
-`chunked` does not render anything itself. It consumes the `metadata`
+`section-pages` does not render anything itself. It consumes the `metadata`
 generator's entries, and for each module appends copies of the entries of every
 section, re-homed under the section's own `api` and `path` (`fs/readFile`).
 It then declares the generators it is delivered through as its
@@ -45,12 +45,12 @@ It then declares the generators it is delivered through as its
   chunk pages are listed.
 
 ```text
-ast → metadata → chunked → jsx-ast → html
+ast → metadata → section-pages → jsx-ast → html
                └─────────→ sitemap
 ```
 
-Requesting `-t chunked` on its own therefore produces both. Requested together
-with either of them (`-t html -t chunked`), it only feeds the ones that run.
+Requesting `-t section-pages` on its own therefore produces both. Requested together
+with either of them (`-t html -t section-pages`), it only feeds the ones that run.
 
 Other generators that read `metadata` — `orama-db`, `llms-txt`, and the JSON
 outputs — are deliberately left alone: search results and `llms.txt` keep
@@ -107,8 +107,8 @@ and `fs.html#fsreadfilepath-options-callback` point at the same section.
 ```js
 // doc-kit.config.mjs
 export default {
-  target: ['chunked'],
-  chunked: {
+  target: ['section-pages'],
+  'section-pages': {
     // Also split at `###` headings that document an API entry
     maxDepth: 3,
     exclude: ['deprecations'],

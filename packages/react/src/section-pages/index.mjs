@@ -3,7 +3,7 @@
 import { generate } from './generate.mjs';
 
 /**
- * Chunked generator - splits each documented module into per-section pages.
+ * Section pages generator - splits each documented module into per-section pages.
  *
  * It takes the flattened metadata entries, and for every module adds a set of
  * extra pages — one per section — alongside the untouched full page:
@@ -22,7 +22,7 @@ import { generate } from './generate.mjs';
  * @type {import('./types').Generator}
  */
 export default {
-  name: 'chunked',
+  name: 'section-pages',
 
   description:
     'Splits each module into per-section pages, rendered by the html generator',

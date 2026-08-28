@@ -391,10 +391,10 @@ import { project, repository, editURL } from '#theme/config';
   `<DocumentationIndex />` component — every page with a stability index, each
   `{ api, name, index, description }`.
 - `chunks` {Object} Per-module section pages produced by the
-  [`chunked`](./chunked.md) generator, keyed by the module's path: each
+  [`section-pages`](./section-pages.md) generator, keyed by the module's path: each
   `{ label, items }`, where `items` is the module's section tree — `{ label,
 path, items? }` entries nested by heading depth, in document order. Empty
-  unless `chunked` ran.
+  unless `section-pages` ran.
 - `navigation` {Object} Mirrors the configured `navigation` (consumed by the
   built-in `SideBar` and `NavBar`).
 - `useAbsoluteURLs` {boolean} Whether internal links use absolute URLs (mirrors
@@ -433,7 +433,7 @@ export default ({ metadata }) => (
 
 - `metadata` {Object} Serialized page metadata — all YAML frontmatter properties
   plus `addedIn`, `basename`, `path`, and any custom user-defined fields. Pages
-  produced by the [`chunked`](./chunked.md) generator also carry `chunk`, which
+  produced by the [`section-pages`](./section-pages.md) generator also carry `chunk`, which
   describes the module and section they were split from.
 - `headings` {Array} Pre-computed table of contents heading entries.
 - `readingTime` {string|undefined} Estimated reading time (e.g. `'5 min read'`).

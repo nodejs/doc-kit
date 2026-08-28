@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "exports": {
-    "./chunked": "./src/chunked/index.mjs",
+    "./section-pages": "./src/section-pages/index.mjs",
     "./html": "./src/html/index.mjs",
     "./html/ui/*": "./src/html/ui/*",
     "./html/bundlers/vite": "./src/html/bundlers/vite.mjs",

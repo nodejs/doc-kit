@@ -62,12 +62,12 @@ const link = url => ({
   children: [{ type: 'link', url, children: [{ type: 'text', value: url }] }],
 });
 
-describe('chunked generate', () => {
+describe('section-pages generate', () => {
   before(async () => {
-    await setConfig({ target: ['chunked'] });
+    await setConfig({ target: ['section-pages'] });
 
     // The module below splits at depth 3
-    getConfig('chunked').maxDepth = 3;
+    getConfig('section-pages').maxDepth = 3;
   });
 
   it('keeps every original entry and appends the chunk pages', async () => {
@@ -192,17 +192,17 @@ describe('chunked generate', () => {
   });
 
   it('never splits excluded modules', async () => {
-    getConfig('chunked').exclude = ['fs'];
+    getConfig('section-pages').exclude = ['fs'];
 
     try {
       assert.equal((await generate(createModule())).length, 6);
     } finally {
-      getConfig('chunked').exclude = [];
+      getConfig('section-pages').exclude = [];
     }
   });
 
   it('honours maxDepth', async () => {
-    getConfig('chunked').maxDepth = 2;
+    getConfig('section-pages').maxDepth = 2;
 
     try {
       const output = await generate(createModule());
@@ -212,7 +212,7 @@ describe('chunked generate', () => {
         ['/fs/callback-api', '/fs/Dir']
       );
     } finally {
-      getConfig('chunked').maxDepth = 3;
+      getConfig('section-pages').maxDepth = 3;
     }
   });
 });

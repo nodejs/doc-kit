@@ -34,7 +34,7 @@ declare module '#theme/config' {
   export const server: boolean;
 }
 
-// A module's section pages, nested by heading depth (see `chunked`)
+// A module's section pages, nested by heading depth (see `section-pages`)
 export type ChunkSection = {
   label: string;
   path: string;

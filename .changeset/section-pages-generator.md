@@ -3,4 +3,4 @@
 '@doc-kit/generator-react': minor
 ---
 
-feat: `dependent` generators and the `chunked` generator
+feat: `dependent` generators and the `section-pages` generator

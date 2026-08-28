@@ -122,7 +122,7 @@ export type StabilityNode = NodeWithData<Blockquote, StabilityData>;
 
 /**
  * Describes a chunk page: a section of a module rendered as a page of its own
- * (see the `chunked` generator). Present on every entry of a chunk page.
+ * (see the `section-pages` generator). Present on every entry of a chunk page.
  */
 export interface ChunkInfo {
   /** The `api` of the module the chunk was split from */

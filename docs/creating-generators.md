@@ -418,7 +418,7 @@ pushes a generator's output _into_ another generator's pipeline:
 
 ```mjs displayName="index.mjs"
 export default {
-  name: 'chunked',
+  name: 'section-pages',
 
   dependsOn: '@doc-kit/core/metadata',
 
@@ -432,14 +432,14 @@ export default {
 The pipeline splices such a generator in front of the first generator on the
 way to its dependent that consumes the same `dependsOn`. Here `html` depends on
 `jsx-ast`, which depends on `metadata` — so `jsx-ast` is rewired to read from
-`chunked` instead:
+`section-pages` instead:
 
 ```text
-ast → metadata → chunked → jsx-ast → html
+ast → metadata → section-pages → jsx-ast → html
 ```
 
 Requesting a generator that declares a dependent runs the dependent's whole
-pipeline, and the run's result is the dependent's output — `-t chunked`
+pipeline, and the run's result is the dependent's output — `-t section-pages`
 produces the `html` site. Several generators may splice in at the same point;
 they form a chain. A generator whose dependent pipeline never consumes its
 `dependsOn` is an error.
@@ -450,7 +450,7 @@ already part of the run, or through all of them when none is:
 
 ```mjs displayName="index.mjs"
 export default {
-  name: 'chunked',
+  name: 'section-pages',
   dependsOn: '@doc-kit/core/metadata',
   dependent: [
     '@doc-kit/generator-react/html',
@@ -460,12 +460,12 @@ export default {
 };
 ```
 
-With this, `-t chunked` builds the site and the sitemap, while
-`-t html -t chunked` builds just the site.
+With this, `-t section-pages` builds the site and the sitemap, while
+`-t html -t section-pages` builds just the site.
 
 Use a dependent when a generator transforms an intermediate representation
 (adding, filtering, or rewriting entries) rather than producing a new output
-format of its own. See the [`chunked`](./generators/chunked.md) generator for
+format of its own. See the [`section-pages`](./generators/section-pages.md) generator for
 a worked example.
 
 ## File Output

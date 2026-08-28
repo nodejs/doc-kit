@@ -101,7 +101,7 @@ const buildChunkEntries = (module, chunk, index, anchors) => {
  * @type {import('./types').Generator['generate']}
  */
 export async function generate(input) {
-  const { maxDepth, exclude } = getConfig('chunked');
+  const { maxDepth, exclude } = getConfig('section-pages');
 
   const output = [...input];
 

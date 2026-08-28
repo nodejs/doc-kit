@@ -12,13 +12,13 @@ npm install --save-dev @doc-kit/core @doc-kit/generator-react
 
 ## Generators
 
-| Target     | Output                                                                                       |
-| ---------- | -------------------------------------------------------------------------------------------- |
-| `html`     | The full documentation site — server-rendered pages hydrated with Preact, bundled with Vite. |
-| `orama-db` | An [Orama](https://orama.com) search index, consumed by the `html` site's search box.        |
-| `llms-txt` | An [`llms.txt`](https://llmstxt.org/) index for Large Language Models.                       |
-| `sitemap`  | A `sitemap.xml` for search engines.                                                          |
-| `chunked`  | The `html` site and sitemap, plus one page per section of every module.                      |
+| Target          | Output                                                                                       |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| `html`          | The full documentation site — server-rendered pages hydrated with Preact, bundled with Vite. |
+| `orama-db`      | An [Orama](https://orama.com) search index, consumed by the `html` site's search box.        |
+| `llms-txt`      | An [`llms.txt`](https://llmstxt.org/) index for Large Language Models.                       |
+| `sitemap`       | A `sitemap.xml` for search engines.                                                          |
+| `section-pages` | The `html` site and sitemap, plus one page per section of every module.                      |
 
 The package also provides `jsx-ast`, the intermediate stage that turns parsed
 API metadata into JSX; it runs automatically when `html` needs it and is not a
