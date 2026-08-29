@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { enforceArray } from '#utils/array.mjs';
+
 import {
   allGenerators,
   deprecatedGenerators,
@@ -57,6 +59,17 @@ describe('All Generators', () => {
         assert.ok(
           validDependencies.includes(generator.dependsOn),
           `Generator "${name}" depends on "${generator.dependsOn}" which is not a valid generator specifier`
+        );
+      }
+    });
+  });
+
+  it('should have valid dependent references', () => {
+    loadedGenerators.forEach(([name, , generator]) => {
+      for (const dependent of enforceArray(generator.dependent ?? [])) {
+        assert.ok(
+          validDependencies.includes(dependent),
+          `Generator "${name}" declares dependent "${dependent}" which is not a valid generator specifier`
         );
       }
     });

@@ -247,6 +247,9 @@ importers:
       estree-util-to-js:
         specifier: ^2.0.0
         version: 2.0.0
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
       hast-util-to-string:
         specifier: ^3.0.1
         version: 3.0.1

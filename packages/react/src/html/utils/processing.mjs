@@ -11,14 +11,14 @@ import { THEME_SCRIPT } from '../ui/theme-script.mjs';
 /**
  * Creates the virtual imports for one bundle target.
  *
- * @param {Array<{ data: import('@doc-kit/core/generators/metadata/types').MetadataEntry }>} sidebarEntries
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} datas - Per-page metadata
  * @param {Record<string, string>} virtualImports
  * @param {boolean} server
  * @returns {Record<string, string>}
  */
-const createVirtualImports = (sidebarEntries, virtualImports, server) => ({
+const createVirtualImports = (datas, virtualImports, server) => ({
   ...virtualImports,
-  '#theme/config': createConfigSource(sidebarEntries, server),
+  '#theme/config': createConfigSource(datas, server),
 });
 
 /**
@@ -51,6 +51,21 @@ export const resolvePageRoot = data => {
   const unresolvedRoot = relativeOrAbsolute('/', data.path);
   return unresolvedRoot.endsWith('/') ? unresolvedRoot : `${unresolvedRoot}/`;
 };
+
+/**
+ * Escapes text for interpolation into HTML, as element content or as a quoted
+ * attribute value: a heading such as `What does it mean to "contextify" an
+ * object?` must not terminate the `<meta content="...">` it is rendered into.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+export const escapeHTML = text =>
+  text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
 
 /**
  * Renders a self-closing HTML tag from an attribute bag.
@@ -106,31 +121,27 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
  * string upstream (in the `jsx-ast` worker), so the heavy AST never reaches
  * the main thread — only the code string and page metadata stream in here.
  *
- * @returns {{ add: (item: { data: import('@doc-kit/core/generators/metadata/types').MetadataEntry, code: string }) => void, serverCodeMap: Map<string, string>, clientCodeMap: Map<string, string> }}
+ * @returns {{ add: (item: { data: import('@doc-kit/core/generators/metadata/types').MetadataEntry, code: string }) => void, serverCodeMap: Map<string, string>, clientProgram: string }}
  */
 export function createCodeConverter() {
   const { buildServerProgram, clientProgram } = createProgramBuilder();
 
   const serverCodeMap = new Map();
-  const clientCodeMap = new Map();
 
   return {
     /**
-     * Records the server/client programs for a single page's JSX code.
+     * Records the server program for a single page's JSX code.
      *
      * @param {{ data: import('@doc-kit/core/generators/metadata/types').MetadataEntry, code: string }} item
      */
     add: ({ data, code }) => {
-      const fileName = `${data.api}.jsx`;
-
       // Prepare code for server-side execution (wrapped for SSR)
-      serverCodeMap.set(fileName, buildServerProgram(code));
-
-      // Every page's entry is the same module; the bundler emits one chunk.
-      clientCodeMap.set(fileName, clientProgram);
+      serverCodeMap.set(`${data.api}.jsx`, buildServerProgram(code));
     },
     serverCodeMap,
-    clientCodeMap,
+    // The client entry is the same module for every page: the pages differ
+    // only in their server-rendered markup, which the entry hydrates.
+    clientProgram,
   };
 }
 
@@ -142,28 +153,24 @@ export function createCodeConverter() {
  *
  * @param {object} params
  * @param {Map<string, string>} params.serverCodeMap - Server-side code per page.
- * @param {Map<string, string>} params.clientCodeMap - Client-side code per page.
+ * @param {string} params.clientProgram - The client entry shared by every page.
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} params.datas - Per-page metadata, in render order.
- * @param {Array<{ data: import('@doc-kit/core/generators/metadata/types').MetadataEntry }>} params.sidebarEntries - Entries used to build the sidebar page list (real module pages only).
  * @param {string} params.template - The HTML template string for the output pages.
+ * @param {import('../types').ClientBundleOptions['minifyPages']} params.minifyPages - Minifies the final pages, off the main thread.
  */
 export async function processBundles({
   serverCodeMap,
-  clientCodeMap,
+  clientProgram,
   datas,
-  sidebarEntries,
   template,
+  minifyPages,
 }) {
   const config = getConfig('html');
   const bundler = await resolveBundler(config.bundler);
 
   const serverPages = await bundler.render({
     entries: serverCodeMap,
-    virtualImports: createVirtualImports(
-      sidebarEntries,
-      config.virtualImports,
-      true
-    ),
+    virtualImports: createVirtualImports(datas, config.virtualImports, true),
     config,
   });
 
@@ -177,8 +184,10 @@ export async function processBundles({
   // template authors avoid nested template-literal escaping.
   const head = buildHead(config.head);
 
-  // Render the templates with the client identifiers supplied by the adapter.
+  // Render the templates with the client identifier supplied by the adapter.
   // The adapter then owns scripts, stylesheets, preloads, and imported assets.
+  const entrypoint = bundler.getEntryId();
+
   const pages = new Map(
     datas.map(data => {
       const root = resolvePageRoot(data);
@@ -188,13 +197,15 @@ export async function processBundles({
       return [
         fileName,
         populateWithEvaluation(template, {
-          title: title
-            ? titleSuffix
-              ? `${title} | ${titleSuffix}`
-              : title
-            : titleSuffix,
+          title: escapeHTML(
+            title
+              ? titleSuffix
+                ? `${title} | ${titleSuffix}`
+                : title
+              : titleSuffix
+          ),
           dehydrated: serverPages.get(data.api) ?? '',
-          entrypoint: bundler.getEntryId(data.api),
+          entrypoint,
           speculationRules: SPECULATION_RULES,
           themeScript: THEME_SCRIPT,
           preloads: buildPreloads(root),
@@ -208,13 +219,10 @@ export async function processBundles({
   );
 
   await bundler.build({
-    entries: clientCodeMap,
-    virtualImports: createVirtualImports(
-      sidebarEntries,
-      config.virtualImports,
-      false
-    ),
+    entry: clientProgram,
+    virtualImports: createVirtualImports(datas, config.virtualImports, false),
     pages,
+    minifyPages,
     config,
   });
 }

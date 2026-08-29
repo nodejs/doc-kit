@@ -3,6 +3,8 @@
 import { isAbsolute } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { enforceArray } from '#utils/array.mjs';
+
 import { allGenerators } from './index.mjs';
 
 /**
@@ -67,7 +69,7 @@ export const loadGenerator = async specifier => {
 
 /**
  * Loads the given generators plus the transitive closure of their
- * dependencies (via `dependsOn`).
+ * dependencies (via `dependsOn`) and dependents (via `dependent`).
  *
  * @param {string[]} targets - Shorthand names, paths, or import specifiers
  * @returns {Promise<Map<string, GeneratorMetadata>>} Loaded generators keyed
@@ -87,8 +89,11 @@ export const loadGenerators = async targets => {
     const generator = await loadGenerator(specifier);
     generators.set(specifier, generator);
 
-    if (generator.dependsOn) {
-      queue.push(resolveGeneratorSpecifier(generator.dependsOn));
+    for (const related of [
+      ...enforceArray(generator.dependsOn ?? []),
+      ...enforceArray(generator.dependent ?? []),
+    ]) {
+      queue.push(resolveGeneratorSpecifier(related));
     }
   }
 

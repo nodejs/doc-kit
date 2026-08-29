@@ -98,6 +98,26 @@ declare global {
     dependsOn: string | undefined;
 
     /**
+     * The generator(s) this generator's output is delivered through, declared
+     * as import specifiers. This is the inverse of `dependsOn`: rather than
+     * pulling a dependency in, it pushes this generator into another
+     * generator's pipeline.
+     *
+     * The orchestrator splices this generator in front of the first generator
+     * in each dependent's dependency chain that consumes the same `dependsOn`
+     * as this one. For example, a generator with
+     * `dependsOn: '@doc-kit/core/metadata'` and
+     * `dependent: '@doc-kit/generator-react/html'` is inserted between
+     * `metadata` and `jsx-ast` (the consumer of `metadata` on the way to
+     * `html`), so its output is what `jsx-ast` — and therefore `html` — sees.
+     *
+     * Requesting a generator that declares dependents runs them as well, and
+     * the run's result is their output: when some of the dependents are
+     * already part of the run, only those; otherwise all of them.
+     */
+    dependent?: string | string[];
+
+    /**
      * Generators are abstract and the different generators have different sort of inputs and outputs.
      * For example, a MDX generator would take the raw AST and output MDX with React Components;
      * Whereas a JSON generator would take the raw AST and output JSON;

@@ -9,6 +9,7 @@ import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
+import { generate as chunk } from '../../section-pages/generate.mjs';
 import { createViteBundler } from '../bundlers/vite.mjs';
 import { generate } from '../generate.mjs';
 
@@ -21,12 +22,16 @@ const toCodeItem = content => ({
   code: toJs(content, { handlers: jsx }).value,
 });
 
-const createEntry = (api, name) => {
+const createEntry = (
+  api,
+  text,
+  { depth = 1, slug = api, type, name = text } = {}
+) => {
   const heading = {
     type: 'heading',
-    depth: 1,
-    children: [{ type: 'text', value: name }],
-    data: { name, text: name, slug: api },
+    depth,
+    children: [{ type: 'text', value: text }],
+    data: { name, text, slug, type },
   };
 
   return {
@@ -48,12 +53,12 @@ const createEntry = (api, name) => {
   };
 };
 
-const createTestConfiguration = async context => {
+const createTestConfiguration = async (context, target = ['html']) => {
   const output = await mkdtemp(join(tmpdir(), 'doc-kit-web-test-'));
   context.after(() => rm(output, { recursive: true, force: true }));
 
   const config = await setConfig({
-    target: ['html'],
+    target,
     output,
     version: 'v22.0.0',
     changelog: [],
@@ -89,6 +94,87 @@ describe('web generate', () => {
     assert.doesNotMatch(notFoundHTML, /View As/);
     assert.match(fsHTML, /src=\.\.\/assets\//);
     assert.match(notFoundHTML, /src=\.\/assets\//);
+  });
+
+  it('renders chunk pages with navigation back to their module', async context => {
+    const { config, output } = await createTestConfiguration(context, [
+      'section-pages',
+    ]);
+
+    // `fs.readFile()` is at depth 3
+    config['section-pages'].maxDepth = 3;
+
+    const entries = [
+      createEntry('fs', 'File system'),
+      createEntry('fs', 'Callback API', { depth: 2, slug: 'callback-api' }),
+      createEntry('fs', '`fs.readFile()`', {
+        depth: 3,
+        slug: 'fsreadfile',
+        type: 'method',
+        name: 'readFile',
+      }),
+      createEntry('fs', '`fs.watch()`', {
+        depth: 2,
+        slug: 'fswatch',
+        type: 'method',
+        name: 'watch',
+      }),
+    ];
+
+    // A link from one section to another, and one to a sibling module
+    entries[2].content.children.push({
+      type: 'paragraph',
+      children: [
+        {
+          type: 'link',
+          url: '#fswatch',
+          children: [{ type: 'text', value: 'n' }],
+        },
+        {
+          type: 'link',
+          url: 'net.html',
+          children: [{ type: 'text', value: 'x' }],
+        },
+      ],
+    });
+
+    const pages = Map.groupBy(await chunk(entries), entry => entry.api);
+    const contents = await Promise.all(
+      [...pages.values()].map(group => buildContent(group, group[0]))
+    );
+
+    await generate(contents.map(toCodeItem));
+
+    const [fsHTML, readFileHTML] = await Promise.all([
+      readFile(join(output, 'fs.html'), 'utf8'),
+      readFile(join(output, 'fs/readFile.html'), 'utf8'),
+    ]);
+
+    // Assets and module files resolve from the nested directory
+    assert.match(readFileHTML, /src=\.\.\/assets\//);
+    assert.match(readFileHTML, /href=\.\.\/fs\.json/);
+    assert.match(readFileHTML, /href=\.\.\/fs\.html#fsreadfile/);
+
+    // The sidebar nests the module's sections, repeating the module itself
+    assert.match(readFileHTML, /<details[^>]*open/);
+    assert.match(
+      readFileHTML,
+      /href=\.\.\/fs\.html[^>]*>(<[^>]*>)*File system/
+    );
+    assert.match(readFileHTML, /href=callback-api\.html/);
+
+    // Previous/next step through the module's sections
+    assert.match(readFileHTML, /Callback API/);
+    assert.match(readFileHTML, /href=watch\.html/);
+    assert.match(fsHTML, /Next/);
+
+    // Links were re-targeted for the chunk page
+    assert.match(readFileHTML, /href=watch\.html#fswatch/);
+    assert.match(readFileHTML, /href=\.\.\/net\.html/);
+
+    // The full page is untouched, and lists sections in its own sidebar
+    assert.match(fsHTML, /href=fs\.json/);
+    assert.match(fsHTML, /href=fs\/readFile\.html/);
   });
 
   it('renders the configurable head without hardcoded defaults', async context => {
@@ -159,9 +245,9 @@ describe('web generate', () => {
     const calls = [];
 
     config.html.bundler = {
-      getEntryId(api) {
-        calls.push(`entry:${api}`);
-        return `/custom/${api}.js`;
+      getEntryId() {
+        calls.push('entry');
+        return '/custom/index.js';
       },
 
       async render({ entries, virtualImports, config: receivedConfig }) {
@@ -179,10 +265,10 @@ describe('web generate', () => {
         ]);
       },
 
-      async build({ entries, virtualImports, pages, config: receivedConfig }) {
+      async build({ entry, virtualImports, pages, config: receivedConfig }) {
         calls.push('client');
         assert.strictEqual(receivedConfig, config.html);
-        assert.ok(entries.has('fs.jsx'));
+        assert.match(entry, /registerIslands\(/);
         assert.match(
           virtualImports['#theme/config'],
           /export const server = false;/
@@ -203,7 +289,7 @@ describe('web generate', () => {
     const html = await readFile(join(output, 'fs.html'), 'utf8');
 
     assert.match(html, /data-custom-ssr/);
-    assert.match(html, /src="\/custom\/fs\.js"/);
-    assert.deepStrictEqual(calls, ['server', 'entry:fs', 'client']);
+    assert.match(html, /src="\/custom\/index\.js"/);
+    assert.deepStrictEqual(calls, ['server', 'entry', 'client']);
   });
 });

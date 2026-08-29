@@ -37,23 +37,92 @@ export function buildVersionEntries(changelog, pageURLBase) {
 /**
  * Pre-compute sorted page list for sidebar navigation.
  *
- * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} input
  * @returns {Array<[string, string]>}
  */
 export function buildPageList(input) {
-  const headNodes = getSortedHeadNodes(input.map(e => e.data));
+  const headNodes = getSortedHeadNodes(input);
   return headNodes.map(node => [node.heading.data.name, node.path]);
+}
+
+/**
+ * Nests a document-ordered list of sections by their heading depth.
+ *
+ * @template {{ depth: number }} T
+ * @param {Array<T>} sections
+ * @returns {Array<Omit<T, 'depth'> & { items?: Array }>}
+ */
+const toTree = sections => {
+  const root = { items: [] };
+  const stack = [{ depth: 1, node: root }];
+
+  for (const { depth, ...section } of sections) {
+    while (stack.at(-1).depth >= depth) {
+      stack.pop();
+    }
+
+    (stack.at(-1).node.items ??= []).push(section);
+    stack.push({ depth, node: section });
+  }
+
+  return root.items;
+};
+
+/**
+ * Pre-compute the per-module section trees (see the `section-pages` generator):
+ * each module page's path maps to its label and its chunk pages, nested by
+ * heading depth and in document order, for the sidebar's section list and the
+ * previous/next links.
+ *
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} input
+ * @returns {Record<string, {label: string, items: Array<{label: string, path: string, items?: Array}>}>}
+ */
+export function buildChunkGroups(input) {
+  const labels = new Map(
+    input.map(entry => [entry.path, entry.heading.data.name])
+  );
+
+  const groups = {};
+
+  for (const entry of input) {
+    if (!entry.chunk) {
+      continue;
+    }
+
+    const group = (groups[entry.chunk.path] ??= {
+      label: labels.get(entry.chunk.path) ?? entry.chunk.api,
+      items: [],
+    });
+
+    group.items.push({
+      label: entry.title ?? entry.heading.data.name,
+      path: entry.path,
+      depth: entry.chunk.depth,
+      index: entry.chunk.index,
+    });
+  }
+
+  // Pages arrive in render (completion) order, not document order
+  for (const group of Object.values(groups)) {
+    group.items = toTree(
+      group.items
+        .toSorted((a, b) => a.index - b.index)
+        .map(({ label, path, depth }) => ({ label, path, depth }))
+    );
+  }
+
+  return groups;
 }
 
 /**
  * Pre-compute the entries rendered by the `<DocumentationIndex />` component:
  * every page with a stability index, plus its description.
  *
- * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} input
  * @returns {Array<{api: string, name: string, index: string, description: string}>}
  */
 export function buildDocumentationIndex(input) {
-  return getSortedHeadNodes(input.map(e => e.data))
+  return getSortedHeadNodes(input)
     .filter(entry => entry.stability)
     .map(entry => ({
       api: entry.api,
@@ -91,12 +160,16 @@ export function buildLanguageDisplayNameMap() {
  * display labels and URL templates (with only `{path}` remaining for
  * per-page resolution by components).
  *
- * @param {Array<import('../../jsx-ast/utils/buildContent.mjs').JSXContent>} input - JSX AST entries with .data metadata
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} input - Per-page metadata
  * @param {boolean} [server=false] - Whether the module is for the server build.
  * @returns {string} JavaScript source code string with named exports
  */
 export default function createConfigSource(input, server = false) {
   const { version: configVersion, ...config } = getConfig('html');
+
+  // Only the real module pages are listed in the sidebar and the index;
+  // synthetic pages (`all`, `404`) and chunk pages are reachable elsewhere.
+  const pages = input.filter(entry => !entry.synthetic && !entry.chunk);
 
   const editURL =
     config.editURL &&
@@ -128,8 +201,9 @@ export default function createConfigSource(input, server = false) {
     version: configVersion,
     versions: buildVersionEntries(config.changelog, pageURL),
     editURL,
-    pages: buildPageList(input),
-    documentationIndex: buildDocumentationIndex(input),
+    pages: buildPageList(pages),
+    documentationIndex: buildDocumentationIndex(pages),
+    chunks: buildChunkGroups(input),
     server,
   };
 

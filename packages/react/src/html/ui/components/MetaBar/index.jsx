@@ -4,9 +4,10 @@ import MetaBar from '@node-core/ui-components/Containers/MetaBar';
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
 import styles from './index.module.css';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
 
-import { editURL } from '#theme/config';
+import { editURL, chunks } from '#theme/config';
 
 const iconMap = {
   JSON: CodeBracketIcon,
@@ -47,11 +48,20 @@ const HeadingValue = ({ value, stability }) => {
  * @param {{ metadata: import('../../types').SerializedMetadata, headings: Array, readingTime?: string }} props
  */
 export default ({ metadata, headings = [], readingTime }) => {
-  const editThisPage = editURL?.replace('{path}', metadata.path);
+  // A chunk page is a section of its module page: the source file, JSON and
+  // Markdown renderings, and edit link are all the module's.
+  const modulePath = metadata.chunk?.path ?? metadata.path;
+
+  const editThisPage = editURL?.replace('{path}', modulePath);
+
+  const toModuleFile = extension =>
+    metadata.chunk
+      ? `${relativeOrAbsolute(modulePath, metadata.path)}${extension}`
+      : `${metadata.basename}${extension}`;
 
   const viewAs = [
-    ['JSON', `${metadata.basename}.json`],
-    ['MD', `${metadata.basename}.md`],
+    ['JSON', toModuleFile('.json')],
+    ['MD', toModuleFile('.md')],
   ];
 
   return (
@@ -66,6 +76,11 @@ export default ({ metadata, headings = [], readingTime }) => {
       items={{
         'Reading Time': readingTime,
         'Added In': metadata.added ?? metadata.introduced_in,
+        'Part Of': metadata.chunk && (
+          <a href={`${toModuleFile('.html')}#${metadata.chunk.slug}`}>
+            {chunks[modulePath]?.label ?? metadata.chunk.api}
+          </a>
+        ),
         'View As': !metadata.synthetic && (
           <ol>
             {viewAs.map(([viewTitle, path]) => {

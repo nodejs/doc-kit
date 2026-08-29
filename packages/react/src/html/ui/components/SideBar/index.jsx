@@ -6,7 +6,14 @@ import withIsland from '../../islands/withIsland.jsx';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 import { renderLabel } from '../../utils/renderLabel.jsx';
 
-import { project, version, versions, navigation, pages } from '#theme/config';
+import {
+  project,
+  version,
+  versions,
+  navigation,
+  pages,
+  chunks,
+} from '#theme/config';
 
 /**
  * Extracts the major version number from a version string.
@@ -32,16 +39,56 @@ const buildGroups = metadata => {
       ? `${metadata.basename}.html`
       : `${relativeOrAbsolute(path, metadata.path)}.html`;
 
-  const toItem = ({ label, link, items }) => ({
-    label: renderLabel(label),
-    link: /^https?:/.test(link) ? link : toLink(link),
-    ...(items && { items: items.map(toItem) }),
+  // The module being viewed (directly, or through one of its chunk pages)
+  const currentModule = metadata.chunk?.path ?? metadata.path;
+
+  /**
+   * Nests an item's children under it. An item with children renders as a
+   * disclosure rather than a link, so — as nodejs.org's site navigation does —
+   * the item repeats itself as the first child to keep its own page reachable.
+   *
+   * @param {{ label: string, link: string }} item
+   * @param {Array<{ label: string, link: string, items?: Array }>} children
+   */
+  const nest = (item, children) => ({
+    ...item,
+    items: [{ label: item.label, link: item.link }, ...children],
   });
+
+  /**
+   * Converts a chunk section (and its sub-sections) into sidebar items.
+   *
+   * @param {{ label: string, path: string, items?: Array }} section
+   */
+  const toSection = ({ label, path, items }) => {
+    const item = { label, link: path };
+
+    return items ? nest(item, items.map(toSection)) : item;
+  };
+
+  /**
+   * @param {{ label: string, link: string, items?: Array }} item
+   * @param {boolean} expand - Whether to nest the current module's sections
+   */
+  const toItem = ({ label, link, items }, expand = true) => {
+    const entry = { label, link };
+
+    const { items: children } =
+      items || !expand || link !== currentModule || !chunks[link]
+        ? { items }
+        : nest(entry, chunks[link].items.map(toSection));
+
+    return {
+      label: renderLabel(label),
+      link: /^https?:/.test(link) ? link : toLink(link),
+      ...(children && { items: children.map(child => toItem(child, false)) }),
+    };
+  };
 
   if (navigation.sidebar) {
     return navigation.sidebar.map(({ groupName, items }) => ({
       groupName,
-      items: items.map(toItem),
+      items: items.map(item => toItem(item)),
     }));
   }
 

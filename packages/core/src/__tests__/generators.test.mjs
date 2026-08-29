@@ -72,6 +72,33 @@ const syntheticGenerators = {
       return { all: input };
     },
   },
+  // A generator delivered through another pipeline: it reads `metadata` and
+  // declares `gen-d-all` as its dependent, so `gen-d` reads from it instead.
+  'gen-splice': {
+    name: 'gen-splice',
+    dependsOn: 'metadata',
+    dependent: 'gen-d-all',
+    generate: async input => {
+      record('gen-splice');
+      return [...input, { spliced: true }];
+    },
+  },
+  'gen-d': {
+    name: 'gen-d',
+    dependsOn: 'metadata',
+    generate: async input => {
+      record('gen-d');
+      return { d: input };
+    },
+  },
+  'gen-d-all': {
+    name: 'gen-d-all',
+    dependsOn: 'gen-d',
+    generate: async input => {
+      record('gen-d-all');
+      return { all: input };
+    },
+  },
 };
 
 mock.module('../generators/loader.mjs', {
@@ -92,8 +119,10 @@ mock.module('../generators/loader.mjs', {
         const generator = syntheticGenerators[specifier];
         generators.set(specifier, generator);
 
-        if (generator.dependsOn) {
-          queue.push(generator.dependsOn);
+        for (const related of [generator.dependsOn, generator.dependent]) {
+          if (related) {
+            queue.push(related);
+          }
         }
       }
 
@@ -161,5 +190,25 @@ describe('createGenerator orchestration', () => {
     assert.equal(runs['gen-c-all'], 1);
 
     assert.deepStrictEqual(results, [[{ c: true }], { all: [{ c: true }] }]);
+  });
+
+  it('delivers a generator through its dependent', async () => {
+    const { runGenerators } = createGenerator();
+
+    const results = await runGenerators({
+      target: ['gen-splice'],
+      threads: 1,
+    });
+
+    // Requesting only `gen-splice` runs its dependent's whole pipeline, with
+    // `gen-d` reading the spliced output instead of `metadata` directly.
+    assert.equal(runs.metadata, 1);
+    assert.equal(runs['gen-splice'], 1);
+    assert.equal(runs['gen-d'], 1);
+    assert.equal(runs['gen-d-all'], 1);
+
+    assert.deepStrictEqual(results, [
+      { all: { d: [{ meta: 1 }, { spliced: true }] } },
+    ]);
   });
 });

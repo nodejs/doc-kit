@@ -233,7 +233,10 @@ export const transformHeadingNode = async (entry, node, index, parent) => {
     createChangeElement(entry)
   );
 
-  if (entry.api === 'deprecations' && node.depth === 3) {
+  // Chunk pages promote their headings, so match on the original depth
+  const depth = node.depth + (entry.chunk?.depth ?? 1) - 1;
+
+  if ((entry.chunk?.api ?? entry.api) === 'deprecations' && depth === 3) {
     // On the 'deprecations.md' page, "Type: <XYZ>" turns into an AlertBox
     // Extract the nodes representing the type text
     const { node } = slice(
