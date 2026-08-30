@@ -326,7 +326,7 @@ export const processEntry = entry => {
  */
 export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
   const finalChildren = [];
-  let activeOverloadGroup = null;
+  let activeOverloadGroup;
 
   /**
    * Wraps an AST node's children in a styled panel `div` for tab rendering.
@@ -344,19 +344,20 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
   /**
    * Extracts the raw signature string from an API entry node and removes the signature node from its children.
    * @param {import('estree').Node} node - The AST node representing the API entry.
-   * @returns {string|null} The raw TypeScript signature string, or null if not found.
+   * @returns {string|undefined} The raw TypeScript signature string, or undefined if not found.
    */
   const extractSignature = node => {
-    const sigIdx = (node.children || []).findIndex(
+    const signatureIndex = (node.children || []).findIndex(
       c =>
         c.properties?.className?.includes('signature') ||
         c.properties?.class === 'signature'
     );
-    if (sigIdx !== -1) {
-      const sigNode = node.children.splice(sigIdx, 1)[0];
-      return sigNode.properties?.dataSignatureRaw;
+
+    if (signatureIndex !== -1) {
+      const signatureNode = node.children.splice(signatureIndex, 1)[0];
+      return signatureNode.properties?.dataSignatureRaw;
     }
-    return null;
+    return;
   };
 
   /**
@@ -369,18 +370,18 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
 
     // Deduplicate signatures and join with a single newline
     const uniqueSignatures = [...new Set(activeOverloadGroup.signatures)];
-    const combinedSigRaw = uniqueSignatures.join('\n');
+    const combinedSignatureRaw = uniqueSignatures.join('\n');
 
     const highlighted = highlighter.highlightToHast(
-      combinedSigRaw,
+      combinedSignatureRaw,
       'typescript'
     );
-    const combinedSigNode = createElement('div', { class: 'signature' }, [
+    const combinedSignatureNode = createElement('div', { class: 'signature' }, [
       highlighted,
     ]);
 
     // Push combined signatures
-    finalChildren.push(combinedSigNode);
+    finalChildren.push(combinedSignatureNode);
 
     // Inject properties needed by CodeTabs component
     const count = activeOverloadGroup.signatures.length;
@@ -401,7 +402,7 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
     // Push the tabs
     finalChildren.push(activeOverloadGroup.tabsNode);
 
-    activeOverloadGroup = null;
+    activeOverloadGroup = undefined;
   };
 
   /**
@@ -410,40 +411,44 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
    * @param {import('estree').Node} node - The AST node to process and add to the active group.
    */
   const processOverloadNode = node => {
-    const sigRaw = extractSignature(node);
-    if (sigRaw) {
-      activeOverloadGroup.signatures.push(sigRaw);
+    const signatureRaw = extractSignature(node);
+    if (signatureRaw) {
+      activeOverloadGroup.signatures.push(signatureRaw);
     }
     activeOverloadGroup.tabsNode.children.push(wrapInDiv(node));
   };
 
   for (const [i, current] of processedChildren.entries()) {
-    if (originalEntries[i].heading?.data?.isOverload) {
-      if (activeOverloadGroup) {
-        current.children.shift();
-        processOverloadNode(current);
-      } else {
-        const last = finalChildren.pop();
-        activeOverloadGroup = {
-          firstHeading: last?.children?.shift?.(),
-          signatures: [],
-          tabsNode: createJSXElement(JSX_IMPORTS.CodeTabs.name, {
-            inline: false,
-            children: [],
-          }),
-        };
-        current.children.shift();
+    const isOverload = originalEntries[i].heading?.data?.isOverload;
 
-        processOverloadNode(last);
-        processOverloadNode(current);
-
-        if (activeOverloadGroup.firstHeading) {
-          finalChildren.push(activeOverloadGroup.firstHeading);
-        }
-      }
-    } else {
+    if (!isOverload) {
       pushOverloadGroup();
       finalChildren.push(current);
+      continue;
+    }
+
+    current.children.shift();
+
+    if (activeOverloadGroup) {
+      processOverloadNode(current);
+      continue;
+    }
+
+    const last = finalChildren.pop();
+    activeOverloadGroup = {
+      firstHeading: last?.children?.shift?.(),
+      signatures: [],
+      tabsNode: createJSXElement(JSX_IMPORTS.CodeTabs.name, {
+        inline: false,
+        children: [],
+      }),
+    };
+
+    processOverloadNode(last);
+    processOverloadNode(current);
+
+    if (activeOverloadGroup.firstHeading) {
+      finalChildren.push(activeOverloadGroup.firstHeading);
     }
   }
 
