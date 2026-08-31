@@ -9,7 +9,7 @@ node packages/cli/bin/cli.mjs generate \
   -t orama-db \
   -t legacy-json \
   -t llms-txt \
-  -t html \
+  -t section-pages \
   -i "./node/doc/api/*.md" \
   --ignore "./node/doc/api/quic.md" \
   -o "./out" \
