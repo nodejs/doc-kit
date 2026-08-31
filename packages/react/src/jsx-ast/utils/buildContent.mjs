@@ -346,18 +346,18 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
    * @param {import('estree').Node} node - The AST node representing the API entry.
    * @returns {string|undefined} The raw TypeScript signature string, or undefined if not found.
    */
-  const extractSignature = node => {
-    const signatureIndex = (node.children || []).findIndex(
+  const extractSignature = ({ children = [] }) => {
+    const signatureIndex = children.findIndex(
       c =>
         c.properties?.className?.includes('signature') ||
         c.properties?.class === 'signature'
     );
 
     if (signatureIndex !== -1) {
-      const signatureNode = node.children.splice(signatureIndex, 1)[0];
+      const [signatureNode] = children.splice(signatureIndex, 1) ?? [];
+
       return signatureNode.properties?.dataSignatureRaw;
     }
-    return;
   };
 
   /**
@@ -412,9 +412,8 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
    */
   const processOverloadNode = node => {
     const signatureRaw = extractSignature(node);
-    if (signatureRaw) {
-      activeOverloadGroup.signatures.push(signatureRaw);
-    }
+
+    signatureRaw && activeOverloadGroup.signatures.push(signatureRaw);
     activeOverloadGroup.tabsNode.children.push(wrapInDiv(node));
   };
 
@@ -427,6 +426,7 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
       continue;
     }
 
+    // Remove the heading from subsequent overloads as they are grouped under the first heading
     current.children.shift();
 
     if (activeOverloadGroup) {
@@ -434,8 +434,10 @@ export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
       continue;
     }
 
+    // Pop the previous node as it is the first entry of this overload group
     const last = finalChildren.pop();
     activeOverloadGroup = {
+      // Shift out the first node's heading to serve as the main heading for the entire group
       firstHeading: last?.children?.shift?.(),
       signatures: [],
       tabsNode: createJSXElement(JSX_IMPORTS.CodeTabs.name, {
