@@ -50,7 +50,7 @@
   ],
   "dependencies": {
     "@actions/core": "^3.0.0",
-    "@node-core/rehype-shiki": "^1.4.3",
+    "@node-core/rehype-shiki": "^1.5.0",
     "@swc/html-wasm": "^1.15.46",
     "@swc/wasm": "^1.15.46",
     "acorn": "^8.17.0",
