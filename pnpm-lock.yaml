@@ -24,8 +24,8 @@ importers:
         specifier: ~1.62.0
         version: 1.62.1
       '@reporters/github':
-        specifier: ~2.0.1
-        version: 2.0.2
+        specifier: ~2.1.2
+        version: 2.1.2
       '@types/mdast':
         specifier: ~4.0.4
         version: 4.0.4
@@ -1138,8 +1138,8 @@ packages:
   '@radix-ui/rect@1.1.3':
     resolution: {integrity: sha512-JtyZR+mqgBibTo8xea3B6ZRmzZiM/YeVBtUkas6zMuXjAlfIFIW2FgqeM9eLyvEaYX66vr6DJMK+4U6LV0KhNw==}
 
-  '@reporters/github@2.0.2':
-    resolution: {integrity: sha512-j8sLwKkyCi8EE3yHOpWNYd3Ig8Irnxju3v2yntEPcukcvQTTAAz6iT4opdQ+/g22PqPbT/Mqstsb1HK8YQburw==}
+  '@reporters/github@2.1.2':
+    resolution: {integrity: sha512-qcUeqhTqH6gb+7MaIsj0yPDz39h0lvsfnA3ORv28bu3UM7+TYSsTXEGmm49lWf0oLC9NpfJ3ydaqqHn4n9hseA==}
 
   '@rolldown/binding-android-arm64@1.1.5':
     resolution: {integrity: sha512-lZg8fqIv2v7FF237bwMgzGZEJvGL79/s5knJ/i6FmsGF4XXlzccZ4jb+TrFIxtSSxFtIpdsgrPZeMk1I9AFcyQ==}
@@ -4477,7 +4477,7 @@ snapshots:
 
   '@radix-ui/rect@1.1.3': {}
 
-  '@reporters/github@2.0.2':
+  '@reporters/github@2.1.2':
     dependencies:
       '@actions/core': 3.0.1
       stack-utils: 2.0.6
