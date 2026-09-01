@@ -59,7 +59,7 @@
     "github-slugger": "^2.0.0",
     "glob-parent": "^6.0.2",
     "hastscript": "^9.0.1",
-    "piscina": "^5.3.0",
+    "piscina": "^5.3.1",
     "rehype-stringify": "^10.0.1",
     "remark-gfm": "^4.0.1",
     "remark-mdx": "^3.1.1",
