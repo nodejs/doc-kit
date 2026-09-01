@@ -72,7 +72,8 @@ const createTestConfiguration = async (context, target = ['html']) => {
 
 describe('web generate', () => {
   it('writes bundled HTML and omits View As links for synthetic pages', async context => {
-    const { output } = await createTestConfiguration(context);
+    const { config, output } = await createTestConfiguration(context);
+    config.html.showSearchBox = true;
     const fs = createEntry('fs', 'File system');
     fs.path = '/api/fs';
     const notFoundPage = buildNotFoundPage();
@@ -94,6 +95,7 @@ describe('web generate', () => {
     assert.doesNotMatch(notFoundHTML, /View As/);
     assert.match(fsHTML, /src=\.\.\/assets\//);
     assert.match(notFoundHTML, /src=\.\/assets\//);
+    assert.match(fsHTML, /on:idle[^>]*data-island-name=SearchBox/);
   });
 
   it('renders chunk pages with navigation back to their module', async context => {
