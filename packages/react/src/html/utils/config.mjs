@@ -116,18 +116,22 @@ export function buildChunkGroups(input) {
 
 /**
  * Pre-compute the entries rendered by the `<DocumentationIndex />` component:
- * every page with a stability index, plus its description.
+ * every page other than the index itself, plus its description.
+ *
+ * A document-level stability index is optional. Documents such as `process`
+ * and `errors` carry stability only on their individual sections, and pages
+ * that list them by document, this one included, still need to link to them.
  *
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} input
- * @returns {Array<{api: string, name: string, index: string, description: string}>}
+ * @returns {Array<{api: string, name: string, index: string | undefined, description: string}>}
  */
 export function buildDocumentationIndex(input) {
   return getSortedHeadNodes(input)
-    .filter(entry => entry.stability)
+    .filter(entry => entry.api !== 'index')
     .map(entry => ({
       api: entry.api,
       name: entry.heading.data.name,
-      index: entry.stability.data.index,
+      index: entry.stability?.data.index,
       description: renderAsHTML(parseInline(getEntryDescription(entry), true)),
     }));
 }

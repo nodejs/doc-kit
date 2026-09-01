@@ -9,7 +9,8 @@ import { documentationIndex } from '#theme/config';
  * @typedef {Object} DocumentationIndexEntry
  * @property {string} api - Basename of the document, linked as `${api}.html`
  * @property {string} name - Human-readable name from the document's heading
- * @property {string} index - Stability index (e.g. `'2'` or `'1.1'`)
+ * @property {string} [index] - Stability index (e.g. `'2'` or `'1.1'`), absent
+ * on documents that carry stability only on their individual sections
  * @property {string} [description] - The document's `llm_description`, or its
  * first paragraph, rendered to HTML at build time
  */
@@ -26,13 +27,15 @@ const IndexEntry = ({ api, name, index, description }) => {
       <span className={styles.title}>
         <span className={styles.name}>{name}</span>
 
-        <Badge
-          size="small"
-          kind={STABILITY_KINDS[level] ?? 'neutral'}
-          aria-label={`Stability: ${index}`}
-        >
-          {label}
-        </Badge>
+        {index !== undefined && (
+          <Badge
+            size="small"
+            kind={STABILITY_KINDS[level] ?? 'neutral'}
+            aria-label={`Stability: ${index}`}
+          >
+            {label}
+          </Badge>
+        )}
       </span>
 
       {description && (
