@@ -122,6 +122,12 @@ main {
       div[role='menu'] {
         left: 0;
 
+        /* Shrink the dropdown to fit its content instead of the fixed
+         * width set by @node-core/ui-components (nodejs/doc-kit#1051) */
+        width: fit-content;
+        min-width: 12rem;
+        max-width: 20rem;
+
         /* Prevent long labels from overflowing dropdown width */
         a[role='menuitem'] div {
           overflow-wrap: anywhere;
