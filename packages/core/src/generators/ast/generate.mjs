@@ -1,7 +1,7 @@
 'use strict';
 
 import { readFile } from 'node:fs/promises';
-import { relative, sep } from 'node:path/posix';
+import { relative, sep } from 'node:path';
 
 import globParent from 'glob-parent';
 import { globSync } from 'tinyglobby';
@@ -65,7 +65,7 @@ export async function processChunk(inputSlice, itemIndices) {
     );
 
     // The path is the relative path minus the extension
-    const relativePath = sep + withExt(relative(parent, path));
+    const relativePath = `/${withExt(relative(parent, path)).replaceAll(sep, '/')}`;
 
     let tree;
 

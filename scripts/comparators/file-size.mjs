@@ -65,9 +65,8 @@ if (changed.length) {
       base === 0 ? '' : ` (${sign}${((diff / base) * 100).toFixed(1)}%)`;
     const diffFormatted = `${sign}${formatBytes(diff)}${percent}`;
 
-    return `| \`${file}\` | ${baseStats.has(file) ? formatBytes(base) : '—'} | ${headStats.has(file) ? formatBytes(head) : '—'} | ${diffFormatted} |`;
+    return `| \`${file.replace(/\\/g, '/')}\` | ${baseStats.has(file) ? formatBytes(base) : '—'} | ${headStats.has(file) ? formatBytes(head) : '—'} | ${diffFormatted} |`;
   });
-
   sections.push(
     [
       `**Output size:** ${changed.length} ${changed.length === 1 ? 'file' : 'files'} changed · net ${totalSign}${formatBytes(totalDiff)}`,

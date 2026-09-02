@@ -28,7 +28,7 @@ export async function copyStaticAssets(config) {
         } catch (err) {
           if (err.code !== 'ENOENT') {
             logger.error(
-              `[html-generator] Failed to copy asset from ${src} to ${dest}: ${err.message}`
+              `[html-generator] Failed to copy asset from ${src} to ${dest.replaceAll('\\', '/')}: ${err.message}`
             );
           }
         }
