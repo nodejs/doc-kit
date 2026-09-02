@@ -10,7 +10,8 @@ The command-line interface lives in the companion
 ## Generators
 
 Output formats are provided by generators. This package ships the shared
-pipeline stages and `json-simple`; the rest come from companion packages:
+pipeline stages and the JSON generators (`json`, `json-all`, and the
+debugging-only `json-simple`); the rest come from companion packages:
 
 | Package                                                                                | Generators                                                                            |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |

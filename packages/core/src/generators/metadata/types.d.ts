@@ -97,6 +97,11 @@ export interface HeadingData extends Data {
    * from the ToC while still rendering on the page.
    */
   isOverload?: boolean;
+  /**
+   * The slug of the first heading of the overloaded function this heading is
+   * an overload of. Set alongside `isOverload`.
+   */
+  overloadOf?: string;
 }
 
 /**

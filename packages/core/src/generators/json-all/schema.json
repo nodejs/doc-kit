@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://doc-kit.nodejs.org/schemas/api-doc-all/1.0.0.json",
+  "title": "Bundle",
+  "description": "Every document of a documentation set, as emitted by the doc-kit `json-all` generator, in index order.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "The URL of the schema this bundle conforms to. Its last path segment is the schema version."
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "$ref": "https://doc-kit.nodejs.org/schemas/api-doc/1.0.0.json"
+      },
+      "description": "The documents, in the order of the configured index, then by id."
+    }
+  },
+  "required": ["$schema", "documents"],
+  "additionalProperties": false
+}
