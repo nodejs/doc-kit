@@ -1,0 +1,559 @@
+exports[`json > builds a valid document for misc.md 1`] = `
+{
+  "$schema": "https://example.com/api-doc.json",
+  "id": "misc",
+  "path": "/misc",
+  "type": "misc",
+  "module": null,
+  "title": "Guide",
+  "introducedIn": null,
+  "sourceLink": null,
+  "stability": null,
+  "added": [],
+  "deprecated": [],
+  "removed": [],
+  "napiVersion": [],
+  "changes": [],
+  "description": "An introduction.",
+  "summary": "An introduction.",
+  "examples": [],
+  "children": [
+    {
+      "kind": "class",
+      "id": "class-thing",
+      "name": "Thing",
+      "title": "Class: \`Thing\`",
+      "scope": "module",
+      "overloadOf": null,
+      "stability": null,
+      "added": [],
+      "deprecated": [],
+      "removed": [],
+      "napiVersion": [],
+      "changes": [],
+      "extends": {
+        "text": "EventEmitter",
+        "links": [
+          {
+            "name": "EventEmitter",
+            "href": "events.html#class-eventemitter",
+            "start": 0,
+            "end": 12
+          }
+        ]
+      },
+      "description": "Documented even in a guide.",
+      "summary": "Documented even in a guide.",
+      "examples": [],
+      "children": []
+    },
+    {
+      "kind": "section",
+      "id": "setup",
+      "name": "Setup",
+      "title": "Setup",
+      "scope": "module",
+      "overloadOf": null,
+      "stability": null,
+      "added": [],
+      "deprecated": [],
+      "removed": [],
+      "napiVersion": [],
+      "changes": [],
+      "description": "Type: Documentation-only\\n\\n* \`first\` {string} A list under a section stays prose.",
+      "summary": "Type: Documentation-only",
+      "examples": [],
+      "children": []
+    },
+    {
+      "kind": "section",
+      "id": "appendix",
+      "name": "Appendix",
+      "title": "Appendix",
+      "scope": "module",
+      "overloadOf": null,
+      "stability": null,
+      "added": [],
+      "deprecated": [],
+      "removed": [],
+      "napiVersion": [],
+      "changes": [],
+      "description": "More.",
+      "summary": "More.",
+      "examples": [],
+      "children": []
+    }
+  ]
+}
+`;
+
+exports[`json > builds a valid document for module.md 1`] = `
+{
+  "$schema": "https://example.com/api-doc.json",
+  "id": "module",
+  "path": "/module",
+  "type": "module",
+  "module": "widgets",
+  "title": "Widgets",
+  "introducedIn": "v1.0.0",
+  "sourceLink": {
+    "path": "lib/widgets.js",
+    "url": "https://github.com/example/widgets/blob/HEAD/lib/widgets.js"
+  },
+  "stability": {
+    "index": "2",
+    "level": 2,
+    "description": "Stable"
+  },
+  "added": [],
+  "deprecated": [],
+  "removed": [],
+  "napiVersion": [],
+  "changes": [],
+  "description": "The \`node:widgets\` module makes {Widget} objects. See [\`widgets.create()\`](#widgetscreate).\\n\\n\`\`\`js displayName=\\"Making a widget\\"\\nconst { create } = require('node:widgets');\\n\`\`\`",
+  "summary": "The \`node:widgets\` module makes {Widget} objects. See \`widgets.create()\`.",
+  "examples": [
+    {
+      "language": "js",
+      "displayName": "Making a widget",
+      "code": "const { create } = require('node:widgets');"
+    }
+  ],
+  "children": [
+    {
+      "kind": "class",
+      "id": "class-widgetswidget",
+      "name": "Widget",
+      "title": "Class: \`widgets.Widget\`",
+      "scope": "module",
+      "overloadOf": null,
+      "stability": null,
+      "added": [
+        "v1.0.0"
+      ],
+      "deprecated": [],
+      "removed": [],
+      "napiVersion": [],
+      "changes": [
+        {
+          "versions": [
+            "v2.0.0"
+          ],
+          "prUrl": "https://github.com/example/widgets/pull/2",
+          "commit": null,
+          "description": "Widgets now emit \`'ready'\`."
+        }
+      ],
+      "extends": {
+        "text": "EventEmitter",
+        "links": [
+          {
+            "name": "EventEmitter",
+            "href": "events.html#class-eventemitter",
+            "start": 0,
+            "end": 12
+          }
+        ]
+      },
+      "description": "A widget.",
+      "summary": "A widget.",
+      "examples": [],
+      "children": [
+        {
+          "kind": "constructor",
+          "id": "new-widgetname-options",
+          "name": "Widget",
+          "title": "\`new Widget(name[, options])\`",
+          "scope": "module",
+          "overloadOf": null,
+          "stability": null,
+          "added": [
+            "v1.0.0",
+            "v0.9.0"
+          ],
+          "deprecated": [],
+          "removed": [],
+          "napiVersion": [],
+          "changes": [],
+          "signature": {
+            "parameters": [
+              {
+                "name": "name",
+                "type": {
+                  "text": "string",
+                  "links": [
+                    {
+                      "name": "string",
+                      "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type",
+                      "start": 0,
+                      "end": 6
+                    }
+                  ]
+                },
+                "description": "The widget's name.",
+                "default": null,
+                "optional": false,
+                "rest": false,
+                "properties": []
+              },
+              {
+                "name": "options",
+                "type": {
+                  "text": "Object",
+                  "links": [
+                    {
+                      "name": "Object",
+                      "href": "https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object",
+                      "start": 0,
+                      "end": 6
+                    }
+                  ]
+                },
+                "description": "",
+                "default": null,
+                "optional": true,
+                "rest": false,
+                "properties": [
+                  {
+                    "name": "size",
+                    "type": {
+                      "text": "number",
+                      "links": [
+                        {
+                          "name": "number",
+                          "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type",
+                          "start": 0,
+                          "end": 6
+                        }
+                      ]
+                    },
+                    "description": "The size.",
+                    "default": "1",
+                    "optional": true,
+                    "rest": false,
+                    "properties": []
+                  },
+                  {
+                    "name": "signal",
+                    "type": {
+                      "text": "AbortSignal",
+                      "links": [
+                        {
+                          "name": "AbortSignal",
+                          "href": "https://developer.mozilla.org/docs/Web/API/AbortSignal",
+                          "start": 0,
+                          "end": 11
+                        }
+                      ]
+                    },
+                    "description": "Cancels the widget.",
+                    "default": null,
+                    "optional": false,
+                    "rest": false,
+                    "properties": []
+                  }
+                ]
+              }
+            ],
+            "returns": null
+          },
+          "description": "",
+          "summary": "",
+          "examples": [],
+          "children": []
+        },
+        {
+          "kind": "constructor",
+          "id": "new-widgetoptions",
+          "name": "Widget",
+          "title": "\`new Widget(options)\`",
+          "scope": "module",
+          "overloadOf": "new-widgetname-options",
+          "stability": null,
+          "added": [
+            "v1.5.0"
+          ],
+          "deprecated": [],
+          "removed": [],
+          "napiVersion": [],
+          "changes": [],
+          "signature": {
+            "parameters": [
+              {
+                "name": "options",
+                "type": {
+                  "text": "Object",
+                  "links": [
+                    {
+                      "name": "Object",
+                      "href": "https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object",
+                      "start": 0,
+                      "end": 6
+                    }
+                  ]
+                },
+                "description": "",
+                "default": null,
+                "optional": false,
+                "rest": false,
+                "properties": []
+              }
+            ],
+            "returns": null
+          },
+          "description": "",
+          "summary": "",
+          "examples": [],
+          "children": []
+        },
+        {
+          "kind": "event",
+          "id": "event-ready",
+          "name": "ready",
+          "title": "Event: \`'ready'\`",
+          "scope": "module",
+          "overloadOf": null,
+          "stability": null,
+          "added": [
+            "v2.0.0"
+          ],
+          "deprecated": [],
+          "removed": [],
+          "napiVersion": [],
+          "changes": [],
+          "parameters": [
+            {
+              "name": "widget",
+              "type": {
+                "text": "Widget",
+                "links": [
+                  {
+                    "name": "Widget",
+                    "href": "widgets.html#class-widgetswidget",
+                    "start": 0,
+                    "end": 6
+                  }
+                ]
+              },
+              "description": "The widget that is ready.",
+              "default": null,
+              "optional": false,
+              "rest": false,
+              "properties": []
+            }
+          ],
+          "description": "Emitted once the widget is ready.",
+          "summary": "Emitted once the widget is ready.",
+          "examples": [],
+          "children": []
+        },
+        {
+          "kind": "method",
+          "id": "widgetrendertargets",
+          "name": "render",
+          "title": "\`widget.render([...targets])\`",
+          "scope": "module",
+          "overloadOf": null,
+          "stability": null,
+          "added": [],
+          "deprecated": [],
+          "removed": [],
+          "napiVersion": [],
+          "changes": [],
+          "signature": {
+            "parameters": [
+              {
+                "name": "targets",
+                "type": {
+                  "text": "string[]",
+                  "links": [
+                    {
+                      "name": "string",
+                      "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type",
+                      "start": 0,
+                      "end": 6
+                    }
+                  ]
+                },
+                "description": "Where to render.",
+                "default": null,
+                "optional": true,
+                "rest": true,
+                "properties": []
+              }
+            ],
+            "returns": {
+              "type": {
+                "text": "Promise",
+                "links": [
+                  {
+                    "name": "Promise",
+                    "href": "https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+                    "start": 0,
+                    "end": 7
+                  }
+                ]
+              },
+              "description": "Fulfills once rendered."
+            }
+          },
+          "description": "Renders the widget.\\n\\n\`\`\`mjs\\nawait widget.render();\\n\`\`\`",
+          "summary": "Renders the widget.",
+          "examples": [
+            {
+              "language": "mjs",
+              "displayName": null,
+              "code": "await widget.render();"
+            }
+          ],
+          "children": []
+        },
+        {
+          "kind": "property",
+          "id": "widgetsize",
+          "name": "size",
+          "title": "\`widget.size\`",
+          "scope": "module",
+          "overloadOf": null,
+          "stability": {
+            "index": "0",
+            "level": 0,
+            "description": "Deprecated: Use [\`widget.render()\`](#widgetrendertargets) instead."
+          },
+          "added": [
+            "v1.0.0"
+          ],
+          "deprecated": [
+            "v2.0.0"
+          ],
+          "removed": [],
+          "napiVersion": [],
+          "changes": [],
+          "type": {
+            "text": "number",
+            "links": [
+              {
+                "name": "number",
+                "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type",
+                "start": 0,
+                "end": 6
+              }
+            ]
+          },
+          "default": "1",
+          "description": "The widget's size.",
+          "summary": "",
+          "examples": [],
+          "children": []
+        },
+        {
+          "kind": "staticMethod",
+          "id": "static-method-widgetfromsource",
+          "name": "from",
+          "title": "Static method: \`Widget.from(source)\`",
+          "scope": "module",
+          "overloadOf": null,
+          "stability": null,
+          "added": [],
+          "deprecated": [],
+          "removed": [],
+          "napiVersion": [],
+          "changes": [],
+          "signature": {
+            "parameters": [
+              {
+                "name": "source",
+                "type": {
+                  "text": "string | Buffer",
+                  "links": [
+                    {
+                      "name": "string",
+                      "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type",
+                      "start": 0,
+                      "end": 6
+                    }
+                  ]
+                },
+                "description": "A serialized widget.",
+                "default": null,
+                "optional": false,
+                "rest": false,
+                "properties": []
+              }
+            ],
+            "returns": {
+              "type": {
+                "text": "Widget",
+                "links": [
+                  {
+                    "name": "Widget",
+                    "href": "widgets.html#class-widgetswidget",
+                    "start": 0,
+                    "end": 6
+                  }
+                ]
+              },
+              "description": ""
+            }
+          },
+          "description": "",
+          "summary": "",
+          "examples": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "kind": "section",
+      "id": "notes",
+      "name": "Notes",
+      "title": "Notes",
+      "scope": "module",
+      "overloadOf": null,
+      "stability": null,
+      "added": [],
+      "deprecated": [],
+      "removed": [],
+      "napiVersion": [],
+      "changes": [],
+      "description": "A prose section with a list that stays prose:\\n\\n* One thing\\n* Another thing",
+      "summary": "A prose section with a list that stays prose:",
+      "examples": [],
+      "children": [
+        {
+          "kind": "property",
+          "id": "globalthiswidget",
+          "name": "widget",
+          "title": "\`globalThis.widget\`",
+          "scope": "global",
+          "overloadOf": null,
+          "stability": null,
+          "added": [
+            "v1.0.0"
+          ],
+          "deprecated": [],
+          "removed": [],
+          "napiVersion": [],
+          "changes": [],
+          "type": {
+            "text": "Widget",
+            "links": [
+              {
+                "name": "Widget",
+                "href": "widgets.html#class-widgetswidget",
+                "start": 0,
+                "end": 6
+              }
+            ]
+          },
+          "default": null,
+          "description": "The default widget.",
+          "summary": "The default widget.",
+          "examples": [],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+`;

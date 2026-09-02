@@ -3,21 +3,6 @@ import { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 import { MethodSignature } from '@doc-kit/core/utils/signature/types';
 
 /**
- * A node in the entry hierarchy.
- */
-export interface HierarchizedEntry {
-  /**
-   * The metadata entry this node wraps.
-   */
-  entry: MetadataEntry;
-
-  /**
-   * Child nodes nested under this entry, based on heading depth.
-   */
-  children: HierarchizedEntry[];
-}
-
-/**
  * Contains metadata related to changes, additions, removals, and deprecated statuses of an entry.
  */
 export type Meta = Pick<

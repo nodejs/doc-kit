@@ -69,10 +69,11 @@ Options:
   --config-file <path>         Config file
   -i, --input <patterns...>    Input file patterns (glob)
   -t, --target <generator...>  Target generator(s): a built-in name
-                               (json-simple, legacy-html, legacy-html-all,
-                               man-page, legacy-json, legacy-json-all,
-                               addon-verify, api-links, orama-db, llms-txt,
-                               sitemap, html) or an import specifier for a
+                               (json, json-all, json-simple, legacy-html,
+                               legacy-html-all, man-page, legacy-json,
+                               legacy-json-all, addon-verify, api-links,
+                               orama-db, llms-txt, sitemap, html,
+                               section-pages) or an import specifier for a
                                custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory

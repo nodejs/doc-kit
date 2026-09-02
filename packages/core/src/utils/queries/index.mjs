@@ -4,6 +4,8 @@ import { transformNodesToString } from '#utils/unist.mjs';
 
 import { isTypedListItem, isTypedList } from './utils.mjs';
 
+export { splitTypedItems } from './utils.mjs';
+
 // This defines the actual REGEX Queries
 export const QUERIES = {
   // Fixes the references to Markdown pages into the API documentation

@@ -8,7 +8,9 @@ import {
 } from '@doc-kit/core/utils/configuration/templates.mjs';
 import { parseInline } from '@doc-kit/core/utils/inline.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
-import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { annotateOverloads } from '@doc-kit/core/utils/overloads.mjs';
+import { splitTypedItems, UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { removeStabilityPrefix } from '@doc-kit/core/utils/stability.mjs';
 import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
@@ -17,7 +19,6 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
-import { annotateOverloads } from './overloads.mjs';
 import { getRemarkRecma as remark } from './remark.mjs';
 import { renderAsJSX } from './render.mjs';
 import { JSX_IMPORTS } from '../../html/constants.mjs';
@@ -25,7 +26,6 @@ import {
   STABILITY_LEVELS,
   LIFECYCLE_LABELS,
   INTERNATIONALIZABLE,
-  STABILITY_PREFIX_LENGTH,
   DEPRECATION_TYPE_PATTERNS,
   ALERT_LEVELS,
   TYPES_WITH_METHOD_SIGNATURES,
@@ -192,14 +192,10 @@ export const createHeadingElement = (content, changeElement) => {
  * @param {import('unist').Parent} parent - The parent node containing the stability node
  */
 export const transformStabilityNode = (node, index, parent) => {
-  // Calculate slice start to skip the stability prefix + index length
-  const start = STABILITY_PREFIX_LENGTH + node.data.index.length;
   const stabilityLevel = parseInt(node.data.index, 10);
 
   parent.children[index] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
-    children: slice(node, start, undefined, {
-      textHandling: { boundaries: 'preserve' },
-    }).node.children[0].children,
+    children: removeStabilityPrefix(node).children[0].children,
     level: STABILITY_LEVELS[stabilityLevel],
     title: `Stability: ${node.data.index}`,
   });
@@ -293,25 +289,18 @@ export const processEntry = entry => {
       // bullets that happen to share the same loose list in the source
       // markdown). Split those off so they render as regular content instead
       // of being silently swallowed by the signature table.
-      const firstNonTyped = node.children.findIndex(
-        item => !UNIST.isTypedListItem(item)
-      );
+      const { typed, rest } = splitTypedItems(node);
 
-      if (firstNonTyped === -1) {
+      if (rest.length === 0) {
         parent.children[idx] = createSignatureTable(node);
         return;
       }
 
-      const typedItems = node.children.slice(0, firstNonTyped);
-      const restItems = node.children.slice(firstNonTyped);
-
       const replacements = [];
-      if (typedItems.length > 0) {
-        replacements.push(
-          createSignatureTable({ ...node, children: typedItems })
-        );
+      if (typed.length > 0) {
+        replacements.push(createSignatureTable({ ...node, children: typed }));
       }
-      replacements.push({ ...node, children: restItems });
+      replacements.push({ ...node, children: rest });
 
       parent.children.splice(idx, 1, ...replacements);
     });

@@ -19,9 +19,13 @@ describe('annotateOverloads', () => {
 
     // The first (most stable) heading is left as-is...
     assert.ok(!entries[0].heading.data.isOverload);
-    // ...and the rest are flagged so the ToC can drop them.
+    assert.equal(entries[0].heading.data.overloadOf, undefined);
+    // ...and the rest are flagged so the ToC can drop them, pointing back at
+    // the heading they overload.
     assert.ok(entries[1].heading.data.isOverload);
     assert.ok(entries[2].heading.data.isOverload);
+    assert.equal(entries[1].heading.data.overloadOf, 'fsreadfd');
+    assert.equal(entries[2].heading.data.overloadOf, 'fsreadfd');
   });
 
   it('leaves a single-signature function untouched', () => {
