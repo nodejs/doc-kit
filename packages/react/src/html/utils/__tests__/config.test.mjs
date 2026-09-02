@@ -52,6 +52,7 @@ const makeEntry = (api, name, path, extra = {}) => ({
   api,
   path,
   heading: { depth: 1, data: { name } },
+  content: { type: 'root', children: [] },
   ...extra,
 });
 
@@ -131,7 +132,7 @@ describe('buildPageList', () => {
 });
 
 describe('buildDocumentationIndex', () => {
-  it('lists only pages with a stability index, with their descriptions', () => {
+  it('lists every page but the index itself, with their descriptions', () => {
     const input = [
       {
         api: 'fs',
@@ -179,6 +180,46 @@ describe('buildDocumentationIndex', () => {
         name: 'QUIC',
         index: '1.1',
         description: 'QUIC protocol support.',
+      },
+    ]);
+  });
+
+  it('keeps pages that carry no document-level stability index', () => {
+    // `process` and `errors` are documented this way: stability lives on their
+    // individual sections rather than on the document.
+    const input = [
+      {
+        api: 'process',
+        path: '/process',
+        heading: { depth: 1, data: { name: 'Process' } },
+        stability: null,
+        llm_description: 'Information about the current process.',
+        content: { type: 'root', children: [] },
+      },
+      {
+        api: 'fs',
+        path: '/fs',
+        heading: { depth: 1, data: { name: 'File System' } },
+        stability: { data: { index: '2' } },
+        llm_description: 'File system APIs.',
+        content: { type: 'root', children: [] },
+      },
+    ];
+
+    const result = buildDocumentationIndex(input);
+
+    assert.deepStrictEqual(result, [
+      {
+        api: 'fs',
+        name: 'File System',
+        index: '2',
+        description: 'File system APIs.',
+      },
+      {
+        api: 'process',
+        name: 'Process',
+        index: undefined,
+        description: 'Information about the current process.',
       },
     ]);
   });
