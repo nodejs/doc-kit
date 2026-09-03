@@ -165,6 +165,13 @@ export const createLogger = (
     }
   };
 
+  /**
+   * Gets the current log level for this logger instance.
+   *
+   * @returns {number} The current numeric log level
+   */
+  const getLogLevel = () => currentLevel;
+
   return {
     info,
     warn,
@@ -173,5 +180,6 @@ export const createLogger = (
     debug,
     child,
     setLogLevel,
+    getLogLevel,
   };
 };
