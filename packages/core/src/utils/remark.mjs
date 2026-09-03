@@ -63,7 +63,7 @@ export const getRemark = lazy(() =>
  * `{` for type annotations that MDX would otherwise try to parse.
  */
 export const getRemarkMdx = lazy(() =>
-  unified().use(remarkParse).use(remarkMdx).use(remarkGfm)
+  unified().use(remarkParse).use(remarkMdx).use(remarkGfm).use(remarkStringify)
 );
 
 /**

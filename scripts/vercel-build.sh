@@ -7,7 +7,7 @@ NODE_VERSION=$(cat .node-tag)
 
 node packages/cli/bin/cli.mjs generate \
   -t orama-db \
-  -t legacy-json \
+  -t json \
   -t llms-txt \
   -t section-pages \
   -i "./node/doc/api/*.md" \

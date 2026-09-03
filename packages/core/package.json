@@ -20,6 +20,8 @@
     ".": "./src/generators.mjs",
     "./ast": "./src/generators/ast/index.mjs",
     "./ast-js": "./src/generators/ast-js/index.mjs",
+    "./json": "./src/generators/json/index.mjs",
+    "./json-all": "./src/generators/json-all/index.mjs",
     "./json-simple": "./src/generators/json-simple/index.mjs",
     "./metadata": "./src/generators/metadata/index.mjs",
     "./package.json": "./package.json",
@@ -59,6 +61,8 @@
     "github-slugger": "^2.0.0",
     "glob-parent": "^6.0.2",
     "hastscript": "^9.0.1",
+    "mdast-util-slice-markdown": "^2.0.1",
+    "mdast-util-to-string": "^4.0.0",
     "piscina": "^5.3.0",
     "rehype-stringify": "^10.0.1",
     "remark-gfm": "^4.0.1",
@@ -79,13 +83,14 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
+    "ajv": "^8.20.0",
     "hast-util-to-html": "^9.0.5",
     "hast-util-to-string": "^3.0.1"
   },
   "peerDependencies": {
+    "@doc-kit/generator-react": "workspace:>=0.1.0",
     "@node-core/doc-kit": "workspace:>=2.0.0",
-    "@node-core/doc-kit-legacy": "workspace:>=1.0.0",
-    "@doc-kit/generator-react": "workspace:>=0.1.0"
+    "@node-core/doc-kit-legacy": "workspace:>=1.0.0"
   },
   "peerDependenciesMeta": {
     "@node-core/doc-kit": {

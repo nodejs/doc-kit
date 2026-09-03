@@ -67,3 +67,18 @@ export const isTypedList = list => {
 
   return getTypedConfidence(list.children?.[0]?.children?.[0]?.children?.[0]);
 };
+
+/**
+ * Splits a typed list's items into the leading typed ones and the rest:
+ * prose bullets that happen to share the list in the source markdown.
+ *
+ * @param {import('@types/mdast').List} list
+ * @returns {{ typed: Array<import('@types/mdast').ListItem>, rest: Array<import('@types/mdast').ListItem> }}
+ */
+export const splitTypedItems = ({ children }) => {
+  const end = children.findIndex(item => !isTypedListItem(item));
+
+  return end === -1
+    ? { typed: children, rest: [] }
+    : { typed: children.slice(0, end), rest: children.slice(end) };
+};

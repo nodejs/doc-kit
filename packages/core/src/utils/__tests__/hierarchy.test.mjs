@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { findParent, buildHierarchy } from '../buildHierarchy.mjs';
+import { findParent, buildHierarchy } from '../hierarchy.mjs';
 
 describe('findParent', () => {
   it('finds parent with lower depth', () => {
@@ -13,9 +13,19 @@ describe('findParent', () => {
     assert.equal(parent, nodes[0]);
   });
 
-  it('throws when no parent exists', () => {
+  it('skips over siblings and deeper entries', () => {
+    const nodes = [
+      { entry: { heading: { depth: 2 } }, children: [] },
+      { entry: { heading: { depth: 4 } }, children: [] },
+      { entry: { heading: { depth: 3 } }, children: [] },
+    ];
+    const parent = findParent(nodes[2].entry, nodes, 1);
+    assert.equal(parent, nodes[0]);
+  });
+
+  it('returns undefined when no parent exists', () => {
     const nodes = [{ entry: { heading: { depth: 2 } }, children: [] }];
-    assert.throws(() => findParent(nodes[0].entry, nodes, -1));
+    assert.equal(findParent(nodes[0].entry, nodes, -1), undefined);
   });
 });
 
@@ -51,5 +61,14 @@ describe('buildHierarchy', () => {
 
     assert.equal(result.length, 1);
     assert.equal(result[0].children[0].children.length, 1);
+  });
+
+  it('treats an entry without a shallower predecessor as a root', () => {
+    const entries = [{ heading: { depth: 2 } }, { heading: { depth: 3 } }];
+    const result = buildHierarchy(entries);
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0].entry, entries[0]);
+    assert.equal(result[0].children[0].entry, entries[1]);
   });
 });

@@ -1,0 +1,529 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://doc-kit.nodejs.org/schemas/api-doc/1.0.0.json",
+  "title": "Document",
+  "description": "One API documentation source file, as emitted by the doc-kit `json` generator. The file is the root of a tree of nodes, one per heading, in document order.",
+  "allOf": [
+    { "$ref": "#/definitions/Entry" },
+    {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "The URL of the schema this document conforms to. Its last path segment is the schema version."
+        },
+        "id": {
+          "type": "string",
+          "description": "The document's identifier: its path, slugged. Unique within a documentation set.",
+          "examples": ["fs", "child_process"]
+        },
+        "path": {
+          "type": "string",
+          "description": "The document's path inside the input tree, without extension. Cross-document links target `<path>.html`.",
+          "examples": ["/fs"]
+        },
+        "type": {
+          "type": "string",
+          "enum": ["module", "misc", "global"],
+          "description": "The document's declared type: a module reference, a miscellaneous (conceptual) page, or a page of globals."
+        },
+        "module": {
+          "type": ["string", "null"],
+          "description": "The name of the module the document describes, when it describes one.",
+          "examples": ["fs"]
+        },
+        "introducedIn": {
+          "type": ["string", "null"],
+          "description": "The version the document itself was introduced in."
+        },
+        "sourceLink": {
+          "oneOf": [{ "$ref": "#/definitions/SourceLink" }, { "type": "null" }],
+          "description": "The implementation the document describes, when it links to one."
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Node" },
+          "description": "The document's headings, nested by depth, in document order."
+        }
+      },
+      "required": [
+        "$schema",
+        "id",
+        "path",
+        "type",
+        "module",
+        "introducedIn",
+        "sourceLink",
+        "children"
+      ]
+    }
+  ],
+  "definitions": {
+    "Version": {
+      "title": "Version",
+      "type": "string",
+      "description": "A version string as authored, such as `v18.0.0`, or a release-process placeholder such as `REPLACEME`.",
+      "examples": ["v18.0.0"]
+    },
+    "SourceLink": {
+      "title": "SourceLink",
+      "type": "object",
+      "description": "A link to the implementation a document describes.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The implementation's path, relative to the repository root, as authored.",
+          "examples": ["lib/fs.js"]
+        },
+        "url": {
+          "type": ["string", "null"],
+          "description": "The implementation's URL, when a repository is configured."
+        }
+      },
+      "required": ["path", "url"],
+      "additionalProperties": false
+    },
+    "Stability": {
+      "title": "Stability",
+      "type": "object",
+      "description": "An entry's stability index.",
+      "properties": {
+        "index": {
+          "type": "string",
+          "pattern": "^[0-5](\\.[0-9])?$",
+          "description": "The index as authored, including any sub-level, such as `1.1`."
+        },
+        "description": {
+          "type": "string",
+          "description": "The text following the index, as Markdown."
+        }
+      },
+      "required": ["index", "level", "description"],
+      "additionalProperties": false
+    },
+    "Change": {
+      "title": "Change",
+      "type": "object",
+      "description": "One record of an entry's change history.",
+      "properties": {
+        "versions": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Version" },
+          "description": "The versions the change shipped in."
+        },
+        "prUrl": {
+          "type": ["string", "null"],
+          "description": "The pull request that made the change."
+        },
+        "commit": {
+          "type": ["string", "null"],
+          "description": "The commit that made the change, on records that predate pull requests."
+        },
+        "description": {
+          "type": "string",
+          "description": "What changed, as Markdown."
+        }
+      },
+      "required": ["versions", "prUrl", "commit", "description"],
+      "additionalProperties": false
+    },
+    "Example": {
+      "title": "Example",
+      "type": "object",
+      "description": "A fenced code block from an entry's body.",
+      "properties": {
+        "language": {
+          "type": ["string", "null"],
+          "description": "The code block's language identifier."
+        },
+        "displayName": {
+          "type": ["string", "null"],
+          "description": "The code block's `displayName` attribute."
+        },
+        "code": {
+          "type": "string",
+          "description": "The code."
+        }
+      },
+      "required": ["language", "displayName", "code"],
+      "additionalProperties": false
+    },
+    "TypeLink": {
+      "title": "TypeLink",
+      "type": "object",
+      "description": "A type name inside a type's text, resolved to documentation.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The resolved name, exactly as it appears in the text."
+        },
+        "href": {
+          "type": "string",
+          "description": "Where the name is documented: a URL, or a link relative to the document."
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The offset of the name's first character in the text."
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The offset after the name's last character in the text."
+        }
+      },
+      "required": ["name", "href", "start", "end"],
+      "additionalProperties": false
+    },
+    "Type": {
+      "title": "Type",
+      "type": "object",
+      "description": "A type annotation.",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The annotation as a TypeScript type expression, normalised: single-line, union members separated by ` | `.",
+          "examples": ["string | Buffer | URL"]
+        },
+        "links": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/TypeLink" },
+          "description": "The resolved names in the text, by offset, non-overlapping."
+        }
+      },
+      "required": ["text", "links"],
+      "additionalProperties": false
+    },
+    "Parameter": {
+      "title": "Parameter",
+      "type": "object",
+      "description": "A parameter of a signature or event, or a property of an object parameter.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The parameter's name, without any rest marker."
+        },
+        "type": {
+          "oneOf": [{ "$ref": "#/definitions/Type" }, { "type": "null" }],
+          "description": "The parameter's type, when documented."
+        },
+        "description": {
+          "type": "string",
+          "description": "The parameter's description, as Markdown, without its default value."
+        },
+        "default": {
+          "type": ["string", "null"],
+          "description": "The default value as authored, such as `'utf8'` or `false`.",
+          "examples": ["'utf8'"]
+        },
+        "optional": {
+          "type": "boolean",
+          "description": "Whether the parameter may be omitted: bracketed in the signature, or documented with a default."
+        },
+        "rest": {
+          "type": "boolean",
+          "description": "Whether the parameter is a rest parameter."
+        },
+        "properties": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Parameter" },
+          "description": "The documented properties of an object parameter, or the arguments of a callback."
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "description",
+        "default",
+        "optional",
+        "rest",
+        "properties"
+      ],
+      "additionalProperties": false
+    },
+    "Return": {
+      "title": "Return",
+      "type": "object",
+      "description": "A signature's return value.",
+      "properties": {
+        "type": {
+          "oneOf": [{ "$ref": "#/definitions/Type" }, { "type": "null" }],
+          "description": "The return type, when documented."
+        },
+        "description": {
+          "type": "string",
+          "description": "The return value's description, as Markdown."
+        }
+      },
+      "required": ["type", "description"],
+      "additionalProperties": false
+    },
+    "Signature": {
+      "title": "Signature",
+      "type": "object",
+      "description": "A callable's signature: the parameters declared in its heading, described by its typed list.",
+      "properties": {
+        "parameters": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Parameter" },
+          "description": "The parameters, in declaration order."
+        },
+        "returns": {
+          "oneOf": [{ "$ref": "#/definitions/Return" }, { "type": "null" }],
+          "description": "The return value, when documented."
+        }
+      },
+      "required": ["parameters", "returns"],
+      "additionalProperties": false
+    },
+    "Entry": {
+      "title": "Entry",
+      "type": "object",
+      "description": "What every heading, the document's own included, carries: its metadata and its body.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The heading text as authored, inline Markdown included.",
+          "examples": ["`fs.readFile(path[, options], callback)`"]
+        },
+        "stability": {
+          "oneOf": [{ "$ref": "#/definitions/Stability" }, { "type": "null" }],
+          "description": "The entry's stability index, when declared."
+        },
+        "added": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Version" },
+          "description": "The versions the entry was added in, as authored."
+        },
+        "deprecated": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Version" },
+          "description": "The versions the entry was deprecated in."
+        },
+        "removed": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Version" },
+          "description": "The versions the entry was removed in."
+        },
+        "napiVersion": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "The Node-API versions the entry is available in."
+        },
+        "changes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Change" },
+          "description": "The entry's change history, as authored."
+        },
+        "description": {
+          "type": "string",
+          "description": "The entry's body as Markdown: everything under the heading except its metadata, stability index, and the typed list a signature or type was taken from. Empty when the entry has no body."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-paragraph plain-text summary: the entry's `llm_description` when declared, else its first paragraph."
+        },
+        "examples": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Example" },
+          "description": "The fenced code blocks in the body, in order. They remain in the description too."
+        }
+      },
+      "required": [
+        "title",
+        "stability",
+        "added",
+        "deprecated",
+        "removed",
+        "napiVersion",
+        "changes",
+        "description",
+        "summary",
+        "examples"
+      ]
+    },
+    "NodeBase": {
+      "title": "NodeBase",
+      "type": "object",
+      "description": "What every node below the document root carries, on top of an entry.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "section",
+            "class",
+            "constructor",
+            "method",
+            "staticMethod",
+            "property",
+            "event"
+          ],
+          "description": "What the heading documents. Decides which further properties the node has."
+        },
+        "id": {
+          "type": "string",
+          "description": "The heading's slug, unique within the document. It is the heading's anchor in HTML output.",
+          "examples": ["fsreadfilepath-options-callback"]
+        },
+        "name": {
+          "type": "string",
+          "description": "The bare identifier the heading documents, or the heading's plain text for a section.",
+          "examples": ["readFile", "Server", "close"]
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["module", "global"],
+          "description": "Whether the entry is reached through its module, or available globally."
+        },
+        "overloadOf": {
+          "type": ["string", "null"],
+          "description": "For the second and later of several sibling headings documenting one callable, the `id` of the first."
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Node" },
+          "description": "The headings nested under this one, in document order."
+        }
+      },
+      "required": ["kind", "id", "name", "scope", "overloadOf", "children"]
+    },
+    "SectionNode": {
+      "title": "SectionNode",
+      "description": "A heading that documents no API entry: prose, a deprecation, a command-line option.",
+      "allOf": [
+        { "$ref": "#/definitions/Entry" },
+        { "$ref": "#/definitions/NodeBase" },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "section" }
+          },
+          "required": ["kind"]
+        }
+      ]
+    },
+    "ClassNode": {
+      "title": "ClassNode",
+      "description": "A class. Its constructors, methods, properties and events are its children.",
+      "allOf": [
+        { "$ref": "#/definitions/Entry" },
+        { "$ref": "#/definitions/NodeBase" },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "class" },
+            "extends": {
+              "oneOf": [{ "$ref": "#/definitions/Type" }, { "type": "null" }],
+              "description": "The class the class extends, when documented."
+            }
+          },
+          "required": ["kind", "extends"]
+        }
+      ]
+    },
+    "ConstructorNode": {
+      "title": "ConstructorNode",
+      "description": "A class constructor.",
+      "allOf": [
+        { "$ref": "#/definitions/Entry" },
+        { "$ref": "#/definitions/NodeBase" },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "constructor" },
+            "signature": { "$ref": "#/definitions/Signature" }
+          },
+          "required": ["kind", "signature"]
+        }
+      ]
+    },
+    "MethodNode": {
+      "title": "MethodNode",
+      "description": "A function or method.",
+      "allOf": [
+        { "$ref": "#/definitions/Entry" },
+        { "$ref": "#/definitions/NodeBase" },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "method" },
+            "signature": { "$ref": "#/definitions/Signature" }
+          },
+          "required": ["kind", "signature"]
+        }
+      ]
+    },
+    "StaticMethodNode": {
+      "title": "StaticMethodNode",
+      "description": "A static method of a class.",
+      "allOf": [
+        { "$ref": "#/definitions/Entry" },
+        { "$ref": "#/definitions/NodeBase" },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "staticMethod" },
+            "signature": { "$ref": "#/definitions/Signature" }
+          },
+          "required": ["kind", "signature"]
+        }
+      ]
+    },
+    "PropertyNode": {
+      "title": "PropertyNode",
+      "description": "A property of a module, class or object.",
+      "allOf": [
+        { "$ref": "#/definitions/Entry" },
+        { "$ref": "#/definitions/NodeBase" },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "property" },
+            "type": {
+              "oneOf": [{ "$ref": "#/definitions/Type" }, { "type": "null" }],
+              "description": "The property's type, when documented."
+            },
+            "default": {
+              "type": ["string", "null"],
+              "description": "The property's default value as authored, when documented."
+            }
+          },
+          "required": ["kind", "type", "default"]
+        }
+      ]
+    },
+    "EventNode": {
+      "title": "EventNode",
+      "description": "An event emitted by the parent class or module.",
+      "allOf": [
+        { "$ref": "#/definitions/Entry" },
+        { "$ref": "#/definitions/NodeBase" },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "event" },
+            "parameters": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Parameter" },
+              "description": "The arguments passed to the event's listeners."
+            }
+          },
+          "required": ["kind", "parameters"]
+        }
+      ]
+    },
+    "Node": {
+      "title": "Node",
+      "description": "A heading below the document root.",
+      "oneOf": [
+        { "$ref": "#/definitions/SectionNode" },
+        { "$ref": "#/definitions/ClassNode" },
+        { "$ref": "#/definitions/ConstructorNode" },
+        { "$ref": "#/definitions/MethodNode" },
+        { "$ref": "#/definitions/StaticMethodNode" },
+        { "$ref": "#/definitions/PropertyNode" },
+        { "$ref": "#/definitions/EventNode" }
+      ]
+    }
+  }
+}

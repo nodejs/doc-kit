@@ -47,9 +47,6 @@ export const STABILITY_LEVELS = [
 // How deep should the Table of Contents go?
 export const TOC_MAX_HEADING_DEPTH = 3;
 
-// 'Stability: '.length + ' - '.length
-export const STABILITY_PREFIX_LENGTH = 14;
-
 // 'Type: '.length
 export const TYPE_PREFIX_LENGTH = 6;
 
@@ -203,9 +200,6 @@ export const TYPES_WITH_METHOD_SIGNATURES = [
   'method',
   'classMethod',
 ];
-
-// Regex to trim leading whitespace, colons, and hyphens from strings
-export const TRIMMABLE_PADDING_REGEX = /^[\s:-]+/;
 
 // Patterns to map deprecation "Type" text to AlertBox levels.
 // Order matters: first match wins.

@@ -16,6 +16,7 @@ www/out/
 
 # Generated Files
 packages/core/src/generators/metadata/maps/mdn.json
+packages/core/src/generators/json/generated/
 
 # The specification uses things that prettier would not
 # approve of, such as bullets with `*`
