@@ -127,6 +127,11 @@ main {
           overflow-wrap: anywhere;
           word-break: break-word;
         }
+        :where([data-theme='light'], [data-theme='light'] *)
+          a[role='menuitem']:hover
+          code {
+          color: var(--color-brand-900);
+        }
       }
     }
   }
