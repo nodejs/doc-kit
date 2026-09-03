@@ -1,5 +1,11 @@
 # @doc-kit/core
 
+## 1.1.0
+
+### Minor Changes
+
+- [#1057](https://github.com/nodejs/doc-kit/pull/1057) [`da5d8e6`](https://github.com/nodejs/doc-kit/commit/da5d8e63d0d33fe7a95c46afb8d5140d576827b4) Thanks [@avivkeller](https://github.com/avivkeller)! - feat: `dependent` generators and the `section-pages` generator
+
 ## 1.0.1
 
 ### Patch Changes
