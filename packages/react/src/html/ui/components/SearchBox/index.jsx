@@ -100,5 +100,5 @@ const SearchBox = ({ pathname }) => {
 
 export default withIsland(SearchBox, {
   name: 'SearchBox',
-  on: { interaction: 'pointerover,focusin,touchstart' },
+  on: { idle: true },
 });
