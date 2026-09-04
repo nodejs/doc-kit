@@ -68,7 +68,7 @@ The steps below will give you a general idea of how to prepare your local enviro
 5. **Install dependencies**
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 ### Repository Layout
