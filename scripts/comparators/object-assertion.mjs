@@ -18,11 +18,11 @@ export const details = (summary, diff) =>
 
 const getFileDiff = async file => {
   if (!baseFileSet.has(file)) {
-    return `- \`${file}\` added`;
+    return `- \`${file.replace(/\\/g, '/')}\` added`;
   }
 
   if (!headFileSet.has(file)) {
-    return `- \`${file}\` removed`;
+    return `- \`${file.replace(/\\/g, '/')}\` removed`;
   }
 
   const basePath = join(BASE, file);
