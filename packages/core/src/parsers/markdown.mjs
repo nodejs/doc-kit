@@ -22,9 +22,7 @@ const NODE_LTS_VERSION_REGEX = /Long Term Support/i;
 export const parseChangelog = async path => {
   const changelog = await loadFromURL(path);
 
-  const nodeMajors = Array.from(changelog.matchAll(NODE_VERSIONS_REGEX));
-
-  return nodeMajors.map(match => ({
+  return Array.from(changelog.matchAll(NODE_VERSIONS_REGEX), match => ({
     version: coerce(match[1]),
     isLts: NODE_LTS_VERSION_REGEX.test(match[2]),
   }));
@@ -43,7 +41,8 @@ export const parseIndex = async path => {
 
   const index = await loadFromURL(path);
 
-  const items = Array.from(index.matchAll(LIST_ITEM_REGEX));
-
-  return items.map(([, section, api]) => ({ section, api }));
+  return Array.from(index.matchAll(LIST_ITEM_REGEX), ([, section, api]) => ({
+    section,
+    api,
+  }));
 };
