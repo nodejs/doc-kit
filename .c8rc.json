@@ -5,6 +5,12 @@
     "**/fixtures",
     "packages/node-legacy/src/legacy-html/assets",
     "packages/react/src/html/ui",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "www/**",
+    "out/**",
+    "node/**",
+    "playwright.config.js",
+    "**/doc-kit.config.mjs",
+    "e2e/**"
   ]
 }
