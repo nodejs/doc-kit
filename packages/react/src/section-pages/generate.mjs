@@ -47,6 +47,10 @@ const rehome = (entry, shift, urls) => {
       promote(node);
     } else if (URL_NODE_TYPES.has(node.type) && node.url) {
       node.url = rewriteUrl(node.url, urls);
+    } else if (node.type === 'typeAnnotation') {
+      for (const link of node.data.links) {
+        link.href = rewriteUrl(link.href, urls);
+      }
     }
   });
 };
