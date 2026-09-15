@@ -5,7 +5,7 @@ import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { SemVer } from 'semver';
 
 mock.module('@node-core/rehype-shiki', {
-  namedExports: {
+  exports: {
     LANGS: [
       { name: 'javascript', aliases: ['js'], displayName: 'JavaScript' },
       { name: 'typescript', aliases: ['ts'], displayName: 'TypeScript' },

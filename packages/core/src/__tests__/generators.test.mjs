@@ -102,7 +102,7 @@ const syntheticGenerators = {
 };
 
 mock.module('../generators/loader.mjs', {
-  namedExports: {
+  exports: {
     resolveGeneratorSpecifier: specifier => specifier,
     loadGenerator: async specifier => syntheticGenerators[specifier],
     loadGenerators: async targets => {
@@ -132,18 +132,22 @@ mock.module('../generators/loader.mjs', {
 });
 
 mock.module('../threading/index.mjs', {
-  defaultExport: () => ({
-    run: async () => undefined,
-    destroy: async () => undefined,
-  }),
+  exports: {
+    default: () => ({
+      run: async () => undefined,
+      destroy: async () => undefined,
+    }),
+  },
 });
 
 mock.module('../threading/parallel.mjs', {
-  defaultExport: () => ({
-    async *stream() {
-      // Unused: the mocked generators return their own async generators
-    },
-  }),
+  exports: {
+    default: () => ({
+      async *stream() {
+        // Unused: the mocked generators return their own async generators
+      },
+    }),
+  },
 });
 
 const createGenerator = (await import('../generators.mjs')).default;

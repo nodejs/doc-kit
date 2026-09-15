@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it, mock, beforeEach } from 'node:test';
 
 const warnings = [];
-
 mock.module('../../../../logger/index.mjs', {
-  defaultExport: {
-    warn: message => warnings.push(message),
+  exports: {
+    default: {
+      warn: message => warnings.push(message),
+    },
   },
 });
 

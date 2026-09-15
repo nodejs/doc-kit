@@ -3,7 +3,7 @@ import { describe, it, mock, afterEach } from 'node:test';
 
 let fileContent = 'hello from file';
 mock.module('node:fs/promises', {
-  namedExports: {
+  exports: {
     readFile: async () => fileContent,
   },
 });

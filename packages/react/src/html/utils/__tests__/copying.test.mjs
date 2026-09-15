@@ -4,12 +4,12 @@ import { describe, it, mock, beforeEach } from 'node:test';
 
 const mockCp = mock.fn(() => Promise.resolve());
 mock.module('node:fs/promises', {
-  namedExports: { cp: mockCp },
+  exports: { cp: mockCp },
 });
 
 const mockLogError = mock.fn();
 mock.module('@doc-kit/core/logger/index.mjs', {
-  defaultExport: { error: mockLogError },
+  exports: { default: { error: mockLogError } },
 });
 
 const { copyStaticAssets } = await import('../copying.mjs');

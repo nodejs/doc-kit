@@ -3,7 +3,7 @@ import { describe, it, mock } from 'node:test';
 
 // Mock remark
 mock.module('../remark.mjs', {
-  namedExports: {
+  exports: {
     getRemarkRecma: () => ({
       runSync: () => ({
         body: [{ expression: 'mock-expression' }],

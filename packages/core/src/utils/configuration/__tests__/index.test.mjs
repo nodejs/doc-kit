@@ -36,7 +36,7 @@ const mockGenerators = {
 
 // Mock modules
 mock.module('../../../generators/loader.mjs', {
-  namedExports: {
+  exports: {
     resolveGeneratorSpecifier: specifier => specifier,
     loadGenerator: async specifier => mockGenerators[specifier],
     // Defaults are computed from the loaded generators; returning the full
@@ -45,14 +45,14 @@ mock.module('../../../generators/loader.mjs', {
   },
 });
 mock.module('../../../parsers/markdown.mjs', {
-  namedExports: {
+  exports: {
     parseChangelog: mockParseChangelog,
     parseIndex: mockParseIndex,
   },
 });
 
 mock.module('cosmiconfig', {
-  namedExports: { cosmiconfig: mockCosmiconfig },
+  exports: { cosmiconfig: mockCosmiconfig },
 });
 
 const {
