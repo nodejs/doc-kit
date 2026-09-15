@@ -5,6 +5,7 @@ import Article from '@node-core/ui-components/Containers/Article';
 import Banner from '../Banner';
 import styles from './index.module.css';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
+import { renderLabel } from '../../utils/renderLabel';
 
 import { navigation, chunks } from '#theme/config';
 import Footer from '#theme/Footer';
@@ -94,7 +95,7 @@ export default ({ metadata, headings, readingTime, children }) => {
                   <CrossLink
                     type="previous"
                     label="Previous"
-                    text={previousCrossLink.label}
+                    text={renderLabel(previousCrossLink.label)}
                     link={previousCrossLink.link}
                   />
                 )) || <div />}
@@ -103,7 +104,7 @@ export default ({ metadata, headings, readingTime, children }) => {
                   <CrossLink
                     type="next"
                     label="Next"
-                    text={nextCrossLink.label}
+                    text={renderLabel(nextCrossLink.label)}
                     link={nextCrossLink.link}
                   />
                 )}
