@@ -29,10 +29,14 @@ const applySystemTheme = () => applyTheme('system');
  * @returns {['system'|'light'|'dark', (next: 'system'|'light'|'dark') => void]}
  */
 export const useTheme = () => {
-  // Read stored preference once on mount; default to 'system'.
-  const [pref, setPref] = useState(() =>
-    server ? 'system' : (localStorage.getItem('theme') ?? 'system')
-  );
+  const [pref, setPref] = useState('system');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored) {
+      setPref(stored);
+    }
+  }, []);
 
   // Apply theme on every preference change, and if 'system',
   // also listen for OS-level color scheme changes.
