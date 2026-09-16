@@ -10,11 +10,7 @@ const Toggle = () => {
   const [themePreference, setThemePreference] = useTheme();
 
   return (
-    <ThemeToggle
-      onChange={setThemePreference}
-      currentTheme={themePreference}
-      key={themePreference}
-    />
+    <ThemeToggle onChange={setThemePreference} currentTheme={themePreference} />
   );
 };
 
