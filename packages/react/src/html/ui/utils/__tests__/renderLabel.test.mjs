@@ -49,7 +49,7 @@ describe('renderLabel', () => {
     const elements = result.filter(Boolean);
     const keys = elements.map(segment => segment.key);
 
-    assert.equal(new Set(keys).size, keys.length);
+    assert.deepEqual(keys, [0, 1, 2, 3]);
     assert.deepEqual(
       elements.map(segment => [segment.type, segment.props.children]),
       [
