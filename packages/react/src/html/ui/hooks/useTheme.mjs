@@ -33,7 +33,7 @@ export const useTheme = () => {
 
   useEffect(() => {
     const stored = localStorage.getItem('theme');
-    if (stored) {
+    if (stored === 'light' || stored === 'dark') {
       setPref(stored);
     }
   }, []);
