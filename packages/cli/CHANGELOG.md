@@ -1,5 +1,12 @@
 # @doc-kit/cli
 
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47), [`2a356c3`](https://github.com/nodejs/doc-kit/commit/2a356c356858c631c45f1826edfa42a24b435d51)]:
+  - @doc-kit/core@1.2.0
+
 ## 1.0.2
 
 ### Patch Changes

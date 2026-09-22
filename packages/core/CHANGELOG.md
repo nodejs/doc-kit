@@ -1,5 +1,15 @@
 # @doc-kit/core
 
+## 1.2.0
+
+### Minor Changes
+
+- [#1079](https://github.com/nodejs/doc-kit/pull/1079) [`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47) Thanks [@avivkeller](https://github.com/avivkeller)! - feat: the `json` and `json-all` generators
+
+### Patch Changes
+
+- [#1058](https://github.com/nodejs/doc-kit/pull/1058) [`2a356c3`](https://github.com/nodejs/doc-kit/commit/2a356c356858c631c45f1826edfa42a24b435d51) Thanks [@zeexzeex](https://github.com/zeexzeex)! - fix: respect `--log-level` in worker threads
+
 ## 1.1.0
 
 ### Minor Changes
