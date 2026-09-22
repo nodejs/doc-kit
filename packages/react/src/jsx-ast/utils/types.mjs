@@ -1,76 +1,6 @@
-import { QUERIES, UNIST } from '@doc-kit/core/utils/queries/index.mjs';
-import { DEFAULT_EXPRESSION } from '@doc-kit/core/utils/signature/constants.mjs';
-import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
+import { extractListItem } from '@doc-kit/core/utils/signature/extractListItem.mjs';
 
 import { renderAsJSX } from './render.mjs';
-import { TRIMMABLE_PADDING_REGEX } from '../constants.mjs';
-
-/**
- * Removes and returns the leading node if it's blank text.
- *
- * @param {Array<import('mdast').PhrasingContent>} nodes
- */
-export const shiftIfBlankText = nodes => {
-  if (nodes[0]?.type === 'text' && !nodes[0].value.trim()) {
-    nodes.shift();
-  }
-};
-
-/**
- * Extracts a property name from the front of a paragraph's children.
- * Mutates `nodes` by shifting consumed nodes and updates the current object.
- *
- * @param {Array<import('mdast').PhrasingContent>} nodes
- * @param {Object} current - The current property object being built
- */
-export const extractPropertyName = (nodes, current) => {
-  const first = nodes[0];
-  if (!first) {
-    return;
-  }
-
-  // `propName` → <code>propName</code>
-  if (first.type === 'inlineCode') {
-    nodes.shift();
-    current.name = first.value.trimEnd();
-    return;
-  }
-
-  if (first.type !== 'text') {
-    return;
-  }
-
-  // "Type:" / "Param:" etc.
-  const match = first.value.match(QUERIES.typedListStarters);
-  if (!match) {
-    return;
-  }
-
-  // Consume the matched prefix; drop the node entirely if nothing remains
-  first.value = first.value.slice(match[0].length);
-  shiftIfBlankText(nodes);
-
-  if (match[1]) {
-    current.name = match[1];
-    // NOTE: We currently only have one "kind". Should others be added for other
-    // starters, just replace the `undefined` with the other kinds.
-    current.kind = match[1] === 'Returns' ? 'return' : undefined;
-  }
-};
-
-/**
- * Consumes a leading type annotation from the front of `nodes` and compiles
- * it to a JSX expression (unions live inside a single annotation).
- *
- * @param {Array<import('mdast').PhrasingContent>} nodes
- */
-export const extractTypeAnnotation = nodes => {
-  if (nodes[0]?.type !== 'typeAnnotation') {
-    return undefined;
-  }
-
-  return renderAsJSX([nodes.shift()]);
-};
 
 /**
  * Parses each list item into a structured property descriptor
@@ -79,32 +9,38 @@ export const extractTypeAnnotation = nodes => {
  */
 export const parseListIntoProperties = node =>
   node?.children.map(item => {
-    const [{ children }, ...rest] = item.children;
+    const {
+      name,
+      prefix,
+      annotation,
+      text,
+      default: defaultValue,
+      items,
+    } = extractListItem(item);
+
     const current = {};
 
-    extractPropertyName(children, current);
-
-    // Strip stale whitespace left over after name extraction
-    shiftIfBlankText(children);
-
-    current.type = extractTypeAnnotation(children);
-
-    if (children.length > 0) {
-      children[0].value &&= children[0].value.replace(
-        TRIMMABLE_PADDING_REGEX,
-        ''
-      );
-
-      current.optional = DEFAULT_EXPRESSION.test(
-        transformNodesToString(children)
-      );
-
-      current.description = renderAsJSX(children);
+    if (prefix) {
+      current.name = prefix;
+      // NOTE: We currently only have one "kind". Should others be added for other
+      // starters, just replace the `undefined` with the other kinds.
+      current.kind = prefix === 'Returns' ? 'return' : undefined;
+    } else if (name !== undefined) {
+      current.name = name;
     }
 
-    current.children = parseListIntoProperties(
-      rest.find(UNIST.isLooselyTypedList)
-    );
+    // Unions live inside a single annotation
+    current.type = annotation && renderAsJSX([annotation]);
+
+    if (text.length > 0) {
+      current.optional = defaultValue !== undefined;
+      current.description = renderAsJSX(text);
+    }
+
+    current.children =
+      items.length > 0
+        ? parseListIntoProperties({ children: items })
+        : undefined;
 
     return current;
   });

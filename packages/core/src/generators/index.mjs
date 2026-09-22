@@ -10,6 +10,8 @@
  * which is how third-party generator packages are loaded.
  */
 export const publicGenerators = {
+  json: '@doc-kit/core/json',
+  'json-all': '@doc-kit/core/json-all',
   'json-simple': '@doc-kit/core/json-simple',
   'legacy-html': '@node-core/doc-kit-legacy/legacy-html',
   'legacy-html-all': '@node-core/doc-kit-legacy/legacy-html-all',

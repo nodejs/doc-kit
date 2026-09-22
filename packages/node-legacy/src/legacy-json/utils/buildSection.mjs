@@ -1,9 +1,9 @@
 import { enforceArray } from '@doc-kit/core/utils/array.mjs';
+import { buildHierarchy } from '@doc-kit/core/utils/hierarchy.mjs';
 import { getRemarkRehype as remark } from '@doc-kit/core/utils/remark.mjs';
 import { parseList } from '@doc-kit/core/utils/signature/parseList.mjs';
 import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 
-import { buildHierarchy } from './buildHierarchy.mjs';
 import { SECTION_TYPE_PLURALS, UNPROMOTED_KEYS } from '../constants.mjs';
 
 /**
@@ -163,7 +163,7 @@ export const createSectionBuilder = () => {
 
   /**
    * Handles a hierarchy node and updates the parent section.
-   * @param {import('../types.d.ts').HierarchizedEntry} node - The hierarchy node to process.
+   * @param {import('@doc-kit/core/utils/hierarchy.mjs').HierarchizedEntry} node - The hierarchy node to process.
    * @param {import('../types.d.ts').Section} parent - The parent section.
    */
   const handleEntry = ({ entry, children }, parent) => {
