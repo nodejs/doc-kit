@@ -37,7 +37,7 @@ export const inlineToMarkdown = (nodes, mdx) =>
     : blocksToMarkdown([createTree('paragraph', nodes)], mdx);
 
 /**
- * Collects the fenced code blocks of a body, in order.
+ * Collects the fenced code blocks of a body
  *
  * @param {Array<import('mdast').RootContent>} nodes
  * @returns {Array<import('../types').Example>}

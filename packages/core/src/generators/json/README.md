@@ -12,7 +12,7 @@ carries in `$schema`, and shipped with the package as
 npx @doc-kit/cli generate -t json -i "doc/api/*.md" -o out
 ```
 
-Files keep the input's directory layout: `doc/api/fs.md` becomes `out/fs.json`.
+Files keep the input's directory layout: `doc/api/some/fs.md` becomes `out/some/fs.json`.
 
 ## Configuring
 
@@ -129,7 +129,7 @@ Every node also has:
 }
 ```
 
-- A signature's `parameters` are the ones the heading declares, in order,
+- A signature's `parameters` are the ones the heading declares,
   described by the typed list under it. `optional` is set for parameters
   bracketed in the heading or documented with a default; `rest` for
   `...args`. `properties` are the nested list items: the properties of an

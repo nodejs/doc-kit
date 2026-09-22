@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://doc-kit.nodejs.org/schemas/api-doc/1.0.0.json",
+  "$id": "https://doc-kit.nodejs.org/schemas/api-doc/1.0.1.json",
   "title": "Document",
   "description": "One API documentation source file, as emitted by the doc-kit `json` generator. The file is the root of a tree of nodes, one per heading, in document order.",
   "allOf": [
@@ -326,7 +326,7 @@
         "examples": {
           "type": "array",
           "items": { "$ref": "#/definitions/Example" },
-          "description": "The fenced code blocks in the body, in order. They remain in the description too."
+          "description": "The fenced code blocks in the body. They remain in the description too."
         }
       },
       "required": [

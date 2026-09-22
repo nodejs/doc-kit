@@ -1,7 +1,7 @@
 'use strict';
 
 // See the `version` in schema.json. These values should be in sync.
-export const SCHEMA_VERSION = '1.0.0';
+export const SCHEMA_VERSION = '1.0.1';
 
 // Where a schema version is published.
 export const SCHEMA_URL =

@@ -159,7 +159,7 @@ export interface Entry {
    */
   summary: string;
   /**
-   * The fenced code blocks in the body, in order. They remain in the description too.
+   * The fenced code blocks in the body. They remain in the description too.
    */
   examples: Example[];
 }

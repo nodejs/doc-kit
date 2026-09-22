@@ -1,7 +1,7 @@
 import type { Document } from '../json/generated/schema';
 
 /**
- * Every document of a documentation set, in index order.
+ * Every document of a documentation set
  */
 export interface Bundle {
   /** The URL of the schema the bundle conforms to */
