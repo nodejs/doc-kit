@@ -1,5 +1,15 @@
 # @doc-kit/generator-react
 
+## 0.3.1
+
+### Patch Changes
+
+- [#1079](https://github.com/nodejs/doc-kit/pull/1079) [`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47) Thanks [@avivkeller](https://github.com/avivkeller)! - feat: the `json` and `json-all` generators
+
+- [#1102](https://github.com/nodejs/doc-kit/pull/1102) [`2611469`](https://github.com/nodejs/doc-kit/commit/26114692c914b78d2a58fb7b92a433c8a3214f52) Thanks [@avivkeller](https://github.com/avivkeller)! - fix(crosslinks): `renderLabel` the labels
+- Updated dependencies [[`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47), [`2a356c3`](https://github.com/nodejs/doc-kit/commit/2a356c356858c631c45f1826edfa42a24b435d51)]:
+  - @doc-kit/core@1.2.0
+
 ## 0.3.0
 
 ### Minor Changes
