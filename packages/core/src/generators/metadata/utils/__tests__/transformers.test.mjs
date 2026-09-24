@@ -47,8 +47,16 @@ describe('resolveTypeReference', () => {
     strictEqual(resolveTypeReference('vm.Module'), 'vm.html#class-vmmodule');
   });
 
+  it('uses the class prefix for names starting with an acronym', () => {
+    strictEqual(
+      resolveTypeReference('tls.TLSSocket'),
+      'tls.html#class-tlstlssocket'
+    );
+  });
+
   it('does not use the class prefix for non-class members', () => {
     strictEqual(resolveTypeReference('vm.constants'), 'vm.html#vmconstants');
+    strictEqual(resolveTypeReference('os.EOL'), 'os.html#oseol');
   });
 
   it('prefers the map over the dotted heuristic', () => {
