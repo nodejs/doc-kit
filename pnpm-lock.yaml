@@ -96,8 +96,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(supports-color@7.2.0)
       '@swc/html-wasm':
-        specifier: ^1.15.46
-        version: 1.15.47
+        specifier: ^1.16.1
+        version: 1.16.1
       '@swc/wasm':
         specifier: ^1.15.46
         version: 1.15.47
@@ -1320,8 +1320,8 @@ packages:
     resolution: {integrity: sha512-TeheYy0ILzBEI/CO55CP6zJCSdSWeRtGnHy8U8dWSUH4I68iqTsy7HkMktR4xakThc9jotkPQUXT4ITdbV7cHA==}
     engines: {node: '>=18'}
 
-  '@swc/html-wasm@1.15.47':
-    resolution: {integrity: sha512-nSEA6YPup2Ac7mf0uJVoWsMczj5bstA8q8hYOmsZc8WJFtQwSIlMi2sWRSqNWO/b8AF65vHHq585FMLxfaXOcw==}
+  '@swc/html-wasm@1.16.1':
+    resolution: {integrity: sha512-HLOwLVf5/E+AJJv8y3siVN2sX4bLyNwwBo2os1w0G9qSBwvBncK0KNXlrt8BsdbxOcpP2+FNqD6VMFO1WNHdSQ==}
 
   '@swc/wasm@1.15.47':
     resolution: {integrity: sha512-AdcxrBWz13mPnXxzxr5Lkxkgknwi0fAaArdehpYENB/iIds+WEWVcof3FJKfYAPP7TOeCsaSTKFTSsP3/YX7iw==}
@@ -4425,7 +4425,7 @@ snapshots:
 
   '@sindresorhus/base62@1.0.0': {}
 
-  '@swc/html-wasm@1.15.47': {}
+  '@swc/html-wasm@1.16.1': {}
 
   '@swc/wasm@1.15.47': {}
 
