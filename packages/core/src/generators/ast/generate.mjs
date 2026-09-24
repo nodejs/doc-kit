@@ -51,10 +51,15 @@ const isMdxFile = (path, content) => {
 export async function processChunk(inputSlice, itemIndices) {
   const filePaths = itemIndices.map(idx => inputSlice[idx]);
 
+  // Reads overlap within the chunk; parsing below stays sequential.
+  const contents = await Promise.all(
+    filePaths.map(([path]) => readFile(path, 'utf-8'))
+  );
+
   const results = [];
 
-  for (const [path, parent] of filePaths) {
-    const content = await readFile(path, 'utf-8');
+  for (const [i, [path, parent]] of filePaths.entries()) {
+    const content = contents[i];
 
     const mdx = isMdxFile(path, content);
 
