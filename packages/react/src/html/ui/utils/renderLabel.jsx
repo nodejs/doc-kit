@@ -16,11 +16,15 @@ export const renderLabel = label => {
   }
 
   // Odd-indexed segments sat between a pair of backticks.
-  return segments.map((segment, index) =>
-    index % 2 ? (
-      <code key={`code:${segment}`}>{segment}</code>
+  return segments.map((segment, index) => {
+    if (!segment) {
+      return null;
+    }
+
+    return index % 2 ? (
+      <code key={index}>{segment}</code>
     ) : (
-      <span key={`text:${segment}`}>{segment}</span>
-    )
-  );
+      <span key={index}>{segment}</span>
+    );
+  });
 };
