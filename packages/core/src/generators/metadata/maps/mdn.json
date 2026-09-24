@@ -475,6 +475,7 @@
   "magnetometer": "https://developer.mozilla.org/docs/Web/API/Magnetometer",
   "managedmediasource": "https://developer.mozilla.org/docs/Web/API/ManagedMediaSource",
   "managedsourcebuffer": "https://developer.mozilla.org/docs/Web/API/ManagedSourceBuffer",
+  "mathmlanchorelement": "https://developer.mozilla.org/docs/Web/API/MathMLAnchorElement",
   "mathmlelement": "https://developer.mozilla.org/docs/Web/API/MathMLElement",
   "mediacapabilities": "https://developer.mozilla.org/docs/Web/API/MediaCapabilities",
   "mediadeviceinfo": "https://developer.mozilla.org/docs/Web/API/MediaDeviceInfo",
