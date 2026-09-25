@@ -22,11 +22,13 @@ const buildSection = createSectionBuilder();
  */
 export async function processChunk(slicedInput, itemIndices) {
   const results = [];
+  const config = getConfig('legacy-json');
+  const sourceURL = config.sourceURL;
 
   for (const idx of itemIndices) {
     const { head, nodes } = slicedInput[idx];
 
-    results.push(buildSection(head, nodes));
+    results.push(buildSection(head, nodes, sourceURL));
   }
 
   return results;
