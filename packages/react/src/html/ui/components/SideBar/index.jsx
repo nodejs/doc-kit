@@ -2,6 +2,7 @@ import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
 import styles from './index.module.css';
+import useRemoteConfig from '../../hooks/useRemoteConfig.mjs';
 import withIsland from '../../islands/withIsland.jsx';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 import { renderLabel } from '../../utils/renderLabel.jsx';
@@ -109,8 +110,12 @@ const Sidebar = ({ metadata }) => {
     metadata.added ?? metadata.introduced_in
   );
 
-  // Filter pre-computed versions by compatibility and resolve per-page URL
-  const compatibleVersions = versions
+  // A remote config's `versions` supersede the build-time list
+  const remote = useRemoteConfig();
+  const availableVersions = remote?.versions ?? versions;
+
+  // Filter versions by compatibility and resolve per-page URL
+  const compatibleVersions = availableVersions
     .filter(v => v.major >= introducedMajor)
     .map(({ url, label }) => ({
       value: url.replace('{path}', metadata.path),
@@ -126,7 +131,7 @@ const Sidebar = ({ metadata }) => {
       title="Navigation"
     >
       {/* A site built without a `changelog` has no versions to switch between. */}
-      {versions.length > 0 && (
+      {availableVersions.length > 0 && (
         <div>
           <Select
             label={`${project} version`}

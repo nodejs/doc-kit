@@ -2,12 +2,17 @@ import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import Banner from '@node-core/ui-components/Common/Banner';
 
 import useBanners from '../hooks/useBanners.mjs';
+import useRemoteConfig from '../hooks/useRemoteConfig.mjs';
 import withIsland from '../islands/withIsland.jsx';
 
-import { remoteConfigUrl, version } from '#theme/config';
+import { version } from '#theme/config';
 
 const Banners = () => {
-  const [banner, dismissBanner] = useBanners(remoteConfigUrl, version.major);
+  const remote = useRemoteConfig();
+  const [banner, dismissBanner] = useBanners(
+    remote?.websiteBanners,
+    version.major
+  );
 
   return (
     banner && (

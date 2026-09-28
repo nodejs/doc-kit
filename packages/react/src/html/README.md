@@ -30,7 +30,10 @@ from the module pages' compiled content rather than built again from scratch.
 - `pageURL` {string} URL template for documentation page links.
   **Default:** `'{baseURL}{path}.html'`.
 - `remoteConfigUrl` {string} URL fetched client-side at runtime for remote site
-  config (currently used to power the announcement banner).
+  config. Its `websiteBanners` power the announcement banner, and its
+  `versions` (same shape as the `versions` export below) replace the build-time
+  version selector entries, so docs built for an older release still list the
+  releases that came after it.
   **Default:** none — no runtime fetch, no banner.
 - `head` {Object} Configurable `<meta>`, `<link>`, and raw markup for the
   document head. See [`head`](#head).
@@ -434,7 +437,7 @@ path, items? }` entries nested by heading depth, in document order. Empty
 - `languageDisplayNameMap` {Map<string, string>} Shiki language alias → display
   name map for code blocks.
 - `remoteConfigUrl` {string} Mirrors the configured `remoteConfigUrl` (fetched
-  client-side by `RemoteLoadableBanner` to load announcement banners).
+  client-side by the `useRemoteConfig` hook for the banner and version selector).
 - `server` {boolean} Whether the current bundle is the server build.
 
 ### Usage in custom components
