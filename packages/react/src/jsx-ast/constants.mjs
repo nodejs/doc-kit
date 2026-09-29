@@ -45,7 +45,9 @@ export const STABILITY_LEVELS = [
 ];
 
 // How deep should the Table of Contents go?
-export const TOC_MAX_HEADING_DEPTH = 3;
+// Capped at 4 to match the MetaBar component, which only renders depth 2-4
+// (many modules, e.g. diagnostics_channel, document class methods at depth 4)
+export const TOC_MAX_HEADING_DEPTH = 4;
 
 // 'Type: '.length
 export const TYPE_PREFIX_LENGTH = 6;

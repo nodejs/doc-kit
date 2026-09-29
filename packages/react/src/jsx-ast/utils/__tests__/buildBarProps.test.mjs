@@ -138,6 +138,27 @@ describe('extractHeadings', () => {
     );
   });
 
+  it('includes headings up to depth 4 and drops deeper ones', () => {
+    const entries = [2, 3, 4, 5].map(depth => ({
+      heading: {
+        depth,
+        data: {
+          text: `heading ${depth}`,
+          name: `heading ${depth}`,
+          slug: `heading-${depth}`,
+          type: 'misc',
+        },
+      },
+    }));
+
+    const result = extractHeadings(entries);
+
+    assert.deepEqual(
+      result.map(({ depth }) => depth),
+      [2, 3, 4]
+    );
+  });
+
   it('drops overload headings and links to the first signature', () => {
     const entries = [
       {
