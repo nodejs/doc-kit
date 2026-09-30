@@ -4,9 +4,9 @@ import { parseListItem } from '@doc-kit/core/utils/signature/parseList.mjs';
 import parseSignature from '@doc-kit/core/utils/signature/parseSignature.mjs';
 import { h as createElement } from 'hastscript';
 
-import { JSX_IMPORTS } from '../../html/constants.mjs';
 import { createJSXElement } from './ast.mjs';
 import { parseListIntoProperties } from './types.mjs';
+import { JSX_IMPORTS } from '../../html/constants.mjs';
 
 /**
  * Generates a string representation of a function or class signature.

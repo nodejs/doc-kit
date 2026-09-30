@@ -1,8 +1,8 @@
 import BaseCodeBox from '@node-core/ui-components/Common/BaseCodeBox';
 
-import { languageDisplayNameMap } from '#theme/config';
-
 import withIsland from '../islands/withIsland.jsx';
+
+import { languageDisplayNameMap } from '#theme/config';
 
 /**
  * Get the display name of a language

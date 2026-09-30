@@ -1,5 +1,4 @@
 import type { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
-
 import type { PageContent } from './utils/buildContent.mjs';
 
 // What the worker returns for a page: the fragment serialized to JSX code.

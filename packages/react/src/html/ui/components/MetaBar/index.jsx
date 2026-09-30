@@ -3,11 +3,11 @@ import Badge from '@node-core/ui-components/Common/Badge';
 import MetaBar from '@node-core/ui-components/Containers/MetaBar';
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
-import { editURL, chunks } from '#theme/config';
-
+import styles from './index.module.css';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
-import styles from './index.module.css';
+
+import { editURL, chunks } from '#theme/config';
 
 const iconMap = {
   JSON: CodeBracketIcon,

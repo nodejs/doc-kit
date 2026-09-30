@@ -14,7 +14,7 @@ const textNode = text => u('text', text);
 
 const createMockElement = (headingText, description) => ({
   heading: { data: { text: headingText } },
-  // oxlint-disable-next-line no-sparse-arrays
+  // eslint-disable-next-line no-sparse-arrays
   content: u('root', [, u('paragraph', [textNode(description)])]),
 });
 

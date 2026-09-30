@@ -16,6 +16,10 @@ import { slice } from 'mdast-util-slice-markdown';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
+import { createJSXElement } from './ast.mjs';
+import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
+import { getRemarkRecma as remark } from './remark.mjs';
+import { renderAsJSX } from './render.mjs';
 import { JSX_IMPORTS } from '../../html/constants.mjs';
 import {
   STABILITY_LEVELS,
@@ -26,10 +30,6 @@ import {
   TYPES_WITH_METHOD_SIGNATURES,
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
-import { createJSXElement } from './ast.mjs';
-import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
-import { getRemarkRecma as remark } from './remark.mjs';
-import { renderAsJSX } from './render.mjs';
 import {
   insertSignatureCodeBlock,
   createSignatureTable,

@@ -1,8 +1,7 @@
-import { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 import { GlobalConfiguration } from '@doc-kit/core/utils/configuration/types';
-import { SemVer } from 'semver';
-
+import { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 import { Configuration } from '../types';
+import { SemVer } from 'semver';
 
 declare module '#theme/config' {
   // From global configuration

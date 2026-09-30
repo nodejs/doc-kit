@@ -1,6 +1,12 @@
 import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
+import styles from './index.module.css';
+import useRemoteConfig from '../../hooks/useRemoteConfig.mjs';
+import withIsland from '../../islands/withIsland.jsx';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
+import { renderLabel } from '../../utils/renderLabel.jsx';
+
 import {
   project,
   version,
@@ -9,12 +15,6 @@ import {
   pages,
   chunks,
 } from '#theme/config';
-
-import useRemoteConfig from '../../hooks/useRemoteConfig.mjs';
-import withIsland from '../../islands/withIsland.jsx';
-import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
-import { renderLabel } from '../../utils/renderLabel.jsx';
-import styles from './index.module.css';
 
 /**
  * Extracts the major version number from a version string.

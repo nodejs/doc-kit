@@ -2,16 +2,16 @@ import CrossLink from '@node-core/ui-components/Common/BaseCrossLink';
 import TableOfContents from '@node-core/ui-components/Common/TableOfContents';
 import Article from '@node-core/ui-components/Containers/Article';
 
+import Banner from '../Banner';
+import styles from './index.module.css';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
+import { renderLabel } from '../../utils/renderLabel';
+
 import { navigation, chunks } from '#theme/config';
 import Footer from '#theme/Footer';
 import MetaBar from '#theme/Metabar';
 import NavBar from '#theme/Navigation';
 import SideBar from '#theme/Sidebar';
-
-import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
-import { renderLabel } from '../../utils/renderLabel';
-import Banner from '../Banner';
-import styles from './index.module.css';
 
 /**
  * Flattens a section tree into document order.
