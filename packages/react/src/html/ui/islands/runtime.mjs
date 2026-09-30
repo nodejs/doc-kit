@@ -4,12 +4,12 @@ import { h, hydrate, render } from 'preact';
 import loaders from './loaders.mjs';
 
 /**
- * The islands hydrated so far, so that those a client-side navigation is about
- * to discard can be unmounted first.
+ * The islands hydrated so far. Exported so the router can save their scroll
+ * positions before a navigation discards them, without querying the document.
  *
  * @type {Set<HTMLElement>}
  */
-const hydrated = new Set();
+export const hydrated = new Set();
 
 /**
  * The components loaded so far, by island name. Even an `import()` of a module

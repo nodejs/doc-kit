@@ -158,7 +158,7 @@ export default () => {
     ),
 
     createImportDeclaration(
-      'registerIslands, unmountIslands',
+      'registerIslands, unmountIslands, hydrated',
       resolve(ROOT, './ui/islands/runtime.mjs'),
       false
     ),
@@ -178,7 +178,7 @@ export default () => {
 
     // Navigations between pages swap the page in place, so the islands of the
     // page being left have to be unmounted rather than simply dropped
-    'startRouter({ unmount: unmountIslands });',
+    'startRouter({ unmount: unmountIslands, islands: hydrated });',
   ].join('\n');
 
   return { buildLibraryProgram, buildPageProgram, clientProgram };
