@@ -163,9 +163,9 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
  * statically import as preload hints (as the bundler would inject them), and
  * the stylesheets as links.
  *
- * The entry scripts also carry the root itself, which tells the client-side
- * router (see `ui/router.mjs`) which links lead to pages of the site. It rides
- * along with the scripts because every template has to render them.
+ * Also emits a `<script type="application/json" data-router>` tag carrying the
+ * root and asset URLs so the client-side router can read them without querying
+ * the DOM for script attributes or re-discovering loaded scripts and stylesheets.
  *
  * @param {import('../types').ClientAssets} assets - Output-relative asset paths
  * @param {string} root - The page's root (see {@link resolvePageRoot})
@@ -173,9 +173,14 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
  */
 export const buildAssetTags = ({ scripts, preloads, stylesheets }, root) =>
   [
+    [
+      `<script type="application/json" data-router>${JSON.stringify({
+        root,
+        assets: [...scripts, ...stylesheets].map(file => `${root}${file}`),
+      })}</script>`,
+    ],
     scripts.map(
-      file =>
-        `<script type="module" crossorigin src="${root}${file}" data-root="${root}"></script>`
+      file => `<script type="module" crossorigin src="${root}${file}"></script>`
     ),
     preloads.map(file =>
       renderTag('link', {

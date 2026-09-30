@@ -360,8 +360,9 @@ describe('web generate', () => {
     assert.match(html, /<article data-custom-ssr>fs:1<\/article>/);
     assert.match(
       html,
-      /<script type=module crossorigin src=\.\/custom\/index\.js data-root=\.\/>/
+      /<script type=module crossorigin src=\.\/custom\/index\.js>/
     );
+    assert.match(html, /data-router/);
     // The adapter reported no fonts, so there are none to preload
     assert.doesNotMatch(html, /as=font/);
     assert.match(

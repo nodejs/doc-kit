@@ -258,14 +258,14 @@ describe('buildAssetTags', () => {
     stylesheets: ['assets/style-ghi.css'],
   };
 
-  it('resolves every asset against the page root, scripts first', () => {
+  it('resolves every asset against the page root, router data tag first', () => {
     const tags = buildAssetTags(assets, '../').split('\n');
 
     assert.deepStrictEqual(
       tags.map(tag => tag.trim()),
       [
-        // The scripts also tell the client-side router where the site starts
-        '<script type="module" crossorigin src="../assets/client-abc.js" data-root="../"></script>',
+        `<script type="application/json" data-router>${JSON.stringify({ root: '../', assets: ['../assets/client-abc.js', '../assets/style-ghi.css'] })}</script>`,
+        '<script type="module" crossorigin src="../assets/client-abc.js"></script>',
         '<link rel="modulepreload" crossorigin href="../assets/shared-def.js" />',
         '<link rel="stylesheet" crossorigin href="../assets/style-ghi.css" />',
       ]
@@ -280,10 +280,10 @@ describe('buildAssetTags', () => {
     );
   });
 
-  it('renders nothing for an empty asset list', () => {
+  it('renders only the router tag for an empty asset list', () => {
     assert.strictEqual(
       buildAssetTags({ scripts: [], preloads: [], stylesheets: [] }, './'),
-      ''
+      '<script type="application/json" data-router>{"root":"./","assets":[]}</script>'
     );
   });
 });
