@@ -206,7 +206,8 @@
     {
       "files": [
         "packages/node-legacy/src/legacy-html/assets/*.js",
-        "packages/react/src/html/ui/**/*"
+        "packages/react/src/html/ui/**/*",
+        "e2e/**/*.spec.js"
       ],
       "globals": {
         "AsyncDisposableStack": "readonly",

@@ -1,7 +1,48 @@
 import { create, search, load } from '@orama/orama';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 import { relativeOrAbsolute } from '../utils/relativeOrAbsolute.mjs';
+
+/**
+ * Search clients by the URL of their data, so that the index is downloaded and
+ * loaded once per visit rather than once per page navigated to.
+ *
+ * @type {Map<string, import('@orama/orama').AnyOrama>}
+ */
+const clients = new Map();
+
+/**
+ * Creates a search client whose data is fetched on its first search.
+ *
+ * @param {string} url - The search data's absolute URL: the client outlives
+ * the page it was created on, which a relative URL would resolve against.
+ */
+const createClient = url => {
+  const db = create({
+    schema: {},
+  });
+
+  let loaded;
+
+  // TODO(@avivkeller): Ask Orama to support this functionality natively
+  /**
+   * @param {any} options
+   */
+  db.search = async options => {
+    loaded ??= fetch(url)
+      .then(response => response.ok && response.json())
+      .then(data => load(db, data))
+      .catch(() => {
+        loaded = undefined;
+      });
+
+    await loaded;
+
+    return search(db, options);
+  };
+
+  return db;
+};
 
 /**
  * Hook for initializing and managing Orama search database.
@@ -11,44 +52,18 @@ import { relativeOrAbsolute } from '../utils/relativeOrAbsolute.mjs';
  */
 export default pathname => {
   const [client, setClient] = useState(null);
-  const loaded = useRef(null);
 
   useEffect(() => {
-    // Reset loaded state when pathname changes
-    loaded.current = null;
+    const url = new URL(
+      relativeOrAbsolute('/orama-db.json', pathname),
+      location.href
+    ).href;
 
-    // Create the database instance
-    const db = create({
-      schema: {},
-    });
+    if (!clients.has(url)) {
+      clients.set(url, createClient(url));
+    }
 
-    /**
-     * Ensures the search data is loaded.
-     * @returns {Promise<void>} A promise that resolves when the data is loaded.
-     */
-    const ensureLoaded = () => {
-      if (!loaded.current) {
-        loaded.current = fetch(relativeOrAbsolute('/orama-db.json', pathname))
-          .then(response => response.ok && response.json())
-          .then(data => load(db, data))
-          .catch(() => {
-            loaded.current = null;
-          });
-      }
-
-      return loaded.current;
-    };
-
-    // TODO(@avivkeller): Ask Orama to support this functionality natively
-    /**
-     * @param {any} options
-     */
-    db.search = async options => {
-      await ensureLoaded();
-      return search(db, options);
-    };
-
-    queueMicrotask(() => setClient(db));
+    queueMicrotask(() => setClient(clients.get(url)));
   }, [pathname]);
 
   return client;

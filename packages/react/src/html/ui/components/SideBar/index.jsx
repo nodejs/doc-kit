@@ -129,7 +129,6 @@ const Sidebar = ({ metadata }) => {
       pathname={`${metadata.basename}.html`}
       groups={buildGroups(metadata)}
       onSelect={redirect}
-      as={props => <a {...props} rel="prefetch" />}
       title="Navigation"
     >
       {/* A site built without a `changelog` has no versions to switch between. */}
