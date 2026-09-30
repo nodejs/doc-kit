@@ -17,7 +17,7 @@ const GENERATOR = new URL(
 export const SCHEMA_PATH = new URL('schema.json', GENERATOR);
 export const TYPES_PATH = new URL('generated/schema.d.ts', GENERATOR);
 
-const PRETTIER_CONFIG = new URL('../.prettierrc.json', import.meta.url);
+const FORMAT_CONFIG = new URL('../.oxfmtrc.json', import.meta.url);
 
 /**
  * Compiles the schema into the TypeScript source of its types.
@@ -27,13 +27,34 @@ const PRETTIER_CONFIG = new URL('../.prettierrc.json', import.meta.url);
 export const compileSchemaTypes = async () => {
   const schema = JSON.parse(await readFile(SCHEMA_PATH, 'utf-8'));
 
-  // The repository's formatting, minus the per-path overrides
-  const style = JSON.parse(await readFile(PRETTIER_CONFIG, 'utf-8'));
-  delete style.overrides;
+  // json-schema-to-typescript passes these options to Prettier internally.
+  // Preserve its own 120-column default for the generated declaration.
+  const {
+    tabWidth,
+    useTabs,
+    semi,
+    singleQuote,
+    jsxSingleQuote,
+    trailingComma,
+    bracketSpacing,
+    bracketSameLine,
+    arrowParens,
+  } = JSON.parse(await readFile(FORMAT_CONFIG, 'utf-8'));
+  const style = {
+    tabWidth,
+    useTabs,
+    semi,
+    singleQuote,
+    jsxSingleQuote,
+    trailingComma,
+    bracketSpacing,
+    bracketSameLine,
+    arrowParens,
+  };
 
   return compile(schema, 'Document', {
     bannerComment:
-      '/* eslint-disable */\n' +
+      '/* oxlint-disable */\n' +
       '/**\n' +
       ' * Generated from `schema.json` by `scripts/generate-json-types.mjs`.\n' +
       ' * Do not edit: change the schema and regenerate instead.\n' +

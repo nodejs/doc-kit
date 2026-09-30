@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 
-import { MDN_COMPAT_URL, MDN_TYPE_MAP } from './constants.mjs';
 import { loadFromURL } from '../packages/core/src/utils/loaders.mjs';
+import { MDN_COMPAT_URL, MDN_TYPE_MAP } from './constants.mjs';
 
 const compat = JSON.parse(await loadFromURL(MDN_COMPAT_URL));
 

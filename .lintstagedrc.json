@@ -1,4 +1,4 @@
 {
-  "*.{js,mjs,jsx}": ["eslint --fix", "prettier --write"],
-  "*.{json,yml}": ["prettier --write"]
+  "*.{js,mjs,jsx}": ["oxlint --fix", "oxfmt"],
+  "*.{json,yml}": ["oxfmt"]
 }

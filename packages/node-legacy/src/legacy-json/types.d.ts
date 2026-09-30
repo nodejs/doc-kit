@@ -1,6 +1,6 @@
-import { ListItem } from '@types/mdast';
 import { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 import { MethodSignature } from '@doc-kit/core/utils/signature/types';
+import { ListItem } from '@types/mdast';
 
 /**
  * Contains metadata related to changes, additions, removals, and deprecated statuses of an entry.
@@ -134,7 +134,10 @@ export interface SignatureSection extends SectionBase {
  * All possible types of sections.
  */
 export type Section =
-  SignatureSection | PropertySection | EventSection | MiscSection;
+  | SignatureSection
+  | PropertySection
+  | EventSection
+  | MiscSection;
 
 /**
  * Represents a property section in the API documentation.

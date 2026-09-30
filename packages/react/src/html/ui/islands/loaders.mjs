@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/require-jsdoc -- each entry is a bare dynamic import */
+/* oxlint-disable jsdoc-js/require-jsdoc -- each entry is a bare dynamic import */
 
 /**
  * @type {Record<string, () => Promise<{ default: import('preact').ComponentType }>>}
