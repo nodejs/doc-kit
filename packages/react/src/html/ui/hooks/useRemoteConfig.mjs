@@ -21,9 +21,9 @@ import { remoteConfigUrl } from '#theme/config';
  * it. Islands hydrate as separate roots, so no context provider could span
  * them; module scope is the shared store.
  *
- * @type {Promise<RemoteConfig | null> | null}
+ * @type {Promise<RemoteConfig | undefined> | undefined}
  */
-let remoteConfig = null;
+let remoteConfig;
 
 /**
  * Fetches the remote config, unless it is already loaded or on its way.
@@ -35,9 +35,7 @@ const loadRemoteConfig = () => {
     .then(response => response.json())
     .catch(() => {
       // Not kept, so that the next island to mount tries again
-      remoteConfig = null;
-
-      return null;
+      remoteConfig = undefined;
     });
 
   return remoteConfig;
@@ -46,12 +44,12 @@ const loadRemoteConfig = () => {
 /**
  * Fetches the remote site configuration once the component mounts.
  *
- * @returns {RemoteConfig | null} `null` until loaded, or when there is no
- * `remoteConfigUrl` or the fetch fails.
+ * @returns {RemoteConfig | undefined} `undefined` until loaded, or when there
+ * is no `remoteConfigUrl` or the fetch fails.
  */
 export default () => {
   const [config, setConfig] = useState(
-    /** @type {RemoteConfig | null} */ (null)
+    /** @type {RemoteConfig | undefined} */ (undefined)
   );
 
   // A layout effect, so that a page navigated to client-side renders with a

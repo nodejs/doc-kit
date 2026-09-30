@@ -56,12 +56,12 @@ export default pathname => {
   const [db, setDb] = useState(null);
 
   useEffect(() => {
-    const url = new URL(
+    const { href } = new URL(
       relativeOrAbsolute('/orama-db.json', pathname),
       location.href
-    ).href;
+    );
 
-    queueMicrotask(() => setDb(getClient(url)));
+    queueMicrotask(() => setDb(getClient(href)));
   }, [pathname]);
 
   return db;
