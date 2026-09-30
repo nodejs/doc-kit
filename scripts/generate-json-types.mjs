@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url';
 
 import { compile } from 'json-schema-to-typescript';
 
+import viteConfig from '../vite.config.ts';
+
 const GENERATOR = new URL(
   '../packages/core/src/generators/json/',
   import.meta.url
@@ -16,8 +18,6 @@ const GENERATOR = new URL(
 
 export const SCHEMA_PATH = new URL('schema.json', GENERATOR);
 export const TYPES_PATH = new URL('generated/schema.d.ts', GENERATOR);
-
-const FORMAT_CONFIG = new URL('../.oxfmtrc.json', import.meta.url);
 
 /**
  * Compiles the schema into the TypeScript source of its types.
@@ -39,7 +39,7 @@ export const compileSchemaTypes = async () => {
     bracketSpacing,
     bracketSameLine,
     arrowParens,
-  } = JSON.parse(await readFile(FORMAT_CONFIG, 'utf-8'));
+  } = viteConfig.fmt;
   const style = {
     tabWidth,
     useTabs,

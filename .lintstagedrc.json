@@ -1,4 +1,4 @@
 {
-  "*.{js,mjs,jsx}": ["oxlint --fix", "oxfmt"],
-  "*.{json,yml}": ["oxfmt"]
+  "*.{js,mjs,jsx}": ["vp lint --fix", "vp fmt"],
+  "*.{json,yml}": ["vp fmt"]
 }
