@@ -1,5 +1,11 @@
 # @doc-kit/core
 
+## 1.2.1
+
+### Patch Changes
+
+- [#1105](https://github.com/nodejs/doc-kit/pull/1105) [`615aabe`](https://github.com/nodejs/doc-kit/commit/615aabeb1955a8028146e26fd4589c1172f58367) Thanks [@ryzrr](https://github.com/ryzrr)! - fix(metadata): link class types whose name starts with an acronym
+
 ## 1.2.0
 
 ### Minor Changes
