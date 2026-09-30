@@ -62,26 +62,26 @@ export const withoutFragment = href => href.split('#')[0];
  *
  * @param {Document} doc
  * @param {string} base - The document's URL, for relative references
- * @returns {Array<string>}
+ * @returns {Array<URL>}
  */
 const getAssets = (doc, base) =>
   [...doc.querySelectorAll('script[src], link[rel~="stylesheet"][href]')].map(
     element =>
       new URL(element.getAttribute('src') ?? element.getAttribute('href'), base)
-        .href
   );
 
 /**
- * Keys the islands of the document by name and occurrence, so that the same
- * island is found again on the next page.
+ * Keys an iterable of islands by name and occurrence, so that the same island
+ * is found again on the next page.
  *
+ * @param {Iterable<HTMLElement>} source
  * @returns {Map<string, HTMLElement>}
  */
-const getIslands = () => {
+const keyIslands = source => {
   const counts = new Map();
 
   return new Map(
-    [...document.querySelectorAll('is-land[data-island-name]')].map(island => {
+    [...source].map(island => {
       const name = island.getAttribute('data-island-name');
       counts.set(name, (counts.get(name) ?? 0) + 1);
 
@@ -117,45 +117,11 @@ const updateHead = doc => {
 };
 
 /**
- * Announces the new page to assistive technology, as loading it would have.
- */
-const announcePage = () => {
-  const region = document.createElement('div');
-
-  region.setAttribute('aria-live', 'assertive');
-  region.setAttribute('aria-atomic', 'true');
-  region.style.cssText =
-    'position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap';
-
-  document.body.append(region);
-
-  // A region filled as it is inserted is not announced
-  setTimeout(() => (region.textContent = document.title), 100);
-};
-
-/**
- * Runs a DOM update inside a view transition, where supported and wanted, so
- * the old page cross-fades into the new one.
+ * Runs a DOM update, keeping the call-site uniform for a future transition.
  *
  * @param {() => void} update
- * @returns {Promise<void> | undefined} Settles once the DOM is updated
  */
-const transition = update => {
-  if (
-    !document.startViewTransition ||
-    matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) {
-    return update();
-  }
-
-  const { ready, updateCallbackDone } = document.startViewTransition(update);
-
-  // Skipped transitions (the tab is hidden, or another navigation started)
-  // still update the DOM; only their animation is lost
-  ready.catch(() => {});
-
-  return updateCallbackDone;
-};
+const transition = update => update();
 
 /**
  * Starts handling navigations between the pages of the site, unless the
@@ -165,8 +131,10 @@ const transition = update => {
  * @param {object} options
  * @param {(root: Node) => void} options.unmount - Unmounts the components
  * rendered inside the part of the document that is about to be discarded.
+ * @param {Set<HTMLElement>} options.islands - The runtime's set of hydrated
+ * islands; used to save scroll positions before the body is replaced.
  */
-export const startRouter = ({ unmount }) => {
+export const startRouter = ({ unmount, islands }) => {
   const script = document.querySelector('script[data-root]');
 
   if (!('navigation' in window) || !script) {
@@ -177,7 +145,9 @@ export const startRouter = ({ unmount }) => {
 
   // The document's head is never replaced (see `PAGE_HEAD`), so the relative
   // URLs in it are resolved while they still point where they did at load
-  const assets = new Set(getAssets(document, location.href));
+  const assets = new Set(
+    getAssets(document, location.href).map(url => url.href)
+  );
 
   /** @type {Map<string, { page: Promise<Page | null>, expires: number }>} */
   const pages = new Map();
@@ -233,7 +203,9 @@ export const startRouter = ({ unmount }) => {
   const parsePage = ({ url, html }) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
 
-    return getAssets(doc, url).every(asset => assets.has(asset)) ? doc : null;
+    return getAssets(doc, url).every(asset => assets.has(asset.href))
+      ? doc
+      : null;
   };
 
   /**
@@ -244,7 +216,7 @@ export const startRouter = ({ unmount }) => {
    */
   const showPage = (doc, scroll) => {
     // The sidebar (like any island that scrolls) stays where it was
-    const scrolled = [...getIslands()]
+    const scrolled = [...keyIslands(islands)]
       .filter(([, island]) => island.scrollTop || island.scrollLeft)
       .map(([key, { scrollLeft, scrollTop }]) => [key, scrollLeft, scrollTop]);
 
@@ -256,14 +228,15 @@ export const startRouter = ({ unmount }) => {
     // from animating again with every page
     document.documentElement.setAttribute('data-navigated', '');
 
-    const islands = getIslands();
+    const next = keyIslands(
+      document.body.querySelectorAll('is-land[data-island-name]')
+    );
 
     for (const [key, left, top] of scrolled) {
-      islands.get(key)?.scrollTo({ left, top, behavior: 'instant' });
+      next.get(key)?.scrollTo({ left, top, behavior: 'instant' });
     }
 
     scroll();
-    announcePage();
   };
 
   /**
@@ -329,13 +302,7 @@ export const startRouter = ({ unmount }) => {
           return;
         }
 
-        await transition(() => {
-          // Another navigation superseded this one while the old page was
-          // being captured for the transition
-          if (!event.signal.aborted) {
-            showPage(doc, () => event.scroll());
-          }
-        });
+        transition(() => showPage(doc, () => event.scroll()));
       },
     });
   });
