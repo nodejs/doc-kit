@@ -179,7 +179,7 @@ export interface MiscSection extends SectionBase {
 }
 
 export type Generator = GeneratorMetadata<
-  {},
+  { sourceURL: string },
   Generate<Array<MetadataEntry>, AsyncGenerator<Section>>,
   ProcessChunk<{ head: MetadataEntry; nodes: Array<MetadataEntry> }, Section>
 >;

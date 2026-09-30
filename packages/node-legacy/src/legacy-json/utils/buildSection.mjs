@@ -1,4 +1,5 @@
 import { enforceArray } from '@doc-kit/core/utils/array.mjs';
+import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 import { buildHierarchy } from '@doc-kit/core/utils/hierarchy.mjs';
 import { getRemarkRehype as remark } from '@doc-kit/core/utils/remark.mjs';
 import { parseList } from '@doc-kit/core/utils/signature/parseList.mjs';
@@ -183,14 +184,14 @@ export const createSectionBuilder = () => {
    * Builds the module section from head metadata and entries.
    * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} head - The head metadata entry.
    * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - The list of metadata entries.
+   * @param {string} sourceURL - The template URL for the generated API source files.
    * @returns {import('../types.d.ts').ModuleSection} The constructed module section.
    */
-  return (head, entries) => {
+  return (head, entries, sourceURL) => {
     const rootModule = {
       type: 'module',
       api: head.api,
-      // TODO(@avivkeller): This should be configurable
-      source: `doc/api/${head.api}.md`,
+      source: populate(sourceURL, { path: `${head.api}.md` }),
     };
 
     buildHierarchy(entries).forEach(node => handleEntry(node, rootModule));
