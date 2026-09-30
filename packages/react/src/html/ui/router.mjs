@@ -22,7 +22,7 @@ import {
   ROUTER_HOVER_DELAY,
   ROUTER_MAX_PAGES,
   ROUTER_PAGE_LIFETIME,
-} from '../constants.mjs';
+} from './constants.mjs';
 import { fetchPage, parsePage, showPage, transition } from './page.mjs';
 
 /**
