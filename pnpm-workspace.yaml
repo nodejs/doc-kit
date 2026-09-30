@@ -9,7 +9,5 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - cf@1.0.0-beta.6
-  - miniflare@5.20260926.1-alpha
-  - wrangler@4.144.0
 
 minimumReleaseAgeExcludePrune: true
