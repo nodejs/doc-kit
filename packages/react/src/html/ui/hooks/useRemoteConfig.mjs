@@ -17,36 +17,30 @@ import { remoteConfigUrl } from '#theme/config';
  */
 
 /**
- * The remote configs fetched so far, by URL. Each is fetched once per visit and
- * shared by every island that reads it, on every page navigated to client-side:
- * islands hydrate as separate roots, so no context provider could span them.
+ * The remote config fetched for this visit, shared by every island that reads
+ * it. Islands hydrate as separate roots, so no context provider could span
+ * them; module scope is the shared store.
  *
- * @type {Map<string, Promise<RemoteConfig | null>>}
+ * @type {Promise<RemoteConfig | null> | null}
  */
-const remoteConfigs = new Map();
+let remoteConfig = null;
 
 /**
- * Fetches a remote config, unless it is already loaded or on its way.
+ * Fetches the remote config, unless it is already loaded or on its way.
  *
- * @param {string} url
  * @returns {Promise<RemoteConfig | null>}
  */
-const loadRemoteConfig = url => {
-  if (!remoteConfigs.has(url)) {
-    remoteConfigs.set(
-      url,
-      fetch(url)
-        .then(response => response.json())
-        .catch(() => {
-          // Not kept, so that the next island to mount tries again
-          remoteConfigs.delete(url);
+const loadRemoteConfig = () => {
+  remoteConfig ??= fetch(remoteConfigUrl)
+    .then(response => response.json())
+    .catch(() => {
+      // Not kept, so that the next island to mount tries again
+      remoteConfig = null;
 
-          return null;
-        })
-    );
-  }
+      return null;
+    });
 
-  return remoteConfigs.get(url);
+  return remoteConfig;
 };
 
 /**
@@ -70,7 +64,7 @@ export default () => {
 
     let mounted = true;
 
-    loadRemoteConfig(remoteConfigUrl).then(loaded => {
+    loadRemoteConfig().then(loaded => {
       if (mounted) {
         setConfig(loaded);
       }
