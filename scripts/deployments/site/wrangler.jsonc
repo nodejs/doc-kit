@@ -1,0 +1,22 @@
+{
+  "name": "doc-kit",
+  "account_id": "07be8d2fbc940503ca1be344714cb0d1",
+  "compatibility_date": "2026-08-11",
+
+  "assets": {
+    "directory": "../../../www/out",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+  },
+
+  "routes": [
+    {
+      "pattern": "doc-kit.nodejs.org",
+      "custom_domain": true,
+    },
+  ],
+
+  "observability": {
+    "enabled": true,
+  },
+}
