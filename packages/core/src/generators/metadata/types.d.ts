@@ -1,5 +1,5 @@
-import type { Position } from 'unist';
 import type { Root, Node, Data, Blockquote, Heading } from 'mdast';
+import type { Position } from 'unist';
 
 export type Generator = GeneratorMetadata<
   {},

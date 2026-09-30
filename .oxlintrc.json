@@ -4,10 +4,6 @@
   "jsPlugins": [
     "eslint-plugin-react-x",
     {
-      "name": "import-x-js",
-      "specifier": "eslint-plugin-import-x"
-    },
-    {
       "name": "jsdoc-js",
       "specifier": "eslint-plugin-jsdoc"
     }
@@ -148,25 +144,7 @@
         "curly": ["error", "all"],
         "import/namespace": "off",
         "import/no-named-as-default": "off",
-        "import/no-named-as-default-member": "off",
-        "import-x-js/order": [
-          "error",
-          {
-            "groups": [
-              "builtin",
-              "external",
-              "internal",
-              ["sibling", "parent"],
-              "index",
-              "unknown"
-            ],
-            "newlines-between": "always",
-            "alphabetize": {
-              "order": "asc",
-              "caseInsensitive": true
-            }
-          }
-        ]
+        "import/no-named-as-default-member": "off"
       },
       "jsPlugins": ["eslint-plugin-react-x"],
       "globals": {
