@@ -1,7 +1,13 @@
 packages:
   - 'packages/*'
+  - 'scripts/deployments'
 
 allowBuilds:
+  esbuild: false
   unrs-resolver: false
+  workerd: false
+
+minimumReleaseAgeExclude:
+  - cf@1.0.0-beta.6
 
 minimumReleaseAgeExcludePrune: true
