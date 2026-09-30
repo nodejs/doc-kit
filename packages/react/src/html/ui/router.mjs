@@ -23,17 +23,7 @@ import {
   ROUTER_MAX_PAGES,
   ROUTER_PAGE_LIFETIME,
 } from '../constants.mjs';
-
-/**
- * @typedef {{ url: string, html: string }} Page A fetched page: its final
- * URL, after redirects, and its markup.
- */
-
-// The `<head>` elements that belong to the page rather than to the site, and
-// are replaced with it: `<meta>` tags (`og:title`) and the links that are not
-// resources (`canonical`). Scripts and stylesheets run and apply once.
-const PAGE_HEAD =
-  ':scope > meta, :scope > link:not([rel~="stylesheet"], [rel~="preload"], [rel~="modulepreload"])';
+import { fetchPage, parsePage, showPage, transition } from './page.mjs';
 
 /**
  * Whether a URL is a page of the site under `root`: an HTML file, or an
@@ -54,57 +44,16 @@ export const isPage = (url, root) =>
 export const withoutFragment = href => href.split('#')[0];
 
 /**
- * Keys an iterable of islands by name and occurrence, so that the same island
- * is found again on the next page.
+ * Whether a link element is one the router can follow: an anchor that does
+ * not trigger a download and does not open in another browsing context.
  *
- * @param {Iterable<HTMLElement>} source
- * @returns {Map<string, HTMLElement>}
+ * @param {Element | null} link
+ * @returns {link is HTMLAnchorElement}
  */
-const keyIslands = source => {
-  const counts = new Map();
-
-  return new Map(
-    [...source].map(island => {
-      const name = island.getAttribute('data-island-name');
-      counts.set(name, (counts.get(name) ?? 0) + 1);
-
-      return [`${name}:${counts.get(name)}`, island];
-    })
-  );
-};
-
-/**
- * Replaces the page-specific `<head>` elements with the next page's, leaving
- * the ones both pages share in place.
- *
- * @param {Document} doc - The next page
- */
-const updateHead = doc => {
-  document.title = doc.title;
-
-  const next = new Map(
-    [...doc.head.querySelectorAll(PAGE_HEAD)].map(element => [
-      element.outerHTML,
-      element,
-    ])
-  );
-
-  for (const element of document.head.querySelectorAll(PAGE_HEAD)) {
-    // What is left in `next` afterwards is what the current page lacks
-    if (!next.delete(element.outerHTML)) {
-      element.remove();
-    }
-  }
-
-  document.head.append(...next.values());
-};
-
-/**
- * Runs a DOM update, keeping the call-site uniform for a future transition.
- *
- * @param {() => void} update
- */
-const transition = update => update();
+export const shouldFollowLink = link =>
+  link instanceof HTMLAnchorElement &&
+  !link.hasAttribute('download') &&
+  (!link.target || link.target === '_self');
 
 /**
  * Whether a navigation event should be intercepted by the router.
@@ -146,15 +95,15 @@ export const startRouter = ({ unmount, islands }) => {
     config.assets.map(href => new URL(href, location.href).href)
   );
 
-  /** @type {Map<string, { page: Promise<Page | null>, expires: number }>} */
+  /** @type {Map<string, { page: Promise<import('./page.mjs').Page | null>, expires: number }>} */
   const pages = new Map();
 
   /**
    * Fetches a page, or reuses the copy fetched moments ago.
    *
    * @param {string} url - The page's URL, without a fragment
-   * @returns {Promise<Page | null>} `null` when the response is not a page to
-   * show: an error, or anything but HTML.
+   * @returns {Promise<import('./page.mjs').Page | null>} `null` when the
+   * response is not a page to show: an error, or anything but HTML.
    */
   const loadPage = url => {
     const cached = pages.get(url);
@@ -163,14 +112,7 @@ export const startRouter = ({ unmount, islands }) => {
       return cached.page;
     }
 
-    const page = fetch(url)
-      .then(async response =>
-        response.ok &&
-        response.headers.get('content-type')?.startsWith('text/html')
-          ? { url: response.url, html: await response.text() }
-          : null
-      )
-      .catch(() => null);
+    const page = fetchPage(url);
 
     pages.delete(url);
     pages.set(url, { page, expires: Date.now() + ROUTER_PAGE_LIFETIME });
@@ -190,63 +132,6 @@ export const startRouter = ({ unmount, islands }) => {
   };
 
   /**
-   * Parses a page, unless it loads scripts or stylesheets this document does
-   * not have: it comes from another build (such as a newer deployment), and
-   * only a full load can show it.
-   *
-   * @param {Page} page
-   * @returns {Document | null}
-   */
-  const parsePage = ({ url, html }) => {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const tag = doc.querySelector('script[data-router]');
-
-    if (!tag) {
-      return null;
-    }
-
-    /** @type {{ root: string, assets: Array<string> }} */
-    const pageConfig = JSON.parse(tag.textContent);
-
-    return pageConfig.assets
-      .map(href => new URL(href, url).href)
-      .every(href => assets.has(href))
-      ? doc
-      : null;
-  };
-
-  /**
-   * Swaps the current page for another.
-   *
-   * @param {Document} doc - The next page
-   * @param {() => void} scroll - Scrolls to where the navigation leads
-   */
-  const showPage = (doc, scroll) => {
-    // The sidebar (like any island that scrolls) stays where it was
-    const scrolled = [...keyIslands(islands)]
-      .filter(([, island]) => island.scrollTop || island.scrollLeft)
-      .map(([key, { scrollLeft, scrollTop }]) => [key, scrollLeft, scrollTop]);
-
-    unmount(document.body);
-    updateHead(doc);
-    document.body.replaceWith(doc.body);
-
-    // Styles can then keep what animates in as the site loads (the banner)
-    // from animating again with every page
-    document.documentElement.setAttribute('data-navigated', '');
-
-    const next = keyIslands(
-      document.body.querySelectorAll('is-land[data-island-name]')
-    );
-
-    for (const [key, left, top] of scrolled) {
-      next.get(key)?.scrollTo({ left, top, behavior: 'instant' });
-    }
-
-    scroll();
-  };
-
-  /**
    * The page a link leads to, when following it would be handled here.
    *
    * @param {EventTarget | null} target - The link, or an element inside it
@@ -255,11 +140,7 @@ export const startRouter = ({ unmount, islands }) => {
   const getLinkedPage = target => {
     const link = target instanceof Element ? target.closest('a[href]') : null;
 
-    if (
-      !(link instanceof HTMLAnchorElement) ||
-      link.hasAttribute('download') ||
-      (link.target && link.target !== '_self')
-    ) {
+    if (!shouldFollowLink(link)) {
       return;
     }
 
@@ -279,7 +160,7 @@ export const startRouter = ({ unmount, islands }) => {
     }
 
     event.intercept({
-      // Scrolling waits for the page to be swapped in (see `showPage`)
+      // Scrolling waits for the page to be swapped in (see `showPage` in page.mjs)
       scroll: 'manual',
 
       /**
@@ -292,7 +173,7 @@ export const startRouter = ({ unmount, islands }) => {
           return;
         }
 
-        const doc = page && parsePage(page);
+        const doc = page && parsePage(page, assets);
 
         if (!doc) {
           // The navigation has already moved to the page's URL, so reloading
@@ -302,7 +183,7 @@ export const startRouter = ({ unmount, islands }) => {
           return;
         }
 
-        transition(() => showPage(doc, () => event.scroll()));
+        transition(() => showPage(doc, () => event.scroll(), unmount, islands));
       },
     });
   });
