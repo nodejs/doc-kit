@@ -84,30 +84,11 @@ export const JSX_PRAGMA = '_jsx';
 export const JSX_PRAGMA_FRAG = '_Fragment';
 
 /**
- * Where the bundler emits fonts
- */
-export const FONT_DIRECTORY = 'assets/fonts';
-
-/**
- * Fonts to preload
+ * Fonts to preload, by the name of their source file. The bundler hashes them
+ * like any other asset, so the files it emits are looked up by these names.
  */
 export const FONTS = [
   'open-sans-latin-wght-normal.woff2',
   'open-sans-latin-wght-italic.woff2',
   'ibm-plex-mono-latin-400-normal.woff2',
 ];
-
-/**
- * Specification rules for resource hints like prerendering and prefetching.
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Speculation_Rules_API
- */
-export const SPECULATION_RULES = JSON.stringify({
-  // Eagerly prefetch all links that point to the API docs themselves
-  // in a moderate eagerness to improve resource loading
-  prefetch: [{ where: { href_matches: '/*' }, eagerness: 'eager' }],
-  prerender: [
-    // Eagerly prerender Sidebar links for faster navigation
-    // These will be done in a moderate eagerness (hover, likely next navigation)
-    { where: { selector_matches: '[rel~=prefetch]' }, eagerness: 'moderate' },
-  ],
-});

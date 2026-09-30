@@ -6,11 +6,11 @@ import {
   setConfig,
 } from '@doc-kit/core/utils/configuration/index.mjs';
 
-import { FONTS } from '../../constants.mjs';
 import {
   buildAssetTags,
   buildPreloads,
   buildHead,
+  buildSpeculationRules,
   pageFileName,
   populateWithEvaluation,
   resolvePageRoot,
@@ -116,32 +116,84 @@ describe('resolvePageRoot', () => {
 });
 
 describe('buildPreloads', () => {
-  it('resolves every shipped font against the page root', () => {
-    const result = buildPreloads('../');
+  const fonts = [
+    'assets/open-sans-latin-wght-normal-abc.woff2',
+    'assets/ibm-plex-mono-latin-400-normal-def.woff2',
+  ];
 
-    // A hint per shipped face, or the unlisted ones load late after all.
-    assert.strictEqual(result.match(/rel="preload"/g).length, FONTS.length);
+  it('resolves every font against the page root', () => {
+    const result = buildPreloads(fonts, '../');
 
-    for (const font of FONTS) {
-      assert.ok(result.includes(`href="../assets/fonts/${font}"`));
+    // A hint per font, or the unlisted ones load late after all.
+    assert.strictEqual(result.match(/rel="preload"/g).length, fonts.length);
+
+    for (const font of fonts) {
+      assert.ok(result.includes(`href="../${font}"`));
     }
   });
 
   it('keeps an absolute root absolute', () => {
-    const result = buildPreloads('https://nodejs.org/docs/');
+    const result = buildPreloads(fonts, 'https://nodejs.org/docs/');
 
-    assert.ok(
-      result.includes(`href="https://nodejs.org/docs/assets/fonts/${FONTS[0]}"`)
-    );
+    assert.ok(result.includes(`href="https://nodejs.org/docs/${fonts[0]}"`));
   });
 
   it('renders crossorigin valueless, since fonts are fetched in CORS mode', () => {
     // Without it the stylesheet re-fetches the font instead of reusing it.
-    const hints = buildPreloads('./').split('\n');
+    const hints = buildPreloads(fonts, './').split('\n');
 
     for (const hint of hints) {
       assert.match(hint, /as="font" type="font\/woff2" crossorigin \/>$/);
     }
+  });
+
+  it('renders nothing without fonts', () => {
+    assert.strictEqual(buildPreloads([], './'), '');
+  });
+});
+
+describe('buildSpeculationRules', () => {
+  /**
+   * The pattern a page's rules exclude from prefetching, resolved as the
+   * browser resolves it: against the page's own URL.
+   */
+  const excluded = (root, page) => {
+    const [{ where }] = JSON.parse(buildSpeculationRules(root)).prefetch;
+    const [, { not }] = where.and;
+
+    return new URLPattern(not.href_matches, page);
+  };
+
+  it('prefetches same-origin links on hover or press', () => {
+    const [rule] = JSON.parse(buildSpeculationRules('./')).prefetch;
+
+    assert.deepStrictEqual(rule.where.and[0], { href_matches: '/*' });
+    assert.strictEqual(rule.eagerness, 'moderate');
+  });
+
+  it("leaves the site's own pages to the client-side router", () => {
+    for (const [root, page] of [
+      ['./', 'https://nodejs.org/docs/latest/api/fs.html'],
+      ['../', 'https://nodejs.org/docs/latest/api/fs/promises.html'],
+      ['../../', 'https://nodejs.org/docs/latest/api/fs/promises/open.html'],
+    ]) {
+      const site = excluded(root, page);
+
+      assert.ok(site.test('https://nodejs.org/docs/latest/api/fs.html'), root);
+      assert.ok(site.test('https://nodejs.org/docs/latest/api/fs/x.html#y'));
+      assert.ok(!site.test('https://nodejs.org/learn/getting-started'), root);
+      assert.ok(!site.test('https://nodejs.org/docs/latest-v22.x/api/fs.html'));
+    }
+  });
+
+  it('keeps an absolute root absolute', () => {
+    const site = excluded(
+      'https://nodejs.org/docs/',
+      'https://nodejs.org/docs/fs.html'
+    );
+
+    assert.ok(site.test('https://nodejs.org/docs/fs.html'));
+    assert.ok(!site.test('https://nodejs.org/learn/'));
   });
 });
 
@@ -212,7 +264,8 @@ describe('buildAssetTags', () => {
     assert.deepStrictEqual(
       tags.map(tag => tag.trim()),
       [
-        '<script type="module" crossorigin src="../assets/client-abc.js"></script>',
+        // The scripts also tell the client-side router where the site starts
+        '<script type="module" crossorigin src="../assets/client-abc.js" data-root="../"></script>',
         '<link rel="modulepreload" crossorigin href="../assets/shared-def.js" />',
         '<link rel="stylesheet" crossorigin href="../assets/style-ghi.css" />',
       ]

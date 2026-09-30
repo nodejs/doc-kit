@@ -158,8 +158,14 @@ export default () => {
     ),
 
     createImportDeclaration(
-      'registerIslands',
+      'registerIslands, unmountIslands',
       resolve(ROOT, './ui/islands/runtime.mjs'),
+      false
+    ),
+
+    createImportDeclaration(
+      'startRouter',
+      resolve(ROOT, './ui/router.mjs'),
       false
     ),
 
@@ -169,6 +175,10 @@ export default () => {
           `${JSON.stringify(name)}: () => import(${JSON.stringify(source)})`
       )
       .join(', ')}});`,
+
+    // Navigations between pages swap the page in place, so the islands of the
+    // page being left have to be unmounted rather than simply dropped
+    'startRouter({ unmount: unmountIslands });',
   ].join('\n');
 
   return { buildLibraryProgram, buildPageProgram, clientProgram };

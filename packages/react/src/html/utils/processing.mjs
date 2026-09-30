@@ -3,7 +3,6 @@ import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 
 import createConfigSource from './config.mjs';
 import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
-import { FONT_DIRECTORY, FONTS, SPECULATION_RULES } from '../constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
 
 /**
@@ -85,18 +84,63 @@ const renderTag = (tag, attrs) => {
 };
 
 /**
- * Renders the preload hints for a page
+ * The attributes of a font's preload hint. `crossorigin` is required: fonts
+ * are fetched in CORS mode, so without it the stylesheet fetches the font again
+ * instead of reusing the preloaded one.
+ *
+ * @param {string} href - The font's URL
+ * @returns {Record<string, string | boolean>}
  */
-export const buildPreloads = root =>
-  FONTS.map(font =>
-    renderTag('link', {
-      rel: 'preload',
-      href: `${root}${FONT_DIRECTORY}/${font}`,
-      as: 'font',
-      type: 'font/woff2',
-      crossorigin: true,
-    })
-  ).join('\n  ');
+const createFontPreload = href => ({
+  rel: 'preload',
+  href,
+  as: 'font',
+  type: 'font/woff2',
+  crossorigin: true,
+});
+
+/**
+ * Renders the preload hints for a page's fonts.
+ *
+ * @param {Array<string>} fonts - Output-relative font paths
+ * @param {string} root - The page's root (see {@link resolvePageRoot})
+ * @returns {string}
+ */
+export const buildPreloads = (fonts, root) =>
+  fonts
+    .map(font => renderTag('link', createFontPreload(`${root}${font}`)))
+    .join('\n  ');
+
+/**
+ * Renders a page's speculation rules.
+ *
+ * Navigations between the site's own pages happen client-side (see
+ * `ui/router.mjs`), which prefetches those pages itself: a document the
+ * browser speculatively fetches can only serve a full navigation, so prefetching
+ * them here would download each twice. What is left are the links that leave
+ * the site for other pages on its origin (the rest of nodejs.org, for docs
+ * served under nodejs.org/docs): those are prefetched when hovered or pressed.
+ *
+ * @param {string} root - The page's root (see {@link resolvePageRoot})
+ * @returns {string} The rules, as JSON
+ */
+export const buildSpeculationRules = root => {
+  // Patterns resolve against the page, but a wildcard after a `/` takes that
+  // slash as its prefix and leaves the dot segment before it unresolved (`../*`
+  // matches nothing), while `..*` resolves to the directory, as intended.
+  const site = root.startsWith('.') ? `${root.slice(0, -1)}*` : `${root}*`;
+
+  return JSON.stringify({
+    prefetch: [
+      {
+        where: {
+          and: [{ href_matches: '/*' }, { not: { href_matches: site } }],
+        },
+        eagerness: 'moderate',
+      },
+    ],
+  });
+};
 
 /**
  * Builds the configurable `<head>` markup shared by every page from the
@@ -119,6 +163,10 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
  * statically import as preload hints (as the bundler would inject them), and
  * the stylesheets as links.
  *
+ * The entry scripts also carry the root itself, which tells the client-side
+ * router (see `ui/router.mjs`) which links lead to pages of the site. It rides
+ * along with the scripts because every template has to render them.
+ *
  * @param {import('../types').ClientAssets} assets - Output-relative asset paths
  * @param {string} root - The page's root (see {@link resolvePageRoot})
  * @returns {string}
@@ -126,7 +174,8 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
 export const buildAssetTags = ({ scripts, preloads, stylesheets }, root) =>
   [
     scripts.map(
-      file => `<script type="module" crossorigin src="${root}${file}"></script>`
+      file =>
+        `<script type="module" crossorigin src="${root}${file}" data-root="${root}"></script>`
     ),
     preloads.map(file =>
       renderTag('link', {
@@ -180,9 +229,9 @@ export const populatePage = ({ template, data, dehydrated, assets }) => {
     ),
     dehydrated,
     assets: buildAssetTags(assets, root),
-    speculationRules: SPECULATION_RULES,
+    speculationRules: buildSpeculationRules(root),
     themeScript: THEME_SCRIPT,
-    preloads: buildPreloads(root),
+    preloads: buildPreloads(assets.fonts ?? [], root),
     root,
     metadata: data,
     config,

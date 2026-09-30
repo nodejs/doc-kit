@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 import { remoteConfigUrl } from '#theme/config';
 
@@ -17,6 +17,39 @@ import { remoteConfigUrl } from '#theme/config';
  */
 
 /**
+ * The remote configs fetched so far, by URL. Each is fetched once per visit and
+ * shared by every island that reads it, on every page navigated to client-side:
+ * islands hydrate as separate roots, so no context provider could span them.
+ *
+ * @type {Map<string, Promise<RemoteConfig | null>>}
+ */
+const remoteConfigs = new Map();
+
+/**
+ * Fetches a remote config, unless it is already loaded or on its way.
+ *
+ * @param {string} url
+ * @returns {Promise<RemoteConfig | null>}
+ */
+const loadRemoteConfig = url => {
+  if (!remoteConfigs.has(url)) {
+    remoteConfigs.set(
+      url,
+      fetch(url)
+        .then(response => response.json())
+        .catch(() => {
+          // Not kept, so that the next island to mount tries again
+          remoteConfigs.delete(url);
+
+          return null;
+        })
+    );
+  }
+
+  return remoteConfigs.get(url);
+};
+
+/**
  * Fetches the remote site configuration once the component mounts.
  *
  * @returns {RemoteConfig | null} `null` until loaded, or when there is no
@@ -27,21 +60,21 @@ export default () => {
     /** @type {RemoteConfig | null} */ (null)
   );
 
-  useEffect(() => {
+  // A layout effect, so that a page navigated to client-side renders with a
+  // config loaded earlier before it is painted, and its banner does not push
+  // the page down a frame later
+  useLayoutEffect(() => {
     if (!remoteConfigUrl) {
       return;
     }
 
     let mounted = true;
 
-    fetch(remoteConfigUrl)
-      .then(response => response.json())
-      .then(loaded => {
-        if (mounted) {
-          setConfig(loaded);
-        }
-      })
-      .catch(() => {});
+    loadRemoteConfig(remoteConfigUrl).then(loaded => {
+      if (mounted) {
+        setConfig(loaded);
+      }
+    });
 
     return () => {
       mounted = false;
