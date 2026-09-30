@@ -4,30 +4,30 @@ import { useState, useEffect } from 'react';
 import { relativeOrAbsolute } from '../utils/relativeOrAbsolute.mjs';
 
 /**
- * Search clients by the URL of their data, so that the index is downloaded and
- * loaded once per visit rather than once per page navigated to.
+ * The search client for this visit, shared across every page navigated to
+ * client-side. The Orama index (several MB) is fetched once on the first
+ * search and reused from then on.
  *
- * @type {Map<string, import('@orama/orama').AnyOrama>}
+ * @type {import('@orama/orama').AnyOrama | null}
  */
-const clients = new Map();
+let client = null;
 
 /**
- * Creates a search client whose data is fetched on its first search.
+ * Returns the shared search client, creating it on the first call.
  *
- * @param {string} url - The search data's absolute URL: the client outlives
- * the page it was created on, which a relative URL would resolve against.
+ * @param {string} url - Absolute URL of the search data, resolved once at
+ * creation so the client outlives the page it was first used on.
  */
-const createClient = url => {
-  const db = create({
-    schema: {},
-  });
+const getClient = url => {
+  if (client) {
+    return client;
+  }
 
+  const db = create({ schema: {} });
   let loaded;
 
   // TODO(@avivkeller): Ask Orama to support this functionality natively
-  /**
-   * @param {any} options
-   */
+  /** @param {any} options */
   db.search = async options => {
     loaded ??= fetch(url)
       .then(response => response.ok && response.json())
@@ -41,17 +41,19 @@ const createClient = url => {
     return search(db, options);
   };
 
-  return db;
+  client = db;
+
+  return client;
 };
 
 /**
- * Hook for initializing and managing Orama search database.
+ * Hook for initializing and managing the Orama search client.
  * The search data is lazily fetched on the first search call.
  *
  * @param {string} pathname - The current page's path (e.g., '/api/fs')
  */
 export default pathname => {
-  const [client, setClient] = useState(null);
+  const [db, setDb] = useState(null);
 
   useEffect(() => {
     const url = new URL(
@@ -59,12 +61,8 @@ export default pathname => {
       location.href
     ).href;
 
-    if (!clients.has(url)) {
-      clients.set(url, createClient(url));
-    }
-
-    queueMicrotask(() => setClient(clients.get(url)));
+    queueMicrotask(() => setDb(getClient(url)));
   }, [pathname]);
 
-  return client;
+  return db;
 };

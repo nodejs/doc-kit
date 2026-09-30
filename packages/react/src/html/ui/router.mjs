@@ -18,20 +18,16 @@
  * navigation in a browser without the Navigation API.
  */
 
+import {
+  ROUTER_HOVER_DELAY,
+  ROUTER_MAX_PAGES,
+  ROUTER_PAGE_LIFETIME,
+} from '../constants.mjs';
+
 /**
  * @typedef {{ url: string, html: string }} Page A fetched page: its final
  * URL, after redirects, and its markup.
  */
-
-// How long a hovered link waits before its page is prefetched, so that links
-// the pointer merely crosses on its way somewhere else are skipped.
-const HOVER_DELAY = 80;
-
-// How long a fetched page is reused for, whether it was prefetched or visited.
-const PAGE_LIFETIME = 5 * 60 * 1000;
-
-// How many fetched pages are kept at once.
-const MAX_PAGES = 10;
 
 // The `<head>` elements that belong to the page rather than to the site, and
 // are replaced with it: `<meta>` tags (`og:title`) and the links that are not
@@ -177,9 +173,9 @@ export const startRouter = ({ unmount, islands }) => {
       .catch(() => null);
 
     pages.delete(url);
-    pages.set(url, { page, expires: Date.now() + PAGE_LIFETIME });
+    pages.set(url, { page, expires: Date.now() + ROUTER_PAGE_LIFETIME });
 
-    if (pages.size > MAX_PAGES) {
+    if (pages.size > ROUTER_MAX_PAGES) {
       pages.delete(pages.keys().next().value);
     }
 
@@ -324,7 +320,7 @@ export const startRouter = ({ unmount, islands }) => {
         getLinkedPage(target);
 
       if (url) {
-        hovered = setTimeout(loadPage, HOVER_DELAY, url);
+        hovered = setTimeout(loadPage, ROUTER_HOVER_DELAY, url);
       }
     },
     { passive: true }
