@@ -8,10 +8,10 @@
     "url": "git+https://github.com/nodejs/doc-kit.git"
   },
   "scripts": {
-    "lint": "oxlint .",
-    "lint:fix": "oxlint --fix .",
-    "format": "oxfmt .",
-    "format:check": "oxfmt --check .",
+    "lint": "vp lint .",
+    "lint:fix": "vp lint --fix .",
+    "format": "vp fmt .",
+    "format:check": "vp fmt --check .",
     "test": "node --test --experimental-test-module-mocks \"packages/*/src/**/*.test.mjs\" \"scripts/**/*.test.mjs\"",
     "test:coverage": "c8 node --test --experimental-test-module-mocks \"packages/*/src/**/*.test.mjs\" \"scripts/**/*.test.mjs\"",
     "test:ci": "c8 --reporter=lcov node --test --experimental-test-module-mocks \"packages/*/src/**/*.test.mjs\" \"scripts/**/*.test.mjs\" --test-reporter=@reporters/github --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml --test-reporter=spec --test-reporter-destination=stdout",
@@ -41,7 +41,6 @@
     "husky": "9.1.7",
     "json-schema-to-typescript": "^16.0.0",
     "lint-staged": "17.4.1",
-    "oxfmt": "0.71.0",
-    "oxlint": "1.86.0"
+    "vite-plus": "1.0.0"
   }
 }
