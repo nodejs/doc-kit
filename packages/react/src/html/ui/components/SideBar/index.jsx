@@ -114,12 +114,14 @@ const Sidebar = ({ metadata }) => {
   const remote = useRemoteConfig();
   const availableVersions = remote?.versions ?? versions;
 
+  const currentVersion = `v${version.version}`;
+
   // Filter versions by compatibility and resolve per-page URL
   const compatibleVersions = availableVersions
     .filter(v => v.major >= introducedMajor)
-    .map(({ url, label }) => ({
-      value: url.replace('{path}', metadata.path),
-      label,
+    .map(({ url, label, major }) => ({
+      value: url.replace('{path}', metadata.chunk?.path ?? metadata.path),
+      label: major === version.major ? currentVersion : label,
     }));
 
   return (
@@ -136,9 +138,12 @@ const Sidebar = ({ metadata }) => {
           <Select
             label={`${project} version`}
             values={compatibleVersions}
+            value={
+              compatibleVersions.find(v => v.label === currentVersion)?.value
+            }
             inline={true}
             className={styles.select}
-            placeholder={`v${version.version}`}
+            placeholder={currentVersion}
             onChange={redirect}
           />
         </div>
