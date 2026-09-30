@@ -50,6 +50,12 @@ island-slot {
   display: contents;
 }
 
+/* The banner slides in once, as the site loads, rather than again with every
+   page navigated to client-side (see `router.mjs`) */
+[data-navigated] is-land[data-island-name='Banner'] > * {
+  animation: none;
+}
+
 /* TODO(@avivkeller): make this component's CSS more agnostic */
 is-land[data-island-name='SideBar'] {
   display: flex;

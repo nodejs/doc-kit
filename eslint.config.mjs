@@ -98,6 +98,8 @@ export default defineConfig([
     files: [
       'packages/node-legacy/src/legacy-html/assets/*.js',
       'packages/react/src/html/ui/**/*',
+      // End-to-end specs run code in the page through `page.evaluate`
+      'e2e/**/*.spec.js',
     ],
     languageOptions: {
       globals: {

@@ -215,10 +215,12 @@ generator's `constants.mjs`), so that the page and the library share one Preact.
 `buildClient` receives `{ entry, virtualImports, config }`. The client `entry`
 is a single program shared by every page. It must be bundled into
 `config.output` and the call must return
-`{ scripts, preloads, stylesheets }`: paths relative to the output root of the
-module scripts to load, the chunks they statically import (rendered as
-`modulepreload` hints), and the stylesheets. The generator renders those into
-every page, resolved against the page's location.
+`{ scripts, preloads, stylesheets, fonts }`: paths relative to the output root
+of the module scripts to load, the chunks they statically import (rendered as
+`modulepreload` hints), the stylesheets, and optionally the fonts to preload.
+The generator renders those into every page, resolved against the page's
+location. Name every file after its content (a hash), so hosts can cache them
+indefinitely (see [Publishing](../../../docs/publishing.md#cache-the-assets)).
 
 `config` is the resolved `html` configuration. The adapter must compile the
 generated Preact JSX and CSS imports and resolve the supplied theme aliases and
@@ -309,9 +311,10 @@ plugins see and can transform every module of the client and server builds but
 never the HTML pages. Customize the pages through the
 [HTML template](#html-template) instead.
 
-The adapter reads the client asset names from Vite's manifest. A manifest is
-written either way; pass `build: { manifest: true }` (or a file name) to
-`createViteBundler` to keep it in the output for another tool.
+The adapter reads the client asset names from Vite's manifest, including the
+hashed names of the fonts to preload. A manifest is written either way; pass
+`build: { manifest: true }` (or a file name) to `createViteBundler` to keep it
+in the output for another tool.
 
 The adapter is only ever used on the main thread, so function-valued plugins
 and hooks are supported. Worker threads receive the `html` configuration with
@@ -488,7 +491,11 @@ The HTML template file (set via `templatePath`) uses JavaScript template literal
 - `dehydrated` {string} Server-rendered HTML for the page content.
 - `assets` {string} The `<script>` and `<link>` tags loading the client
   assets, resolved against this page's location.
-- `speculationRules` {string} Speculation rules JSON for prefetching.
+- `preloads` {string} The preload hints for the fonts the bundler reported.
+- `speculationRules` {string} Speculation rules JSON that prefetches the
+  same-origin links leaving the site when they are hovered or pressed. Links
+  within the site navigate client-side instead (see
+  [Client-side navigation](#client-side-navigation)).
 - `themeScript` {string} Inline script that applies the saved theme before paint.
 - `root` {string} Relative or absolute path to the site root.
 - `metadata` {Object} Full page metadata (frontmatter, path, heading, etc.).
@@ -505,3 +512,38 @@ Since the template supports arbitrary JS expressions, you can use conditionals a
 The populated page is the final HTML: it is minified when `minify` is set and
 written as is. Put `${assets}` in the `<head>`, or the page loads no script and
 no stylesheet.
+
+## Client-side navigation
+
+The site moves between its own pages client-side, through the
+[Navigation API](https://developer.mozilla.org/docs/Web/API/Navigation_API):
+following a link to another page fetches that page and swaps it into the
+current document instead of loading a new one. Scripts, stylesheets and fonts
+stay loaded, the search index and the remote config are fetched once per visit,
+and the sidebar keeps its scroll position. Back and forward, scroll restoration
+and focus behave as they do for full loads, and the old page cross-fades into
+the new one where view transitions are supported.
+
+Pages are prefetched into memory when a link is hovered (unless the browser
+asks to save data) or pressed, so most navigations do not wait on the network.
+
+Everything else is a regular navigation: links outside the site (including
+other versions of the docs), files that are not pages (such as the JSON and
+Markdown renderings), and every navigation in a browser without the Navigation
+API. So is a page that loads scripts or stylesheets the current one did not,
+such as one from a newer deployment.
+
+When customizing the site, keep in mind that:
+
+- The whole `<body>` is replaced, and scripts in it do not run. Of the
+  `<head>`, only the `<title>` and the page-specific tags follow the page:
+  `<meta>` tags, and `<link>` tags other than stylesheets and preloads (such as
+  `canonical`).
+- Islands are unmounted and hydrated again on every page. Anything shared
+  across pages belongs in module scope, which lasts for the whole visit. An
+  island that scrolls keeps its position when the next page renders it too.
+- Once the document has navigated client-side, the `<html>` element has a
+  `data-navigated` attribute, for styles that only belong on the first page,
+  such as entry animations.
+- Analytics can count client-side page views through the Navigation API's
+  `navigatesuccess` event.

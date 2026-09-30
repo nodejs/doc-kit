@@ -23,6 +23,39 @@ convention). Two things to know about the result:
   index alongside the pages by targeting both generators — `target: ['html',
 'orama-db']`, so the search box has data to query.
 
+## Cache the assets
+
+Every file the `html` generator writes to `assets/` (scripts, stylesheets,
+fonts) is named after a hash of its content, so a changed file always gets a
+new name. Serve that directory with a long-lived, immutable cache, and let
+everything else (the pages, the search index) revalidate:
+
+```
+/assets/*   Cache-Control: public, max-age=31536000, immutable
+```
+
+Most hosts default to revalidating every file on every load instead, which
+costs a request per asset each time a new tab opens the site. On Vercel:
+
+```json displayName="vercel.json"
+{
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Within a visit, moving between pages loads no assets at all: the site
+navigates client-side, swapping in the next page's content.
+
 ## Tell doc-kit its public URL
 
 Set `baseURL` to where the site will live. Generators that emit absolute

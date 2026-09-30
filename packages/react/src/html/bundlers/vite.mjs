@@ -1,5 +1,5 @@
 import { readFile, rm, rmdir } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
@@ -10,7 +10,7 @@ import {
   transformWithOxc,
 } from 'vite';
 
-import { FONT_DIRECTORY, JSX_PRAGMA, JSX_PRAGMA_FRAG } from '../constants.mjs';
+import { FONTS, JSX_PRAGMA, JSX_PRAGMA_FRAG } from '../constants.mjs';
 
 const VIRTUAL_PREFIX = 'virtual:doc-kit/';
 const RESOLVED_VIRTUAL_PREFIX = '\0doc-kit:';
@@ -234,16 +234,10 @@ export const createViteConfig = ({
           ...vite.build?.rolldownOptions?.output,
           format: 'es',
 
-          /**
-           * Determine the asset names for different files
-           */
-          assetFileNames: asset =>
-            asset.names.some(name => name.endsWith('.woff2'))
-              ? // We need to know where the fonts are to preload
-                // them. Using a dynamic hash would make this
-                // difficult.
-                `${FONT_DIRECTORY}/[name][extname]`
-              : 'assets/[name]-[hash][extname]',
+          // Every emitted file, fonts included, is named after its content, so
+          // hosts can cache `assets/` indefinitely. The fonts to preload are
+          // found through the manifest (see `buildClient`).
+          assetFileNames: 'assets/[name]-[hash][extname]',
 
           ...(server
             ? {
@@ -352,6 +346,15 @@ const collectImports = (manifest, chunk, seen = new Set()) => {
 };
 
 /**
+ * Whether a manifest entry is one of the fonts to preload. Fonts get a manifest
+ * entry of their own, under the source file they were emitted from.
+ *
+ * @param {{ src: string }} entry
+ * @returns {boolean}
+ */
+const isPreloadedFont = ({ src }) => FONTS.includes(posix.basename(src));
+
+/**
  * Bundles the client entry into the site and reads back, from Vite's
  * manifest, the assets every page has to load.
  *
@@ -411,10 +414,16 @@ export const buildClient = async ({
     .map(({ file }) => file)
     .filter(file => file.endsWith('.css'));
 
+  const fonts = entries
+    .filter(({ src }) => src)
+    .filter(isPreloadedFont)
+    .map(({ file }) => file);
+
   return {
     scripts: [chunk.file],
     preloads: collectImports(manifest, chunk),
     stylesheets: [...new Set(stylesheets)],
+    fonts,
   };
 };
 

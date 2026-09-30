@@ -12,6 +12,7 @@ import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
 import { generate as chunk } from '../../section-pages/generate.mjs';
 import { compile, createViteBundler } from '../bundlers/vite.mjs';
+import { FONTS } from '../constants.mjs';
 import { generate } from '../generate.mjs';
 
 /**
@@ -105,6 +106,18 @@ describe('web generate', () => {
     assert.match(fsHTML, /on:idle[^>]*data-island-name=SearchBox/);
     // The manifest the asset tags were read from does not ship
     assert.equal((await readdir(output)).includes('.vite'), false);
+
+    // Fonts are hashed like every other asset, and preloaded from where the
+    // bundler actually wrote them
+    const fonts = [...fsHTML.matchAll(/href=\.\.\/(assets\/[^ ]+\.woff2)/g)];
+    const written = await readdir(join(output, 'assets'));
+
+    assert.strictEqual(fonts.length, FONTS.length);
+
+    for (const [, font] of fonts) {
+      assert.match(font, /-[\w-]{8}\.woff2$/);
+      assert.ok(written.includes(font.slice('assets/'.length)), font);
+    }
   });
 
   it('assembles all.html from the module pages, in sidebar order', async context => {
@@ -349,6 +362,9 @@ describe('web generate', () => {
       html,
       /<script type=module crossorigin src=\.\/custom\/index\.js>/
     );
+    assert.match(html, /data-router/);
+    // The adapter reported no fonts, so there are none to preload
+    assert.doesNotMatch(html, /as=font/);
     assert.match(
       html,
       /<link rel=modulepreload crossorigin href=\.\/custom\/shared\.js>/
