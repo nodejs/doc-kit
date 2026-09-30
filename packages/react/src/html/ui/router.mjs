@@ -58,19 +58,6 @@ export const isPage = (url, root) =>
 export const withoutFragment = href => href.split('#')[0];
 
 /**
- * The absolute URLs of the scripts and stylesheets a document loads.
- *
- * @param {Document} doc
- * @param {string} base - The document's URL, for relative references
- * @returns {Array<URL>}
- */
-const getAssets = (doc, base) =>
-  [...doc.querySelectorAll('script[src], link[rel~="stylesheet"][href]')].map(
-    element =>
-      new URL(element.getAttribute('src') ?? element.getAttribute('href'), base)
-  );
-
-/**
  * Keys an iterable of islands by name and occurrence, so that the same island
  * is found again on the next page.
  *
@@ -124,9 +111,24 @@ const updateHead = doc => {
 const transition = update => update();
 
 /**
+ * Whether a navigation event should be intercepted by the router.
+ *
+ * @param {NavigateEvent} event
+ * @param {URL} url
+ * @param {string} root
+ */
+const shouldIntercept = (event, url, root) =>
+  event.canIntercept &&
+  !event.hashChange &&
+  event.downloadRequest === null &&
+  !event.formData &&
+  event.navigationType !== 'reload' &&
+  isPage(url, root);
+
+/**
  * Starts handling navigations between the pages of the site, unless the
- * browser lacks the Navigation API or the page does not say where the site
- * starts (see `buildAssetTags`).
+ * browser lacks the Navigation API or the page does not carry router data
+ * (see `buildAssetTags`).
  *
  * @param {object} options
  * @param {(root: Node) => void} options.unmount - Unmounts the components
@@ -135,18 +137,17 @@ const transition = update => update();
  * islands; used to save scroll positions before the body is replaced.
  */
 export const startRouter = ({ unmount, islands }) => {
-  const script = document.querySelector('script[data-root]');
+  const tag = document.querySelector('script[data-router]');
 
-  if (!('navigation' in window) || !script) {
+  if (!('navigation' in window) || !tag) {
     return;
   }
 
-  const root = new URL(script.dataset.root, location.href).href;
-
-  // The document's head is never replaced (see `PAGE_HEAD`), so the relative
-  // URLs in it are resolved while they still point where they did at load
+  /** @type {{ root: string, assets: Array<string> }} */
+  const config = JSON.parse(tag.textContent);
+  const root = new URL(config.root, location.href).href;
   const assets = new Set(
-    getAssets(document, location.href).map(url => url.href)
+    config.assets.map(href => new URL(href, location.href).href)
   );
 
   /** @type {Map<string, { page: Promise<Page | null>, expires: number }>} */
@@ -202,8 +203,18 @@ export const startRouter = ({ unmount, islands }) => {
    */
   const parsePage = ({ url, html }) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
+    const tag = doc.querySelector('script[data-router]');
 
-    return getAssets(doc, url).every(asset => assets.has(asset.href))
+    if (!tag) {
+      return null;
+    }
+
+    /** @type {{ root: string, assets: Array<string> }} */
+    const pageConfig = JSON.parse(tag.textContent);
+
+    return pageConfig.assets
+      .map(href => new URL(href, url).href)
+      .every(href => assets.has(href))
       ? doc
       : null;
   };
@@ -267,14 +278,7 @@ export const startRouter = ({ unmount, islands }) => {
   navigation.addEventListener('navigate', event => {
     const url = new URL(event.destination.url);
 
-    if (
-      !event.canIntercept ||
-      event.hashChange ||
-      event.downloadRequest !== null ||
-      event.formData ||
-      event.navigationType === 'reload' ||
-      !isPage(url, root)
-    ) {
+    if (!shouldIntercept(event, url, root)) {
       return;
     }
 
