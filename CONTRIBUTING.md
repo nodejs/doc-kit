@@ -82,6 +82,7 @@ published package lives under `packages/`:
 - `packages/node`: [`@node-core/doc-kit`](packages/node) — the Node.js-specific generators
 - `packages/node-legacy`: [`@node-core/doc-kit-legacy`](packages/node-legacy) — the Node.js legacy-format generators
 - `packages/react`: [`@doc-kit/generator-react`](packages/react) — the React/JSX-based generators
+- `packages/typedoc`: [`@doc-kit/typedoc`](packages/typedoc) — the TypeDoc plugin writing API references as doc-kit Markdown
 
 Everything else at the root supports the repo rather than shipping to npm:
 `docs/` (every authored documentation page, from the landing page to the
