@@ -15,6 +15,7 @@ import { visit } from 'unist-util-visit';
 
 import { AST_NODE_TYPES } from '../constants.mjs';
 import transformAlerts from './plugins/alerts.mjs';
+import transformDiagrams from './plugins/diagrams.mjs';
 import transformElements from './plugins/transformer.mjs';
 
 const passThrough = ['element', ...Object.values(AST_NODE_TYPES.MDX)];
@@ -58,6 +59,7 @@ export const getRemarkRecma = lazy(() =>
   unified()
     .use(remarkParse)
     .use(transformAlerts)
+    .use(transformDiagrams)
     // We make Rehype ignore existing HTML nodes, and JSX nodes
     // as these are nodes we manually created during the generation process
     // We also allow dangerous HTML to be passed through, since we have HTML within our Markdown
