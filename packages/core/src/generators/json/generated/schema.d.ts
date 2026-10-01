@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* oxlint-disable */
 /**
  * Generated from `schema.json` by `scripts/generate-json-types.mjs`.
  * Do not edit: change the schema and regenerate instead.
