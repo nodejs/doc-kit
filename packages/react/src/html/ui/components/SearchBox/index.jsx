@@ -11,6 +11,7 @@ import styles from './index.module.css';
 import useOrama from '../../hooks/useOrama.mjs';
 import withIsland from '../../islands/withIsland.jsx';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
+import { renderLabel } from '../../utils/renderLabel.jsx';
 
 /**
  * Dismisses the search modal the clicked hit sits in
@@ -62,6 +63,7 @@ const SearchBox = ({ pathname }) => {
               as={SearchHitLink}
               document={{
                 ...hit.document,
+                description: renderLabel(hit.document.description),
                 href: relativeOrAbsolute(hit.document.href, pathname),
               }}
             />
