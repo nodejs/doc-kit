@@ -8,4 +8,10 @@ The `llms-txt` generator creates a `llms.txt` file to provide information to Lar
 - `templatePath` {string} Path to the template file.
   **Default:** `'template.txt'`.
 - `pageURL` {string} URL template for documentation page links.
-  **Default:** `'{baseURL}/latest/api{path}.md'`.
+  **Default:** `'{baseURL}{path}.md'`.
+- `writeMarkdown` {boolean} Write the Markdown of every page at `{path}.md`,
+  where `pageURL` links by default.
+  **Default:** `false`.
+- `writeFull` {boolean} Write `llms-full.txt`, holding the Markdown of every
+  page, each preceded by its URL.
+  **Default:** `false`.
