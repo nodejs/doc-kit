@@ -16,7 +16,7 @@ export default {
 
   defaultConfiguration: {
     indexURL: '{baseURL}/',
-    pageURL: '{indexURL}{path}.html',
+    pageURL: '{baseURL}{path}.html',
   },
 
   generate,
