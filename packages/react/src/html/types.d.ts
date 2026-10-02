@@ -1,8 +1,9 @@
-import type { PageCode } from '../jsx-ast/types';
 import type { GlobalConfiguration } from '@doc-kit/core/utils/configuration/types';
-import type SideBar from '@node-core/ui-components/Containers/Sidebar';
 import type NavBar from '@node-core/ui-components/Containers/NavBar';
+import type SideBar from '@node-core/ui-components/Containers/Sidebar';
 import type { ComponentProps } from 'preact';
+
+import type { PageCode } from '../jsx-ast/types';
 
 // An attribute bag rendered into an HTML tag. `true` becomes a valueless
 // attribute (e.g. `crossorigin`); `false`/`null`/`undefined` are omitted.

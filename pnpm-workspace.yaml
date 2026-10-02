@@ -5,3 +5,9 @@ allowBuilds:
   unrs-resolver: false
 
 minimumReleaseAgeExcludePrune: true
+
+peerDependencyRules:
+  allowAny:
+    - vite
+  allowedVersions:
+    vite: '*'

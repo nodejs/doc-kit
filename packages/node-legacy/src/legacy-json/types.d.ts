@@ -1,6 +1,6 @@
-import { ListItem } from '@types/mdast';
 import { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 import { MethodSignature } from '@doc-kit/core/utils/signature/types';
+import { ListItem } from '@types/mdast';
 
 /**
  * Contains metadata related to changes, additions, removals, and deprecated statuses of an entry.
