@@ -544,11 +544,13 @@ pre {
   vertical-align: top;
   border-radius: 4px;
   margin: 1rem;
-  overflow-x: auto;
 }
 
+/* Only the code scrolls, so the toolbar stays put */
 pre > code {
+  display: block;
   padding: 0;
+  overflow-x: auto;
 }
 
 pre + h3 {
