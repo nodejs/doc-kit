@@ -22,8 +22,10 @@ export const renderLabel = label => {
     }
 
     return index % 2 ? (
+      // oxlint-disable-next-line react-x/no-array-index-key -- the label is a fixed string, so the segment list never reorders
       <code key={index}>{segment}</code>
     ) : (
+      // oxlint-disable-next-line react-x/no-array-index-key -- the label is a fixed string, so the segment list never reorders
       <span key={index}>{segment}</span>
     );
   });
