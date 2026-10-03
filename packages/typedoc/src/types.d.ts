@@ -14,6 +14,8 @@ declare module 'typedoc' {
     docKitPageList: string;
     /** Types whose members each have a page of their own (`InputOptions`) */
     docKitMemberPages: string[];
+    /** Adapts each page's URL: `interfaces/Plugin` → `Interface.Plugin` */
+    docKitUrlAdapter?: (url: string, reflection: Reflection) => string;
     /** The name members are documented on, by type name */
     docKitReceivers: Record<string, string>;
   }

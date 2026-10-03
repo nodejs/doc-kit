@@ -4,6 +4,17 @@ import { DEFAULT_PAGE_LIST, DEFAULT_TYPE_MAP } from './constants.mjs';
 import { generate } from './generate.mjs';
 
 /**
+ * Throws unless `docKitUrlAdapter` is a function, or unset.
+ *
+ * @param {unknown} value
+ */
+const validateUrlAdapter = value => {
+  if (value !== undefined && typeof value !== 'function') {
+    throw new TypeError('[doc-kit] docKitUrlAdapter must be a function');
+  }
+};
+
+/**
  * The TypeDoc plugin: declares the `docKit*` options and a `doc-kit` output,
  * which writes the reference as doc-kit Markdown.
  *
@@ -41,6 +52,13 @@ export const load = app => {
     name: 'docKitMemberPages',
     help: '[doc-kit] Interfaces and classes whose members each have a page of their own.',
     type: ParameterType.Array,
+  });
+
+  app.options.addDeclaration({
+    name: 'docKitUrlAdapter',
+    help: "[doc-kit] A function adapting each page's URL: given its default (`interfaces/Plugin`) and its reflection, it returns the URL to use.",
+    type: ParameterType.Mixed,
+    validate: validateUrlAdapter,
   });
 
   app.options.addDeclaration({

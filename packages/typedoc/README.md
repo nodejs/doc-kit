@@ -47,7 +47,7 @@ The output directory receives, following TypeDoc's own layout:
 - `type-map.json`, mapping type names to their pages, for doc-kit's `typeMap` to link `{Type}` annotations with.
 - `pages.json`, listing every page (full name, kind, URL and `@category`) for the site to build its navigation from.
 
-Links between pages are relative `.md` links, which doc-kit resolves. Source links are relative to TypeDoc's `basePath` (or `displayBasePath`); set it to the root of your repository.
+`docKitUrlAdapter` adapts these URLs, to keep the URLs of a previous site working. Links between pages are relative `.md` links, which doc-kit resolves. Source links are relative to TypeDoc's `basePath` (or `displayBasePath`); set it to the root of your repository.
 
 ## How comments are rendered
 
@@ -67,4 +67,5 @@ Links between pages are relative `.md` links, which doc-kit resolves. Source lin
 - `docKitTypeMap` {string|null} The type map's file name, in the output directory. `null` leaves it out. **Default:** `'type-map.json'`.
 - `docKitPageList` {string|null} The page list's file name, in the output directory. `null` leaves it out. **Default:** `'pages.json'`.
 - `docKitMemberPages` {string[]} Interfaces and classes whose members are each documented on a page of their own, such as a bundler's options. Their own page, the pages of the types extending them, and the parameters of their type list the members and link to their pages, rather than repeating their documentation. **Default:** `[]`.
+- `docKitUrlAdapter` {Function} Adapts the URL of each page: called with its default URL, without extension (`interfaces/Plugin`), and its reflection, it returns the URL to use (`Interface.Plugin`). Links, the type map and the page list follow it. **Default:** `undefined`.
 - `docKitReceivers` {Object} The name members of a type are documented on, by type name: `{ "PluginContext": "this" }` documents `this.resolve()`. **Default:** the type name in camelCase (`pluginContext.resolve()`).
