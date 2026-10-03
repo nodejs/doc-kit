@@ -1,9 +1,9 @@
 import { ReflectionKind } from 'typedoc';
 
-import { renderDefault, renderParts } from './comments.mjs';
 import { STANDARD_TAGS } from '../constants.mjs';
 import { code, heading } from '../utils/markdown.mjs';
 import { camelCase } from '../utils/reflections.mjs';
+import { renderDefault, renderParts } from './comments.mjs';
 
 /**
  * The name members of a type are documented on: `docKitReceivers`, or the
