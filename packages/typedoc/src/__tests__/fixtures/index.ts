@@ -109,6 +109,22 @@ export const compile: Compile = source => source;
 /** The supported formats. */
 export type Format = 'esm' | 'cjs';
 
+/**
+ * Prints a module.
+ *
+ * @param printer Where to print to.
+ */
+export function print(printer: {
+  /**
+   * Indents a line.
+   *
+   * @param level How deep.
+   */
+  indent(level?: number): string;
+}): void {
+  printer.indent();
+}
+
 /** How much to log. */
 export enum Level {
   /** Everything. */
