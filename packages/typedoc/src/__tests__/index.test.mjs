@@ -1,3 +1,4 @@
+import { deepStrictEqual } from 'node:assert';
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { extname, join } from 'node:path';
@@ -9,41 +10,65 @@ import { load } from '../index.mjs';
 
 const FIXTURES = join(import.meta.dirname, 'fixtures');
 
+/**
+ * Converts the fixture and writes it as doc-kit Markdown into a temporary
+ * directory.
+ *
+ * @param {Record<string, unknown>} options The `docKit*` options
+ * @returns {Promise<string>} The directory
+ */
+const generateFixture = async options => {
+  const directory = await mkdtemp(join(tmpdir(), 'doc-kit-typedoc-'));
+
+  const app = await Application.bootstrapWithPlugins({
+    plugin: [load],
+    entryPoints: [join(FIXTURES, 'index.ts')],
+    tsconfig: join(FIXTURES, 'tsconfig.json'),
+    readme: 'none',
+    logLevel: 'Error',
+    blockTags: [...OptionDefaults.blockTags, '@kind'],
+    docKit: directory,
+    ...options,
+  });
+
+  const project = await app.convert();
+  await app.generateOutputs(project);
+
+  return directory;
+};
+
+/**
+ * The files in a directory, by path, sorted.
+ *
+ * @param {string} directory
+ */
+const readFiles = async directory => {
+  const names = await readdir(directory, { recursive: true });
+
+  return Object.fromEntries(
+    await Promise.all(
+      names
+        .filter(name => extname(name))
+        .sort()
+        .map(async name => [
+          name.replaceAll('\\', '/'),
+          await readFile(join(directory, name), 'utf8'),
+        ])
+    )
+  );
+};
+
 describe('the doc-kit output', () => {
   let directory;
   let files;
 
   before(async () => {
-    directory = await mkdtemp(join(tmpdir(), 'doc-kit-typedoc-'));
-
-    const app = await Application.bootstrapWithPlugins({
-      plugin: [load],
-      entryPoints: [join(FIXTURES, 'index.ts')],
-      tsconfig: join(FIXTURES, 'tsconfig.json'),
-      readme: 'none',
-      logLevel: 'Error',
-      blockTags: [...OptionDefaults.blockTags, '@kind'],
-      docKit: directory,
+    directory = await generateFixture({
       docKitBasePath: '/api/',
       docKitMemberPages: ['BuildOptions'],
     });
 
-    const project = await app.convert();
-    await app.generateOutputs(project);
-
-    const names = await readdir(directory, { recursive: true });
-
-    files = Object.fromEntries(
-      await Promise.all(
-        names
-          .filter(name => extname(name))
-          .sort()
-          .map(async name => [
-            name.replaceAll('\\', '/'),
-            await readFile(join(directory, name), 'utf8'),
-          ])
-      )
-    );
+    files = await readFiles(directory);
   });
 
   after(() => rm(directory, { recursive: true, force: true }));
@@ -54,5 +79,27 @@ describe('the doc-kit output', () => {
 
   it('renders every file', t => {
     t.assert.snapshot(files);
+  });
+});
+
+describe('the doc-kit output without a type map and a page list', () => {
+  let directory;
+
+  before(async () => {
+    directory = await generateFixture({
+      docKitTypeMap: null,
+      docKitPageList: null,
+    });
+  });
+
+  after(() => rm(directory, { recursive: true, force: true }));
+
+  it('leaves them out', async () => {
+    const files = Object.keys(await readFiles(directory));
+
+    deepStrictEqual(
+      files.filter(file => extname(file) === '.json'),
+      []
+    );
   });
 });
