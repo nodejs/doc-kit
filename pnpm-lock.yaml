@@ -21,8 +21,8 @@ importers:
         specifier: ~1.62.0
         version: 1.62.1
       '@reporters/github':
-        specifier: ~2.1.2
-        version: 2.1.2
+        specifier: ~2.1.4
+        version: 2.1.4
       '@types/mdast':
         specifier: ~4.0.4
         version: 4.0.4
@@ -1356,8 +1356,8 @@ packages:
   '@radix-ui/rect@1.1.3':
     resolution: {integrity: sha512-JtyZR+mqgBibTo8xea3B6ZRmzZiM/YeVBtUkas6zMuXjAlfIFIW2FgqeM9eLyvEaYX66vr6DJMK+4U6LV0KhNw==}
 
-  '@reporters/github@2.1.2':
-    resolution: {integrity: sha512-qcUeqhTqH6gb+7MaIsj0yPDz39h0lvsfnA3ORv28bu3UM7+TYSsTXEGmm49lWf0oLC9NpfJ3ydaqqHn4n9hseA==}
+  '@reporters/github@2.1.4':
+    resolution: {integrity: sha512-2adYrPa7gpFYX4xLnFvs1w8emz2eTQ9jaYEz1lmVxHjN8Ypl42G7eK4pOC/L9ZV2m2nd7l1Zw/HcQ7S8bYV0HA==}
 
   '@rolldown/binding-android-arm-eabi@1.2.11':
     resolution: {integrity: sha512-A5kXfGKvKWWZE0TtPrfsvT+q4Y5d1QG8gGUzpYjGydM+fARM9MuX90PrXYXe0XbsDVgyxxNzHo6giCj90bsFNw==}
@@ -2806,10 +2806,6 @@ packages:
     resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
     engines: {node: '>=18'}
 
-  tinyexec@1.3.0:
-    resolution: {integrity: sha512-QKAl9m8gWWGHV8jZcPeym6j+XULi6tOf1mT83WYJ4Lk2ytW/uwAWkrP0uFsdoYMdueVJ0qs26wZ+23xeB4ibNQ==}
-    engines: {node: '>=18'}
-
   tinyexec@1.3.1:
     resolution: {integrity: sha512-GCvB3aoys96IuDFBMcTB46JOR6mdMtAToqwiW8JlWhsoh1mhHi/xn9ss/Dg7N555GiJyEt2qzoG/NHCwM6h1EA==}
     engines: {node: '>=18'}
@@ -4012,7 +4008,7 @@ snapshots:
 
   '@radix-ui/rect@1.1.3': {}
 
-  '@reporters/github@2.1.2':
+  '@reporters/github@2.1.4':
     dependencies:
       '@actions/core': 3.0.1
       stack-utils: 2.0.6
@@ -5835,8 +5831,6 @@ snapshots:
       minimatch: 10.2.6
 
   throttleit@2.1.0: {}
-
-  tinyexec@1.3.0: {}
 
   tinyexec@1.3.1: {}
 
