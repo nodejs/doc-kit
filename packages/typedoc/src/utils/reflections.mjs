@@ -58,12 +58,14 @@ export const nestedObject = type => {
 
 /**
  * The call signatures of a function, method, callable interface, or a
- * declaration whose type is one of them.
+ * declaration whose type is one of them, named or not: a variable typed with
+ * a function type alias has that alias' signatures.
  *
  * @param {import('typedoc').DeclarationReflection} reflection
+ * @param {Set<import('typedoc').Reflection>} [seen] The types followed already
  * @returns {import('typedoc').SignatureReflection[]}
  */
-export const signaturesOf = reflection => {
+export const signaturesOf = (reflection, seen = new Set()) => {
   if (reflection.signatures) {
     return reflection.signatures;
   }
@@ -76,7 +78,13 @@ export const signaturesOf = reflection => {
 
   const target = type?.type === 'reference' ? type.reflection : undefined;
 
-  return (target?.isDeclaration() && target.signatures) || [];
+  if (!target?.isDeclaration() || seen.has(target)) {
+    return [];
+  }
+
+  seen.add(target);
+
+  return signaturesOf(target, seen);
 };
 
 /**
