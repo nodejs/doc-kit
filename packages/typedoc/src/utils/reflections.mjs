@@ -90,12 +90,14 @@ export const typeOf = member =>
   member.setSignature?.parameters?.[0]?.type;
 
 /**
- * The comment of a member: its own, or that of its getter.
+ * The comment of a member: its own, or that of its getter or method.
  *
  * @param {import('typedoc').DeclarationReflection} member
  */
 export const commentOf = member =>
-  member.comment ?? member.getSignature?.comment;
+  member.comment ??
+  member.getSignature?.comment ??
+  member.signatures?.[0]?.comment;
 
 /**
  * The members of an interface, class, enum or object type alias.
