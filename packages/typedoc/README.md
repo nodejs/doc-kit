@@ -58,7 +58,7 @@ The output directory receives, following TypeDoc's own layout:
 - `@deprecated` and `@experimental` become stability indices.
 - `@example`, `@see` and `@throws` follow the description. Block tags of your own (declared with TypeDoc's `blockTags`) are rendered as `**Tag:** content`.
 - `{@link}` and `{@linkcode}` link to the target's page or entry.
-- With several entry points, pages of exports missing from the first one say which entry points export them, by module name (set with `@module`).
+- With several entry points, pages of exports missing from the main one say which entry points export them, by module name (set with `@module`). The main entry point is the first, or the project itself when merged into it with `@mergeModuleWith <project>`, which also leaves the module name out of its exports' URLs.
 
 ## Options
 
