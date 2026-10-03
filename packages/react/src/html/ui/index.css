@@ -204,4 +204,18 @@ main {
       }
     }
   }
+
+  /* Graphviz diagrams; with colors for each color scheme, there is one per
+     scheme, and the one of the current scheme shows */
+  .diagram svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1rem auto;
+  }
+
+  :where([data-theme='dark']) & .diagram-light,
+  :where(:root:not([data-theme='dark'])) & .diagram-dark {
+    display: none;
+  }
 }
