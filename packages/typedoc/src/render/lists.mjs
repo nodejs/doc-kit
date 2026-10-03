@@ -1,8 +1,3 @@
-// Typed lists, from which doc-kit builds signatures and their tables:
-// `- \`name\` {Type} Description. **Default:** \`value\`.`
-import { renderDefault, renderParts, splitSummary } from './comments.mjs';
-import { parameterLabel, splitThis } from './entries.mjs';
-import { renderDeclarationType, renderType } from './types.mjs';
 import {
   CODE_SPAN,
   NESTED_INDENT,
@@ -11,6 +6,11 @@ import {
 } from '../constants.mjs';
 import { code, firstSentence, indentContinuation } from '../utils/markdown.mjs';
 import { commentOf, membersOf, nestedObject } from '../utils/reflections.mjs';
+// Typed lists, from which doc-kit builds signatures and their tables:
+// `- \`name\` {Type} Description. **Default:** \`value\`.`
+import { renderDefault, renderParts, splitSummary } from './comments.mjs';
+import { parameterLabel, splitThis } from './entries.mjs';
+import { renderDeclarationType, renderType } from './types.mjs';
 
 /**
  * Joins the parts of an item that are there.

@@ -3,13 +3,13 @@ import { basename } from 'node:path';
 import { slug } from '@doc-kit/core/generators/metadata/utils/slugger.mjs';
 import { KindRouter, PageKind, ReflectionKind } from 'typedoc';
 
+import { entryHeading } from '../render/entries.mjs';
 import {
   membersOf,
   referencedType,
   signaturesOf,
   typeOf,
 } from './reflections.mjs';
-import { entryHeading } from '../render/entries.mjs';
 
 /**
  * The types documented on the page of the one member with a page of its own

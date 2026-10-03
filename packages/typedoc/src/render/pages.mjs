@@ -2,6 +2,14 @@
 // of its own (`docKitMemberPages`).
 import { ReflectionKind } from 'typedoc';
 
+import { code, firstSentence, heading } from '../utils/markdown.mjs';
+import {
+  commentOf,
+  deref,
+  isCallable,
+  objectDeclaration,
+  signaturesOf,
+} from '../utils/reflections.mjs';
 import { splitSummary } from './comments.mjs';
 import { entryName, renderEntry } from './entries.mjs';
 import { typeItem } from './lists.mjs';
@@ -12,14 +20,6 @@ import {
   renderSignature,
 } from './members.mjs';
 import { renderType } from './types.mjs';
-import { code, firstSentence, heading } from '../utils/markdown.mjs';
-import {
-  commentOf,
-  deref,
-  isCallable,
-  objectDeclaration,
-  signaturesOf,
-} from '../utils/reflections.mjs';
 
 /**
  * A reflection's page title: `Interface: InputOptions`, `Function: build()`.

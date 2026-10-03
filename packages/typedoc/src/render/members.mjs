@@ -2,14 +2,6 @@
 // page.
 import { ReflectionKind } from 'typedoc';
 
-import { entryHeading, renderEntry, splitThis } from './entries.mjs';
-import {
-  memberPageItem,
-  parameterItems,
-  signatureItems,
-  typeItem,
-} from './lists.mjs';
-import { renderType } from './types.mjs';
 import { ANCHOR_SEPARATORS, EDGE_HYPHENS } from '../constants.mjs';
 import { code, heading } from '../utils/markdown.mjs';
 import {
@@ -22,6 +14,14 @@ import {
   signaturesOf,
   typeOf,
 } from '../utils/reflections.mjs';
+import { entryHeading, renderEntry, splitThis } from './entries.mjs';
+import {
+  memberPageItem,
+  parameterItems,
+  signatureItems,
+  typeItem,
+} from './lists.mjs';
+import { renderType } from './types.mjs';
 
 /**
  * What a page's own entry carries besides the entry itself.
