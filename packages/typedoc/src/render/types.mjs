@@ -1,3 +1,4 @@
+import { WHITESPACE } from '../constants.mjs';
 import { nestedObject, objectDeclaration } from '../utils/reflections.mjs';
 
 /**
@@ -17,7 +18,7 @@ export const renderType = type => {
     }
   }
 
-  return (type?.toString() ?? 'unknown').replace(/\s+/g, ' ');
+  return (type?.toString() ?? 'unknown').replace(WHITESPACE, ' ');
 };
 
 /**

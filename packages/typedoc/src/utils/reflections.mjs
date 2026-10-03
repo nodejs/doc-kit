@@ -1,6 +1,6 @@
-// Questions about TypeDoc reflections and types. They check TypeDoc's
-// discriminants (`variant`, `type`) rather than using `instanceof`, so they
-// hold when the plugin and the host load different copies of TypeDoc.
+import { ReflectionKind } from 'typedoc';
+
+import { EVENT_EMITTER, WRAPPER_TYPES } from '../constants.mjs';
 
 /**
  * The reflection a re-export refers to.
@@ -8,17 +8,18 @@
  * @param {import('typedoc').Reflection} reflection
  */
 export const deref = reflection =>
-  reflection?.variant === 'reference'
-    ? reflection.getTargetReflectionDeep()
-    : reflection;
+  reflection.isReference() ? reflection.getTargetReflectionDeep() : reflection;
 
 /**
- * Whether a reflection is a declaration (a function, class, property, …).
+ * The type a utility type wraps (`Readonly<{ … }>`), or the type itself.
  *
- * @param {import('typedoc').Reflection | undefined} reflection
+ * @param {import('typedoc').SomeType | undefined} type
+ * @returns {import('typedoc').SomeType | undefined}
  */
-export const isDeclaration = reflection =>
-  reflection?.variant === 'declaration';
+const unwrap = type =>
+  type?.type === 'reference' && WRAPPER_TYPES.has(type.name)
+    ? unwrap(type.typeArguments?.[0])
+    : type;
 
 /**
  * The declaration of an object type (`{ a: string }`), whose properties are
@@ -27,11 +28,13 @@ export const isDeclaration = reflection =>
  * @param {import('typedoc').SomeType | undefined} type
  */
 export const objectDeclaration = type => {
-  if (type?.type !== 'reflection') {
+  const object = unwrap(type);
+
+  if (object?.type !== 'reflection') {
     return undefined;
   }
 
-  const { declaration } = type;
+  const { declaration } = object;
   const isObject =
     !declaration.signatures?.length && declaration.children?.length;
 
@@ -54,7 +57,8 @@ export const nestedObject = type => {
 };
 
 /**
- * The call signatures of a function, method or function-typed member.
+ * The call signatures of a function, method, callable interface, or a
+ * declaration whose type is one of them.
  *
  * @param {import('typedoc').DeclarationReflection} reflection
  * @returns {import('typedoc').SignatureReflection[]}
@@ -64,39 +68,43 @@ export const signaturesOf = reflection => {
     return reflection.signatures;
   }
 
-  const type = reflection.type;
+  const { type } = reflection;
 
-  return type?.type === 'reflection' ? (type.declaration.signatures ?? []) : [];
+  if (type?.type === 'reflection') {
+    return type.declaration.signatures ?? [];
+  }
+
+  const target = type?.type === 'reference' ? type.reflection : undefined;
+
+  return (target?.isDeclaration() && target.signatures) || [];
 };
 
 /**
- * Whether a member is part of its type's public API.
+ * The type of a member: its own, or that of its accessors.
  *
  * @param {import('typedoc').DeclarationReflection} member
  */
-const isPublic = member =>
-  !member.flags.isPrivate && !member.name.startsWith('#');
+export const typeOf = member =>
+  member.type ??
+  member.getSignature?.type ??
+  member.setSignature?.parameters?.[0]?.type;
 
 /**
- * The public members of an interface, class or object type alias.
+ * The comment of a member: its own, or that of its getter.
+ *
+ * @param {import('typedoc').DeclarationReflection} member
+ */
+export const commentOf = member =>
+  member.comment ?? member.getSignature?.comment;
+
+/**
+ * The members of an interface, class, enum or object type alias.
  *
  * @param {import('typedoc').DeclarationReflection} reflection
  * @returns {import('typedoc').DeclarationReflection[]}
  */
-export const membersOf = reflection => {
-  const members =
-    reflection.children ?? objectDeclaration(reflection.type)?.children ?? [];
-
-  return members.filter(isPublic);
-};
-
-/**
- * The anchor a member gets with `docKitMemberAnchors`: its name alone.
- *
- * @param {import('typedoc').Reflection} member
- */
-export const memberAnchor = member =>
-  member.name.toLowerCase().replace(/[_$]+/g, '-').replace(/^-|-$/g, '');
+export const membersOf = reflection =>
+  reflection.children ?? objectDeclaration(reflection.type)?.children ?? [];
 
 /**
  * A name in camelCase: `InputOptions` → `inputOptions`.
@@ -106,32 +114,64 @@ export const memberAnchor = member =>
 export const camelCase = name => name[0].toLowerCase() + name.slice(1);
 
 /**
- * The type a type stands for, unwrapping `Partial<T>`.
+ * Whether a declaration is documented as a function: a function, or a
+ * variable or type alias of a callable type.
  *
- * @param {import('typedoc').SomeType | undefined} type
+ * @param {import('typedoc').DeclarationReflection} declaration
  */
-const unwrapPartial = type =>
-  type?.type === 'reference' && type.name === 'Partial'
-    ? type.typeArguments?.[0]
-    : type;
+export const isCallable = declaration =>
+  declaration.kindOf(ReflectionKind.Function) ||
+  (declaration.kindOf(ReflectionKind.Variable | ReflectionKind.TypeAlias) &&
+    signaturesOf(declaration).length > 0);
 
 /**
- * Whether a type refers to a declaration of the project.
+ * The type mapping an emitter's event names to the arguments of their
+ * listeners: `WatcherEvents` for `class Watcher extends EventEmitter<WatcherEvents>`.
  *
- * @param {import('typedoc').SomeType | undefined} type
+ * @param {import('typedoc').DeclarationReflection} declaration
  */
-const refersToDeclaration = type =>
-  type?.type === 'reference' && isDeclaration(type.reflection);
+export const eventMapOf = declaration => {
+  const emitter = declaration.extendedTypes?.find(
+    type => type.type === 'reference' && type.name === EVENT_EMITTER
+  );
+
+  const events = emitter?.typeArguments?.[0];
+  const target = events?.type === 'reference' ? events.reflection : undefined;
+
+  return target?.isDeclaration() ? target : undefined;
+};
 
 /**
- * The single declaration a type refers to, alone, in a union
- * (`boolean | TreeshakingOptions`) or made `Partial`.
+ * The `@category` of a reflection.
  *
- * @param {import('typedoc').SomeType | undefined} type
+ * @param {import('typedoc').Reflection} reflection
  */
-export const referencedDeclaration = type => {
-  const types = type?.type === 'union' ? type.types : [type];
-  const references = types.map(unwrapPartial).filter(refersToDeclaration);
+export const categoryOf = reflection =>
+  reflection.parent?.categories?.find(({ children }) =>
+    children.includes(reflection)
+  )?.title;
 
-  return references.length === 1 ? references[0].reflection : undefined;
+/**
+ * The entry points exporting each declaration the main entry point (the
+ * first) does not export.
+ *
+ * @param {import('typedoc').ProjectReflection} project
+ */
+export const secondaryExports = project => {
+  const [main, ...others] = project.getChildrenByKind(ReflectionKind.Module);
+  const mainExports = new Set(main?.children?.map(deref));
+
+  /** @type {Map<import('typedoc').Reflection, string[]>} */
+  const exportedFrom = new Map();
+
+  for (const module of others) {
+    for (const declaration of module.children?.map(deref) ?? []) {
+      if (!mainExports.has(declaration)) {
+        const names = exportedFrom.get(declaration) ?? [];
+        exportedFrom.set(declaration, [...names, module.name]);
+      }
+    }
+  }
+
+  return exportedFrom;
 };

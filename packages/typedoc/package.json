@@ -10,26 +10,23 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "node --test \"src/**/*.test.mjs\"",
-    "test:update-snapshots": "node --test --test-update-snapshots \"src/**/*.test.mjs\""
+    "test": "node --experimental-test-module-mocks --test \"src/**/*.test.mjs\"",
+    "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots \"src/**/*.test.mjs\""
   },
   "main": "./src/index.mjs",
-  "exports": {
-    ".": "./src/index.mjs",
-    "./package.json": "./package.json"
-  },
   "files": [
     "src",
     "!src/**/*.test.mjs",
     "!src/**/__tests__",
+    "CHANGELOG.md",
     "LICENSE",
     "README.md"
   ],
-  "peerDependencies": {
-    "typedoc": "^0.28.0"
+  "dependencies": {
+    "@doc-kit/core": "workspace:*",
+    "typedoc": "^0.28.20"
   },
   "devDependencies": {
-    "typedoc": "^0.28.20",
     "typescript": "^6.0.3"
   }
 }

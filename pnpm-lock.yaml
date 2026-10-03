@@ -307,10 +307,14 @@ importers:
         version: 1.7.2
 
   packages/typedoc:
-    devDependencies:
+    dependencies:
+      '@doc-kit/core':
+        specifier: workspace:*
+        version: link:../core
       typedoc:
         specifier: ^0.28.20
         version: 0.28.20(typescript@6.0.3)
+    devDependencies:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

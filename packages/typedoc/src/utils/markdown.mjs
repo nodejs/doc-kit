@@ -1,3 +1,10 @@
+import {
+  BLANK_LINES,
+  FIRST_SENTENCE,
+  LINE_CONTINUATION,
+  WHITESPACE,
+} from '../constants.mjs';
+
 /**
  * Text as a Markdown code span, with longer delimiters when it holds a
  * backtick.
@@ -15,7 +22,7 @@ export const code = text =>
  * @param {string} indent
  */
 export const indentContinuation = (text, indent) =>
-  text.replace(/\n(?=.)/g, `\n${indent}`);
+  text.replace(LINE_CONTINUATION, `\n${indent}`);
 
 /**
  * A heading of the given depth, at most `######`.
@@ -27,35 +34,21 @@ export const heading = (depth, text) =>
   `${'#'.repeat(Math.min(depth, 6))} ${text}`;
 
 /**
- * Splits Markdown into its first paragraph and the rest (code blocks, lists
- * and further paragraphs). Markdown opening with a block other than a
- * paragraph has no first paragraph to split off.
+ * The first sentence of a paragraph, on one line.
  *
- * @param {string} markdown
- * @returns {[string, string]}
+ * @param {string} paragraph
  */
-export const splitFirstParagraph = markdown => {
-  if (/^(```|~~~|<)/.test(markdown)) {
-    return ['', markdown];
-  }
+export const firstSentence = paragraph => {
+  const line = paragraph.replace(WHITESPACE, ' ').trim();
 
-  const end = /\n\s*\n/.exec(markdown);
-
-  if (!end || /^(>|- |\* |\d+\. )/.test(markdown)) {
-    return [markdown, ''];
-  }
-
-  return [markdown.slice(0, end.index), markdown.slice(end.index).trim()];
+  return FIRST_SENTENCE.exec(line)?.[0] ?? line;
 };
 
 /**
- * The first sentence of Markdown's first paragraph, on one line.
+ * A page's lines as a Markdown file: no runs of blank lines, one final
+ * newline.
  *
- * @param {string} markdown
+ * @param {string[]} lines
  */
-export const firstSentence = markdown => {
-  const [paragraph] = splitFirstParagraph(markdown);
-  const line = paragraph.replace(/\s+/g, ' ').trim();
-
-  return /^.+?[.!?](?=\s|$)/.exec(line)?.[0] ?? line;
-};
+export const toMarkdown = lines =>
+  `${lines.join('\n').replace(BLANK_LINES, '\n\n').trim()}\n`;
