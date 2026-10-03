@@ -22,7 +22,7 @@ const generateFixture = async options => {
 
   const app = await Application.bootstrapWithPlugins({
     plugin: [load],
-    entryPoints: [join(FIXTURES, 'index.ts')],
+    entryPoints: [join(FIXTURES, 'index.ts'), join(FIXTURES, 'utils.ts')],
     tsconfig: join(FIXTURES, 'tsconfig.json'),
     readme: 'none',
     logLevel: 'Error',

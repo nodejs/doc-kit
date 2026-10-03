@@ -219,13 +219,16 @@ export const categoryOf = reflection =>
   )?.title;
 
 /**
- * The entry points exporting each declaration the main entry point (the
- * first) does not export.
+ * The entry points exporting each declaration the main entry point does not
+ * export. The main entry point is the first, or the project itself when it is
+ * merged into it (`@mergeModuleWith <project>`).
  *
  * @param {import('typedoc').ProjectReflection} project
  */
 export const secondaryExports = project => {
-  const [main, ...others] = project.getChildrenByKind(ReflectionKind.Module);
+  const modules = project.getChildrenByKind(ReflectionKind.Module);
+  const isMerged = modules.length < (project.children?.length ?? 0);
+  const [main, ...others] = isMerged ? [project, ...modules] : modules;
   const mainExports = new Set(main?.children?.map(deref));
 
   /** @type {Map<import('typedoc').Reflection, string[]>} */
