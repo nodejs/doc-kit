@@ -1,22 +1,21 @@
 // Typed lists, from which doc-kit builds signatures and their tables:
 // `- \`name\` {Type} Description. **Default:** \`value\`.`
-import { renderDefault, renderParts } from './comments.mjs';
+import { renderDefault, renderParts, splitSummary } from './comments.mjs';
+import { parameterLabel, splitThis } from './entries.mjs';
 import { renderMemberType, renderType } from './types.mjs';
-import { VOID_TYPES } from '../constants.mjs';
 import {
-  code,
-  firstSentence,
-  indentContinuation,
-  splitFirstParagraph,
-} from '../utils/markdown.mjs';
+  CODE_SPAN,
+  NESTED_INDENT,
+  TRAILING_PERIOD,
+  VOID_TYPES,
+} from '../constants.mjs';
+import { code, firstSentence, indentContinuation } from '../utils/markdown.mjs';
 import {
-  isDeclaration,
+  commentOf,
   membersOf,
-  objectDeclaration,
+  nestedObject,
+  typeOf,
 } from '../utils/reflections.mjs';
-
-/** The indentation of nested list items */
-const NESTED = '  ';
 
 /**
  * Joins the parts of an item that are there.
@@ -38,55 +37,55 @@ const defaultSuffix = (value, optional = false) => {
     return '';
   }
 
-  const isCode = /^`[^`]+`$/.test(value);
-  const label = optional && isCode ? '**Default:**' : '**Default**:';
+  const label =
+    optional && CODE_SPAN.test(value) ? '**Default:**' : '**Default**:';
 
-  return ` ${label} ${value.replace(/\.$/, '')}.`;
+  return ` ${label} ${value.replace(TRAILING_PERIOD, '')}.`;
 };
 
 /**
- * The `Type:` item of a property or variable.
+ * The `Type:` item of a property, variable or type alias.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} member
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').DeclarationReflection} reflection
  */
-export const typeItem = (context, member) => {
-  const type = renderMemberType(member.type);
-  const { value } = renderDefault(context, member.comment);
+export const typeItem = (context, reflection) => {
+  const type = renderMemberType(typeOf(reflection));
+  const { value } = renderDefault(context, commentOf(reflection));
 
   return `- Type: {${type}}${defaultSuffix(value)}`;
 };
 
 /**
  * A member with a page of its own, as an item: its type, the first sentence
- * of its description and a link to its page, which holds the rest. Such
- * members are documented once, on their pages, wherever they are listed.
+ * of its description and a link to its page, which holds the rest.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} member
  * @param {string} [indent]
  */
 export const memberPageItem = (context, member, indent = '') => {
-  const summary = renderParts(context, member.comment?.summary);
+  const [summary] = splitSummary(context, commentOf(member));
 
   return joinParts([
     `${indent}- ${code(member.name)}`,
-    `{${renderMemberType(member.type)}}`,
+    `{${renderMemberType(typeOf(member))}}`,
     firstSentence(summary),
-    `[Details](${context.model.url(member)})`,
+    `[Details](${context.router.linkTo(context.page, member)})`,
   ]);
 };
 
 /**
  * The properties a parameter's type documents as nested items: those of an
- * object type, or of a named type with member pages (`InputOptions`).
+ * object type (alone or in a union), or of a named type with member pages
+ * (`InputOptions`).
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').SomeType | undefined} type
  * @returns {import('typedoc').DeclarationReflection[]}
  */
-const nestedProperties = ({ model }, type) => {
-  const object = objectDeclaration(type);
+const nestedProperties = ({ router }, type) => {
+  const object = nestedObject(type);
 
   if (object) {
     return object.children ?? [];
@@ -94,12 +93,12 @@ const nestedProperties = ({ model }, type) => {
 
   const target = type?.type === 'reference' ? type.reflection : undefined;
 
-  if (!isDeclaration(target)) {
+  if (!target?.isDeclaration()) {
     return [];
   }
 
   const members = membersOf(target);
-  const hasMemberPages = members.some(member => model.memberPageOf(member));
+  const hasMemberPages = members.some(member => router.memberPageOf(member));
 
   return hasMemberPages ? members : [];
 };
@@ -107,8 +106,8 @@ const nestedProperties = ({ model }, type) => {
 /**
  * A parameter's default: its `@default`, or the default of its declaration.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').ParameterReflection | import('typedoc').DeclarationReflection} parameter
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').ParameterReflection} parameter
  */
 const parameterDefault = (context, parameter) => {
   const { value } = renderDefault(context, parameter.comment);
@@ -117,19 +116,18 @@ const parameterDefault = (context, parameter) => {
     return value;
   }
 
-  const declared = 'defaultValue' in parameter ? parameter.defaultValue : '';
-
   // TypeDoc writes defaults it can't print as `...`
+  const declared = parameter.defaultValue;
+
   return declared && declared !== '...' ? code(declared) : undefined;
 };
 
 /**
  * A parameter as an item, with the properties of its type nested. Text past
- * the first paragraph of a description goes to `notes`, shown after the
- * list.
+ * the short summary of a description goes to `notes`, shown after the list.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').ParameterReflection | import('typedoc').DeclarationReflection} parameter
+ * @param {import('../types').Context} context
+ * @param {Pick<import('typedoc').ParameterReflection, 'name' | 'type' | 'flags' | 'comment' | 'defaultValue'>} parameter
  * @param {{ indent?: string, notes?: string[], path?: string }} [position]
  * @returns {string[]}
  */
@@ -138,21 +136,16 @@ export const parameterItems = (
   parameter,
   { indent = '', notes = [], path = '' } = {}
 ) => {
-  const name = parameter.flags.isRest ? `...${parameter.name}` : parameter.name;
-  const summary = renderParts(context, parameter.comment?.summary);
-  const [description, extended] = splitFirstParagraph(summary);
+  const [description, extended] = splitSummary(context, parameter.comment);
 
   if (extended) {
     notes.push(`**${code(`${path}${parameter.name}`)}:** ${extended}`, '');
   }
 
-  const isObject = Boolean(objectDeclaration(parameter.type));
-  const type = isObject ? 'Object' : renderType(parameter.type);
-
   const line = joinParts([
-    `${indent}- ${code(name)}`,
-    `{${type}}`,
-    description && indentContinuation(description, `${indent}${NESTED}`),
+    `${indent}- ${code(parameterLabel(parameter))}`,
+    `{${renderMemberType(parameter.type)}}`,
+    description && indentContinuation(description, `${indent}${NESTED_INDENT}`),
   ]);
 
   const items = [
@@ -160,20 +153,17 @@ export const parameterItems = (
   ];
 
   for (const property of nestedProperties(context, parameter.type)) {
-    const page = context.model.memberPageOf(property);
+    const page = context.router.memberPageOf(property);
 
-    if (page) {
-      items.push(memberPageItem(context, page, `${indent}${NESTED}`));
-      continue;
-    }
-
-    const nested = parameterItems(context, property, {
-      indent: `${indent}${NESTED}`,
-      notes,
-      path: `${path}${parameter.name}.`,
-    });
-
-    items.push(...nested);
+    items.push(
+      ...(page
+        ? [memberPageItem(context, page, `${indent}${NESTED_INDENT}`)]
+        : parameterItems(context, property, {
+            indent: `${indent}${NESTED_INDENT}`,
+            notes,
+            path: `${path}${parameter.name}.`,
+          }))
+    );
   }
 
   return items;
@@ -182,19 +172,14 @@ export const parameterItems = (
 /**
  * A call signature's items: its parameters and return value.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').SignatureReflection} signature
  * @param {string[]} [notes]
  */
 export const signatureItems = (context, signature, notes = []) => {
-  const items = [];
-
-  for (const parameter of signature.parameters ?? []) {
-    // `this` is the context a function is called with, not a parameter
-    if (parameter.name !== 'this') {
-      items.push(...parameterItems(context, parameter, { notes }));
-    }
-  }
+  const items = splitThis(signature).parameters.flatMap(parameter =>
+    parameterItems(context, parameter, { notes })
+  );
 
   const returns = signature.comment?.getTag('@returns');
   const returnType = renderType(signature.type);

@@ -123,6 +123,7 @@ export default {
               label: '`@node-core/doc-kit-legacy`',
               link: '/packages/node-legacy',
             },
+            { label: '`@doc-kit/typedoc`', link: '/packages/typedoc' },
           ],
         },
         {

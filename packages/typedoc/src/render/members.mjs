@@ -2,7 +2,7 @@
 // page.
 import { ReflectionKind } from 'typedoc';
 
-import { callHeading, renderPreamble, renderProse } from './entries.mjs';
+import { entryHeading, renderEntry, splitThis } from './entries.mjs';
 import {
   memberPageItem,
   parameterItems,
@@ -10,223 +10,155 @@ import {
   typeItem,
 } from './lists.mjs';
 import { renderType } from './types.mjs';
-import { DEFAULT_GROUPS } from '../constants.mjs';
 import { code, heading } from '../utils/markdown.mjs';
 import {
-  camelCase,
-  memberAnchor,
+  commentOf,
+  eventMapOf,
   membersOf,
   nestedObject,
   objectDeclaration,
   signaturesOf,
+  typeOf,
 } from '../utils/reflections.mjs';
 
 /**
- * The name members of a type are documented on: `docKitReceivers`, or the
- * type's name in camelCase (`inputOptions.input`).
+ * What a page's own entry carries besides the entry itself.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} owner
+ * @typedef {{ title?: string, notes?: string[] }} PageExtras
  */
-export const receiverOf = ({ options }, owner) =>
-  options.docKitReceivers[owner.name] ?? camelCase(owner.name);
 
 /**
- * The signatures of a member: its own, or those of the member of the same
- * name of its type's `docKitSignatureSources` type.
+ * The entry of a call signature, of a function or a method.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} member
- */
-const memberSignatures = ({ model, options }, member) => {
-  const sourceName = options.docKitSignatureSources[member.parent?.name ?? ''];
-  const source = model.byName.get(sourceName);
-  const sourceMember = source?.children?.find(
-    ({ name }) => name === member.name
-  );
-
-  return signaturesOf(sourceMember ?? member);
-};
-
-/**
- * The name a method is called by: `new Watcher`, `Watcher.create`,
- * `watcher.close`.
- *
- * @param {import('typedoc').DeclarationReflection} member
- * @param {string} receiver
- */
-const methodName = (member, receiver) => {
-  if (member.kindOf(ReflectionKind.Constructor)) {
-    return `new ${member.parent.name}`;
-  }
-
-  const owner = member.flags.isStatic ? member.parent.name : receiver;
-
-  return `${owner}.${member.name}`;
-};
-
-/**
- * The entry of a method's signature.
- *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} member
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').DeclarationReflection} declaration
  * @param {import('typedoc').SignatureReflection} signature
- * @param {string} receiver
  * @param {number} depth
+ * @param {PageExtras} [extras]
  */
-const renderSignature = (context, member, signature, receiver, depth) => {
-  const comment = signature.comment ?? member.comment;
-  const call = callHeading(methodName(member, receiver), signature);
-  const title = member.flags.isStatic ? `Static method: ${call}` : call;
-
+export const renderSignature = (
+  context,
+  declaration,
+  signature,
+  depth,
+  { title, notes: extraNotes = [] } = {}
+) => {
   const notes = [];
   const items = signatureItems(context, signature, notes);
+  const { thisParameter } = splitThis(signature);
 
   // The type of `this` in a function, as a note
-  const thisParameter = signature.parameters?.find(
-    ({ name }) => name === 'this'
-  );
-
   if (thisParameter) {
     notes.push(`**Context:** {${renderType(thisParameter.type)}}`, '');
   }
 
-  const lines = [heading(depth, title), ''];
-
-  lines.push(
-    ...renderPreamble(context, {
-      reflection: member,
-      comment,
-      items,
-      signature,
-    })
-  );
-  lines.push(...renderProse(context, comment, depth, notes));
-
-  return lines;
+  return renderEntry(context, {
+    depth,
+    label: entryHeading(context.app, declaration, signature),
+    reflection: declaration,
+    comment: signature.comment ?? declaration.comment,
+    signature,
+    items,
+    title,
+    notes: [...notes, ...extraNotes],
+  });
 };
 
 /**
  * The entry of a property, with the properties of an object type nested.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} member
- * @param {string} receiver
  * @param {number} depth
+ * @param {PageExtras} [extras]
  */
-const renderProperty = (context, member, receiver, depth) => {
-  const path = `${receiver}.${member.name}`;
-  const items = [typeItem(context, member)];
-  const lines = [heading(depth, code(path)), ''];
+const renderProperty = (context, member, depth, extras = {}) => {
+  const lines = renderEntry(context, {
+    depth,
+    label: entryHeading(context.app, member),
+    reflection: member,
+    comment: commentOf(member),
+    items: [typeItem(context, member)],
+    ...extras,
+  });
 
-  lines.push(
-    ...renderPreamble(context, {
-      reflection: member,
-      comment: member.comment,
-      items,
-    })
-  );
-  lines.push(...renderProse(context, member.comment, depth));
-
-  for (const child of nestedObject(member.type)?.children ?? []) {
-    lines.push(...renderMember(context, child, path, depth + 1));
+  for (const child of nestedObject(typeOf(member))?.children ?? []) {
+    lines.push(...renderMember(context, child, depth + 1));
   }
 
   return lines;
 };
 
 /**
- * A member of an interface, class or object type, as an entry of its owner's
- * page: a method, with an entry per signature, or a property.
+ * A member as an entry: a method, with an entry per signature, or a
+ * property.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} member
- * @param {string} receiver
  * @param {number} depth
+ * @param {PageExtras} [extras]
  * @returns {string[]}
  */
-export const renderMember = (context, member, receiver, depth) => {
-  const lines = [];
-
-  if (context.options.docKitMemberAnchors) {
-    lines.push(`<div id="${memberAnchor(member)}"></div>`, '');
-  }
-
-  const signatures = memberSignatures(context, member);
+export const renderMember = (context, member, depth, extras) => {
+  const signatures = signaturesOf(member);
 
   if (!signatures.length) {
-    lines.push(...renderProperty(context, member, receiver, depth));
-
-    return lines;
+    return renderProperty(context, member, depth, extras);
   }
 
-  for (const signature of signatures) {
-    lines.push(...renderSignature(context, member, signature, receiver, depth));
-  }
-
-  return lines;
+  return signatures.flatMap(signature =>
+    renderSignature(context, member, signature, depth, extras)
+  );
 };
 
 /**
- * Whether a type groups its members with `@group`.
+ * Whether a type groups its members with `@group`: TypeDoc names its own
+ * groups after the kind of their members.
  *
  * @param {Array<import('typedoc').ReflectionGroup>} groups
  */
 const hasCustomGroups = groups =>
-  groups.some(({ title }) => !DEFAULT_GROUPS.has(title));
+  groups.some(({ title, children }) =>
+    children.some(child => ReflectionKind.pluralString(child.kind) !== title)
+  );
 
 /**
  * The members of a type. Members with pages of their own are listed, linking
  * to them; the others are entries, in sections when grouped with `@group`.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} owner
- * @param {string} receiver
  * @param {number} depth
  */
-export const renderMembers = (context, owner, receiver, depth) => {
+export const renderMembers = (context, owner, depth) => {
   const lines = [];
-  const pages = [];
-  const members = [];
+  const all = membersOf(owner);
+  const pages = all.map(member => context.router.memberPageOf(member));
+  const members = all.filter((_, index) => !pages[index]);
 
-  for (const member of membersOf(owner)) {
-    const page = context.model.memberPageOf(member);
-
-    if (page) {
-      pages.push(page);
-    } else {
-      members.push(member);
-    }
-  }
-
-  if (pages.length) {
+  if (pages.some(Boolean)) {
     lines.push(heading(depth, 'Properties'), '');
-
-    for (const page of pages) {
-      lines.push(memberPageItem(context, page));
-    }
-
-    lines.push('');
+    lines.push(
+      ...pages.filter(Boolean).map(page => memberPageItem(context, page)),
+      ''
+    );
   }
 
   const groups = owner.groups ?? objectDeclaration(owner.type)?.groups ?? [];
 
   if (!hasCustomGroups(groups)) {
-    for (const member of members) {
-      lines.push(...renderMember(context, member, receiver, depth));
-    }
-
-    return lines;
+    return lines.concat(
+      members.flatMap(member => renderMember(context, member, depth))
+    );
   }
 
   for (const { title, children } of groups) {
     lines.push(heading(depth, title), '');
-
-    for (const member of children) {
-      if (members.includes(member)) {
-        lines.push(...renderMember(context, member, receiver, depth + 1));
-      }
-    }
+    lines.push(
+      ...children
+        .filter(member => members.includes(member))
+        .flatMap(member => renderMember(context, member, depth + 1))
+    );
   }
 
   return lines;
@@ -235,51 +167,38 @@ export const renderMembers = (context, owner, receiver, depth) => {
 /**
  * The arguments an event's listeners receive, as a typed list.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} event
  */
 const eventArguments = (context, event) => {
-  const items = [];
   const elements = event.type?.type === 'tuple' ? event.type.elements : [];
 
-  for (const argument of elements) {
-    if (argument?.type !== 'namedTupleMember') {
-      continue;
-    }
-
-    const object = objectDeclaration(argument.element);
-    const type = object ? 'Object' : renderType(argument.element);
-
-    items.push(`- ${code(argument.name)} {${type}}`);
-
-    for (const property of object?.children ?? []) {
-      items.push(...parameterItems(context, property, { indent: '  ' }));
-    }
-  }
-
-  return items;
+  return elements
+    .filter(element => element.type === 'namedTupleMember')
+    .flatMap(({ name, element, isOptional }) =>
+      parameterItems(context, { name, type: element, flags: { isOptional } })
+    );
 };
 
 /**
  * An emitter's events, as doc-kit `Event:` entries listing the arguments
- * their listeners receive (`docKitEvents`).
+ * their listeners receive, from the type the emitter extends `EventEmitter`
+ * with.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} emitter
  * @param {number} depth
  */
 export const renderEvents = (context, emitter, depth) => {
-  const eventMap = context.model.byName.get(
-    context.options.docKitEvents[emitter.name]
+  const eventMap = eventMapOf(emitter);
+
+  return (eventMap ? membersOf(eventMap) : []).flatMap(event =>
+    renderEntry(context, {
+      depth,
+      label: `Event: ${code(`'${event.name}'`)}`,
+      reflection: event,
+      comment: event.comment,
+      items: eventArguments(context, event),
+    })
   );
-
-  const lines = [];
-
-  for (const event of eventMap ? membersOf(eventMap) : []) {
-    lines.push(heading(depth, `Event: ${code(`'${event.name}'`)}`), '');
-    lines.push(...eventArguments(context, event), '');
-    lines.push(...renderProse(context, event.comment, depth));
-  }
-
-  return lines;
 };

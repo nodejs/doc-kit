@@ -1,57 +1,47 @@
-// Pages: one per export, and one per member with a page of its own
-// (`docKitMemberPages`).
+// Pages: one per module, namespace and export, and one per member with a page
+// of its own (`docKitMemberPages`).
 import { ReflectionKind } from 'typedoc';
 
-import { callHeading, renderPreamble, renderProse } from './entries.mjs';
-import { signatureItems, typeItem } from './lists.mjs';
+import { splitSummary } from './comments.mjs';
+import { renderEntry } from './entries.mjs';
+import { typeItem } from './lists.mjs';
 import {
-  receiverOf,
   renderEvents,
   renderMember,
   renderMembers,
+  renderSignature,
 } from './members.mjs';
 import { renderType } from './types.mjs';
-import { code } from '../utils/markdown.mjs';
+import { code, firstSentence, heading } from '../utils/markdown.mjs';
 import {
-  nestedObject,
+  isCallable,
   objectDeclaration,
   signaturesOf,
 } from '../utils/reflections.mjs';
 
 /**
- * A declaration's page title: `Interface: InputOptions`, `Function: build()`.
+ * A reflection's page title: `Interface: InputOptions`, `Function: build()`.
  *
- * @param {import('typedoc').DeclarationReflection} declaration
+ * @param {import('typedoc').Reflection} reflection
  */
-export const pageTitle = declaration => {
-  // `TypeAlias` → `Type Alias`
-  const kind = ReflectionKind[declaration.kind].replace(
-    /(?<=[a-z])(?=[A-Z])/g,
-    ' '
-  );
+const pageTitle = reflection => {
+  const kind = ReflectionKind.singularString(reflection.kind);
+  const call = reflection.kindOf(ReflectionKind.Function) ? '()' : '';
 
-  const call = declaration.kindOf(ReflectionKind.Function) ? '()' : '';
-
-  return `${kind}: ${declaration.name}${call}`;
+  return `${kind}: ${reflection.name}${call}`;
 };
 
 /**
- * Where an export is imported from, unless from the main entry point (the
- * shortest import path of `docKitImportPaths`).
+ * Where an export is imported from, when the main entry point does not
+ * export it.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} declaration
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').Reflection} declaration
  */
-const importedFrom = ({ model, options }, declaration) => {
-  const allPaths = Object.values(options.docKitImportPaths);
-  const [main] = allPaths.sort((a, b) => a.length - b.length);
-  const paths = [...(model.importPaths.get(declaration) ?? [])];
+const importedFrom = ({ exportedFrom }, declaration) => {
+  const modules = exportedFrom.get(declaration);
 
-  if (!paths.length || paths.includes(main)) {
-    return [];
-  }
-
-  return [`Exported from ${paths.map(code).join(', ')}.`];
+  return modules ? [`Exported from ${modules.map(code).join(', ')}.`] : [];
 };
 
 /**
@@ -66,90 +56,86 @@ const extendedBy = declaration => {
 };
 
 /**
- * The entry of a function's signature. The page's own entry carries the page
- * title and where the function is imported from.
+ * A page's own entry.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} declaration
- * @param {import('typedoc').SignatureReflection} signature
- * @param {number} depth
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').DeclarationReflection} reflection
+ * @param {{ label?: string, items?: string[], notes?: string[] }} [entry]
  */
-const signatureEntry = (context, declaration, signature, depth) => {
-  const isPage = depth === 1;
-  const comment = signature.comment ?? declaration.comment;
+const pageEntry = (context, reflection, entry = {}) =>
+  renderEntry(context, {
+    depth: 1,
+    label: pageTitle(reflection),
+    reflection,
+    comment: reflection.comment,
+    title: pageTitle(reflection),
+    notes: importedFrom(context, reflection),
+    ...entry,
+  });
 
-  const notes = [];
-  const items = signatureItems(context, signature, notes);
+/**
+ * A module or namespace: a list of its exports, by group.
+ *
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').DeclarationReflection} container
+ */
+const containerPage = (context, container) => {
+  const lines = pageEntry(context, container);
 
-  if (isPage) {
-    notes.push(...importedFrom(context, declaration));
+  for (const { title, children } of container.groups ?? []) {
+    lines.push(heading(2, title), '');
+
+    for (const child of children) {
+      const [summary] = splitSummary(context, child.comment);
+      const link = `[${code(child.name)}](${context.router.linkTo(context.page, child)})`;
+
+      lines.push(`- ${link} ${firstSentence(summary)}`.trim());
+    }
+
+    lines.push('');
   }
-
-  const lines = [
-    `${'#'.repeat(depth)} ${callHeading(declaration.name, signature)}`,
-    '',
-  ];
-
-  lines.push(
-    ...renderPreamble(context, {
-      reflection: declaration,
-      comment,
-      items,
-      signature,
-      title: isPage ? pageTitle(declaration) : undefined,
-    })
-  );
-  lines.push(...renderProse(context, comment, depth, notes));
 
   return lines;
 };
 
 /**
- * A function, or a variable or type alias of a function type. A single
+ * A function, or a variable or type alias of a callable type. A single
  * signature is the page's own entry; several are entries under its title.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} declaration
  */
 const callablePage = (context, declaration) => {
   const signatures = signaturesOf(declaration);
 
   if (signatures.length === 1) {
-    return signatureEntry(context, declaration, signatures[0], 1);
+    return renderSignature(context, declaration, signatures[0], 1, {
+      title: pageTitle(declaration),
+      notes: importedFrom(context, declaration),
+    });
   }
 
-  const title = pageTitle(declaration);
-  const { comment } = declaration;
-  const lines = [`# ${title}`, ''];
-
-  lines.push(
-    ...renderPreamble(context, { reflection: declaration, comment, title })
-  );
-  lines.push(
-    ...renderProse(context, comment, 1, importedFrom(context, declaration))
-  );
-
-  for (const signature of signatures) {
-    lines.push(...signatureEntry(context, declaration, signature, 2));
-  }
-
-  return lines;
+  return [
+    ...pageEntry(context, declaration),
+    ...signatures.flatMap(signature =>
+      renderSignature(context, declaration, signature, 2)
+    ),
+  ];
 };
 
 /**
  * The typed list of a type: what a type alias stands for, or what an
  * interface extends.
  *
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} declaration
  */
-const typeItems = declaration => {
-  const isAlias =
+const typeItems = (context, declaration) => {
+  if (
     declaration.kindOf(ReflectionKind.TypeAlias) &&
-    declaration.type &&
-    !objectDeclaration(declaration.type);
-
-  if (isAlias) {
-    return [`- Type: {${renderType(declaration.type)}}`];
+    !objectDeclaration(declaration.type)
+  ) {
+    return [typeItem(context, declaration)];
   }
 
   const extended = declaration.extendedTypes ?? [];
@@ -160,168 +146,53 @@ const typeItems = declaration => {
 };
 
 /**
- * An interface, class or type alias, with its events and members.
+ * A class, interface, enum or type alias, with its call signatures, events
+ * and members.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} declaration
  */
-const typePage = (context, declaration) => {
-  const heading = declaration.kindOf(ReflectionKind.Class)
-    ? `Class: ${code(declaration.name)}`
-    : pageTitle(declaration);
-
-  const { comment } = declaration;
-  const notes = importedFrom(context, declaration).concat(
-    extendedBy(declaration)
-  );
-  const lines = [`# ${heading}`, ''];
-
-  lines.push(
-    ...renderPreamble(context, {
-      reflection: declaration,
-      comment,
-      items: typeItems(declaration),
-      title: pageTitle(declaration),
-    })
-  );
-  lines.push(...renderProse(context, comment, 1, notes));
-  lines.push(...renderEvents(context, declaration, 2));
-  lines.push(
-    ...renderMembers(context, declaration, receiverOf(context, declaration), 2)
-  );
-
-  return lines;
-};
+const typePage = (context, declaration) => [
+  ...pageEntry(context, declaration, {
+    // doc-kit recognizes classes by their `Class: \`Name\`` heading
+    label: declaration.kindOf(ReflectionKind.Class)
+      ? `Class: ${code(declaration.name)}`
+      : pageTitle(declaration),
+    items: typeItems(context, declaration),
+    notes: [...importedFrom(context, declaration), ...extendedBy(declaration)],
+  }),
+  ...(declaration.signatures ?? []).flatMap(signature =>
+    renderSignature(context, declaration, signature, 2)
+  ),
+  ...renderEvents(context, declaration, 2),
+  ...renderMembers(context, declaration, 2),
+];
 
 /**
- * A variable that is not a function.
+ * The page of a module, namespace, export or member with a page of its own.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} declaration
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').DeclarationReflection} reflection
+ * @returns {string[]}
  */
-const variablePage = (context, declaration) => {
-  const title = pageTitle(declaration);
-  const { comment } = declaration;
-  const items = [`- Type: {${renderType(declaration.type)}}`];
-  const lines = [`# ${title}`, ''];
-
-  lines.push(
-    ...renderPreamble(context, {
-      reflection: declaration,
-      comment,
-      items,
-      title,
-    })
-  );
-  lines.push(
-    ...renderProse(context, comment, 1, importedFrom(context, declaration))
-  );
-
-  return lines;
-};
-
-/**
- * A type documented on the page of the one member page using it: a pointer
- * there.
- *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} declaration
- * @param {import('typedoc').DeclarationReflection} member
- */
-const inlinedTypePage = (context, declaration, member) => {
-  const name = code(`${receiverOf(context, member.parent)}.${member.name}`);
-
-  return [
-    `# ${pageTitle(declaration)}`,
-    '',
-    `See [${name}](${context.model.url(member)}).`,
-  ];
-};
-
-/**
- * The type a member page documents the members of: a type no other member
- * page uses.
- *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} member
- */
-const inlinedTypeOf = ({ model }, member) => {
-  for (const [type, user] of model.inlined) {
-    if (user === member) {
-      return type;
-    }
+export const renderPage = (context, reflection) => {
+  if (reflection.kindOf(ReflectionKind.SomeModule)) {
+    return containerPage(context, reflection);
   }
 
-  return undefined;
-};
-
-/**
- * A member with a page of its own, with the members of its type (an object
- * type, or a type documented on this page only).
- *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} member
- */
-export const memberPage = (context, member) => {
-  const receiver = receiverOf(context, member.parent);
-  const { comment } = member;
-  const items = [typeItem(context, member)];
-  const lines = [`# ${code(`${receiver}.${member.name}`)}`, ''];
-
-  lines.push(
-    ...renderPreamble(context, {
-      reflection: member,
-      comment,
-      items,
-      title: member.name,
-    })
-  );
-  lines.push(...renderProse(context, comment, 1));
-
-  const inlined = inlinedTypeOf(context, member);
-
-  if (inlined) {
-    lines.push(...renderMembers(context, inlined, member.name, 2));
+  if (reflection.kindOf(ReflectionKind.SomeMember)) {
+    return renderMember(context, reflection, 1, { title: reflection.name });
   }
 
-  for (const child of nestedObject(member.type)?.children ?? []) {
-    lines.push(...renderMember(context, child, member.name, 2));
+  if (isCallable(reflection)) {
+    return callablePage(context, reflection);
   }
 
-  return lines;
-};
-
-/**
- * Whether a declaration is documented as a function: a function, or a
- * variable or type alias of a function type.
- *
- * @param {import('typedoc').DeclarationReflection} declaration
- */
-const isCallable = declaration =>
-  declaration.kindOf(ReflectionKind.Function) ||
-  (declaration.kindOf(ReflectionKind.Variable | ReflectionKind.TypeAlias) &&
-    signaturesOf(declaration).length > 0);
-
-/**
- * The page of an export.
- *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').DeclarationReflection} declaration
- */
-export const declarationPage = (context, declaration) => {
-  const member = context.model.inlined.get(declaration);
-
-  if (member) {
-    return inlinedTypePage(context, declaration, member);
+  if (reflection.kindOf(ReflectionKind.Variable)) {
+    return pageEntry(context, reflection, {
+      items: [typeItem(context, reflection)],
+    });
   }
 
-  if (isCallable(declaration)) {
-    return callablePage(context, declaration);
-  }
-
-  if (declaration.kindOf(ReflectionKind.Variable)) {
-    return variablePage(context, declaration);
-  }
-
-  return typePage(context, declaration);
+  return typePage(context, reflection);
 };
