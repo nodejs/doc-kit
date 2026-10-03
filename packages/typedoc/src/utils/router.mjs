@@ -9,8 +9,8 @@ import { entryHeading } from '../render/entries.mjs';
 /**
  * TypeDoc's kind router (`classes/Watcher.md`), writing Markdown files. The
  * members of `docKitMemberPages` types get a page of their own
- * (`interfaces/BuildOptions.input.md`), and members are anchored where
- * doc-kit anchors their headings.
+ * (`interfaces/BuildOptions.input.md`), `docKitUrlAdapter` adapts the URLs, and
+ * members are anchored where doc-kit anchors their headings.
  */
 export class DocKitRouter extends KindRouter {
   extension = '.md';
@@ -41,8 +41,13 @@ export class DocKitRouter extends KindRouter {
       : super.getPageKind(target);
   }
 
-  /** @param {import('typedoc').Reflection} reflection */
-  getIdealBaseName(reflection) {
+  /**
+   * A page's URL before `docKitUrlAdapter`: TypeDoc's (`interfaces/BuildOptions`),
+   * or its owner's and its name for a member (`interfaces/BuildOptions.input`).
+   *
+   * @param {import('typedoc').Reflection} reflection
+   */
+  getDefaultUrl(reflection) {
     if (!this.isMemberPage(reflection)) {
       return super.getIdealBaseName(reflection);
     }
@@ -50,6 +55,14 @@ export class DocKitRouter extends KindRouter {
     const owner = super.getIdealBaseName(reflection.parent);
 
     return `${owner}.${this.getUrlSafeName(reflection.name)}`;
+  }
+
+  /** @param {import('typedoc').Reflection} reflection */
+  getIdealBaseName(reflection) {
+    const url = this.getDefaultUrl(reflection);
+    const adapt = this.application.options.getValue('docKitUrlAdapter');
+
+    return adapt ? adapt(url, reflection) : url;
   }
 
   /** @param {import('typedoc').Reflection} target */

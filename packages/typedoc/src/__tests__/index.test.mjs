@@ -1,10 +1,10 @@
-import { deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, ok } from 'node:assert';
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { extname, join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { Application, OptionDefaults } from 'typedoc';
+import { Application, OptionDefaults, ReflectionKind } from 'typedoc';
 
 import { load } from '../index.mjs';
 
@@ -101,5 +101,28 @@ describe('the doc-kit output without a type map and a page list', () => {
       files.filter(file => extname(file) === '.json'),
       []
     );
+  });
+});
+
+describe('the doc-kit output with adapted URLs', () => {
+  let directory;
+  let files;
+
+  before(async () => {
+    directory = await generateFixture({
+      docKitUrlAdapter: (url, reflection) =>
+        reflection.kindOf(ReflectionKind.Function)
+          ? `api.${reflection.name}`
+          : url,
+    });
+
+    files = await readFiles(directory);
+  });
+
+  after(() => rm(directory, { recursive: true, force: true }));
+
+  it('writes pages at their adapted URLs, and links to them there', () => {
+    ok('api.build.md' in files);
+    ok(files['api.watch.md'].includes('](api.build.md)'));
   });
 });
