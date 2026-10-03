@@ -31,7 +31,7 @@
     "@changesets/cli": "^3.0.3",
     "@node-core/doc-kit": "workspace:*",
     "@playwright/test": "~1.62.0",
-    "@reporters/github": "~2.1.2",
+    "@reporters/github": "~2.1.4",
     "@types/mdast": "~4.0.4",
     "@types/node": "~24.10.1",
     "@types/semver": "~7.8.0",
