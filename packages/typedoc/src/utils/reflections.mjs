@@ -61,6 +61,22 @@ export const nestedObject = type => {
 };
 
 /**
+ * The declaration of the project a type refers to, alone or as the one
+ * reference of a union (`boolean | TreeshakeOptions`).
+ *
+ * @param {import('typedoc').SomeType | undefined} type
+ */
+export const referencedType = type => {
+  const types = type?.type === 'union' ? type.types : [type];
+
+  const declarations = types
+    .map(part => referencedDeclaration(unwrap(part)))
+    .filter(Boolean);
+
+  return declarations.length === 1 ? declarations[0] : undefined;
+};
+
+/**
  * The call signatures of a function, method, callable interface, or a
  * declaration whose type is one of them, named or not: a variable typed with
  * a function type alias has that alias' signatures.

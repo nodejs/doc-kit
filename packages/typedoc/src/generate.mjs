@@ -74,13 +74,16 @@ export const generate = async (app, directory, project) => {
 
   if (typeMapFile) {
     writes.push(
-      writeJSON(join(directory, typeMapFile), typeMap(pages, basePath))
+      writeJSON(join(directory, typeMapFile), typeMap(router, pages, basePath))
     );
   }
 
   if (pageListFile) {
     writes.push(
-      writeJSON(join(directory, pageListFile), pageList(pages, basePath))
+      writeJSON(
+        join(directory, pageListFile),
+        pageList(router, pages, basePath)
+      )
     );
   }
 

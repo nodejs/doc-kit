@@ -3,7 +3,7 @@
 import { ReflectionKind } from 'typedoc';
 
 import { splitSummary } from './comments.mjs';
-import { renderEntry } from './entries.mjs';
+import { entryName, renderEntry } from './entries.mjs';
 import { typeItem } from './lists.mjs';
 import {
   renderEvents,
@@ -74,6 +74,26 @@ const pageEntry = (context, reflection, entry = {}) =>
     notes: importedFrom(context, reflection),
     ...entry,
   });
+
+/**
+ * A type documented on the page of the member using it: its description, and
+ * a link there.
+ *
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').DeclarationReflection} declaration
+ * @param {import('typedoc').DeclarationReflection} member
+ */
+const inlinedTypePage = (context, declaration, member) => {
+  const name = code(entryName(context.router, member));
+  const link = context.router.linkTo(context.page, member);
+
+  return pageEntry(context, declaration, {
+    notes: [
+      ...importedFrom(context, declaration),
+      `Documented with [${name}](${link}).`,
+    ],
+  });
+};
 
 /**
  * A module or namespace: a list of its exports, by group.
@@ -180,6 +200,12 @@ const typePage = (context, declaration) => [
  * @returns {string[]}
  */
 export const renderPage = (context, reflection) => {
+  const member = context.router.inlined.get(reflection);
+
+  if (member) {
+    return inlinedTypePage(context, reflection, member);
+  }
+
   if (reflection.kindOf(ReflectionKind.SomeModule)) {
     return containerPage(context, reflection);
   }

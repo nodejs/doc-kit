@@ -27,6 +27,19 @@ export interface BuildOptions {
    * @experimental
    */
   output?: Readonly<{ dir: string; format?: Format }>;
+  /**
+   * How to tree-shake, keeping
+   * {@link TreeshakeOptions.annotations | annotated} calls or not.
+   */
+  treeshake?: boolean | TreeshakeOptions;
+}
+
+/**
+ * Options of tree-shaking.
+ */
+export interface TreeshakeOptions {
+  /** Whether to keep the calls annotated as pure. */
+  annotations?: boolean;
 }
 
 /**

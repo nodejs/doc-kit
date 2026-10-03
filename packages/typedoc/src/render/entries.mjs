@@ -18,13 +18,15 @@ export const receiverOf = (app, owner) =>
 /**
  * The name an entry is documented by: `build` for an export, then
  * `new Watcher`, `Watcher.create`, `watcher.close`, or
- * `buildOptions.output.dir` for the members of a type.
+ * `buildOptions.output.dir` for the members of a type, and
+ * `buildOptions.treeshake.annotations` for those of a type documented on a
+ * member's page.
  *
- * @param {import('typedoc').Application} app
+ * @param {import('../utils/router.mjs').DocKitRouter} router
  * @param {import('typedoc').Reflection} reflection
  * @returns {string}
  */
-export const entryName = (app, reflection) => {
+export const entryName = (router, reflection) => {
   // The members of an object type belong to what has that type
   const parent = reflection.parent?.kindOf(ReflectionKind.TypeLiteral)
     ? reflection.parent.parent
@@ -45,8 +47,17 @@ export const entryName = (app, reflection) => {
     return `${parent.name}.${reflection.name}`;
   }
 
+  const documentedOn = router.inlined.get(parent);
+
+  if (documentedOn) {
+    return `${entryName(router, documentedOn)}.${reflection.name}`;
+  }
+
   const isOwner = parent.parent?.kindOf(ReflectionKind.ExportContainer);
-  const receiver = isOwner ? receiverOf(app, parent) : entryName(app, parent);
+
+  const receiver = isOwner
+    ? receiverOf(router.application, parent)
+    : entryName(router, parent);
 
   return `${receiver}.${reflection.name}`;
 };
@@ -116,12 +127,12 @@ export const callHeading = (name, signature) => {
 /**
  * The heading of an entry: its call, when given a signature, or its name.
  *
- * @param {import('typedoc').Application} app
+ * @param {import('../utils/router.mjs').DocKitRouter} router
  * @param {import('typedoc').Reflection} reflection
  * @param {import('typedoc').SignatureReflection} [signature]
  */
-export const entryHeading = (app, reflection, signature) => {
-  const name = entryName(app, reflection);
+export const entryHeading = (router, reflection, signature) => {
+  const name = entryName(router, reflection);
 
   if (!signature) {
     return code(name);
