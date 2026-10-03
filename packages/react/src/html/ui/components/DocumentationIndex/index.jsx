@@ -1,9 +1,9 @@
 import Badge from '@node-core/ui-components/Common/Badge';
 
-import styles from './index.module.css';
-import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
-
 import { documentationIndex } from '#theme/config';
+
+import { STABILITY_KINDS, STABILITY_LABELS } from '../constants.mjs';
+import styles from './index.module.css';
 
 /**
  * @typedef {Object} DocumentationIndexEntry

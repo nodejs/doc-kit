@@ -6,8 +6,8 @@ import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { writeFile, withExt } from '@doc-kit/core/utils/file.mjs';
 import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 
-import { createSectionBuilder } from './utils/buildSection.mjs';
 import { legacyToJSON } from '../utils/legacyToJSON.mjs';
+import { createSectionBuilder } from './utils/buildSection.mjs';
 
 const buildSection = createSectionBuilder();
 

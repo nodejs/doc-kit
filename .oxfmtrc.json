@@ -11,6 +11,19 @@
   "bracketSameLine": false,
   "arrowParens": "avoid",
   "sortPackageJson": false,
+  "sortImports": {
+    "groups": [
+      "builtin",
+      "external",
+      "internal",
+      ["sibling", "parent"],
+      "index",
+      "unknown"
+    ],
+    "newlinesBetween": true,
+    "order": "asc",
+    "ignoreCase": true
+  },
   "ignorePatterns": [
     "pnpm-lock.yaml",
     "packages/node/src/api-links/__tests__/fixtures/",

@@ -4,11 +4,11 @@ import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { visit } from 'unist-util-visit';
 
+import { headingLabel } from '../jsx-ast/utils/buildBarProps.mjs';
 import { MIN_CHUNKS } from './constants.mjs';
 import { buildAnchorMap, rewriteUrl } from './utils/links.mjs';
 import { createUniqueNamer, toFileName } from './utils/naming.mjs';
 import { splitIntoChunks } from './utils/split.mjs';
-import { headingLabel } from '../jsx-ast/utils/buildBarProps.mjs';
 
 // The nodes that carry a URL authored relative to the module page
 const URL_NODE_TYPES = new Set(['link', 'image', 'definition']);
