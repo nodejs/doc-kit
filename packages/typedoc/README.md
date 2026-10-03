@@ -43,9 +43,9 @@ The output directory receives, following TypeDoc's own layout:
 
 - A page per module and namespace (`modules/plugins.md`), listing its exports.
 - A page per exported class, interface, enum, type alias, function and variable: `classes/Watcher.md`, `functions/build.md`, …
-- A page per member of the types in `docKitMemberPages`: `interfaces/BuildOptions.input.md`, …
+- A page per member of the types in `docKitMemberPages`: `interfaces/BuildOptions.input.md`, … A type only one of these members uses (`boolean | TreeshakeOptions`) is documented on its page, and the type's own page links there.
 - `type-map.json`, mapping type names to their pages, for doc-kit's `typeMap` to link `{Type}` annotations with.
-- `pages.json`, listing every page (full name, kind, URL and `@category`) for the site to build its navigation from.
+- `pages.json`, listing every page (full name, kind, URL and `@category`) for the site to build its navigation from, but those of types documented on a member's page.
 
 `docKitUrlAdapter` adapts these URLs, to keep the URLs of a previous site working. Links between pages are relative `.md` links, which doc-kit resolves. Source links are relative to TypeDoc's `basePath` (or `displayBasePath`); set it to the root of your repository.
 

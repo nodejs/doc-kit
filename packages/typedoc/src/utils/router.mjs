@@ -3,17 +3,64 @@ import { basename } from 'node:path';
 import { slug } from '@doc-kit/core/generators/metadata/utils/slugger.mjs';
 import { KindRouter, PageKind, ReflectionKind } from 'typedoc';
 
-import { signaturesOf } from './reflections.mjs';
+import {
+  membersOf,
+  referencedType,
+  signaturesOf,
+  typeOf,
+} from './reflections.mjs';
 import { entryHeading } from '../render/entries.mjs';
+
+/**
+ * The types documented on the page of the one member with a page of its own
+ * using them, as `boolean | TreeshakeOptions` uses `TreeshakeOptions`, by
+ * type: such a type's members have no other use worth a page.
+ *
+ * @param {Array<import('typedoc').DeclarationReflection>} members
+ */
+const inlinedTypes = members => {
+  const users = Map.groupBy(members, member => referencedType(typeOf(member)));
+
+  /** @type {Map<import('typedoc').Reflection, import('typedoc').DeclarationReflection>} */
+  const inlined = new Map();
+
+  for (const [type, [member, ...others]] of users) {
+    if (type && !others.length && membersOf(type).length) {
+      inlined.set(type, member);
+    }
+  }
+
+  return inlined;
+};
 
 /**
  * TypeDoc's kind router (`classes/Watcher.md`), writing Markdown files. The
  * members of `docKitMemberPages` types get a page of their own
- * (`interfaces/BuildOptions.input.md`), `docKitUrlAdapter` adapts the URLs, and
- * members are anchored where doc-kit anchors their headings.
+ * (`interfaces/BuildOptions.input.md`), which documents the type only they
+ * use, `docKitUrlAdapter` adapts the URLs, and members are anchored where
+ * doc-kit anchors their headings.
  */
 export class DocKitRouter extends KindRouter {
   extension = '.md';
+
+  /**
+   * The types documented on a member's page, by type (see `inlinedTypes()`)
+   *
+   * @type {Map<import('typedoc').Reflection, import('typedoc').DeclarationReflection>}
+   */
+  inlined = new Map();
+
+  /** @param {import('typedoc').ProjectReflection} project */
+  buildPages(project) {
+    // Anchors are named after the members documenting them, so these come first
+    const members = project
+      .getReflectionsByKind(ReflectionKind.SomeMember)
+      .filter(member => this.isMemberPage(member));
+
+    this.inlined = inlinedTypes(members);
+
+    return super.buildPages(project);
+  }
 
   /**
    * Whether a reflection is a member with a page of its own.
@@ -68,13 +115,13 @@ export class DocKitRouter extends KindRouter {
   /** @param {import('typedoc').Reflection} target */
   createAnchor(target) {
     if (target.isSignature()) {
-      return slug(entryHeading(this.application, target.parent, target));
+      return slug(entryHeading(this, target.parent, target));
     }
 
     if (target.isDeclaration()) {
       const [signature] = signaturesOf(target);
 
-      return slug(entryHeading(this.application, target, signature));
+      return slug(entryHeading(this, target, signature));
     }
 
     return slug(target.name);
@@ -100,13 +147,19 @@ export class DocKitRouter extends KindRouter {
   }
 
   /**
-   * A link from a page to a reflection: to its member page, its anchor, or
-   * the closest parent with one.
+   * A link from a page to a reflection: to its member page, the member page
+   * documenting its type, its anchor, or the closest parent with one.
    *
    * @param {import('typedoc').Reflection} from
    * @param {import('typedoc').Reflection} target
    */
   linkTo(from, target) {
+    const inlined = this.inlinedLink(from, target);
+
+    if (inlined) {
+      return inlined;
+    }
+
     let to = (target.isDeclaration() && this.memberPageOf(target)) || target;
 
     while (to && !this.hasUrl(to)) {
@@ -118,5 +171,26 @@ export class DocKitRouter extends KindRouter {
     }
 
     return this.relativeUrl(from, to) || basename(this.getFullUrl(to));
+  }
+
+  /**
+   * A link to a type documented on a member's page, or into it: to that page.
+   *
+   * @param {import('typedoc').Reflection} from
+   * @param {import('typedoc').Reflection} target
+   */
+  inlinedLink(from, target) {
+    for (let owner = target; owner; owner = owner.parent) {
+      const member = this.inlined.get(owner);
+
+      if (member) {
+        const page =
+          this.relativeUrl(from, member) || basename(this.getFullUrl(member));
+
+        return owner === target ? page : `${page}#${this.createAnchor(target)}`;
+      }
+    }
+
+    return undefined;
   }
 }

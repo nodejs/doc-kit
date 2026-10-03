@@ -18,6 +18,7 @@ import {
   membersOf,
   nestedObject,
   objectDeclaration,
+  referencedType,
   signaturesOf,
   typeOf,
 } from '../utils/reflections.mjs';
@@ -55,7 +56,7 @@ export const renderSignature = (
 
   return renderEntry(context, {
     depth,
-    label: entryHeading(context.app, declaration, signature),
+    label: entryHeading(context.router, declaration, signature),
     reflection: declaration,
     comment: signature.comment ?? declaration.comment,
     signature,
@@ -66,7 +67,25 @@ export const renderSignature = (
 };
 
 /**
- * The entry of a property, with the properties of an object type nested.
+ * The members documented under a property: those of its object type, or of
+ * the type documented on its page (`TreeshakeOptions` on `treeshake`'s).
+ *
+ * @param {import('../types').Context} context
+ * @param {import('typedoc').DeclarationReflection} member
+ */
+const nestedMembers = ({ router }, member) => {
+  const type = typeOf(member);
+  const named = referencedType(type);
+
+  if (named && router.inlined.get(named) === member) {
+    return membersOf(named);
+  }
+
+  return nestedObject(type)?.children ?? [];
+};
+
+/**
+ * The entry of a property, with the members of its type nested.
  *
  * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} member
@@ -76,14 +95,14 @@ export const renderSignature = (
 const renderProperty = (context, member, depth, extras = {}) => {
   const lines = renderEntry(context, {
     depth,
-    label: entryHeading(context.app, member),
+    label: entryHeading(context.router, member),
     reflection: member,
     comment: commentOf(member),
     items: [typeItem(context, member)],
     ...extras,
   });
 
-  for (const child of nestedObject(typeOf(member))?.children ?? []) {
+  for (const child of nestedMembers(context, member)) {
     lines.push(...renderMember(context, child, depth + 1));
   }
 
