@@ -18,6 +18,12 @@ export const WRAPPER_TYPES = new Set(['Partial', 'Readonly', 'Required']);
 /** The base class whose type argument maps event names to the arguments of their listeners */
 export const EVENT_EMITTER = 'EventEmitter';
 
+/** TypeDoc's marker for a type it stopped converting, past `maxTypeConversionDepth`: `Promise<...>` */
+export const TRUNCATION = '...';
+
+/** The truncated parts of a type, and the string literal types around them, which may hold `...` too: `"..."` */
+export const TRUNCATED_TYPE = /"(?:[^"\\]|\\.)*"|(?<![\w.])\.\.\.(?![\w.[({])/g;
+
 /** The indentation of nested list items */
 export const NESTED_INDENT = '  ';
 

@@ -1,10 +1,11 @@
-import { WHITESPACE } from '../constants.mjs';
+import { TRUNCATED_TYPE, TRUNCATION, WHITESPACE } from '../constants.mjs';
 import { nestedObject, objectDeclaration } from '../utils/reflections.mjs';
 
 /**
  * A type as a TypeScript type expression, for a `{Type}` annotation. Type
  * parameters show their constraint: `keyof EventMap` for
- * `E extends keyof EventMap`.
+ * `E extends keyof EventMap`. The parts TypeDoc stopped converting are
+ * `unknown`, keeping the expression valid TypeScript.
  *
  * @param {import('typedoc').SomeType | undefined} type
  * @returns {string}
@@ -18,7 +19,11 @@ export const renderType = type => {
     }
   }
 
-  return (type?.toString() ?? 'unknown').replace(WHITESPACE, ' ');
+  return (type?.toString() ?? 'unknown')
+    .replace(WHITESPACE, ' ')
+    .replace(TRUNCATED_TYPE, match =>
+      match === TRUNCATION ? 'unknown' : match
+    );
 };
 
 /**
