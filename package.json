@@ -30,7 +30,7 @@
     "@changesets/changelog-github": "^1.0.0",
     "@changesets/cli": "^3.0.3",
     "@node-core/doc-kit": "workspace:*",
-    "@playwright/test": "~1.62.0",
+    "@playwright/test": "~1.63.0",
     "@reporters/github": "~2.1.4",
     "@types/mdast": "~4.0.4",
     "@types/node": "~24.10.1",
