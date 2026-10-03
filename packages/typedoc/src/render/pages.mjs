@@ -14,6 +14,8 @@ import {
 import { renderType } from './types.mjs';
 import { code, firstSentence, heading } from '../utils/markdown.mjs';
 import {
+  commentOf,
+  deref,
   isCallable,
   objectDeclaration,
   signaturesOf,
@@ -86,8 +88,10 @@ const containerPage = (context, container) => {
     lines.push(heading(2, title), '');
 
     for (const child of children) {
-      const [summary] = splitSummary(context, child.comment);
-      const link = `[${code(child.name)}](${context.router.linkTo(context.page, child)})`;
+      // A re-export links to what it exports
+      const target = deref(child);
+      const [summary] = splitSummary(context, commentOf(target));
+      const link = `[${code(child.name)}](${context.router.linkTo(context.page, target)})`;
 
       lines.push(`- ${link} ${firstSentence(summary)}`.trim());
     }
