@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",
-    "@changesets/cli": "^3.0.1",
+    "@changesets/cli": "^3.0.3",
     "@node-core/doc-kit": "workspace:*",
     "@playwright/test": "~1.62.0",
     "@reporters/github": "~2.1.2",
