@@ -131,6 +131,30 @@ export function print(printer: {
   printer.indent();
 }
 
+/**
+ * The events of a {@link Server}, with the arguments of their listeners.
+ */
+export interface ServerEvents {
+  /** A client connected. */
+  connect: [id: string];
+}
+
+/**
+ * Serves the output, emitting the events of {@link ServerEvents}.
+ */
+export interface Server {
+  /**
+   * Listens to an event.
+   *
+   * @param event The event.
+   * @param listener Called with the arguments of the event.
+   */
+  on<E extends keyof ServerEvents>(
+    event: E,
+    listener: (...args: ServerEvents[E]) => void
+  ): this;
+}
+
 /** How much to log. */
 export enum Level {
   /** Everything. */

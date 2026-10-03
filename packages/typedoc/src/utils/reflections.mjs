@@ -1,6 +1,10 @@
 import { ReflectionKind } from 'typedoc';
 
-import { EVENT_EMITTER, WRAPPER_TYPES } from '../constants.mjs';
+import {
+  EVENT_EMITTER,
+  LISTENER_METHOD,
+  WRAPPER_TYPES,
+} from '../constants.mjs';
 
 /**
  * The reflection a re-export refers to.
@@ -135,21 +139,74 @@ export const isCallable = declaration =>
     signaturesOf(declaration).length > 0);
 
 /**
- * The type mapping an emitter's event names to the arguments of their
- * listeners: `WatcherEvents` for `class Watcher extends EventEmitter<WatcherEvents>`.
+ * The declaration a type refers to, if it is a declaration of the project.
+ *
+ * @param {import('typedoc').SomeType | undefined} type
+ */
+const referencedDeclaration = type => {
+  const target = type?.type === 'reference' ? type.reflection : undefined;
+
+  return target?.isDeclaration() ? target : undefined;
+};
+
+/**
+ * The event map of an emitter extending `EventEmitter<Events>`.
  *
  * @param {import('typedoc').DeclarationReflection} declaration
  */
-export const eventMapOf = declaration => {
+const extendedEventMap = declaration => {
   const emitter = declaration.extendedTypes?.find(
     type => type.type === 'reference' && type.name === EVENT_EMITTER
   );
 
-  const events = emitter?.typeArguments?.[0];
-  const target = events?.type === 'reference' ? events.reflection : undefined;
-
-  return target?.isDeclaration() ? target : undefined;
+  return referencedDeclaration(emitter?.typeArguments?.[0]);
 };
+
+/**
+ * The event map a listener's arguments index: `Events` for
+ * `(...args: Events[E]) => void`.
+ *
+ * @param {import('typedoc').ParameterReflection} parameter
+ */
+const indexedEventMap = parameter => {
+  const [listener] = signaturesOf(parameter);
+  const args = listener?.parameters?.find(({ flags }) => flags.isRest)?.type;
+
+  return args?.type === 'indexedAccess'
+    ? referencedDeclaration(args.objectType)
+    : undefined;
+};
+
+/**
+ * The event map of a typed emitter, from the listener its listener method
+ * takes: `Events` for
+ * `on<E extends keyof Events>(event: E, listener: (...args: Events[E]) => void)`.
+ * TypeDoc resolves the `keyof Events` constraint to the event names, so the
+ * listener is what still names the map.
+ *
+ * @param {import('typedoc').DeclarationReflection} declaration
+ */
+const listenerEventMap = declaration => {
+  const method = declaration.children?.find(
+    ({ name }) => name === LISTENER_METHOD
+  );
+
+  const parameters = method?.signatures?.flatMap(
+    signature => signature.parameters ?? []
+  );
+
+  return parameters?.map(indexedEventMap).find(Boolean);
+};
+
+/**
+ * The type mapping an emitter's event names to the arguments of their
+ * listeners: `WatcherEvents` for `class Watcher extends EventEmitter<WatcherEvents>`,
+ * or for a typed emitter whose `on()` takes `(...args: WatcherEvents[E]) => void`.
+ *
+ * @param {import('typedoc').DeclarationReflection} declaration
+ */
+export const eventMapOf = declaration =>
+  extendedEventMap(declaration) ?? listenerEventMap(declaration);
 
 /**
  * The `@category` of a reflection.
