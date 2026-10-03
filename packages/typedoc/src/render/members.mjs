@@ -10,6 +10,7 @@ import {
   typeItem,
 } from './lists.mjs';
 import { renderType } from './types.mjs';
+import { ANCHOR_SEPARATORS, EDGE_HYPHENS } from '../constants.mjs';
 import { code, heading } from '../utils/markdown.mjs';
 import {
   commentOf,
@@ -90,8 +91,23 @@ const renderProperty = (context, member, depth, extras = {}) => {
 };
 
 /**
- * A member as an entry: a method, with an entry per signature, or a
- * property.
+ * The anchor of a member's name alone (`#resolveid`), besides doc-kit's anchor
+ * of its heading: links keep working when its signature changes.
+ *
+ * @param {import('typedoc').DeclarationReflection} member
+ */
+const nameAnchor = member => {
+  const id = member.name
+    .toLowerCase()
+    .replace(ANCHOR_SEPARATORS, '-')
+    .replace(EDGE_HYPHENS, '');
+
+  return [`<div id="${id}"></div>`, ''];
+};
+
+/**
+ * A member as an entry, after the anchor of its name on its owner's page: a
+ * method, with an entry per signature, or a property.
  *
  * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} member
@@ -102,13 +118,16 @@ const renderProperty = (context, member, depth, extras = {}) => {
 export const renderMember = (context, member, depth, extras) => {
   const signatures = signaturesOf(member);
 
-  if (!signatures.length) {
-    return renderProperty(context, member, depth, extras);
-  }
+  const entries = signatures.length
+    ? signatures.flatMap(signature =>
+        renderSignature(context, member, signature, depth, extras)
+      )
+    : renderProperty(context, member, depth, extras);
 
-  return signatures.flatMap(signature =>
-    renderSignature(context, member, signature, depth, extras)
-  );
+  // A member with a page of its own is linked to the page
+  const anchor = member === context.page ? [] : nameAnchor(member);
+
+  return anchor.concat(entries);
 };
 
 /**
