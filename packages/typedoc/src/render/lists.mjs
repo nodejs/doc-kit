@@ -2,7 +2,7 @@
 // `- \`name\` {Type} Description. **Default:** \`value\`.`
 import { renderDefault, renderParts, splitSummary } from './comments.mjs';
 import { parameterLabel, splitThis } from './entries.mjs';
-import { renderMemberType, renderType } from './types.mjs';
+import { renderDeclarationType, renderType } from './types.mjs';
 import {
   CODE_SPAN,
   NESTED_INDENT,
@@ -10,12 +10,7 @@ import {
   VOID_TYPES,
 } from '../constants.mjs';
 import { code, firstSentence, indentContinuation } from '../utils/markdown.mjs';
-import {
-  commentOf,
-  membersOf,
-  nestedObject,
-  typeOf,
-} from '../utils/reflections.mjs';
+import { commentOf, membersOf, nestedObject } from '../utils/reflections.mjs';
 
 /**
  * Joins the parts of an item that are there.
@@ -50,7 +45,7 @@ const defaultSuffix = (value, optional = false) => {
  * @param {import('typedoc').DeclarationReflection} reflection
  */
 export const typeItem = (context, reflection) => {
-  const type = renderMemberType(typeOf(reflection));
+  const type = renderDeclarationType(reflection);
   const { value } = renderDefault(context, commentOf(reflection));
 
   return `- Type: {${type}}${defaultSuffix(value)}`;
@@ -69,7 +64,7 @@ export const memberPageItem = (context, member, indent = '') => {
 
   return joinParts([
     `${indent}- ${code(member.name)}`,
-    `{${renderMemberType(typeOf(member))}}`,
+    `{${renderDeclarationType(member)}}`,
     firstSentence(summary),
     `[Details](${context.router.linkTo(context.page, member)})`,
   ]);
@@ -136,7 +131,7 @@ export const parameterItems = (
   parameter,
   { indent = '', notes = [], path = '' } = {}
 ) => {
-  const [description, extended] = splitSummary(context, parameter.comment);
+  const [description, extended] = splitSummary(context, commentOf(parameter));
 
   if (extended) {
     notes.push(`**${code(`${path}${parameter.name}`)}:** ${extended}`, '');
@@ -144,7 +139,7 @@ export const parameterItems = (
 
   const line = joinParts([
     `${indent}- ${code(parameterLabel(parameter))}`,
-    `{${renderMemberType(parameter.type)}}`,
+    `{${renderDeclarationType(parameter)}}`,
     description && indentContinuation(description, `${indent}${NESTED_INDENT}`),
   ]);
 
