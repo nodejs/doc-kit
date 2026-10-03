@@ -63,7 +63,7 @@
     "hastscript": "^9.0.1",
     "mdast-util-slice-markdown": "^2.0.1",
     "mdast-util-to-string": "^4.0.0",
-    "piscina": "^5.3.1",
+    "piscina": "^5.3.2",
     "rehype-stringify": "^10.0.1",
     "remark-gfm": "^4.0.1",
     "remark-mdx": "^3.1.1",
