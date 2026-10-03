@@ -182,8 +182,7 @@ const eventArguments = (context, event) => {
 
 /**
  * An emitter's events, as doc-kit `Event:` entries listing the arguments
- * their listeners receive, from the type the emitter extends `EventEmitter`
- * with.
+ * their listeners receive, from its event map (see `eventMapOf()`).
  *
  * @param {import('../types').Context} context
  * @param {import('typedoc').DeclarationReflection} emitter

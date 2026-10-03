@@ -18,6 +18,9 @@ export const WRAPPER_TYPES = new Set(['Partial', 'Readonly', 'Required']);
 /** The base class whose type argument maps event names to the arguments of their listeners */
 export const EVENT_EMITTER = 'EventEmitter';
 
+/** The method a typed emitter adds listeners with: `on<E extends keyof Events>(event: E, listener: (...args: Events[E]) => void)` */
+export const LISTENER_METHOD = 'on';
+
 /** TypeDoc's marker for a type it stopped converting, past `maxTypeConversionDepth`: `Promise<...>` */
 export const TRUNCATION = '...';
 
