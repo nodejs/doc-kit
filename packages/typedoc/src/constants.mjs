@@ -56,3 +56,9 @@ export const BLANK_LINES = /\n{3,}/g;
 
 /** Slashes opening or closing a path */
 export const EDGE_SLASHES = /^\/+|\/+$/g;
+
+/** The characters of a member name its anchor turns into hyphens: `_` and `$` */
+export const ANCHOR_SEPARATORS = /[_$]+/g;
+
+/** Hyphens at either end of an anchor */
+export const EDGE_HYPHENS = /^-+|-+$/g;
