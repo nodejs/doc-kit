@@ -1,5 +1,13 @@
 # @doc-kit/generator-react
 
+## 0.4.1
+
+### Patch Changes
+
+- [#1116](https://github.com/nodejs/doc-kit/pull/1116) [`c5a3fe8`](https://github.com/nodejs/doc-kit/commit/c5a3fe851029fc8e65f812169a5098bd4873db9e) Thanks [@btea](https://github.com/btea)! - fix: resolve heading names that share a substring with their receiver
+
+- [#1142](https://github.com/nodejs/doc-kit/pull/1142) [`3b3a4e9`](https://github.com/nodejs/doc-kit/commit/3b3a4e9a3b1ca93110dfa2907106ac6d49ba4997) Thanks [@avivkeller](https://github.com/avivkeller)! - fix(sitemap): emit fully resolved page URLs
+
 ## 0.4.0
 
 ### Minor Changes
