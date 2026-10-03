@@ -1,4 +1,11 @@
 /**
+ * The bundler, whose exports are the project's own.
+ *
+ * @module fixture
+ * @mergeModuleWith <project>
+ */
+
+/**
  * Options of a build.
  */
 export interface BuildOptions {
