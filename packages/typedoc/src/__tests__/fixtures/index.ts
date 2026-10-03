@@ -19,11 +19,12 @@ export interface BuildOptions {
    *
    * @experimental
    */
-  output?: { dir: string; format?: 'esm' | 'cjs' };
+  output?: Readonly<{ dir: string; format?: Format }>;
 }
 
 /**
- * Options of a watched build.
+ * Options of a watched build. Changes wait for {@link WatchOptions.delay},
+ * then rebuild as {@link BuildOptions.input} says.
  */
 export interface WatchOptions extends BuildOptions {
   /** Milliseconds to wait for further changes. */
@@ -40,10 +41,18 @@ export interface WatcherEvents {
   error: [error: Error, details: { file: string }];
 }
 
+// Stands in for `node:events`, whose type argument maps events to arguments
+declare class EventEmitter<_Events> {}
+
 /**
  * Watches files and rebuilds.
  */
-export class Watcher {
+export class Watcher extends EventEmitter<WatcherEvents> {
+  /** Whether it is watching. */
+  get running(): boolean {
+    return true;
+  }
+
   /**
    * Stops watching.
    *
@@ -52,6 +61,11 @@ export class Watcher {
    */
   close(force?: boolean): boolean {
     return Boolean(force);
+  }
+
+  /** Watches with the default options. */
+  static create(): Watcher {
+    return new Watcher();
   }
 }
 
@@ -79,8 +93,38 @@ export function watch(options: WatchOptions): Watcher {
   return options && new Watcher();
 }
 
+/** A function compiling a module. */
+export interface Compile {
+  /**
+   * Compiles a module.
+   *
+   * @param source The module's source.
+   */
+  (source: string): string;
+}
+
+/** Compiles a module with the default options. */
+export const compile: Compile = source => source;
+
 /** The supported formats. */
 export type Format = 'esm' | 'cjs';
 
+/** How much to log. */
+export enum Level {
+  /** Everything. */
+  Info,
+  /** Problems only. */
+  Warn,
+}
+
 /** The version. */
 export const VERSION: string = '1.0.0';
+
+/** Plugins shipped with the bundler. */
+export namespace plugins {
+  /** Prepends a banner to every chunk. */
+  export class BannerPlugin {
+    /** The banner. */
+    banner = '';
+  }
+}

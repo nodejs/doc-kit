@@ -1,61 +1,168 @@
-// The parts of an entry: after its heading, the source link, stability index
-// and typed list doc-kit reads as its metadata, then its documentation.
-import { relative } from 'node:path';
+import { ReflectionKind } from 'typedoc';
 
 import { renderDefault, renderParts } from './comments.mjs';
 import { STANDARD_TAGS } from '../constants.mjs';
 import { code, heading } from '../utils/markdown.mjs';
+import { camelCase } from '../utils/reflections.mjs';
 
 /**
- * Where an entry is declared: its signature's source, or its own. Sources in
- * dependencies are left out; they are not part of the project.
+ * The name members of a type are documented on: `docKitReceivers`, or the
+ * type's name in camelCase (`inputOptions.input`).
  *
- * @param {import('typedoc').DeclarationReflection} reflection
+ * @param {import('typedoc').Application} app
+ * @param {import('typedoc').Reflection} owner
+ */
+export const receiverOf = (app, owner) =>
+  app.options.getValue('docKitReceivers')[owner.name] ?? camelCase(owner.name);
+
+/**
+ * The name an entry is documented by: `build` for an export, then
+ * `new Watcher`, `Watcher.create`, `watcher.close`, or
+ * `buildOptions.output.dir` for the members of a type.
+ *
+ * @param {import('typedoc').Application} app
+ * @param {import('typedoc').Reflection} reflection
+ * @returns {string}
+ */
+export const entryName = (app, reflection) => {
+  // The members of an object type belong to what has that type
+  const parent = reflection.parent?.kindOf(ReflectionKind.TypeLiteral)
+    ? reflection.parent.parent
+    : reflection.parent;
+
+  if (!parent || parent.kindOf(ReflectionKind.ExportContainer)) {
+    return reflection.name;
+  }
+
+  if (reflection.kindOf(ReflectionKind.Constructor)) {
+    return `new ${parent.name}`;
+  }
+
+  const isStatic =
+    reflection.flags.isStatic || reflection.kindOf(ReflectionKind.EnumMember);
+
+  if (isStatic) {
+    return `${parent.name}.${reflection.name}`;
+  }
+
+  const isOwner = parent.parent?.kindOf(ReflectionKind.ExportContainer);
+  const receiver = isOwner ? receiverOf(app, parent) : entryName(app, parent);
+
+  return `${receiver}.${reflection.name}`;
+};
+
+/**
+ * A parameter's name, spread when it is a rest parameter.
+ *
+ * @param {import('typedoc').ParameterReflection} parameter
+ */
+export const parameterLabel = parameter =>
+  parameter.flags.isRest ? `...${parameter.name}` : parameter.name;
+
+/**
+ * A call signature's parameters, apart from the `this` it is called with.
+ *
+ * @param {import('typedoc').SignatureReflection} signature
+ */
+export const splitThis = signature => {
+  const all = signature.parameters ?? [];
+
+  return {
+    thisParameter: all.find(({ name }) => name === 'this'),
+    parameters: all.filter(({ name }) => name !== 'this'),
+  };
+};
+
+/**
+ * Whether a parameter can be left out of a call.
+ *
+ * @param {import('typedoc').ParameterReflection} parameter
+ */
+const isOptional = parameter =>
+  Boolean(
+    parameter.flags.isOptional ||
+    parameter.flags.isRest ||
+    parameter.defaultValue
+  );
+
+/**
+ * A call in doc-kit's signature syntax: `rolldown(input)`,
+ * `bundle.write([outputOptions])`.
+ *
+ * @param {string} name
+ * @param {import('typedoc').SignatureReflection} signature
+ */
+export const callHeading = (name, signature) => {
+  let params = '';
+  let open = 0;
+
+  for (const [index, parameter] of splitThis(signature).parameters.entries()) {
+    const separator = index ? ', ' : '';
+    const label = parameterLabel(parameter);
+
+    // Optional parameters open brackets, closed by the next required one
+    if (isOptional(parameter)) {
+      params += `[${separator}${label}`;
+      open++;
+    } else {
+      params += `${']'.repeat(open)}${separator}${label}`;
+      open = 0;
+    }
+  }
+
+  return code(`${name}(${params}${']'.repeat(open)})`);
+};
+
+/**
+ * The heading of an entry: its call, when given a signature, or its name.
+ *
+ * @param {import('typedoc').Application} app
+ * @param {import('typedoc').Reflection} reflection
  * @param {import('typedoc').SignatureReflection} [signature]
  */
-const sourceOf = (reflection, signature) => {
-  const candidates = [signature?.sources?.[0], reflection.sources?.[0]];
+export const entryHeading = (app, reflection, signature) => {
+  const name = entryName(app, reflection);
 
-  return candidates.find(
-    source => source && !source.fullFileName.includes('/node_modules/')
-  );
+  if (!signature) {
+    return code(name);
+  }
+
+  const call = callHeading(name, signature);
+
+  return reflection.flags.isStatic ? `Static method: ${call}` : call;
 };
 
 /**
  * The YAML block of an entry: the page title, on a page's own heading, and
- * the source link.
+ * the source link. Sources are relative to TypeDoc's `basePath`; those of
+ * external declarations are left out.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').SourceReference | undefined} source
- * @param {string} [title]
+ * @param {import('typedoc').Reflection} reflection
+ * @param {import('typedoc').SignatureReflection | undefined} signature
+ * @param {string | undefined} title
  */
-const yamlBlock = (context, source, title) => {
+const yamlBlock = (reflection, signature, title) => {
   const fields = [];
+
+  // A signature declared elsewhere (a callable interface's) is not this entry's source
+  const ownSignature = signature?.parent === reflection ? signature : undefined;
+  const source = ownSignature?.sources?.[0] ?? reflection.sources?.[0];
 
   if (title) {
     fields.push(`title: ${JSON.stringify(title)}`);
   }
 
-  if (source) {
-    const file = relative(context.root, source.fullFileName).replaceAll(
-      '\\',
-      '/'
-    );
-
-    fields.push(`source_link: ${file}#L${source.line}`);
+  if (source && !reflection.flags.isExternal) {
+    fields.push(`source_link: ${source.fileName}#L${source.line}`);
   }
 
-  if (!fields.length) {
-    return [];
-  }
-
-  return ['<!-- YAML', fields.join('\n'), '-->', ''];
+  return fields.length ? ['<!-- YAML', ...fields, '-->', ''] : [];
 };
 
 /**
  * The stability index of an entry, from `@deprecated` or `@experimental`.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').Comment | undefined} comment
  */
 const stabilityIndex = (context, comment) => {
@@ -63,7 +170,7 @@ const stabilityIndex = (context, comment) => {
 
   if (deprecated) {
     const message = renderParts(context, deprecated.content);
-    const quoted = message.replace(/\n/g, '\n> ');
+    const quoted = message.replaceAll('\n', '\n> ');
 
     return [`> Stability: 0 - Deprecated${quoted ? `: ${quoted}` : ''}`, ''];
   }
@@ -76,50 +183,18 @@ const stabilityIndex = (context, comment) => {
 };
 
 /**
- * The source link, stability index and typed list opening an entry, in
- * doc-kit's syntax.
- *
- * @param {import('./comments.mjs').Context} context
- * @param {object} entry
- * @param {import('typedoc').DeclarationReflection} entry.reflection
- * @param {import('typedoc').Comment} [entry.comment]
- * @param {string[]} [entry.items] The typed list
- * @param {import('typedoc').SignatureReflection} [entry.signature]
- * @param {string} [entry.title] The page title, on a page's own heading
- */
-export const renderPreamble = (
-  context,
-  { reflection, comment, items = [], signature, title }
-) => {
-  const source = sourceOf(reflection, signature);
-
-  const lines = yamlBlock(context, source, title);
-
-  lines.push(...stabilityIndex(context, comment));
-
-  if (items.length) {
-    lines.push(...items, '');
-  }
-
-  return lines;
-};
-
-/**
  * A block tag of the project's own (`@kind async`), as `**Kind:** async`.
  *
  * @param {string} tag
  * @param {string} content
  */
-const customTag = (tag, content) => {
-  const name = tag.slice(1);
-
-  return `**${name[0].toUpperCase()}${name.slice(1)}:** ${content}`;
-};
+const customTag = (tag, content) =>
+  `**${tag[1].toUpperCase()}${tag.slice(2)}:** ${content}`;
 
 /**
  * The lines of a block tag, following an entry's description.
  *
- * @param {import('./comments.mjs').Context} context
+ * @param {import('../types').Context} context
  * @param {import('typedoc').Comment} comment
  * @param {import('typedoc').CommentTag} tag
  * @param {number} depth The depth of the entry's heading
@@ -139,15 +214,10 @@ const blockTag = (context, comment, tag, depth) => {
 
     case '@default':
     case '@defaultValue': {
-      // What follows the default given with the type, or a default that
-      // needs a section of its own
-      const { value, more } = renderDefault(context, comment);
+      // A default that is more than a value has a section of its own
+      const { more } = renderDefault(context, comment);
 
-      if (!more) {
-        return [];
-      }
-
-      return value ? [more, ''] : [heading(depth + 1, 'Default'), '', more, ''];
+      return more ? [heading(depth + 1, 'Default'), '', more, ''] : [];
     }
 
     default:
@@ -158,25 +228,52 @@ const blockTag = (context, comment, tag, depth) => {
 };
 
 /**
- * An entry's documentation: its description, then its block tags (examples,
- * references, errors, defaults needing more than a value, and the project's
- * own tags).
+ * An entry: its heading, then the source link, stability index and typed
+ * list doc-kit reads as its metadata, then its description, the notes
+ * following it, and its block tags.
  *
- * @param {import('./comments.mjs').Context} context
- * @param {import('typedoc').Comment | undefined} comment
- * @param {number} depth The depth of the entry's heading
- * @param {string[]} [extra] Text following the description
+ * @param {import('../types').Context} context
+ * @param {object} entry
+ * @param {number} entry.depth
+ * @param {string} entry.label The heading's text
+ * @param {import('typedoc').Reflection} entry.reflection
+ * @param {import('typedoc').Comment} [entry.comment]
+ * @param {import('typedoc').SignatureReflection} [entry.signature]
+ * @param {string[]} [entry.items] The typed list
+ * @param {string} [entry.title] The page title, on a page's own heading
+ * @param {string[]} [entry.notes] Text following the description
+ * @returns {string[]}
  */
-export const renderProse = (context, comment, depth, extra = []) => {
-  const lines = [];
+export const renderEntry = (
+  context,
+  {
+    depth,
+    label,
+    reflection,
+    comment,
+    signature,
+    items = [],
+    title,
+    notes = [],
+  }
+) => {
+  const lines = [heading(depth, label), ''];
+
+  lines.push(...yamlBlock(reflection, signature, title));
+  lines.push(...stabilityIndex(context, comment));
+
+  if (items.length) {
+    lines.push(...items, '');
+  }
+
   const summary = renderParts(context, comment?.summary);
 
   if (summary) {
     lines.push(summary, '');
   }
 
-  if (extra.length) {
-    lines.push(...extra, '');
+  if (notes.length) {
+    lines.push(...notes, '');
   }
 
   for (const tag of comment?.blockTags ?? []) {
@@ -184,51 +281,4 @@ export const renderProse = (context, comment, depth, extra = []) => {
   }
 
   return lines;
-};
-
-/**
- * Whether a parameter can be left out of a call.
- *
- * @param {import('typedoc').ParameterReflection} parameter
- */
-const isOptional = parameter =>
-  Boolean(
-    parameter.flags.isOptional ||
-    parameter.flags.isRest ||
-    parameter.defaultValue
-  );
-
-/**
- * The heading of a callable entry, in doc-kit's signature syntax:
- * `rolldown(input)`, `bundle.write([outputOptions])`.
- *
- * @param {string} name
- * @param {import('typedoc').SignatureReflection} signature
- */
-export const callHeading = (name, signature) => {
-  let params = '';
-  let open = 0;
-
-  const parameters = (signature.parameters ?? []).filter(
-    parameter => parameter.name !== 'this'
-  );
-
-  for (const [index, parameter] of parameters.entries()) {
-    const label = parameter.flags.isRest
-      ? `...${parameter.name}`
-      : parameter.name;
-
-    const separator = index ? ', ' : '';
-
-    // Optional parameters open brackets, closed by the next required one
-    if (isOptional(parameter)) {
-      params += `[${separator}${label}`;
-      open++;
-    } else {
-      params += `${']'.repeat(open)}${separator}${label}`;
-      open = 0;
-    }
-  }
-
-  return code(`${name}(${params}${']'.repeat(open)})`);
 };
