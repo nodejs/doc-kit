@@ -116,10 +116,10 @@ describe('resolvePageRoot', () => {
 });
 
 describe('buildPreloads', () => {
-  it('resolves every shipped font against the page root', () => {
+  it('resolves every configured preload font against the page root', () => {
     const result = buildPreloads('../');
 
-    // A hint per shipped face, or the unlisted ones load late after all.
+    // Auxiliary unicode-range subsets are intentionally loaded on demand.
     assert.strictEqual(result.match(/rel="preload"/g).length, FONTS.length);
 
     for (const font of FONTS) {
