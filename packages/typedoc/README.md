@@ -53,7 +53,7 @@ Links between pages are relative `.md` links, which doc-kit resolves. Source lin
 
 - Call signatures become doc-kit signatures: a `` `name(a[, b])` `` heading and a typed list of the parameters and return value, with `@param` and `@returns` descriptions. The properties of object parameters are nested in the list.
 - Properties and accessors become entries with a `Type:` item, and `@default` values. Object types, including `Partial`, `Readonly` and `Required` ones, have an entry per property.
-- A class extending `EventEmitter<Events>` gets an `Event:` entry per member of `Events`, listing the arguments of its listeners (a tuple per event).
+- A class extending `EventEmitter<Events>`, or a typed emitter whose `on()` takes `(...args: Events[E]) => void` listeners, gets an `Event:` entry per member of `Events`, listing the arguments of its listeners (a tuple per event).
 - `@deprecated` and `@experimental` become stability indices.
 - `@example`, `@see` and `@throws` follow the description. Block tags of your own (declared with TypeDoc's `blockTags`) are rendered as `**Tag:** content`.
 - `{@link}` and `{@linkcode}` link to the target's page or entry.
