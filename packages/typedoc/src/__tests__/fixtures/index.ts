@@ -109,6 +109,12 @@ export const compile: Compile = source => source;
 /** The supported formats. */
 export type Format = 'esm' | 'cjs';
 
+/** Transforms a module's code. */
+export type Transform = (code: string) => string;
+
+/** Returns the code it is given. */
+export const identity: Transform = code => code;
+
 /**
  * Prints a module.
  *
