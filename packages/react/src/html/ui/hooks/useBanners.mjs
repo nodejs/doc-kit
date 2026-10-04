@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 const STORAGE_KEY = 'banner-dismissal';
 
@@ -38,23 +38,14 @@ export const isBannerActive = ({ startDate, endDate }) => {
 };
 
 /**
- * Fetches the first active banner, preferring the global banner over
+ * Finds the first active banner, preferring the global banner over
  * the version-specific one.
  *
- * @param {string | undefined} remoteConfigUrl
+ * @param {Record<string, BannerEntry> | undefined} websiteBanners
  * @param {number | null} versionMajor
- * @returns {Promise<ActiveBanner | null>}
+ * @returns {ActiveBanner | null}
  */
-export const loadBanner = async (remoteConfigUrl, versionMajor) => {
-  if (!remoteConfigUrl) {
-    return null;
-  }
-
-  const response = await fetch(remoteConfigUrl);
-
-  /** @type {{ websiteBanners?: Record<string, BannerEntry> }} */
-  const { websiteBanners = {} } = await response.json();
-
+export const findBanner = (websiteBanners = {}, versionMajor) => {
   const sections =
     versionMajor == null ? ['index'] : ['index', `v${versionMajor}`];
 
@@ -86,42 +77,32 @@ export const saveBannerDismissal = banner =>
   localStorage.setItem(getStorageKey(banner.section), banner.text);
 
 /**
- * Loads, filters, and dismisses the announcement banner.
+ * Selects, filters, and dismisses the announcement banner.
  *
- * @param {string | undefined} remoteConfigUrl
+ * @param {Record<string, BannerEntry> | undefined} websiteBanners
  * @param {number | null} versionMajor
  * @returns {[ActiveBanner | null, () => void]}
  */
-export default (remoteConfigUrl, versionMajor) => {
-  const [banner, setBanner] = useState(
-    /** @type {ActiveBanner | null} */ (null)
+export default (websiteBanners, versionMajor) => {
+  // Only re-renders the banner away; the dismissal itself lives in storage
+  const [dismissed, setDismissed] = useState(false);
+
+  const found = useMemo(
+    () => (websiteBanners ? findBanner(websiteBanners, versionMajor) : null),
+    [websiteBanners, versionMajor]
   );
 
-  useEffect(() => {
-    let mounted = true;
-
-    loadBanner(remoteConfigUrl, versionMajor)
-      .then(loaded => {
-        if (mounted) {
-          setBanner(loaded && !isBannerDismissed(loaded) ? loaded : null);
-        }
-      })
-      .catch(() => {});
-
-    return () => {
-      mounted = false;
-    };
-  }, [remoteConfigUrl, versionMajor]);
+  // `found` is only set client-side, once the remote config has loaded
+  const banner =
+    found && !dismissed && !isBannerDismissed(found) ? found : null;
 
   const dismissBanner = useCallback(() => {
-    setBanner(current => {
-      if (current) {
-        saveBannerDismissal(current);
-      }
+    if (found) {
+      saveBannerDismissal(found);
+    }
 
-      return null;
-    });
-  }, []);
+    setDismissed(true);
+  }, [found]);
 
   return [banner, dismissBanner];
 };

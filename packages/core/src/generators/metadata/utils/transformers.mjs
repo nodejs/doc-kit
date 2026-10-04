@@ -72,7 +72,7 @@ export const resolveTypeReference = (name, typeMap) => {
   // Transform Node.js types like 'vm.Something'.
   if (MODULE_QUALIFIED_NAME.test(name)) {
     const [mod, ...pieces] = name.split('.');
-    const isClass = pieces.at(-1).match(/^[A-Z][a-z]/);
+    const isClass = pieces.at(-1).match(/^[A-Z](?=.*[a-z])/);
 
     return `${mod}.html#${isClass ? 'class-' : ''}${slug(name)}`;
   }

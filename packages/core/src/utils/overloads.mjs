@@ -8,8 +8,8 @@ const OVERLOADABLE_TYPES = new Set(['method', 'ctor', 'classMethod']);
  * Two headings document the same function (i.e. are overloads of one another)
  * when they sit at the same depth and share the same resolved name and type.
  *
- * @param {import('@doc-kit/core/generators/metadata/types').HeadingNode} a
- * @param {import('@doc-kit/core/generators/metadata/types').HeadingNode} b
+ * @param {import('../generators/metadata/types').HeadingNode} a
+ * @param {import('../generators/metadata/types').HeadingNode} b
  */
 const isSameFunction = (a, b) =>
   a.depth === b.depth &&
@@ -17,21 +17,22 @@ const isSameFunction = (a, b) =>
   a.data.name === b.data.name;
 
 /**
- * Flags overloaded function headings so the Table of Contents shows a single
- * entry per function.
+ * Flags overloaded function headings so consumers can present a single entry
+ * per function.
  *
  * Node.js documents each overload of a function as its own heading (e.g. the
  * five `new Buffer(...)` signatures). This marks the 2nd..nth heading of each
- * such run with `isOverload` so they can be dropped from the ToC while still
- * rendering in full on the page. The first (most stable) heading is left as-is,
- * and the ToC links to its existing anchor.
+ * such run with `isOverload`, and with `overloadOf` pointing at the slug of
+ * the run's first heading. The first (most stable) heading is left as-is.
  *
- * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - Page entries, in render order.
- * @returns {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} The same entries (mutated).
+ * @param {Array<import('../generators/metadata/types').MetadataEntry>} entries - Entries, in document order.
+ * @returns {Array<import('../generators/metadata/types').MetadataEntry>} The same entries (mutated).
  */
 export const annotateOverloads = entries => {
   for (let i = 0; i < entries.length; i++) {
-    if (!OVERLOADABLE_TYPES.has(entries[i].heading.data.type)) {
+    const { heading } = entries[i];
+
+    if (!OVERLOADABLE_TYPES.has(heading.data.type)) {
       continue;
     }
 
@@ -39,9 +40,10 @@ export const annotateOverloads = entries => {
     let end = i + 1;
     while (
       end < entries.length &&
-      isSameFunction(entries[end].heading, entries[i].heading)
+      isSameFunction(entries[end].heading, heading)
     ) {
       entries[end].heading.data.isOverload = true;
+      entries[end].heading.data.overloadOf = heading.data.slug;
       end++;
     }
 

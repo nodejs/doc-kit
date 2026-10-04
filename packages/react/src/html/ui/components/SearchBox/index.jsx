@@ -7,11 +7,11 @@ import SearchModal from '@node-core/ui-components/Common/Search/Modal';
 import SearchResults from '@node-core/ui-components/Common/Search/Results';
 import SearchHit from '@node-core/ui-components/Common/Search/Results/Hit';
 
-import styles from './index.module.css';
 import useOrama from '../../hooks/useOrama.mjs';
 import withIsland from '../../islands/withIsland.jsx';
 import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
 import { renderLabel } from '../../utils/renderLabel.jsx';
+import styles from './index.module.css';
 
 /**
  * Dismisses the search modal the clicked hit sits in

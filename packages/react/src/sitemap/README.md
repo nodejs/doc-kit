@@ -6,6 +6,7 @@ The `sitemap` generator creates a `sitemap.xml` file for search engine optimizat
 
 - `output` {string} The directory where `sitemap.xml` will be written.
 - `indexURL` {string} URL template for the API documentation index page.
-  **Default:** `'{baseURL}/latest/api/'`.
-- `pageURL` {string} URL template for individual documentation pages.
-  **Default:** `'{indexURL}{path}.html'`.
+  **Default:** `'{baseURL}/'`.
+- `pageURL` {string} URL template for individual documentation pages. `{path}`
+  is the page's extensionless path and starts with a slash
+  **Default:** `'{baseURL}{path}.html'`.

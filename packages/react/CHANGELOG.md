@@ -1,5 +1,37 @@
 # @doc-kit/generator-react
 
+## 0.4.1
+
+### Patch Changes
+
+- [#1116](https://github.com/nodejs/doc-kit/pull/1116) [`c5a3fe8`](https://github.com/nodejs/doc-kit/commit/c5a3fe851029fc8e65f812169a5098bd4873db9e) Thanks [@btea](https://github.com/btea)! - fix: resolve heading names that share a substring with their receiver
+
+- [#1142](https://github.com/nodejs/doc-kit/pull/1142) [`3b3a4e9`](https://github.com/nodejs/doc-kit/commit/3b3a4e9a3b1ca93110dfa2907106ac6d49ba4997) Thanks [@avivkeller](https://github.com/avivkeller)! - fix(sitemap): emit fully resolved page URLs
+
+## 0.4.0
+
+### Minor Changes
+
+- [#1110](https://github.com/nodejs/doc-kit/pull/1110) [`8fd0c13`](https://github.com/nodejs/doc-kit/commit/8fd0c13f0698affc25d78399584d1a75a8f389d2) Thanks [@avivkeller](https://github.com/avivkeller)! - feat(html): fetch the remote config once through a `useRemoteConfig` hook, and let its `versions` key replace the build-time version selector entries
+
+### Patch Changes
+
+- [#1104](https://github.com/nodejs/doc-kit/pull/1104) [`932ca57`](https://github.com/nodejs/doc-kit/commit/932ca57a9191f484403e3e5fe940a557ed969cc9) Thanks [@btea](https://github.com/btea)! - Avoid rendering empty label segments and ensure repeated label segments use unique keys.
+
+- [#1101](https://github.com/nodejs/doc-kit/pull/1101) [`a2c0c60`](https://github.com/nodejs/doc-kit/commit/a2c0c607a8e7e254b83f06b157d78b0c84e2edce) Thanks [@ryzrr](https://github.com/ryzrr)! - fix(section-pages): re-target type annotation links on chunk pages
+- Updated dependencies [[`615aabe`](https://github.com/nodejs/doc-kit/commit/615aabeb1955a8028146e26fd4589c1172f58367)]:
+  - @doc-kit/core@1.2.1
+
+## 0.3.1
+
+### Patch Changes
+
+- [#1079](https://github.com/nodejs/doc-kit/pull/1079) [`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47) Thanks [@avivkeller](https://github.com/avivkeller)! - feat: the `json` and `json-all` generators
+
+- [#1102](https://github.com/nodejs/doc-kit/pull/1102) [`2611469`](https://github.com/nodejs/doc-kit/commit/26114692c914b78d2a58fb7b92a433c8a3214f52) Thanks [@avivkeller](https://github.com/avivkeller)! - fix(crosslinks): `renderLabel` the labels
+- Updated dependencies [[`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47), [`2a356c3`](https://github.com/nodejs/doc-kit/commit/2a356c356858c631c45f1826edfa42a24b435d51)]:
+  - @doc-kit/core@1.2.0
+
 ## 0.3.0
 
 ### Minor Changes

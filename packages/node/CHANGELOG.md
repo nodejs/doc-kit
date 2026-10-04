@@ -1,5 +1,25 @@
 # @node-core/doc-kit
 
+## 2.0.5
+
+### Patch Changes
+
+- [#1142](https://github.com/nodejs/doc-kit/pull/1142) [`3b3a4e9`](https://github.com/nodejs/doc-kit/commit/3b3a4e9a3b1ca93110dfa2907106ac6d49ba4997) Thanks [@avivkeller](https://github.com/avivkeller)! - fix(sitemap): emit fully resolved page URLs
+
+## 2.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`615aabe`](https://github.com/nodejs/doc-kit/commit/615aabeb1955a8028146e26fd4589c1172f58367)]:
+  - @doc-kit/core@1.2.1
+
+## 2.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47), [`2a356c3`](https://github.com/nodejs/doc-kit/commit/2a356c356858c631c45f1826edfa42a24b435d51)]:
+  - @doc-kit/core@1.2.0
+
 ## 2.0.2
 
 ### Patch Changes

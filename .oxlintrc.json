@@ -1,0 +1,222 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import"],
+  "jsPlugins": [
+    "eslint-plugin-react-x",
+    {
+      "name": "jsdoc-js",
+      "specifier": "eslint-plugin-jsdoc"
+    }
+  ],
+  "categories": {
+    "correctness": "off"
+  },
+  "env": {
+    "builtin": true
+  },
+  "settings": {
+    "react-x": {
+      "version": "detect",
+      "importSource": "react",
+      "polymorphicPropName": "as"
+    }
+  },
+  "ignorePatterns": [
+    "www/out",
+    "out/",
+    "node/",
+    "packages/node/src/api-links/__tests__/fixtures/"
+  ],
+  "rules": {
+    "constructor-super": "error",
+    "for-direction": "error",
+    "getter-return": "error",
+    "no-async-promise-executor": "error",
+    "no-case-declarations": "error",
+    "no-class-assign": "error",
+    "no-compare-neg-zero": "error",
+    "no-cond-assign": "error",
+    "no-const-assign": "error",
+    "no-constant-binary-expression": "error",
+    "no-constant-condition": "error",
+    "no-control-regex": "error",
+    "no-debugger": "error",
+    "no-delete-var": "error",
+    "no-dupe-class-members": "error",
+    "no-dupe-else-if": "error",
+    "no-dupe-keys": "error",
+    "no-duplicate-case": "error",
+    "no-empty": "error",
+    "no-empty-character-class": "error",
+    "no-empty-pattern": "error",
+    "no-empty-static-block": "error",
+    "no-ex-assign": "error",
+    "no-extra-boolean-cast": "error",
+    "no-fallthrough": "error",
+    "no-func-assign": "error",
+    "no-global-assign": "error",
+    "no-import-assign": "error",
+    "no-invalid-regexp": "error",
+    "no-irregular-whitespace": "error",
+    "no-loss-of-precision": "error",
+    "no-misleading-character-class": "error",
+    "no-new-native-nonconstructor": "error",
+    "no-nonoctal-decimal-escape": "error",
+    "no-obj-calls": "error",
+    "no-prototype-builtins": "error",
+    "no-redeclare": "error",
+    "no-regex-spaces": "error",
+    "no-self-assign": "error",
+    "no-setter-return": "error",
+    "no-shadow-restricted-names": "error",
+    "no-sparse-arrays": "error",
+    "no-this-before-super": "error",
+    "no-unassigned-vars": "error",
+    "no-undef": "error",
+    "no-unexpected-multiline": "error",
+    "no-unreachable": "error",
+    "no-unsafe-finally": "error",
+    "no-unsafe-negation": "error",
+    "no-unsafe-optional-chaining": "error",
+    "no-unused-labels": "error",
+    "no-unused-private-class-members": "error",
+    "no-unused-vars": "error",
+    "no-useless-assignment": "error",
+    "no-useless-backreference": "error",
+    "no-useless-catch": "error",
+    "no-useless-escape": "error",
+    "no-with": "error",
+    "preserve-caught-error": "error",
+    "require-yield": "error",
+    "use-isnan": "error",
+    "valid-typeof": "error",
+    "react-x/error-boundaries": "error",
+    "react-x/exhaustive-deps": "warn",
+    "react-x/no-access-state-in-setstate": "error",
+    "react-x/no-array-index-key": "warn",
+    "react-x/no-children-count": "warn",
+    "react-x/no-children-for-each": "warn",
+    "react-x/no-children-map": "warn",
+    "react-x/no-children-only": "warn",
+    "react-x/no-children-to-array": "warn",
+    "react-x/no-clone-element": "warn",
+    "react-x/no-component-will-mount": "error",
+    "react-x/no-component-will-receive-props": "error",
+    "react-x/no-component-will-update": "error",
+    "react-x/no-context-provider": "warn",
+    "react-x/no-create-ref": "error",
+    "react-x/no-direct-mutation-state": "error",
+    "react-x/no-forward-ref": "warn",
+    "react-x/no-missing-key": "error",
+    "react-x/no-nested-component-definitions": "error",
+    "react-x/no-nested-lazy-component-declarations": "error",
+    "react-x/no-set-state-in-component-did-mount": "warn",
+    "react-x/no-set-state-in-component-did-update": "warn",
+    "react-x/no-set-state-in-component-will-update": "warn",
+    "react-x/no-unnecessary-use-prefix": "warn",
+    "react-x/no-unsafe-component-will-mount": "warn",
+    "react-x/no-unsafe-component-will-receive-props": "warn",
+    "react-x/no-unsafe-component-will-update": "warn",
+    "react-x/no-unused-class-component-members": "warn",
+    "react-x/no-use-context": "warn",
+    "react-x/purity": "warn",
+    "react-x/rules-of-hooks": "error",
+    "react-x/set-state-in-effect": "warn",
+    "react-x/set-state-in-render": "error",
+    "react-x/static-components": "error",
+    "react-x/unsupported-syntax": "error",
+    "react-x/use-memo": "error",
+    "react-x/use-state": "warn",
+    "import/named": "error",
+    "import/namespace": "error",
+    "import/default": "error",
+    "import/export": "error",
+    "import/no-named-as-default": "warn",
+    "import/no-named-as-default-member": "warn",
+    "import/no-duplicates": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{mjs,jsx,js}"],
+      "rules": {
+        "object-shorthand": "error",
+        "react-x/no-unstable-default-props": "off",
+        "curly": ["error", "all"],
+        "import/namespace": "off",
+        "import/no-named-as-default": "off",
+        "import/no-named-as-default-member": "off"
+      },
+      "jsPlugins": ["eslint-plugin-react-x"],
+      "globals": {
+        "AsyncDisposableStack": "readonly",
+        "Buffer": "readonly",
+        "clearImmediate": "readonly",
+        "DisposableStack": "readonly",
+        "global": "readonly",
+        "process": "readonly",
+        "setImmediate": "readonly",
+        "SuppressedError": "readonly"
+      },
+      "env": {
+        "es2026": true,
+        "shared-node-browser": true
+      }
+    },
+    {
+      "files": ["packages/*/src/**/*.mjs", "packages/*/bin/**/*.mjs"],
+      "rules": {
+        "jsdoc-js/check-alignment": "error",
+        "jsdoc-js/check-indentation": "error",
+        "jsdoc-js/require-jsdoc": [
+          "error",
+          {
+            "require": {
+              "FunctionDeclaration": true,
+              "MethodDefinition": true,
+              "ClassDeclaration": true,
+              "ArrowFunctionExpression": true,
+              "FunctionExpression": true
+            }
+          }
+        ]
+      },
+      "globals": {
+        "AsyncDisposableStack": "readonly",
+        "Buffer": "readonly",
+        "clearImmediate": "readonly",
+        "DisposableStack": "readonly",
+        "global": "readonly",
+        "process": "readonly",
+        "setImmediate": "readonly",
+        "SuppressedError": "readonly"
+      },
+      "env": {
+        "es2026": true,
+        "shared-node-browser": true
+      }
+    },
+    {
+      "files": ["**/__tests__/**"],
+      "rules": {
+        "jsdoc-js/check-alignment": "off",
+        "jsdoc-js/check-indentation": "off",
+        "jsdoc-js/require-jsdoc": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/node-legacy/src/legacy-html/assets/*.js",
+        "packages/react/src/html/ui/**/*"
+      ],
+      "globals": {
+        "AsyncDisposableStack": "readonly",
+        "DisposableStack": "readonly",
+        "SuppressedError": "readonly"
+      },
+      "env": {
+        "es2026": true,
+        "browser": true
+      }
+    }
+  ]
+}

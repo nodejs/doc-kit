@@ -45,11 +45,10 @@ updates:
           - '@clack/prompts'
       lint:
         patterns:
-          - 'prettier'
-          - 'eslint'
           - 'eslint-*'
           - 'lint-staged'
-          - '@eslint/*'
+          - 'oxlint'
+          - 'oxfmt'
       unist:
         patterns:
           - 'unified'

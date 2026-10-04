@@ -1,10 +1,10 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 
-import createConfigSource from './config.mjs';
-import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
 import { FONT_DIRECTORY, FONTS, SPECULATION_RULES } from '../constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
+import createConfigSource from './config.mjs';
+import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
 
 /**
  * Creates the virtual imports for one bundle target.

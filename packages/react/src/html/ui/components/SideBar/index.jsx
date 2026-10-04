@@ -1,11 +1,6 @@
 import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
 
-import styles from './index.module.css';
-import withIsland from '../../islands/withIsland.jsx';
-import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
-import { renderLabel } from '../../utils/renderLabel.jsx';
-
 import {
   project,
   version,
@@ -14,6 +9,12 @@ import {
   pages,
   chunks,
 } from '#theme/config';
+
+import useRemoteConfig from '../../hooks/useRemoteConfig.mjs';
+import withIsland from '../../islands/withIsland.jsx';
+import { relativeOrAbsolute } from '../../utils/relativeOrAbsolute.mjs';
+import { renderLabel } from '../../utils/renderLabel.jsx';
+import styles from './index.module.css';
 
 /**
  * Extracts the major version number from a version string.
@@ -109,12 +110,18 @@ const Sidebar = ({ metadata }) => {
     metadata.added ?? metadata.introduced_in
   );
 
-  // Filter pre-computed versions by compatibility and resolve per-page URL
-  const compatibleVersions = versions
+  // A remote config's `versions` supersede the build-time list
+  const remote = useRemoteConfig();
+  const availableVersions = remote?.versions ?? versions;
+
+  const currentVersion = `v${version.version}`;
+
+  // Filter versions by compatibility and resolve per-page URL
+  const compatibleVersions = availableVersions
     .filter(v => v.major >= introducedMajor)
-    .map(({ url, label }) => ({
-      value: url.replace('{path}', metadata.path),
-      label,
+    .map(({ url, label, major }) => ({
+      value: url.replace('{path}', metadata.chunk?.path ?? metadata.path),
+      label: major === version.major ? currentVersion : label,
     }));
 
   return (
@@ -126,14 +133,17 @@ const Sidebar = ({ metadata }) => {
       title="Navigation"
     >
       {/* A site built without a `changelog` has no versions to switch between. */}
-      {versions.length > 0 && (
+      {availableVersions.length > 0 && (
         <div>
           <Select
             label={`${project} version`}
             values={compatibleVersions}
+            value={
+              compatibleVersions.find(v => v.label === currentVersion)?.value
+            }
             inline={true}
             className={styles.select}
-            placeholder={`v${version.version}`}
+            placeholder={currentVersion}
             onChange={redirect}
           />
         </div>

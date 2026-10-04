@@ -45,6 +45,12 @@
   --color-brand-900: #27272b;
 }
 
+@media (pointer: fine) {
+  html {
+    overscroll-behavior: none;
+  }
+}
+
 is-land,
 island-slot {
   display: contents;

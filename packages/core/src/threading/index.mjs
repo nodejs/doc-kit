@@ -23,5 +23,6 @@ export default function createWorkerPool(threads) {
     minThreads: 0,
     maxThreads: threads,
     idleTimeout: 1_000,
+    workerData: { logLevel: logger.getLogLevel() },
   });
 }

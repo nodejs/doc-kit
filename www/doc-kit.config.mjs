@@ -2,8 +2,11 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { SCHEMA_VERSION } from '../packages/core/src/generators/json/constants.mjs';
+
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const REPO = join(ROOT, '..');
+const GENERATORS = join(REPO, 'packages', 'core', 'src', 'generators');
 
 const { version } = JSON.parse(
   readFileSync(join(REPO, 'packages', 'core', 'package.json'), 'utf-8')
@@ -15,6 +18,8 @@ const PUBLIC_GENERATORS = [
   'llms-txt',
   'sitemap',
   'section-pages',
+  'json',
+  'json-all',
   'json-simple',
   'legacy-html',
   'legacy-html-all',
@@ -67,7 +72,15 @@ export default {
     // each slug back to its true origin.
     editURL: `https://github.com/${REPOSITORY}`,
 
-    pathsToCopy: [{ [join(ROOT, 'content')]: '.' }],
+    pathsToCopy: [
+      { [join(ROOT, 'content')]: '.' },
+      {
+        [join(GENERATORS, 'json', 'schema.json')]:
+          `schemas/api-doc/${SCHEMA_VERSION}.json`,
+        [join(GENERATORS, 'json-all', 'schema.json')]:
+          `schemas/api-doc-all/${SCHEMA_VERSION}.json`,
+      },
+    ],
 
     navigation: {
       showCrossLinks: true,

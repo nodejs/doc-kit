@@ -14,6 +14,6 @@ export interface Output {
 }
 
 export type Generator = GeneratorMetadata<
-  {},
+  { sourceURL: string },
   Generate<Array<Section>, Promise<Output>>
 >;

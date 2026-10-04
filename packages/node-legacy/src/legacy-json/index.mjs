@@ -23,6 +23,7 @@ export default {
   defaultConfiguration: {
     ref: 'main',
     minify: false,
+    sourceURL: 'doc/api/{path}',
   },
 
   hasParallelProcessor: true,

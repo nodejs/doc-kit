@@ -372,4 +372,71 @@ describe('getFullName', () => {
     );
     assert.strictEqual(result, 'fallbackValue');
   });
+
+  it('skips occurrences of the name within the receiver', () => {
+    const result = getFullName({
+      name: 'channel',
+      text: '`diagnostics_channel.channel(name)`',
+    });
+    assert.strictEqual(result, 'diagnostics_channel.channel');
+  });
+
+  it('skips occurrences of the name that are a prefix of the receiver', () => {
+    const result = getFullName({
+      name: 'read',
+      text: '`readable.read([size])`',
+    });
+    assert.strictEqual(result, 'readable.read');
+  });
+
+  it('ignores parameters repeating the name', () => {
+    const result = getFullName({
+      name: 'percentile',
+      text: '`histogram.percentile(percentile)`',
+    });
+    assert.strictEqual(result, 'histogram.percentile');
+  });
+
+  it('handles symbol-keyed methods', () => {
+    const result = getFullName({
+      name: "[Symbol.for('nodejs.rejection')]",
+      text: "`emitter[Symbol.for('nodejs.rejection')](err, eventName[, ...args])`",
+    });
+    assert.strictEqual(result, "emitter[Symbol.for('nodejs.rejection')]");
+  });
+
+  it('keeps quoted names intact', () => {
+    const result = getFullName({
+      name: 'console.log',
+      text: "Event: `'console.log'`",
+    });
+    assert.strictEqual(result, 'console.log');
+  });
+
+  it('does not strip "new" from within a name', () => {
+    const result = getFullName({
+      name: 'newListener',
+      text: "Event: `'newListener'`",
+    });
+    assert.strictEqual(result, 'newListener');
+  });
+
+  it('does not strip "new" from within a dotted name', () => {
+    const result = getFullName({
+      name: 'onnewtoken',
+      text: '`session.onnewtoken`',
+    });
+    assert.strictEqual(result, 'session.onnewtoken');
+  });
+
+  it('returns fallback when no occurrence terminates the name', () => {
+    const result = getFullName(
+      {
+        name: 'read',
+        text: '`readable`',
+      },
+      'fallback'
+    );
+    assert.strictEqual(result, 'fallback');
+  });
 });
