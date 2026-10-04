@@ -1,6 +1,6 @@
 # `@doc-kit/typedoc`
 
-A [TypeDoc](https://typedoc.org) plugin writing the API reference of a TypeScript project as [doc-kit Markdown](../../docs/specification.md): a page per module, namespace and export, with doc-kit's signatures, typed lists, stability indices and source links, which doc-kit then builds into a site.
+An **experimental** [TypeDoc](https://typedoc.org) plugin writing the API reference of a TypeScript project as [doc-kit Markdown](../../docs/specification.md): a page per module, namespace and export, with doc-kit's signatures, typed lists, stability indices and source links, which doc-kit then builds into a site.
 
 ## Usage
 
