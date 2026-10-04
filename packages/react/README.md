@@ -17,6 +17,7 @@ npm install --save-dev @doc-kit/core @doc-kit/generator-react
 | `html`          | The full documentation site — server-rendered pages hydrated with Preact, bundled with Vite. |
 | `orama-db`      | An [Orama](https://orama.com) search index, consumed by the `html` site's search box.        |
 | `llms-txt`      | An [`llms.txt`](https://llmstxt.org/) index for Large Language Models.                       |
+| `llms-txt-full` | Every page's Markdown in one `llms-full.txt`, for Large Language Models.                     |
 | `sitemap`       | A `sitemap.xml` for search engines.                                                          |
 | `section-pages` | The `html` site and sitemap, plus one page per section of every module.                      |
 

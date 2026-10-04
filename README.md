@@ -72,9 +72,9 @@ Options:
                                (json, json-all, json-simple, legacy-html,
                                legacy-html-all, man-page, legacy-json,
                                legacy-json-all, addon-verify, api-links,
-                               orama-db, llms-txt, sitemap, html,
-                               section-pages) or an import specifier for a
-                               custom generator
+                               orama-db, llms-txt, llms-txt-full, sitemap,
+                               html, section-pages) or an import specifier
+                               for a custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory
   -p, --threads <number>       Number of threads to use (minimum: 1)
