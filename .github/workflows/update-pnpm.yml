@@ -1,0 +1,62 @@
+name: Update pnpm
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  pnpm-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+
+      - name: Git Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      # `pnpm self-update` also updates the `packageManager` field
+      # in package.json to the newly installed version.
+      - name: Update pnpm
+        id: update-pnpm
+        run: |
+          echo "old=$(pnpm --version)" >> $GITHUB_OUTPUT
+          pnpm self-update
+          echo "new=$(pnpm --version)" >> $GITHUB_OUTPUT
+
+      - name: Open pull request
+        if: steps.update-pnpm.outputs.old != steps.update-pnpm.outputs.new
+        uses: gr2m/create-or-update-pull-request-action@b65137ca591da0b9f43bad7b24df13050ea45d1b # v1.10.1
+        # Creates a PR or update the Action's existing PR, or
+        # no-op if the base branch is already up-to-date.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          update-pull-request-title-and-body: true
+          branch: chore/update-pnpm
+          body: |
+            Updates pnpm from ${{ steps.update-pnpm.outputs.old }} to ${{ steps.update-pnpm.outputs.new }}
+
+            cc @nodejs/web-infra
+
+            Check this workflow's logs at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}.
+          commit-message: 'meta: update pnpm from ${{ steps.update-pnpm.outputs.old }} to ${{ steps.update-pnpm.outputs.new }}'
+          title: 'meta: update pnpm from ${{ steps.update-pnpm.outputs.old }} to ${{ steps.update-pnpm.outputs.new }}'
+          draft: true
