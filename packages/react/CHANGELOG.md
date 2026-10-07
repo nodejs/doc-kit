@@ -1,5 +1,11 @@
 # @doc-kit/generator-react
 
+## 0.4.2
+
+### Patch Changes
+
+- [#1106](https://github.com/nodejs/doc-kit/pull/1106) [`cf6e157`](https://github.com/nodejs/doc-kit/commit/cf6e1577d9087208de0448cea2853b292de156f0) Thanks [@btea](https://github.com/btea)! - Render backticks in search result descriptions as inline code
+
 ## 0.4.1
 
 ### Patch Changes
