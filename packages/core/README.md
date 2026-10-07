@@ -13,11 +13,11 @@ Output formats are provided by generators. This package ships the shared
 pipeline stages and the JSON generators (`json`, `json-all`, and the
 debugging-only `json-simple`); the rest come from companion packages:
 
-| Package                                                                                | Generators                                                                            |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [`@doc-kit/generator-react`](https://www.npmjs.com/package/@doc-kit/generator-react)   | `html` (the modern site), `orama-db`, `llms-txt`, `sitemap`                           |
-| [`@node-core/doc-kit-legacy`](https://www.npmjs.com/package/@node-core/doc-kit-legacy) | `legacy-html`, `legacy-html-all`, `legacy-json`, `legacy-json-all` (Node.js-specific) |
-| [`@node-core/doc-kit`](https://www.npmjs.com/package/@node-core/doc-kit)               | `man-page`, `api-links`, `addon-verify` (Node.js-specific)                            |
+| Package                                                                                | Generators                                                  |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [`@doc-kit/generator-react`](https://www.npmjs.com/package/@doc-kit/generator-react)   | `html` (the modern site), `orama-db`, `llms-txt`, `sitemap` |
+| [`@node-core/doc-kit-legacy`](https://www.npmjs.com/package/@node-core/doc-kit-legacy) | `legacy-json`, `legacy-json-all` (Node.js-specific)         |
+| [`@node-core/doc-kit`](https://www.npmjs.com/package/@node-core/doc-kit)               | `man-page`, `api-links`, `addon-verify` (Node.js-specific)  |
 
 Custom generators load by import specifier — any module whose default export
 is a generator works as a `--target`.

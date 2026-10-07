@@ -31,12 +31,10 @@ npx @doc-kit/cli generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o ou
 1:1 matches for Node.js's original documentation tooling, for consumers of
 the classic layouts.
 
-| Target                                               | Output                              |
-| ---------------------------------------------------- | ----------------------------------- |
-| [`legacy-html`](./generators/legacy-html.md)         | One classic HTML page per document. |
-| [`legacy-html-all`](./generators/legacy-html-all.md) | The single-page `all.html` bundle.  |
-| [`legacy-json`](./generators/legacy-json.md)         | The classic per-document JSON.      |
-| [`legacy-json-all`](./generators/legacy-json-all.md) | The single-file JSON bundle.        |
+| Target                                               | Output                         |
+| ---------------------------------------------------- | ------------------------------ |
+| [`legacy-json`](./generators/legacy-json.md)         | The classic per-document JSON. |
+| [`legacy-json-all`](./generators/legacy-json-all.md) | The single-file JSON bundle.   |
 
 ### Node.js-specific ([`@node-core/doc-kit`](./packages/node.md))
 

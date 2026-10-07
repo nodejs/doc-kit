@@ -204,10 +204,7 @@
       }
     },
     {
-      "files": [
-        "packages/node-legacy/src/legacy-html/assets/*.js",
-        "packages/react/src/html/ui/**/*"
-      ],
+      "files": ["packages/react/src/html/ui/**/*"],
       "globals": {
         "AsyncDisposableStack": "readonly",
         "DisposableStack": "readonly",

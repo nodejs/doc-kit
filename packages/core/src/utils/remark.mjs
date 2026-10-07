@@ -14,7 +14,6 @@ import remarkTypeAnnotations from './type-annotations/remark.mjs';
 
 // Nothing in this module loads Shiki: the `ast` and `metadata` stages (and
 // every worker that runs them) import it, and none of them highlight code.
-// The highlighting pipeline lives in `./remark-shiki.mjs`.
 
 /**
  * Renders an MDX JSX element as just its children, so the surrounding prose
