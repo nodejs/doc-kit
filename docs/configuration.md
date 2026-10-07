@@ -124,7 +124,7 @@ Everything under the `global` key applies to every generator:
   (single-version output).
 - `index` {string|URL|Array} Index URL.
 
-A generator's own section (e.g., `html`, `legacy-json`) can override any of
+A generator's own section (e.g., `html`, `json`) can override any of
 these for that generator alone.
 
 ## Execution options

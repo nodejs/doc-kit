@@ -21,8 +21,6 @@ const PUBLIC_GENERATORS = [
   'json',
   'json-all',
   'json-simple',
-  'legacy-json',
-  'legacy-json-all',
   'man-page',
   'api-links',
   'addon-verify',
@@ -46,7 +44,7 @@ const DESCRIPTION =
 
 /** @type {import('../packages/core/src/utils/configuration/types').Configuration} */
 export default {
-  target: ['orama-db', 'legacy-json', 'html'],
+  target: ['orama-db', 'json', 'html'],
 
   global: {
     // `www/content/` is assembled by `scripts/build-docs-content.mjs`.
@@ -117,10 +115,6 @@ export default {
               link: '/packages/react',
             },
             { label: '`@node-core/doc-kit`', link: '/packages/node' },
-            {
-              label: '`@node-core/doc-kit-legacy`',
-              link: '/packages/node-legacy',
-            },
           ],
         },
         {

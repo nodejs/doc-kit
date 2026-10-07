@@ -8,7 +8,7 @@ on [the OpenJS Slack][].
 
 A few places `doc-kit` is already in use. Feel free to PR yours.
 
-- <https://nodejs.org/api> - `html`, `section-pages`, `legacy-json`
+- <https://nodejs.org/api> - `html`, `section-pages`
 - <https://nodejs.org/llms.txt> - `llms-txt`
 - <https://beta.docs.nodejs.org/> - `html`, `orama-db`, `llms-txt`
 - <https://nodejs.org/learn> - `html`, `orama-db`, `llms-txt`

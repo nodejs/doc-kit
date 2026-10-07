@@ -14,8 +14,6 @@ export const publicGenerators = {
   'json-all': '@doc-kit/core/json-all',
   'json-simple': '@doc-kit/core/json-simple',
   'man-page': '@node-core/doc-kit/man-page',
-  'legacy-json': '@node-core/doc-kit-legacy/legacy-json',
-  'legacy-json-all': '@node-core/doc-kit-legacy/legacy-json-all',
   'addon-verify': '@node-core/doc-kit/addon-verify',
   'api-links': '@node-core/doc-kit/api-links',
   'orama-db': '@doc-kit/generator-react/orama-db',

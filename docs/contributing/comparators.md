@@ -40,7 +40,7 @@ scripts/
 Comparators can be reused across multiple generators. You specify which comparator to use in the workflow file using the `compare` field. For example:
 
 - `file-size.mjs` can compare output from `html`, `orama-db`, or any generator
-- `object-assertion.mjs` can compare JSON output from `legacy-json`, `json-simple`, etc.
+- `object-assertion.mjs` can compare JSON output from `json`, `api-links`, etc.
 - `my-comparator.mjs` would be a custom comparator for specific needs
 
 The generation workflow also stores timing, CPU, and peak resident memory in
