@@ -1,6 +1,6 @@
 ---
-'@doc-kit/core': major
-'@doc-kit/cli': major
+'@doc-kit/core': minor
+'@doc-kit/cli': patch
 '@node-core/doc-kit-legacy': major
 ---
 
