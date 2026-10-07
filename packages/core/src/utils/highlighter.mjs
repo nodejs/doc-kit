@@ -114,6 +114,11 @@ export default function rehypeShikiji() {
       // Adds the original language back to the <pre> element
       children[0].properties.class = `${children[0].properties.class} ${codeLanguage}`;
 
+      // The <code> element is the one that scrolls horizontally, so it is the
+      // one that has to be reachable by keyboard
+      delete children[0].properties.tabindex;
+      children[0].children[0].properties.tabindex = 0;
+
       // Adds the toolbar (language label + copy button) to the <pre> element
       children[0].children.push(createToolbarElement(languageId));
 
