@@ -26,6 +26,8 @@
     "build": "node --run build:site",
     "deploy:site": "wrangler deploy --config scripts/deployments/site/wrangler.jsonc",
     "deploy:beta": "wrangler deploy --config scripts/deployments/beta/wrangler.jsonc",
+    "preview:site": "wrangler versions upload --config scripts/deployments/site/wrangler.jsonc",
+    "preview:beta": "wrangler versions upload --config scripts/deployments/beta/wrangler.jsonc",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "release": "changeset publish"
