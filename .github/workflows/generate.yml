@@ -98,10 +98,6 @@ jobs:
             input: './node/doc/api/*.md'
             compare: object-assertion
 
-          - target: legacy-json
-            input: './node/doc/api/*.md'
-            compare: object-assertion
-
           - target: web
             input: './node/doc/api/*.md'
             compare: file-size

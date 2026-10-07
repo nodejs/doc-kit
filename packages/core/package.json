@@ -85,14 +85,10 @@
   },
   "peerDependencies": {
     "@doc-kit/generator-react": "workspace:>=0.1.0",
-    "@node-core/doc-kit": "workspace:>=2.0.0",
-    "@node-core/doc-kit-legacy": "workspace:>=1.0.0"
+    "@node-core/doc-kit": "workspace:>=2.0.0"
   },
   "peerDependenciesMeta": {
     "@node-core/doc-kit": {
-      "optional": true
-    },
-    "@node-core/doc-kit-legacy": {
       "optional": true
     },
     "@doc-kit/generator-react": {

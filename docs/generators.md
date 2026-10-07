@@ -26,16 +26,6 @@ npx @doc-kit/cli generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o ou
 | [`json-all`](./generators/json-all.md)       | Those documents bundled into a single `all.json`.                  |
 | [`json-simple`](./generators/json-simple.md) | A dump of the parsed metadata entries, for debugging the pipeline. |
 
-### Legacy ([`@node-core/doc-kit-legacy`](./packages/node-legacy.md))
-
-1:1 matches for Node.js's original documentation tooling, for consumers of
-the classic layouts.
-
-| Target                                               | Output                         |
-| ---------------------------------------------------- | ------------------------------ |
-| [`legacy-json`](./generators/legacy-json.md)         | The classic per-document JSON. |
-| [`legacy-json-all`](./generators/legacy-json-all.md) | The single-file JSON bundle.   |
-
 ### Node.js-specific ([`@node-core/doc-kit`](./packages/node.md))
 
 Outputs consumed by the Node.js project's own build and release processes.

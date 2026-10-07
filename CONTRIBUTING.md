@@ -80,7 +80,6 @@ published package lives under `packages/`:
 - `packages/cli`: [`@doc-kit/cli`](packages/cli) — the doc-kit command-line interface
 - `packages/core`: [`@doc-kit/core`](packages/core) — the doc-kit engine
 - `packages/node`: [`@node-core/doc-kit`](packages/node) — the Node.js-specific generators
-- `packages/node-legacy`: [`@node-core/doc-kit-legacy`](packages/node-legacy) — the Node.js legacy-format generators
 - `packages/react`: [`@doc-kit/generator-react`](packages/react) — the React/JSX-based generators
 
 Everything else at the root supports the repo rather than shipping to npm:
