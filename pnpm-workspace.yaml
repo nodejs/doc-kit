@@ -2,6 +2,12 @@ packages:
   - 'packages/*'
 
 allowBuilds:
+  esbuild: false
   unrs-resolver: false
+  workerd: false
+
+minimumReleaseAgeExclude:
+  - miniflare@5.20261006.0-alpha
+  - wrangler@4.148.0
 
 minimumReleaseAgeExcludePrune: true
