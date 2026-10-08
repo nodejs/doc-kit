@@ -3,11 +3,19 @@ import { describe, it } from 'node:test';
 
 import { u } from 'unist-builder';
 
+import { loadGenerator } from '#generators/loader.mjs';
+import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
+
 import {
   blocksToMarkdown,
   extractExamples,
   inlineToMarkdown,
 } from '../markdown.mjs';
+
+// Markdown is serialised with the pipeline of `json`
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../../index.mjs'))
+);
 
 describe('blocksToMarkdown', () => {
   it('serialises blocks, type annotations included', () => {

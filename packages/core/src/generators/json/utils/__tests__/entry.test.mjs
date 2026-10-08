@@ -3,7 +3,15 @@ import { describe, it } from 'node:test';
 
 import { u } from 'unist-builder';
 
+import { loadGenerator } from '#generators/loader.mjs';
+import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
+
 import { buildEntry, entryBody, takeTypedItems } from '../entry.mjs';
+
+// Markdown is serialised with the pipeline of `json`
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../../index.mjs'))
+);
 
 const code = value => u('inlineCode', value);
 const text = value => u('text', value);

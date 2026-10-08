@@ -14,7 +14,6 @@ import {
   IGNORE_STABILITY_STEMS,
 } from '#generators/metadata/constants.mjs';
 import { UNIST } from '#utils/queries/index.mjs';
-import { getRemark as remark } from '#utils/remark.mjs';
 import { relative } from '#utils/url.mjs';
 
 import { resolveTypeAnnotations } from './resolveTypes.mjs';
@@ -147,9 +146,8 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
     // Remove processed YAML nodes from the content
     remove(subTree, [UNIST.isYamlNode]);
 
-    // Apply AST transformations
-    const parsedSubTree = remark().runSync(subTree);
-    metadata.content = parsedSubTree;
+    // The remark plugins already ran on the whole document, in `ast`
+    metadata.content = subTree;
 
     // Add to collection
     metadataCollection.push(metadata);

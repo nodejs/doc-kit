@@ -9,8 +9,8 @@ import { parse as parseYaml } from 'yaml';
 
 import getConfig from '#utils/configuration/index.mjs';
 import { withExt } from '#utils/file.mjs';
+import { getProcessor } from '#utils/markdown/processor.mjs';
 import { QUERIES } from '#utils/queries/index.mjs';
-import { getRemark as remark, getRemarkMdx } from '#utils/remark.mjs';
 
 import { STABILITY_INDEX_URL } from './constants.mjs';
 
@@ -67,6 +67,8 @@ export async function processChunk(inputSlice, itemIndices) {
     // The path is the relative path minus the extension
     const relativePath = sep + withExt(relative(parent, path));
 
+    const processor = getProcessor('ast', { mdx });
+
     let tree;
 
     if (mdx) {
@@ -79,7 +81,7 @@ export async function processChunk(inputSlice, itemIndices) {
         ''
       );
 
-      tree = getRemarkMdx().parse(source);
+      tree = processor.parse(source);
 
       if (frontmatter) {
         tree.children.unshift({
@@ -93,8 +95,10 @@ export async function processChunk(inputSlice, itemIndices) {
         (_, yaml) => `<!-- YAML\n${yaml}\n-->`
       );
 
-      tree = remark().parse(value);
+      tree = processor.parse(value);
     }
+
+    tree = await processor.run(tree, { path });
 
     results.push({ tree, path: relativePath, mdx });
   }

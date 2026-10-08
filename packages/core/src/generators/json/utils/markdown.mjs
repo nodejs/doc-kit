@@ -3,7 +3,7 @@
 import { u as createTree } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
-import { getRemark, getRemarkMdx } from '#utils/remark.mjs';
+import { getProcessor } from '#utils/markdown/processor.mjs';
 
 import { DISPLAY_NAME } from '../constants.mjs';
 
@@ -19,7 +19,7 @@ export const blocksToMarkdown = (nodes, mdx = false) => {
     return '';
   }
 
-  const processor = mdx ? getRemarkMdx() : getRemark();
+  const processor = getProcessor('json', { mdx });
 
   return processor.stringify(createTree('root', nodes)).trim();
 };

@@ -7,12 +7,24 @@ import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
 import { globSync } from 'tinyglobby';
 
+import { loadGenerator } from '#generators/loader.mjs';
 import { parseApiDoc } from '#generators/metadata/utils/parse.mjs';
+import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
+import { getProcessor } from '#utils/markdown/processor.mjs';
 import { QUERIES } from '#utils/queries/index.mjs';
-import { getRemark } from '#utils/remark.mjs';
 
 import schema from '../schema.json' with { type: 'json' };
 import { buildDocument } from '../utils/document.mjs';
+
+// The documents are parsed, split into entries, and serialised with the
+// pipelines of the generators doing so
+for (const generator of ['ast', 'metadata', 'json']) {
+  await loadMarkdownPlugins(
+    await loadGenerator(
+      import.meta.resolve(`#generators/${generator}/index.mjs`)
+    )
+  );
+}
 
 const fixtures = new URL('./fixtures/', import.meta.url);
 
@@ -42,7 +54,7 @@ const buildFixture = async name => {
 
   const path = `/${basename(name, '.md')}`;
   const entries = parseApiDoc(
-    { path, tree: getRemark().parse(source) },
+    { path, tree: getProcessor('ast').parse(source) },
     typeMap
   );
 
