@@ -125,8 +125,9 @@ export const createSectionBuilder = () => {
       return;
     }
 
-    const rendered = getProcessor('legacy-json').stringify(
-      getProcessor('legacy-json').runSync({ type: 'root', children: nodes })
+    const processor = getProcessor('legacy-json');
+    const rendered = processor.stringify(
+      processor.runSync({ type: 'root', children: nodes })
     );
 
     section.shortDesc = section.desc || undefined;

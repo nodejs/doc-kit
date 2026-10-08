@@ -19,10 +19,7 @@ import {
   CONFIGURED_PLUGINS,
   PLUGIN_LISTS,
 } from '#utils/markdown/constants.mjs';
-import {
-  resolveMarkdown,
-  resolveMarkdownPipeline,
-} from '#utils/markdown/plugins.mjs';
+import { resolveMarkdown } from '#utils/markdown/plugins.mjs';
 import { deepMerge } from '#utils/misc.mjs';
 
 import { DEFAULT_CHUNK_SIZE, DEFAULT_MAX_THREADS } from './constants.mjs';
@@ -157,7 +154,7 @@ export const loadConfigFile = async filePath => {
  * @returns {Partial<import('./types').MarkdownConfiguration> | undefined}
  */
 const configureMarkdown = (generator, markdown = {}, global) => {
-  const pipeline = resolveMarkdownPipeline(generator);
+  const pipeline = generator.markdown ?? {};
   const renders = Boolean(pipeline.rehypePlugins || pipeline.recmaPlugins);
   const configured = {};
 

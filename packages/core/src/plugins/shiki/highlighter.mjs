@@ -63,15 +63,11 @@ const highlighters = new Map();
  * @returns {Promise<Array<T>>}
  */
 const importList = async options => {
-  const imported = [];
-
-  for (const option of options) {
-    if (typeof option === 'string') {
-      imported.push(await importFromURL(option));
-    } else {
-      imported.push(option);
-    }
-  }
+  const imported = await Promise.all(
+    options.map(option =>
+      typeof option === 'string' ? importFromURL(option) : option
+    )
+  );
 
   return imported.flat();
 };
@@ -113,23 +109,32 @@ const importHighlighter = async ({
 }) => {
   engine ??= createEngine();
 
+  const [regexEngine, importedLangs, importedTransformers, importedThemes] =
+    await Promise.all([
+      engine,
+      importList(langs),
+      importList(transformers),
+      themes &&
+        Promise.all([
+          importTheme(themes.light, 'light'),
+          importTheme(themes.dark, 'dark'),
+        ]),
+    ]);
+
   const coreOptions = {
-    engine: await engine,
-    langs: [...LANGS, ...(await importList(langs))],
+    engine: regexEngine,
+    langs: [...LANGS, ...importedLangs],
     // A copy, as Shiki adds the aliases of the languages it bundles to it
     langAlias: { ...langAlias },
   };
 
-  const highlighterOptions = {
-    transformers: await importList(transformers),
-  };
+  const highlighterOptions = { transformers: importedTransformers };
 
   // Without themes of its own, the highlighter has a default light and dark one
-  if (themes) {
-    const light = await importTheme(themes.light, 'light');
-    const dark = await importTheme(themes.dark, 'dark');
+  if (importedThemes) {
+    const [light, dark] = importedThemes;
 
-    coreOptions.themes = [light, dark];
+    coreOptions.themes = importedThemes;
     highlighterOptions.themes = { light: light.name, dark: dark.name };
     highlighterOptions.defaultColor = 'light';
   }

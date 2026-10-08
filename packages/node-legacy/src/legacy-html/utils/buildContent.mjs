@@ -241,8 +241,9 @@ export default (headNodes, metadataEntries) => {
     })
   );
 
-  const processedNodes = getProcessor('legacy-html').runSync(parsedNodes);
+  const processor = getProcessor('legacy-html');
+  const processedNodes = processor.runSync(parsedNodes);
 
   // Stringifies the processed nodes to return the final Markdown content
-  return getProcessor('legacy-html').stringify(processedNodes);
+  return processor.stringify(processedNodes);
 };

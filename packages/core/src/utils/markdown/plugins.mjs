@@ -63,7 +63,7 @@ export const resolveMarkdown = (markdown, label, filePath) => {
  * @param {GeneratorMetadata} generator - The generator
  * @returns {import('../configuration/types').MarkdownPipeline}
  */
-export const resolveMarkdownPipeline = generator => {
+const resolveMarkdownPipeline = generator => {
   const module = getGeneratorModule(generator);
 
   return resolveMarkdown(
@@ -112,19 +112,30 @@ const configureList = (own = [], configured = []) => {
   const plugins = own.map(entry => ({ entry, added: false }));
   const added = [];
 
+  // Each plugin by its specifier: the first listing of it takes the options
+  const listed = new Map();
+
+  for (const plugin of plugins) {
+    const [specifier] = enforceArray(plugin.entry);
+
+    if (!listed.has(specifier)) {
+      listed.set(specifier, plugin);
+    }
+  }
+
   for (const entry of configured) {
     const [specifier, options] = enforceArray(entry);
+    const plugin = listed.get(specifier);
 
-    const listed = [...plugins, ...added].find(
-      plugin => enforceArray(plugin.entry)[0] === specifier
-    );
+    if (!plugin) {
+      const addedPlugin = { entry, added: true };
 
-    if (!listed) {
-      added.push({ entry, added: true });
+      added.push(addedPlugin);
+      listed.set(specifier, addedPlugin);
     } else if (options !== undefined) {
-      const [, listedOptions] = enforceArray(listed.entry);
+      const [, listedOptions] = enforceArray(plugin.entry);
 
-      listed.entry = [specifier, mergeOptions(listedOptions, options)];
+      plugin.entry = [specifier, mergeOptions(listedOptions, options)];
     }
   }
 
@@ -183,16 +194,19 @@ export const loadMarkdownPlugins = async (generator, markdown = {}) => {
   const configured = {};
   const own = {};
 
-  for (const list of PLUGIN_LISTS) {
-    const plugins = configureList(pipeline[list], markdown[list]);
+  // The lists import at once, so a slow plugin (Shiki) doesn't hold the rest
+  await Promise.all(
+    PLUGIN_LISTS.map(async list => {
+      const plugins = configureList(pipeline[list], markdown[list]);
 
-    const imported = await Promise.all(
-      plugins.map(({ entry }) => importPlugin(entry))
-    );
+      const imported = await Promise.all(
+        plugins.map(({ entry }) => importPlugin(entry))
+      );
 
-    configured[list] = imported;
-    own[list] = imported.filter((_, index) => !plugins[index].added);
-  }
+      configured[list] = imported;
+      own[list] = imported.filter((_, index) => !plugins[index].added);
+    })
+  );
 
   loadedPipelines.set(generator.name, { generator, key, configured, own });
 };
