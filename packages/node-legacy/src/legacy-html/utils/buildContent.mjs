@@ -5,8 +5,8 @@ import {
   GITHUB_BLOB_URL,
   populate,
 } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
 import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
-import { getRemarkRehypeWithShiki as remark } from '@doc-kit/core/utils/remark-shiki.mjs';
 import { h as createElement } from 'hastscript';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
@@ -80,7 +80,7 @@ const buildStability = ({ children, data }, index, parent) => {
  * @param {import('@doc-kit/core/generators/metadata/types').ChangeEntry} change
  */
 const createHistoryTableRow = ({ version: changeVersions, description }) => {
-  const descriptionNode = remark().parse(description);
+  const descriptionNode = getProcessor('legacy-html').parse(description);
 
   return createElement('tr', [
     createElement(
@@ -241,8 +241,8 @@ export default (headNodes, metadataEntries) => {
     })
   );
 
-  const processedNodes = remark().runSync(parsedNodes);
+  const processedNodes = getProcessor('legacy-html').runSync(parsedNodes);
 
   // Stringifies the processed nodes to return the final Markdown content
-  return remark().stringify(processedNodes);
+  return getProcessor('legacy-html').stringify(processedNodes);
 };

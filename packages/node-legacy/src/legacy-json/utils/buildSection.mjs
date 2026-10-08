@@ -1,7 +1,7 @@
 import { enforceArray } from '@doc-kit/core/utils/array.mjs';
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 import { buildHierarchy } from '@doc-kit/core/utils/hierarchy.mjs';
-import { getRemarkRehype as remark } from '@doc-kit/core/utils/remark.mjs';
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
 import { parseList } from '@doc-kit/core/utils/signature/parseList.mjs';
 import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 
@@ -125,8 +125,8 @@ export const createSectionBuilder = () => {
       return;
     }
 
-    const rendered = remark().stringify(
-      remark().runSync({ type: 'root', children: nodes })
+    const rendered = getProcessor('legacy-json').stringify(
+      getProcessor('legacy-json').runSync({ type: 'root', children: nodes })
     );
 
     section.shortDesc = section.desc || undefined;
