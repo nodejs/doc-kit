@@ -4,10 +4,17 @@ const REMOTE_CONFIG_URL = 'https://nodejs.org/site.json';
 
 /**
  * Navigates the way following a link does, and waits for the navigation to
- * finish.
+ * finish, or for the one replacing it when the router follows a redirect.
  */
 const navigate = (page, url) =>
-  page.evaluate(url => navigation.navigate(url).finished.then(() => {}), url);
+  page.evaluate(
+    url =>
+      navigation
+        .navigate(url)
+        .finished.catch(() => navigation.transition?.finished)
+        .then(() => {}),
+    url
+  );
 
 test.describe('Client-side navigation', () => {
   test.beforeEach(async ({ page }) => {
@@ -42,7 +49,8 @@ test.describe('Client-side navigation', () => {
 
     await navigate(page, 'all.html');
 
-    await expect(page).toHaveURL(/\/all\.html$/);
+    // `serve` redirects `all.html` to `all`, as hosts with clean URLs do
+    await expect(page).toHaveURL(/\/all$/);
     await expect(page).toHaveTitle(/^All \|/);
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
       'content',

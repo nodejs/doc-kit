@@ -113,18 +113,25 @@ export const startRouter = ({ unmount, islands }) => {
     }
 
     const page = fetchPage(url);
+    const entry = { page, expires: Date.now() + ROUTER_PAGE_LIFETIME };
 
     pages.delete(url);
-    pages.set(url, { page, expires: Date.now() + ROUTER_PAGE_LIFETIME });
+    pages.set(url, entry);
 
-    if (pages.size > ROUTER_MAX_PAGES) {
+    // Redirected pages take two entries (below)
+    while (pages.size > ROUTER_MAX_PAGES) {
       pages.delete(pages.keys().next().value);
     }
 
-    // A failure is not kept, so the next attempt fetches again
     page.then(result => {
+      // A failure is not kept, so the next attempt fetches again
       if (!result && pages.get(url)?.page === page) {
         pages.delete(url);
+      }
+
+      // Following the redirect (see the handler) then needs no second fetch
+      if (result && result.url !== url) {
+        pages.set(result.url, entry);
       }
     });
 
@@ -167,9 +174,18 @@ export const startRouter = ({ unmount, islands }) => {
        * Swaps in the page the navigation leads to.
        */
       async handler() {
-        const page = await loadPage(withoutFragment(url.href));
+        const href = withoutFragment(url.href);
+        const page = await loadPage(href);
 
         if (event.signal.aborted) {
+          return;
+        }
+
+        // Hosts with clean URLs redirect `fs.html` to `fs`: follow the redirect
+        // as a full load would, replacing this navigation's history entry
+        if (page && page.url !== href) {
+          navigation.navigate(page.url + url.hash, { history: 'replace' });
+
           return;
         }
 
