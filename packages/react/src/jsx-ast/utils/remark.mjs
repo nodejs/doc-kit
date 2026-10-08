@@ -14,8 +14,8 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 
 import { AST_NODE_TYPES } from '../constants.mjs';
-import transformAlerts from './plugins/alerts.mjs';
-import transformElements from './plugins/transformer.mjs';
+import transformAlerts from '../plugins/alerts.mjs';
+import transformElements from '../plugins/transformer.mjs';
 
 const passThrough = ['element', ...Object.values(AST_NODE_TYPES.MDX)];
 const codeMetaProperty = 'codeMeta';
