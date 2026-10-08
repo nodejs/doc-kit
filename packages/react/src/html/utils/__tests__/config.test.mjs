@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
 
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 import { SemVer } from 'semver';
 
 mock.module('@node-core/rehype-shiki', {
@@ -10,6 +11,17 @@ mock.module('@node-core/rehype-shiki', {
       { name: 'javascript', aliases: ['js'], displayName: 'JavaScript' },
       { name: 'typescript', aliases: ['ts'], displayName: 'TypeScript' },
       { name: 'python', displayName: 'Python' },
+    ],
+    default: async () => ({}),
+  },
+});
+
+// The site's code is highlighted by the Shiki plugin of `jsx-ast`
+await loadMarkdownPlugins({
+  name: 'jsx-ast',
+  markdown: {
+    rehypePlugins: [
+      import.meta.resolve('@doc-kit/core/plugins/shiki/rehype.mjs'),
     ],
   },
 });

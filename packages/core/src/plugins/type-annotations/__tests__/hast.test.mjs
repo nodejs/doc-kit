@@ -4,8 +4,16 @@ import { describe, it } from 'node:test';
 import { toHtml } from 'hast-util-to-html';
 import { toString } from 'hast-util-to-string';
 
+import { createHighlighter } from '#plugins/shiki/highlighter.mjs';
+
 import { typeAnnotationToHast } from '../hast.mjs';
-import { typeAnnotationToHighlightedHast } from '../highlighter.mjs';
+import { createTypeAnnotationHandler } from '../highlighter.mjs';
+
+const highlighter = await createHighlighter();
+
+const typeAnnotationToHighlightedHast = createTypeAnnotationHandler(
+  () => highlighter
+);
 
 // A minimal mdast-util-to-hast state — the handlers only use patch/applyData
 const state = { patch: () => {}, applyData: (_, result) => result };

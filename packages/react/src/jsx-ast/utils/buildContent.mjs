@@ -7,6 +7,7 @@ import {
   populate,
 } from '@doc-kit/core/utils/configuration/templates.mjs';
 import { parseInline } from '@doc-kit/core/utils/inline.mjs';
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
 import { annotateOverloads } from '@doc-kit/core/utils/overloads.mjs';
 import { splitTypedItems, UNIST } from '@doc-kit/core/utils/queries/index.mjs';
 import { removeStabilityPrefix } from '@doc-kit/core/utils/stability.mjs';
@@ -28,7 +29,6 @@ import {
 } from '../constants.mjs';
 import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
-import { getRemarkRecma as remark } from './remark.mjs';
 import { renderAsJSX } from './render.mjs';
 import {
   insertSignatureCodeBlock,
@@ -360,7 +360,7 @@ const buildContent = async (metadataEntries, head) => {
     await createDocumentContent(metadataEntries);
 
   // Run remark processor to transform AST (parse markdown, plugins, etc.)
-  const ast = await remark().run(root);
+  const ast = await getProcessor('jsx-ast').run(root);
 
   // The fragment is the expression in the Program's first body node
   return { data: head, headings, readingTime, content: ast.body[0].expression };

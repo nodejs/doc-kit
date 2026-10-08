@@ -5,7 +5,9 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
+import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
@@ -13,6 +15,11 @@ import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
 import { generate as chunk } from '../../section-pages/generate.mjs';
 import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { generate } from '../generate.mjs';
+
+// Pages are rendered with the pipeline of `jsx-ast`
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../../jsx-ast/index.mjs'))
+);
 
 /**
  * Converts a page's JSX AST into the `{ data, headings, readingTime, content }`
