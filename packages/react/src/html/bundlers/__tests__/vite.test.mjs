@@ -84,6 +84,30 @@ describe('Vite configuration', () => {
     assert.strictEqual(config.build.manifest, 'manifest.json');
   });
 
+  it("leaves out module-level directive warnings unless they're asked for", () => {
+    /**
+     * @param {import('vite').UserConfig} [vite]
+     */
+    const checksFor = vite =>
+      createViteConfig({
+        sources: new Map(),
+        input: {},
+        server: false,
+        outDir: output,
+        config: getConfig('html'),
+        vite,
+      }).build.rolldownOptions.checks;
+
+    assert.deepStrictEqual(checksFor(), { moduleLevelDirective: false });
+
+    const checks = { moduleLevelDirective: true, eval: false };
+
+    assert.deepStrictEqual(
+      checksFor({ build: { rolldownOptions: { checks } } }),
+      checks
+    );
+  });
+
   it('keeps the server library self-contained', () => {
     const vite = {
       ssr: {
