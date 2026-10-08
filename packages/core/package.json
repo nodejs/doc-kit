@@ -80,7 +80,7 @@
     "unist-util-remove": "^4.0.0",
     "unist-util-select": "^5.1.0",
     "unist-util-visit": "^5.1.0",
-    "yaml": "^2.9.0"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "ajv": "^8.20.0",
