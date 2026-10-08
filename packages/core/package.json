@@ -39,6 +39,7 @@
       "./src/parsers/*",
       "./src/parsers/*.d.ts"
     ],
+    "#plugins/*": "./src/plugins/*",
     "#utils/*": "./src/utils/*"
   },
   "files": [

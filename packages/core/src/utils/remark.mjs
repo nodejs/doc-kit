@@ -8,9 +8,10 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
+import { typeAnnotationToHast } from '#plugins/type-annotations/hast.mjs';
+import remarkTypeAnnotations from '#plugins/type-annotations/remark.mjs';
+
 import { lazy } from './misc.mjs';
-import { typeAnnotationToHast } from './type-annotations/hast.mjs';
-import remarkTypeAnnotations from './type-annotations/remark.mjs';
 
 // Nothing in this module loads Shiki: the `ast` and `metadata` stages (and
 // every worker that runs them) import it, and none of them highlight code.
