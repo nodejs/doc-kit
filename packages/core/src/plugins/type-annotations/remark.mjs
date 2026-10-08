@@ -10,12 +10,16 @@ import { typeAnnotationSyntax } from './syntax.mjs';
  * Remark plugin that teaches the parser to treat any balanced `{...}` span in
  * text as a `typeAnnotation` node whose value is a TypeScript type expression.
  *
- * Only registered on the non-MDX pipeline — in MDX, `{...}` is a real
- * expression and is handled by remark-mdx instead.
+ * It does nothing in MDX, where `{...}` is a real expression, handled by
+ * remark-mdx instead.
  *
  * @this {import('unified').Processor}
  */
 export default function remarkTypeAnnotations() {
+  if (this.data('mdx')) {
+    return;
+  }
+
   const data = this.data();
 
   (data.micromarkExtensions ??= []).push(typeAnnotationSyntax());

@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { extname, isAbsolute, join } from 'node:path';
+import { createRequire } from 'node:module';
+import { dirname, extname, isAbsolute, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 /**
@@ -26,6 +27,27 @@ export const loadFromURL = async url => {
     const response = await fetch(parsedUrl);
     return response.text();
   }
+};
+
+/**
+ * Resolves an import specifier into a `file:` URL: relative paths resolve
+ * against the file it appears in, anything else as a package import
+ * specifier (e.g. `@node-core/doc-kit/config`).
+ *
+ * @param {string} specifier - A path, a package specifier, or a `file:` URL
+ * @param {string} filePath - The file it appears in
+ * @returns {string} A `file:` URL to import
+ */
+export const resolveSpecifier = (specifier, filePath) => {
+  if (specifier.startsWith('file:')) {
+    return specifier;
+  }
+
+  if (specifier.startsWith('.') || isAbsolute(specifier)) {
+    return pathToFileURL(resolve(dirname(filePath), specifier)).href;
+  }
+
+  return pathToFileURL(createRequire(filePath).resolve(specifier)).href;
 };
 
 /**

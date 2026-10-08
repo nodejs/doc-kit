@@ -7,6 +7,9 @@ import { enforceArray } from '#utils/array.mjs';
 
 import { allGenerators } from './index.mjs';
 
+// The module each loaded generator comes from
+const generatorModules = new WeakMap();
+
 /**
  * Resolves a CLI/configuration target into an import specifier. Shorthand
  * names map through the alias table; filesystem paths become file URLs;
@@ -64,8 +67,19 @@ export const loadGenerator = async specifier => {
     );
   }
 
+  generatorModules.set(generator, import.meta.resolve(resolved));
+
   return generator;
 };
+
+/**
+ * The URL of the module a generator was loaded from, which the specifiers of
+ * its Markdown pipeline resolve against.
+ *
+ * @param {GeneratorMetadata} generator - A generator loaded by `loadGenerator`
+ * @returns {string | undefined}
+ */
+export const getGeneratorModule = generator => generatorModules.get(generator);
 
 /**
  * Loads the given generators plus the transitive closure of their

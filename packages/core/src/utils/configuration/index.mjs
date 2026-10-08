@@ -1,8 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { cpus } from 'node:os';
-import { dirname, isAbsolute, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { isMainThread } from 'node:worker_threads';
 
 import { cosmiconfig } from 'cosmiconfig';
@@ -16,6 +14,15 @@ import logger from '#logger/index.mjs';
 import { parseChangelog, parseIndex } from '#parsers/markdown.mjs';
 import { enforceArray } from '#utils/array.mjs';
 import { leftHandAssign } from '#utils/generators.mjs';
+import { resolveSpecifier } from '#utils/loaders.mjs';
+import {
+  CONFIGURED_PLUGINS,
+  PLUGIN_LISTS,
+} from '#utils/markdown/constants.mjs';
+import {
+  resolveMarkdown,
+  resolveMarkdownPipeline,
+} from '#utils/markdown/plugins.mjs';
 import { deepMerge } from '#utils/misc.mjs';
 
 import { DEFAULT_CHUNK_SIZE, DEFAULT_MAX_THREADS } from './constants.mjs';
@@ -64,6 +71,7 @@ export const getDefaultConfig = (generators, config) =>
         // from, so generators render single-version output.
         changelog: [],
         pathsToCopy: ['assets', 'public', 'static'],
+        markdown: { remarkPlugins: [], rehypePlugins: [], recmaPlugins: [] },
       },
 
       // The number of wasm memory instances is severely limited on
@@ -79,21 +87,29 @@ export const getDefaultConfig = (generators, config) =>
   );
 
 /**
- * Resolves an `extends` entry of a configuration file into an importable
- * URL: relative paths resolve against the configuration file, anything else
- * resolves as a package import specifier (e.g. `@node-core/doc-kit/config`).
+ * Resolves the Markdown plugins of a configuration (in `global`, and each
+ * generator's section) from the file declaring them.
  *
- * @param {string} specifier - The `extends` entry
- * @param {string} configFilePath - The configuration file it appears in
- * @returns {string} A `file:` URL to import
+ * @param {Partial<import('./types').Configuration>} config - The configuration
+ * @param {string} filePath - The file declaring it
+ * @returns {Partial<import('./types').Configuration>}
  */
-const resolveConfigExtends = (specifier, configFilePath) => {
-  if (specifier.startsWith('.') || isAbsolute(specifier)) {
-    return pathToFileURL(resolve(dirname(configFilePath), specifier)).href;
-  }
-
-  return pathToFileURL(createRequire(configFilePath).resolve(specifier)).href;
-};
+const resolveMarkdownPlugins = (config, filePath) =>
+  Object.fromEntries(
+    Object.entries(config).map(([name, value]) => [
+      name,
+      value?.markdown
+        ? {
+            ...value,
+            markdown: resolveMarkdown(
+              value.markdown,
+              `${name}.markdown`,
+              filePath
+            ),
+          }
+        : value,
+    ])
+  );
 
 /**
  * Loads an explicit configuration file or searches for one using cosmiconfig.
@@ -112,13 +128,58 @@ export const loadConfigFile = async filePath => {
 
   let { extends: presets, ...config } = result.config ?? {};
 
-  for (const preset of enforceArray(presets ?? []).toReversed()) {
-    const module = await import(resolveConfigExtends(preset, result.filepath));
+  config = resolveMarkdownPlugins(config, result.filepath);
 
-    config = deepMerge(module.default ?? module, config);
+  for (const preset of enforceArray(presets ?? []).toReversed()) {
+    const url = resolveSpecifier(preset, result.filepath);
+    const module = await import(url);
+
+    // A preset's Markdown plugins resolve from the preset
+    config = deepMerge(
+      resolveMarkdownPlugins(module.default ?? module, fileURLToPath(url)),
+      config
+    );
   }
 
   return config;
+};
+
+/**
+ * Returns the Markdown plugins a generator takes: for each list of its
+ * pipeline with a `'...'`, the global ones, then its own. Generators rendering
+ * Markdown (with rehype or recma plugins) skip the global remark plugins,
+ * which already ran in `ast`. Its own plugins it doesn't take are ignored with
+ * a warning.
+ *
+ * @param {GeneratorMetadata} generator - The generator
+ * @param {Partial<import('./types').MarkdownConfiguration>} [markdown] - Its own plugins
+ * @param {import('./types').GlobalConfiguration} global - The global configuration
+ * @returns {Partial<import('./types').MarkdownConfiguration> | undefined}
+ */
+const configureMarkdown = (generator, markdown = {}, global) => {
+  const pipeline = resolveMarkdownPipeline(generator);
+  const renders = Boolean(pipeline.rehypePlugins || pipeline.recmaPlugins);
+  const configured = {};
+
+  for (const list of PLUGIN_LISTS) {
+    if (!pipeline[list]?.includes(CONFIGURED_PLUGINS)) {
+      if (markdown[list]?.length > 0) {
+        logger.warn(
+          `Ignoring \`${generator.name}.markdown.${list}\`: ` +
+            `\`${generator.name}\` does not take them.`
+        );
+      }
+
+      continue;
+    }
+
+    configured[list] = [
+      ...(list === 'remarkPlugins' && renders ? [] : global.markdown[list]),
+      ...(markdown[list] ?? []),
+    ];
+  }
+
+  return generator.markdown && configured;
 };
 
 /**
@@ -232,11 +293,19 @@ export const createRunConfiguration = async options => {
 
   // Now assign to each generator config (they inherit from global)
   await Promise.all(
-    [...generators.values()].map(async ({ name }) => {
-      const value = merged[name];
+    [...generators.values()].map(async generator => {
+      const value = merged[generator.name];
 
       // Transform generator-specific overrides
       await transformConfig(value);
+
+      // A generator's own Markdown plugins add to the global ones. Set even
+      // when undefined, so the assignment below doesn't copy the global ones
+      value.markdown = configureMarkdown(
+        generator,
+        value.markdown,
+        merged.global
+      );
 
       // Assign from global (this populates missing values from global)
       leftHandAssign(value, merged.global);
