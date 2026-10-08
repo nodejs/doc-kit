@@ -6,3 +6,9 @@ export const ROUTER_PAGE_LIFETIME = 5 * 60 * 1000;
 
 // How many fetched pages are kept at once.
 export const ROUTER_MAX_PAGES = 10;
+
+// The `<head>` elements that belong to the page rather than to the site, and
+// are replaced with it: `<meta>` tags (`og:title`) and the links that are not
+// resources (`canonical`). Scripts and stylesheets run and apply once.
+export const PAGE_HEAD =
+  ':scope > meta, :scope > link:not([rel~="stylesheet"], [rel~="preload"], [rel~="modulepreload"])';

@@ -90,9 +90,11 @@ export const startRouter = ({ unmount, islands }) => {
 
   /** @type {{ root: string, assets: Array<string> }} */
   const config = JSON.parse(tag.textContent);
-  const root = new URL(config.root, location.href).href;
+  const { href: root } = new URL(config.root, location.href);
   const assets = new Set(
-    config.assets.map(href => new URL(href, location.href).href)
+    config.assets
+      .map(asset => new URL(asset, location.href))
+      .map(({ href }) => href)
   );
 
   /** @type {Map<string, { page: Promise<import('./page.mjs').Page | null>, expires: number }>} */

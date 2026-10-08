@@ -3,16 +3,12 @@
  * the document body and page-specific head elements.
  */
 
+import { PAGE_HEAD } from './constants.mjs';
+
 /**
  * @typedef {{ url: string, html: string }} Page A fetched page: its final
  * URL, after redirects, and its markup.
  */
-
-// The `<head>` elements that belong to the page rather than to the site, and
-// are replaced with it: `<meta>` tags (`og:title`) and the links that are not
-// resources (`canonical`). Scripts and stylesheets run and apply once.
-const PAGE_HEAD =
-  ':scope > meta, :scope > link:not([rel~="stylesheet"], [rel~="preload"], [rel~="modulepreload"])';
 
 /**
  * Fetches a page, returning its final URL and HTML, or `null` on failure or a
@@ -105,8 +101,8 @@ export const parsePage = ({ url, html }, assets) => {
   const pageConfig = JSON.parse(tag.textContent);
 
   return pageConfig.assets
-    .map(href => new URL(href, url).href)
-    .every(href => assets.has(href))
+    .map(asset => new URL(asset, url))
+    .every(({ href }) => assets.has(href))
     ? doc
     : null;
 };
