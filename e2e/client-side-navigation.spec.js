@@ -4,17 +4,10 @@ const REMOTE_CONFIG_URL = 'https://nodejs.org/site.json';
 
 /**
  * Navigates the way following a link does, and waits for the navigation to
- * finish, or for the one replacing it when the router follows a redirect.
+ * finish.
  */
 const navigate = (page, url) =>
-  page.evaluate(
-    url =>
-      navigation
-        .navigate(url)
-        .finished.catch(() => navigation.transition?.finished)
-        .then(() => {}),
-    url
-  );
+  page.evaluate(url => navigation.navigate(url).finished.then(() => {}), url);
 
 test.describe('Client-side navigation', () => {
   test.beforeEach(async ({ page }) => {
@@ -60,6 +53,17 @@ test.describe('Client-side navigation', () => {
 
     // The scripts, stylesheets and fonts are still loaded
     expect(requests.filter(url => loaded.includes(url))).toEqual([]);
+  });
+
+  test('moves the URL straight to the one the host redirects to', async ({
+    page,
+  }) => {
+    // `serve` redirects `all.html` to `all`, as hosts with clean URLs do
+    const committed = await page.evaluate(() =>
+      navigation.navigate('all.html').committed.then(({ url }) => url)
+    );
+
+    expect(committed).toMatch(/\/all$/);
   });
 
   test('goes back to the previous page, where it was scrolled to', async ({

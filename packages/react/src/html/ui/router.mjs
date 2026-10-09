@@ -168,7 +168,29 @@ export const startRouter = ({ unmount, islands }) => {
       return;
     }
 
+    const href = withoutFragment(url.href);
+    const loading = loadPage(href);
+
+    /**
+     * Holds the URL back until the page arrives, then moves it straight to
+     * the one the page was served from: hosts with clean URLs redirect
+     * `fs.html` to `fs`, and a full load shows `fs` without `fs.html` first.
+     *
+     * @param {NavigationPrecommitController} controller
+     */
+    const precommitHandler = async controller => {
+      const page = await loading;
+
+      if (page && page.url !== href) {
+        controller.redirect(page.url + url.hash);
+      }
+    };
+
     event.intercept({
+      // Traversals go back to URLs shown already, which cannot be redirected
+      precommitHandler:
+        event.navigationType === 'traverse' ? undefined : precommitHandler,
+
       // Scrolling waits for the page to be swapped in (see `showPage` in page.mjs)
       scroll: 'manual',
 
@@ -176,16 +198,15 @@ export const startRouter = ({ unmount, islands }) => {
        * Swaps in the page the navigation leads to.
        */
       async handler() {
-        const href = withoutFragment(url.href);
-        const page = await loadPage(href);
+        const page = await loading;
 
         if (event.signal.aborted) {
           return;
         }
 
-        // Hosts with clean URLs redirect `fs.html` to `fs`: follow the redirect
-        // as a full load would, replacing this navigation's history entry
-        if (page && page.url !== href) {
+        // Browsers without `precommitHandler` (Safari) show the link's URL
+        // right away: follow the redirect from there, replacing its entry
+        if (page && page.url !== withoutFragment(location.href)) {
           navigation.navigate(page.url + url.hash, { history: 'replace' });
 
           return;
