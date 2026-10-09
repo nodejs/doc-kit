@@ -93,19 +93,16 @@ export const getDefaultConfig = (generators, config) =>
  */
 const resolveMarkdownPlugins = (config, filePath) =>
   Object.fromEntries(
-    Object.entries(config).map(([name, value]) => [
-      name,
-      value?.markdown
-        ? {
-            ...value,
-            markdown: resolveMarkdown(
-              value.markdown,
-              `${name}.markdown`,
-              filePath
-            ),
-          }
-        : value,
-    ])
+    Object.entries(config).map(([name, value]) => {
+      if (value?.markdown) {
+        const label = `${name}.markdown`;
+        const markdown = resolveMarkdown(value.markdown, label, filePath);
+
+        return [name, { ...value, markdown }];
+      }
+
+      return [name, value];
+    })
   );
 
 /**
@@ -170,10 +167,13 @@ const configureMarkdown = (generator, markdown = {}, global) => {
       continue;
     }
 
-    configured[list] = [
-      ...(list === 'remarkPlugins' && renders ? [] : global.markdown[list]),
-      ...(markdown[list] ?? []),
-    ];
+    const plugins = markdown[list] ?? [];
+
+    if (list === 'remarkPlugins' && renders) {
+      configured[list] = plugins;
+    } else {
+      configured[list] = [...global.markdown[list], ...plugins];
+    }
   }
 
   return generator.markdown && configured;

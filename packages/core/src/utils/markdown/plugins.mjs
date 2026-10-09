@@ -195,18 +195,17 @@ export const loadMarkdownPlugins = async (generator, markdown = {}) => {
   const own = {};
 
   // The lists import at once, so a slow plugin (Shiki) doesn't hold the rest
-  await Promise.all(
-    PLUGIN_LISTS.map(async list => {
-      const plugins = configureList(pipeline[list], markdown[list]);
+  const loading = PLUGIN_LISTS.map(async list => {
+    const plugins = configureList(pipeline[list], markdown[list]);
+    const imports = plugins.map(({ entry }) => importPlugin(entry));
 
-      const imported = await Promise.all(
-        plugins.map(({ entry }) => importPlugin(entry))
-      );
+    const imported = await Promise.all(imports);
 
-      configured[list] = imported;
-      own[list] = imported.filter((_, index) => !plugins[index].added);
-    })
-  );
+    configured[list] = imported;
+    own[list] = imported.filter((_, index) => !plugins[index].added);
+  });
+
+  await Promise.all(loading);
 
   loadedPipelines.set(generator.name, { generator, key, configured, own });
 };

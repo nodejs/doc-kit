@@ -63,11 +63,11 @@ const highlighters = new Map();
  * @returns {Promise<Array<T>>}
  */
 const importList = async options => {
-  const imported = await Promise.all(
-    options.map(option =>
-      typeof option === 'string' ? importFromURL(option) : option
-    )
+  const imports = options.map(option =>
+    typeof option === 'string' ? importFromURL(option) : option
   );
+
+  const imported = await Promise.all(imports);
 
   return imported.flat();
 };
@@ -86,7 +86,9 @@ const importTheme = async (theme, scheme) => {
 
   if (typeof theme === 'string') {
     if (theme in bundledThemes) {
-      imported = (await bundledThemes[theme]()).default;
+      const { default: bundledTheme } = await bundledThemes[theme]();
+
+      imported = bundledTheme;
     } else {
       imported = await importFromURL(theme);
     }
@@ -109,17 +111,11 @@ const importHighlighter = async ({
 }) => {
   engine ??= createEngine();
 
-  const [regexEngine, importedLangs, importedTransformers, importedThemes] =
-    await Promise.all([
-      engine,
-      importList(langs),
-      importList(transformers),
-      themes &&
-        Promise.all([
-          importTheme(themes.light, 'light'),
-          importTheme(themes.dark, 'dark'),
-        ]),
-    ]);
+  const [regexEngine, importedLangs, importedTransformers] = await Promise.all([
+    engine,
+    importList(langs),
+    importList(transformers),
+  ]);
 
   const coreOptions = {
     engine: regexEngine,
@@ -131,10 +127,13 @@ const importHighlighter = async ({
   const highlighterOptions = { transformers: importedTransformers };
 
   // Without themes of its own, the highlighter has a default light and dark one
-  if (importedThemes) {
-    const [light, dark] = importedThemes;
+  if (themes) {
+    const [light, dark] = await Promise.all([
+      importTheme(themes.light, 'light'),
+      importTheme(themes.dark, 'dark'),
+    ]);
 
-    coreOptions.themes = importedThemes;
+    coreOptions.themes = [light, dark];
     highlighterOptions.themes = { light: light.name, dark: dark.name };
     highlighterOptions.defaultColor = 'light';
   }
