@@ -37,7 +37,7 @@ everything else (the pages, the search index) revalidate:
 Most hosts default to revalidating every file on every load instead, which
 costs a request per asset each time a new tab opens the site. On Vercel:
 
-```json
+```json displayName="vercel.json"
 {
   "headers": [
     {
