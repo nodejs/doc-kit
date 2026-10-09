@@ -98,8 +98,36 @@ export const startRouter = ({ unmount, islands }) => {
       .map(({ href }) => href)
   );
 
-  /** @type {Map<string, { page: Promise<import('./page.mjs').Page | null>, expires: number }>} */
+  /**
+   * @typedef {object} Entry A fetched page, kept for reuse.
+   * @property {Promise<import('./page.mjs').Page | null>} page
+   * @property {ReturnType<typeof setTimeout>} [expiry] - Drops the page once
+   * it is too old to reuse
+   */
+
+  /**
+   * The pages fetched lately, by URL, oldest first. A page the host redirected
+   * is kept under the URL it was fetched from as well.
+   *
+   * @type {Map<string, Entry>}
+   */
   const pages = new Map();
+
+  /**
+   * Drops a page from memory, under every URL it is kept under.
+   *
+   * @param {Entry} entry
+   */
+  const forget = entry => {
+    // A pending expiry would otherwise hold on to the page until it runs
+    clearTimeout(entry.expiry);
+
+    for (const [href, kept] of pages) {
+      if (kept === entry) {
+        pages.delete(href);
+      }
+    }
+  };
 
   /**
    * Fetches a page, or reuses the copy fetched moments ago.
@@ -111,34 +139,35 @@ export const startRouter = ({ unmount, islands }) => {
   const loadPage = href => {
     const cached = pages.get(href);
 
-    if (cached && cached.expires > Date.now()) {
+    if (cached) {
       return cached.page;
     }
 
-    const page = fetchPage(href);
-    const entry = { page, expires: Date.now() + ROUTER_PAGE_LIFETIME };
+    /** @type {Entry} */
+    const entry = { page: fetchPage(href) };
 
-    pages.delete(href);
+    entry.expiry = setTimeout(forget, ROUTER_PAGE_LIFETIME, entry);
     pages.set(href, entry);
 
-    // Redirected pages take two entries (below)
-    while (pages.size > ROUTER_MAX_PAGES) {
-      pages.delete(pages.keys().next().value);
+    // The limit counts pages, not the URLs they are kept under
+    const kept = new Set(pages.values());
+
+    if (kept.size > ROUTER_MAX_PAGES) {
+      forget(kept.values().next().value);
     }
 
-    page.then(result => {
-      // A failure is not kept, so the next attempt fetches again
-      if (!result && pages.get(href)?.page === page) {
-        pages.delete(href);
-      }
-
-      // Following the redirect (see the handler) then needs no second fetch
-      if (result && result.url !== href) {
+    entry.page.then(result => {
+      if (!result) {
+        // A failure is not kept, so the next attempt fetches again
+        forget(entry);
+      } else if (result.url !== href && pages.get(href) === entry) {
+        // Following the redirect (see the handler) then needs no second fetch
+        pages.delete(result.url);
         pages.set(result.url, entry);
       }
     });
 
-    return page;
+    return entry.page;
   };
 
   /**
