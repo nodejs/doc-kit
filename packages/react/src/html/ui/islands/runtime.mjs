@@ -89,7 +89,9 @@ Island.addInitType('preact', async island => {
 
   try {
     if (!loaded.has(name)) {
-      loaded.set(name, (await loader()).default);
+      const { default: component } = await loader();
+
+      loaded.set(name, component);
     }
 
     // A client-side navigation can replace the page while its component loads
