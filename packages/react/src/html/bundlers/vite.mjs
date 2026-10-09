@@ -230,6 +230,15 @@ export const createViteConfig = ({
         ...vite.build?.rolldownOptions,
         input,
         ...(server ? { external: [] } : {}),
+
+        // Dependencies' `"use client"` directives are for React Server
+        // Components, which bundling drops and this site doesn't use. See
+        // https://rolldown.rs/in-depth/directives#other-directives
+        checks: {
+          moduleLevelDirective: false,
+          ...vite.build?.rolldownOptions?.checks,
+        },
+
         output: {
           ...vite.build?.rolldownOptions?.output,
           format: 'es',
