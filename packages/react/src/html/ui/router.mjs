@@ -19,22 +19,22 @@
  */
 
 import {
+  PAGE_PATHNAME,
+  ROUTER_DATA_ATTRIBUTE,
   ROUTER_HOVER_DELAY,
   ROUTER_MAX_PAGES,
   ROUTER_PAGE_LIFETIME,
 } from './constants.mjs';
-import { fetchPage, parsePage, showPage, transition } from './page.mjs';
+import { fetchPage, parsePage, showPage } from './page.mjs';
 
 /**
- * Whether a URL is a page of the site under `root`: an HTML file, or an
- * extensionless path (hosts may serve pages without their `.html`), and not
- * one of the site's other files (JSON, Markdown, the search index).
+ * Whether a URL is a page of the site under `root` (see `PAGE_PATHNAME`).
  *
- * @param {URL} url
+ * @param {URL | HTMLAnchorElement} url - A URL, or a link to one
  * @param {string} root - The site's root URL, ending in `/`
  */
 export const isPage = (url, root) =>
-  url.href.startsWith(root) && /(\.html|\/[^./]*)$/.test(url.pathname);
+  url.href.startsWith(root) && PAGE_PATHNAME.test(url.pathname);
 
 /**
  * A URL without its fragment: the address of the page it points into.
@@ -82,12 +82,13 @@ const shouldIntercept = (event, url, root) =>
  * islands; used to save scroll positions before the body is replaced.
  */
 export const startRouter = ({ unmount, islands }) => {
-  const tag = document.querySelector('script[data-router]');
+  const tag = document.querySelector(`script[${ROUTER_DATA_ATTRIBUTE}]`);
 
   if (!('navigation' in window) || !tag) {
     return;
   }
 
+  // The site's root and this build's assets, relative to this page
   /** @type {{ root: string, assets: Array<string> }} */
   const config = JSON.parse(tag.textContent);
   const { href: root } = new URL(config.root, location.href);
@@ -103,22 +104,22 @@ export const startRouter = ({ unmount, islands }) => {
   /**
    * Fetches a page, or reuses the copy fetched moments ago.
    *
-   * @param {string} url - The page's URL, without a fragment
+   * @param {string} href - The page's URL, without a fragment
    * @returns {Promise<import('./page.mjs').Page | null>} `null` when the
    * response is not a page to show: an error, or anything but HTML.
    */
-  const loadPage = url => {
-    const cached = pages.get(url);
+  const loadPage = href => {
+    const cached = pages.get(href);
 
     if (cached && cached.expires > Date.now()) {
       return cached.page;
     }
 
-    const page = fetchPage(url);
+    const page = fetchPage(href);
     const entry = { page, expires: Date.now() + ROUTER_PAGE_LIFETIME };
 
-    pages.delete(url);
-    pages.set(url, entry);
+    pages.delete(href);
+    pages.set(href, entry);
 
     // Redirected pages take two entries (below)
     while (pages.size > ROUTER_MAX_PAGES) {
@@ -127,12 +128,12 @@ export const startRouter = ({ unmount, islands }) => {
 
     page.then(result => {
       // A failure is not kept, so the next attempt fetches again
-      if (!result && pages.get(url)?.page === page) {
-        pages.delete(url);
+      if (!result && pages.get(href)?.page === page) {
+        pages.delete(href);
       }
 
       // Following the redirect (see the handler) then needs no second fetch
-      if (result && result.url !== url) {
+      if (result && result.url !== href) {
         pages.set(result.url, entry);
       }
     });
@@ -153,111 +154,134 @@ export const startRouter = ({ unmount, islands }) => {
       return;
     }
 
-    const url = withoutFragment(link.href);
+    const href = withoutFragment(link.href);
 
     // Links within the current page have nothing to fetch
-    if (isPage(new URL(url), root) && url !== withoutFragment(location.href)) {
-      return url;
+    if (isPage(link, root) && href !== withoutFragment(location.href)) {
+      return href;
     }
   };
 
-  navigation.addEventListener('navigate', event => {
-    const url = new URL(event.destination.url);
-
-    if (!shouldIntercept(event, url, root)) {
-      return;
-    }
-
-    const href = withoutFragment(url.href);
-    const loading = loadPage(href);
-
+  navigation.addEventListener(
+    'navigate',
     /**
-     * Holds the URL back until the page arrives, then moves it straight to
-     * the one the page was served from: hosts with clean URLs redirect
-     * `fs.html` to `fs`, and a full load shows `fs` without `fs.html` first.
+     * Takes over a navigation to another page of the site, to swap that page
+     * into the current document.
      *
-     * @param {NavigationPrecommitController} controller
+     * @param {NavigateEvent} event
      */
-    const precommitHandler = async controller => {
-      const page = await loading;
+    event => {
+      const destination = new URL(event.destination.url);
 
-      if (page && page.url !== href) {
-        controller.redirect(page.url + url.hash);
+      if (!shouldIntercept(event, destination, root)) {
+        return;
       }
-    };
 
-    event.intercept({
-      // Traversals go back to URLs shown already, which cannot be redirected
-      precommitHandler:
-        event.navigationType === 'traverse' ? undefined : precommitHandler,
-
-      // Scrolling waits for the page to be swapped in (see `showPage` in page.mjs)
-      scroll: 'manual',
+      const href = withoutFragment(destination.href);
+      const loading = loadPage(href);
 
       /**
-       * Swaps in the page the navigation leads to.
+       * Holds the URL back until the page arrives, then moves it straight to
+       * the one the page was served from: hosts with clean URLs redirect
+       * `fs.html` to `fs`, and a full load shows `fs` without `fs.html` first.
+       *
+       * @param {NavigationPrecommitController} controller
        */
-      async handler() {
+      const precommitHandler = async controller => {
         const page = await loading;
 
-        if (event.signal.aborted) {
-          return;
+        if (page && page.url !== href) {
+          controller.redirect(page.url + destination.hash);
         }
+      };
 
-        // Browsers without `precommitHandler` (Safari) show the link's URL
-        // right away: follow the redirect from there, replacing its entry
-        if (page && page.url !== withoutFragment(location.href)) {
-          navigation.navigate(page.url + url.hash, { history: 'replace' });
+      event.intercept({
+        // Traversals go back to URLs shown already, which cannot be redirected
+        precommitHandler:
+          event.navigationType === 'traverse' ? undefined : precommitHandler,
 
-          return;
-        }
+        // Scrolling waits for the page to be swapped in (see `showPage` in page.mjs)
+        scroll: 'manual',
 
-        const doc = page && parsePage(page, assets);
+        /**
+         * Swaps in the page the navigation leads to.
+         */
+        async handler() {
+          const page = await loading;
 
-        if (!doc) {
-          // The navigation has already moved to the page's URL, so reloading
-          // is a full load of that page
-          location.reload();
+          if (event.signal.aborted) {
+            return;
+          }
 
-          return;
-        }
+          // Browsers without `precommitHandler` (Safari) show the link's URL
+          // right away: follow the redirect from there, replacing its entry
+          if (page && page.url !== withoutFragment(location.href)) {
+            navigation.navigate(page.url + destination.hash, {
+              history: 'replace',
+            });
 
-        transition(() => showPage(doc, () => event.scroll(), unmount, islands));
-      },
-    });
-  });
+            return;
+          }
+
+          const doc = page && parsePage(page, assets);
+
+          if (!doc) {
+            // The navigation has already moved to the page's URL, so reloading
+            // is a full load of that page
+            location.reload();
+
+            return;
+          }
+
+          showPage(doc, () => event.scroll(), unmount, islands);
+        },
+      });
+    }
+  );
 
   let hovered;
 
   document.addEventListener(
     'pointerover',
+    /**
+     * Prefetches the page a link leads to once the mouse has rested on it,
+     * unless the browser is set to save data.
+     */
     ({ pointerType, target }) => {
       clearTimeout(hovered);
 
-      const url =
+      const href =
         pointerType === 'mouse' &&
         !navigator.connection?.saveData &&
         getLinkedPage(target);
 
-      if (url) {
-        hovered = setTimeout(loadPage, ROUTER_HOVER_DELAY, url);
+      if (href) {
+        hovered = setTimeout(loadPage, ROUTER_HOVER_DELAY, href);
       }
     },
     { passive: true }
   );
 
-  document.addEventListener('pointerout', () => clearTimeout(hovered), {
-    passive: true,
-  });
+  document.addEventListener(
+    'pointerout',
+    /**
+     * Cancels the prefetch of a link the mouse leaves before its delay.
+     */
+    () => clearTimeout(hovered),
+    { passive: true }
+  );
 
-  // Pressing a link is as good as following it: fetch right away
   document.addEventListener(
     'pointerdown',
+    /**
+     * Fetches the page a pressed link leads to right away: pressing a link is
+     * as good as following it.
+     */
     ({ target }) => {
-      const url = getLinkedPage(target);
+      const href = getLinkedPage(target);
 
-      if (url) {
-        loadPage(url);
+      if (href) {
+        loadPage(href);
       }
     },
     { passive: true }

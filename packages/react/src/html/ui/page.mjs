@@ -3,7 +3,12 @@
  * the document body and page-specific head elements.
  */
 
-import { PAGE_HEAD } from './constants.mjs';
+import {
+  ISLAND_NAME_ATTRIBUTE,
+  NAVIGATED_ATTRIBUTE,
+  PAGE_HEAD,
+  ROUTER_DATA_ATTRIBUTE,
+} from './constants.mjs';
 
 /**
  * @typedef {{ url: string, html: string }} Page A fetched page: its final
@@ -39,7 +44,7 @@ export const keyIslands = source => {
 
   return new Map(
     [...source].map(island => {
-      const name = island.getAttribute('data-island-name');
+      const name = island.getAttribute(ISLAND_NAME_ATTRIBUTE);
       counts.set(name, (counts.get(name) ?? 0) + 1);
 
       return [`${name}:${counts.get(name)}`, island];
@@ -56,7 +61,7 @@ export const keyIslands = source => {
 const updateHead = doc => {
   document.title = doc.title;
 
-  const next = new Map(
+  const nextHead = new Map(
     [...doc.head.querySelectorAll(PAGE_HEAD)].map(element => [
       element.outerHTML,
       element,
@@ -64,21 +69,14 @@ const updateHead = doc => {
   );
 
   for (const element of document.head.querySelectorAll(PAGE_HEAD)) {
-    // What is left in `next` afterwards is what the current page lacks
-    if (!next.delete(element.outerHTML)) {
+    // What is left in `nextHead` afterwards is what the current page lacks
+    if (!nextHead.delete(element.outerHTML)) {
       element.remove();
     }
   }
 
-  document.head.append(...next.values());
+  document.head.append(...nextHead.values());
 };
-
-/**
- * Runs a DOM update, keeping the call-site uniform for a future transition.
- *
- * @param {() => void} update
- */
-export const transition = update => update();
 
 /**
  * Parses a fetched page and checks that its assets match this build.
@@ -91,12 +89,13 @@ export const transition = update => update();
  */
 export const parsePage = ({ url, html }, assets) => {
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  const tag = doc.querySelector('script[data-router]');
+  const tag = doc.querySelector(`script[${ROUTER_DATA_ATTRIBUTE}]`);
 
   if (!tag) {
     return null;
   }
 
+  // The page's root and the assets of the build it belongs to
   /** @type {{ root: string, assets: Array<string> }} */
   const pageConfig = JSON.parse(tag.textContent);
 
@@ -124,16 +123,15 @@ export const showPage = (doc, scroll, unmount, islands) => {
   updateHead(doc);
   document.body.replaceWith(doc.body);
 
-  // Styles can then keep what animates in as the site loads (the banner)
-  // from animating again with every page
-  document.documentElement.setAttribute('data-navigated', '');
+  document.documentElement.setAttribute(NAVIGATED_ATTRIBUTE, '');
 
-  const next = keyIslands(
-    document.body.querySelectorAll('is-land[data-island-name]')
+  const nextIslands = document.body.querySelectorAll(
+    `is-land[${ISLAND_NAME_ATTRIBUTE}]`
   );
+  const nextIslandsByKey = keyIslands(nextIslands);
 
   for (const [key, left, top] of scrolled) {
-    next.get(key)?.scrollTo({ left, top, behavior: 'instant' });
+    nextIslandsByKey.get(key)?.scrollTo({ left, top, behavior: 'instant' });
   }
 
   scroll();

@@ -521,8 +521,7 @@ following a link to another page fetches that page and swaps it into the
 current document instead of loading a new one. Scripts, stylesheets and fonts
 stay loaded, the search index and the remote config are fetched once per visit,
 and the sidebar keeps its scroll position. Back and forward, scroll restoration
-and focus behave as they do for full loads, and the old page cross-fades into
-the new one where view transitions are supported.
+and focus behave as they do for full loads.
 
 Pages are prefetched into memory when a link is hovered (unless the browser
 asks to save data) or pressed, so most navigations do not wait on the network.

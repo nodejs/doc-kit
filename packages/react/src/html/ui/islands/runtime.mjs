@@ -1,6 +1,7 @@
 import { Island } from '@11ty/is-land';
 import { h, hydrate, render } from 'preact';
 
+import { ISLAND_NAME_ATTRIBUTE } from '../constants.mjs';
 import loaders from './loaders.mjs';
 
 /**
@@ -60,7 +61,7 @@ const Slot = ({ html }) =>
 // loading conditions first, and that await cannot resolve until this module body
 // has run to completion.
 Island.addInitType('preact', async island => {
-  const name = island.getAttribute('data-island-name');
+  const name = island.getAttribute(ISLAND_NAME_ATTRIBUTE);
   const loader = loaders[name];
 
   if (!loader) {

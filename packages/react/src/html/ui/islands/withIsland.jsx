@@ -2,6 +2,8 @@ import { toChildArray } from 'preact';
 
 import { server } from '#theme/config';
 
+import { ISLAND_NAME_ATTRIBUTE } from '../constants.mjs';
+
 /**
  * Serializes island props for the inline `application/json` script.
  *
@@ -37,7 +39,11 @@ export default (Component, { name, on }) => {
   );
 
   return ({ children, ...props }) => (
-    <is-land {...conditions} type="preact" data-island-name={name}>
+    <is-land
+      {...conditions}
+      type="preact"
+      {...{ [ISLAND_NAME_ATTRIBUTE]: name }}
+    >
       {Object.keys(props).length > 0 && (
         <script
           type="application/json"

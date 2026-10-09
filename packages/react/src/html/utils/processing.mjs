@@ -1,6 +1,7 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 
+import { ROUTER_DATA_ATTRIBUTE } from '../ui/constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
 import createConfigSource from './config.mjs';
 import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
@@ -171,14 +172,14 @@ export const buildHead = ({ meta = [], links = [], html = [] }) =>
  * @param {string} root - The page's root (see {@link resolvePageRoot})
  * @returns {string}
  */
-export const buildAssetTags = ({ scripts, preloads, stylesheets }, root) =>
-  [
-    [
-      `<script type="application/json" data-router>${JSON.stringify({
-        root,
-        assets: [...scripts, ...stylesheets].map(file => `${root}${file}`),
-      })}</script>`,
-    ],
+export const buildAssetTags = ({ scripts, preloads, stylesheets }, root) => {
+  const routerData = JSON.stringify({
+    root,
+    assets: [...scripts, ...stylesheets].map(file => `${root}${file}`),
+  });
+
+  return [
+    `<script type="application/json" ${ROUTER_DATA_ATTRIBUTE}>${routerData}</script>`,
     scripts.map(
       file => `<script type="module" crossorigin src="${root}${file}"></script>`
     ),
@@ -199,6 +200,7 @@ export const buildAssetTags = ({ scripts, preloads, stylesheets }, root) =>
   ]
     .flat()
     .join('\n    ');
+};
 
 /**
  * The output file of a page, relative to the output directory.
