@@ -55,6 +55,8 @@ export type ClientAssets = {
   preloads: Array<string>;
   // Stylesheets.
   stylesheets: Array<string>;
+  // Fonts to preload, so text does not wait on the stylesheet to request them.
+  fonts?: Array<string>;
 };
 
 export type ServerBundleOptions = {

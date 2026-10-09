@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 import { remoteConfigUrl } from '#theme/config';
 
@@ -17,31 +17,56 @@ import { remoteConfigUrl } from '#theme/config';
  */
 
 /**
+ * The remote config fetched for this visit, shared by every island that reads
+ * it. Islands hydrate as separate roots, so no context provider could span
+ * them; module scope is the shared store.
+ *
+ * @type {Promise<RemoteConfig | undefined> | undefined}
+ */
+let remoteConfig;
+
+/**
+ * Fetches the remote config, unless it is already loaded or on its way.
+ *
+ * @returns {Promise<RemoteConfig | null>}
+ */
+const loadRemoteConfig = () => {
+  remoteConfig ??= fetch(remoteConfigUrl)
+    .then(response => response.json())
+    .catch(() => {
+      // Not kept, so that the next island to mount tries again
+      remoteConfig = undefined;
+    });
+
+  return remoteConfig;
+};
+
+/**
  * Fetches the remote site configuration once the component mounts.
  *
- * @returns {RemoteConfig | null} `null` until loaded, or when there is no
- * `remoteConfigUrl` or the fetch fails.
+ * @returns {RemoteConfig | undefined} `undefined` until loaded, or when there
+ * is no `remoteConfigUrl` or the fetch fails.
  */
 export default () => {
   const [config, setConfig] = useState(
-    /** @type {RemoteConfig | null} */ (null)
+    /** @type {RemoteConfig | undefined} */ (undefined)
   );
 
-  useEffect(() => {
+  // A layout effect, so that a page navigated to client-side renders with a
+  // config loaded earlier before it is painted, and its banner does not push
+  // the page down a frame later
+  useLayoutEffect(() => {
     if (!remoteConfigUrl) {
       return;
     }
 
     let mounted = true;
 
-    fetch(remoteConfigUrl)
-      .then(response => response.json())
-      .then(loaded => {
-        if (mounted) {
-          setConfig(loaded);
-        }
-      })
-      .catch(() => {});
+    loadRemoteConfig().then(loaded => {
+      if (mounted) {
+        setConfig(loaded);
+      }
+    });
 
     return () => {
       mounted = false;
