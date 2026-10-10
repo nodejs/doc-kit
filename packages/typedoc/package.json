@@ -1,7 +1,7 @@
 {
   "name": "@doc-kit/typedoc",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A TypeDoc plugin writing API references as doc-kit Markdown",
   "repository": {
     "type": "git",

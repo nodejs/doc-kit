@@ -1,5 +1,13 @@
 # @doc-kit/core
 
+## 1.3.0
+
+### Minor Changes
+
+- [#1127](https://github.com/nodejs/doc-kit/pull/1127) [`c50e75f`](https://github.com/nodejs/doc-kit/commit/c50e75f8f50c84b6ff3b16b84059bd0f53ca5d1c) Thanks [@ovflowd](https://github.com/ovflowd)! - Add the `llms-txt-full` generator, writing a `llms-full.txt` file holding the Markdown of every page, each preceded by its URL.
+
+- [#1157](https://github.com/nodejs/doc-kit/pull/1157) [`a4c9684`](https://github.com/nodejs/doc-kit/commit/a4c9684fd46f14b3bcbaf2e8f01a246a47ee27cd) Thanks [@ovflowd](https://github.com/ovflowd)! - Add a `markdown` option to add remark, rehype, and recma plugins to the generators processing Markdown, or configure the ones they use, such as Shiki. The `@doc-kit/core` modules the generators' pipelines replace are removed (`utils/remark.mjs`, `utils/remark-shiki.mjs`, and `utils/highlighter.mjs`), and `utils/type-annotations` moves to `plugins/type-annotations`
+
 ## 1.2.1
 
 ### Patch Changes
