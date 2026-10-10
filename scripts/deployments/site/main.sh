@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # Build the doc-kit documentation site into `www/out/`.
 
