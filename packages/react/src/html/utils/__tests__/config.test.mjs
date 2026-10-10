@@ -1,18 +1,24 @@
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { describe, it, mock } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 import { SemVer } from 'semver';
 
-mock.module('@node-core/rehype-shiki', {
+// The languages Shiki bundles, as `@doc-kit/core` imports them
+const core = createRequire(
+  fileURLToPath(import.meta.resolve('@doc-kit/core/package.json'))
+);
+
+mock.module(core.resolve('shiki/langs'), {
   exports: {
-    LANGS: [
-      { name: 'javascript', aliases: ['js'], displayName: 'JavaScript' },
-      { name: 'typescript', aliases: ['ts'], displayName: 'TypeScript' },
-      { name: 'python', displayName: 'Python' },
+    bundledLanguagesInfo: [
+      { id: 'javascript', name: 'JavaScript', aliases: ['js'] },
+      { id: 'typescript', name: 'TypeScript', aliases: ['ts'] },
+      { id: 'python', name: 'Python' },
     ],
-    default: async () => ({}),
   },
 });
 
@@ -44,7 +50,7 @@ const config = await setConfig({
 });
 
 // Loading the real `html` generator would pull in the full rendering stack
-// (which the `rehype-shiki` mock above cannot satisfy), so its resolved
+// (which the `shiki/langs` mock above cannot satisfy), so its resolved
 // configuration is stubbed in directly.
 config.html = {
   ...config.global,
