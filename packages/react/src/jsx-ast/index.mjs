@@ -1,7 +1,6 @@
 'use strict';
 
 import { getHighlighter } from '@doc-kit/core/plugins/shiki/highlighter.mjs';
-import { createTypeAnnotationHandler } from '@doc-kit/core/plugins/type-annotations/highlighter.mjs';
 
 import { AST_NODE_TYPES } from './constants.mjs';
 import { generate, processChunk } from './generate.mjs';
@@ -44,8 +43,8 @@ export default {
           // Types are highlighted, with their links embedded, as static
           // markup (see `./plugins/static-markup.mjs`)
           handlers: {
-            typeAnnotation: embedHighlightedTypes(
-              createTypeAnnotationHandler(() => getHighlighter('jsx-ast'))
+            typeAnnotation: embedHighlightedTypes(() =>
+              getHighlighter('jsx-ast')
             ),
           },
         },
