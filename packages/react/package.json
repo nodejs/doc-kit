@@ -2,7 +2,7 @@
   "name": "@doc-kit/generator-react",
   "type": "module",
   "version": "0.4.2",
-  "description": "React/JSX-based generators for @doc-kit/core: html, jsx-ast, llms-txt, sitemap, and orama-db",
+  "description": "React/JSX-based generators for @doc-kit/core: html, jsx-ast, llms-txt, llms-txt-full, sitemap, and orama-db",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
@@ -16,6 +16,7 @@
     "./html/bundlers/vite": "./src/html/bundlers/vite.mjs",
     "./jsx-ast": "./src/jsx-ast/index.mjs",
     "./llms-txt": "./src/llms-txt/index.mjs",
+    "./llms-txt-full": "./src/llms-txt-full/index.mjs",
     "./orama-db": "./src/orama-db/index.mjs",
     "./sitemap": "./src/sitemap/index.mjs",
     "./package.json": "./package.json"

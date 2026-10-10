@@ -16,6 +16,7 @@ const PUBLIC_GENERATORS = [
   'html',
   'orama-db',
   'llms-txt',
+  'llms-txt-full',
   'sitemap',
   'section-pages',
   'json',

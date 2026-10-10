@@ -22,6 +22,7 @@ export const publicGenerators = {
   'api-links': '@node-core/doc-kit/api-links',
   'orama-db': '@doc-kit/generator-react/orama-db',
   'llms-txt': '@doc-kit/generator-react/llms-txt',
+  'llms-txt-full': '@doc-kit/generator-react/llms-txt-full',
   sitemap: '@doc-kit/generator-react/sitemap',
   html: '@doc-kit/generator-react/html',
   'section-pages': '@doc-kit/generator-react/section-pages',
