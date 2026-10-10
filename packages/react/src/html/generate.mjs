@@ -12,48 +12,39 @@ import { resolveBundler } from './bundlers/index.mjs';
 import { buildAllPage } from './utils/all.mjs';
 import { copyStaticAssets } from './utils/copying.mjs';
 import createProgramBuilder, { moduleFileName } from './utils/generate.mjs';
-import { createVirtualImports } from './utils/processing.mjs';
 import { createPageWriter } from './utils/render.mjs';
 
 const htmlLogger = logger.child('html');
 
 /**
- * Main generation function: turns the pages' JSX into the static site.
+ * Bundles the component library and the client assets, and compiles every
+ * page's program into `outDir`, for the worker pool to render.
  *
- * Receives `jsx-ast`'s output as `{ data, headings, readingTime, content }`
- * items, `content` being each page's JSX code. The site is then built in
- * pieces that are each as small as they can be:
+ * Nothing is bundled or compiled past this point, so the bundler is closed
+ * here: whatever it holds is released before the pages are rendered.
  *
- * 1. The component library is bundled once, for the server.
- * 2. The client assets are bundled once; every page loads the same ones.
- * 3. Each page's program is compiled (JSX to a plain module) and written to a
- * temporary directory, one at a time, so no page is held longer than that.
- * 4. The worker pool imports, renders, templates, minifies and writes the
- * pages, one page in memory per worker.
- * 5. `all.html`, when enabled, is a program that imports the module pages'
- * content, so it is written last from what was already compiled.
- *
- * @type {import('./types').Generator['generate']}
+ * @param {object} options
+ * @param {Array<import('./types').Page>} options.pages - Every page, in render order
+ * @param {import('./types').ComposedPage} [options.all] - `all.html`, when enabled
+ * @param {string} options.outDir - Where the library and the programs are written
+ * @param {import('./types').ResolvedWebConfiguration} options.config
+ * @returns {Promise<{ assets: import('./types').ClientAssets, tasks: Array<import('./types').PageTask> }>}
  */
-export async function generate(input, worker) {
-  const config = getConfig('html');
-
-  const template = await readFile(config.templatePath, 'utf-8');
-
-  const pages = [...input];
-  const all = config.generateAllPage ? buildAllPage(pages) : undefined;
-
+const buildPrograms = async ({ pages, all, outDir, config }) => {
   // Every page's metadata, in render order — the sidebar, the index and the
   // cross links need the whole set.
   const datas = [...pages, ...(all ? [all] : [])].map(({ data }) => data);
 
-  const bundler = await resolveBundler(config.bundler);
+  // Loaded here rather than with the generator, so the threads rendering
+  // pages, which load this module too, never load what only this needs
+  const { createVirtualImports } = await import('./utils/config.mjs');
+
   const { buildLibraryProgram, buildPageProgram, clientProgram } =
     createProgramBuilder();
 
-  // The built library and the compiled page programs live here until every
-  // page is written; the directory is removed afterwards
-  const outDir = await mkdtemp(join(tmpdir(), 'doc-kit-html-'));
+  // Resolved last: the default bundler runs in a child process, which only
+  // ends once it is closed
+  const bundler = await resolveBundler(config.bundler);
 
   try {
     const libraryURL = await bundler.buildServer({
@@ -85,13 +76,12 @@ export async function generate(input, worker) {
     const compile = async page => {
       const file = join(modulesDir, moduleFileName(page.data.api));
 
-      await writeFile(
-        file,
-        await bundler.compile(
-          buildPageProgram(page, libraryURL),
-          `${page.data.api}.jsx`
-        )
+      const code = await bundler.compile(
+        buildPageProgram(page, libraryURL),
+        `${page.data.api}.jsx`
       );
+
+      await writeFile(file, code);
 
       const { data, headings, readingTime } = page;
 
@@ -106,21 +96,75 @@ export async function generate(input, worker) {
     const tasks = [];
 
     for (const page of pages) {
-      tasks.push(await compile(page));
+      const task = await compile(page);
+
+      tasks.push(task);
+    }
+
+    // The composed page imports the other pages' compiled programs, which
+    // exist from here on, so it is rendered by the worker pool alongside them.
+    // Rendering it on this thread instead would hold the whole site in it and
+    // block the pool from shutting down its idle workers until it is done.
+    // It goes first: it takes by far the longest, so the other pages are
+    // rendered while it is.
+    //
+    // It is not minified. The minifier's memory grows to about twelve times
+    // the page it is given and is never returned, and this page is the whole
+    // site: minifying the Node.js docs' ~35MB `all.html` takes ~400MB and over
+    // a second, for a page 2% smaller once compressed.
+    if (all) {
+      const allTask = await compile(all);
+
+      tasks.unshift({ ...allTask, minify: false });
     }
 
     htmlLogger.debug(`Compiled ${tasks.length} page programs`);
 
-    const writePages = createPageWriter(worker);
-    const extra = { template, assets };
+    return { assets, tasks };
+  } finally {
+    await bundler.close?.();
+  }
+};
 
-    await writePages(tasks, extra);
+/**
+ * Main generation function: turns the pages' JSX into the static site.
+ *
+ * Receives `jsx-ast`'s output as `{ data, headings, readingTime, content }`
+ * items, `content` being each page's JSX code. The site is then built in
+ * pieces that are each as small as they can be:
+ *
+ * 1. The component library is bundled once, for the server.
+ * 2. The client assets are bundled once; every page loads the same ones.
+ * 3. Each page's program is compiled (JSX to a plain module) and written to a
+ * temporary directory, one at a time, so no page is held longer than that.
+ * 4. `all.html`, when enabled, is a program that imports the module pages'
+ * content, so it is compiled from what was already compiled.
+ * 5. The worker pool imports, renders, templates, minifies and writes the
+ * pages, one page in memory per worker.
+ *
+ * @type {import('./types').Generator['generate']}
+ */
+export async function generate(input, worker) {
+  const config = getConfig('html');
 
-    // The composed page imports the others' compiled programs, so it can only
-    // be rendered once those exist — which they now do.
-    if (all) {
-      await writePages([await compile(all)], extra);
-    }
+  const template = await readFile(config.templatePath, 'utf-8');
+
+  const pages = [...input];
+  const all = config.generateAllPage ? buildAllPage(pages) : undefined;
+
+  // The built library and the compiled page programs live here until every
+  // page is written; the directory is removed afterwards
+  const outDir = await mkdtemp(join(tmpdir(), 'doc-kit-html-'));
+
+  try {
+    const { assets, tasks } = await buildPrograms({
+      pages,
+      all,
+      outDir,
+      config,
+    });
+
+    await createPageWriter(worker)(tasks, { template, assets });
   } finally {
     await rm(outDir, { recursive: true, force: true });
   }

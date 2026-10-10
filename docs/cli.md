@@ -39,4 +39,6 @@ Runs the generators and writes their output. Requires a `target` and an
 - `--type-map <url>` {string} Type map URL or path (custom type-name → URL
   links).
 - `-p, --threads <n>` {number} Worker threads to use (minimum 1).
+- `--worker-heap-size <mb>` {number} Heap size limit of each worker thread, in
+  MB (minimum 1).
 - `--chunk-size <n>` {number} Items per worker thread (minimum 1).

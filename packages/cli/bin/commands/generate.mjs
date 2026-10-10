@@ -18,6 +18,7 @@ const { runGenerators } = createGenerator();
  * @property {string[]} ignore
  * @property {string} output
  * @property {number} threads
+ * @property {number} workerHeapSize
  * @property {number} chunkSize
  * @property {string} version
  * @property {string} changelog
@@ -51,6 +52,12 @@ export default new Command('generate')
     new Option(
       '-p, --threads <number>',
       'Number of threads to use (minimum: 1)'
+    )
+  )
+  .addOption(
+    new Option(
+      '--worker-heap-size <mb>',
+      'Heap size limit of each worker thread, in MB (minimum: 1)'
     )
   )
   .addOption(

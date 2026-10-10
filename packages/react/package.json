@@ -41,6 +41,7 @@
     "@orama/ui": "^1.5.4",
     "estree-util-to-js": "^2.0.0",
     "github-slugger": "^2.0.0",
+    "hast-util-to-jsx-runtime": "^2.3.6",
     "hast-util-to-string": "^3.0.1",
     "hastscript": "^9.0.1",
     "mdast-util-slice-markdown": "^2.0.1",

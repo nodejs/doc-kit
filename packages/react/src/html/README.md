@@ -49,11 +49,13 @@ from the module pages' compiled content rather than built again from scratch.
   [`navigation`](#navigation). **Default:** `{}`.
 - `generateAllPage` {boolean} When `true`, writes `all.html`: every module
   page's content on one page, in sidebar order, assembled from the module pages
-  rather than built again. Chunk pages and the index are left out.
+  rather than built again. Chunk pages and the index are left out. It is never
+  minified: the minifier would need about twelve times its size in memory.
   **Default:** `true`.
 - `bundler` {WebBundler} Adapter that bundles the component library and the
   client assets, and compiles page programs. See
-  [Bundler adapters](#bundler-adapters). **Default:** `createViteBundler()`.
+  [Bundler adapters](#bundler-adapters). **Default:** the Vite adapter, run
+  in a child process (see [Vite adapter](#vite-adapter)).
 
 ### `head`
 
@@ -194,6 +196,8 @@ omitted rather than rendered empty.
   JavaScript Node can import.
 - `buildClient` {Function} Bundle the client `entry` into `config.output` and
   return the assets every page loads.
+- `close` {Function} Optional. Release what the adapter holds. Called once
+  every page program is compiled, before the pages are rendered.
 
 The `bundler` option accepts a small Doc Kit adapter rather than configuration
 for a particular build system.
@@ -266,9 +270,11 @@ export default {
 
 ### Vite adapter
 
-When `bundler` is omitted, the generator imports and uses
-`createViteBundler()` automatically. To customize Vite, import the adapter
-directly and pass Vite's `UserConfig` to it:
+When `bundler` is omitted, the generator runs the Vite adapter in a child
+process of its own, and ends it once every page program is compiled. Vite
+bundles with Rolldown, whose native memory a process only gets back when it
+exits, so it is returned before the pages are rendered. To customize Vite,
+import the adapter directly and pass Vite's `UserConfig` to it:
 
 ```js
 // doc-kit.config.mjs
@@ -316,9 +322,9 @@ hashed names of the fonts to preload. A manifest is written either way; pass
 `build: { manifest: true }` (or a file name) to `createViteBundler` to keep it
 in the output for another tool.
 
-The adapter is only ever used on the main thread, so function-valued plugins
-and hooks are supported. Worker threads receive the `html` configuration with
-its function values removed.
+An adapter passed as `bundler` runs in the generator's own process, on the
+main thread, so function-valued plugins and hooks are supported. Worker threads
+receive the `html` configuration with its function values removed.
 
 ### Default `imports`
 
@@ -509,9 +515,9 @@ Since the template supports arbitrary JS expressions, you can use conditionals a
 <title>${title}</title> ${assets}
 ```
 
-The populated page is the final HTML: it is minified when `minify` is set and
-written as is. Put `${assets}` in the `<head>`, or the page loads no script and
-no stylesheet.
+The populated page is the final HTML: it is minified when `minify` is set
+(except `all.html`) and written as is. Put `${assets}` in the `<head>`, or the
+page loads no script and no stylesheet.
 
 ## Client-side navigation
 

@@ -95,6 +95,9 @@ importers:
       acorn:
         specifier: ^8.17.0
         version: 8.18.0
+      birpc:
+        specifier: ^4.2.0
+        version: 4.2.0
       cosmiconfig:
         specifier: ^9.0.2
         version: 9.0.2(typescript@5.9.3)
@@ -259,6 +262,9 @@ importers:
       github-slugger:
         specifier: ^2.0.0
         version: 2.0.0
+      hast-util-to-jsx-runtime:
+        specifier: ^2.3.6
+        version: 2.3.6(supports-color@10.2.2)
       hast-util-to-string:
         specifier: ^3.0.1
         version: 3.0.1
@@ -2114,6 +2120,9 @@ packages:
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
+
+  birpc@4.2.0:
+    resolution: {integrity: sha512-KxgKcZPfrtzJDDALHPguGpGJUrzdgpymyiQQgzFjWreHMOpWrnFNVREr5J48x2DBh8ZVioscrV1SBkDipGiX+Q==}
 
   blake3-wasm@2.1.5:
     resolution: {integrity: sha512-F1+K8EbfOZE49dtoPtmxUQrpXaBIl3ICvasLh+nJta0xkz+9kF/7uet9fLnwKqhDrmj6g+6K3Tw9yQPUg2ka5g==}
@@ -5114,6 +5123,8 @@ snapshots:
   bail@2.0.2: {}
 
   balanced-match@4.0.4: {}
+
+  birpc@4.2.0: {}
 
   blake3-wasm@2.1.5: {}
 

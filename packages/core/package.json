@@ -57,6 +57,7 @@
     "@swc/html-wasm": "^1.16.2",
     "@swc/wasm": "^1.15.46",
     "acorn": "^8.17.0",
+    "birpc": "^4.2.0",
     "cosmiconfig": "^9.0.2",
     "dedent": "^1.7.2",
     "github-slugger": "^2.0.0",

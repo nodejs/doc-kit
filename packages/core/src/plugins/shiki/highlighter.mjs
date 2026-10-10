@@ -1,13 +1,23 @@
 'use strict';
 
+import { createRequire } from 'node:module';
 import { endianness } from 'node:os';
 
-import { LANGS } from '@node-core/rehype-shiki';
 import createSyntaxHighlighter from '@node-core/rehype-shiki/highlighter';
+import { isSpecialLang } from 'shiki/core';
+import { bundledLanguagesInfo } from 'shiki/langs';
 import { bundledThemes } from 'shiki/themes';
 
 import { importFromURL } from '#utils/loaders.mjs';
 import { getMarkdownPlugins } from '#utils/markdown/plugins.mjs';
+
+const require = createRequire(import.meta.url);
+
+/**
+ * A language a highlighter highlights.
+ *
+ * @typedef {Pick<import('shiki').LanguageRegistration, 'name' | 'displayName' | 'aliases'>} Language
+ */
 
 /**
  * A syntax highlighter, creating its Shiki instance on first use.
@@ -17,7 +27,7 @@ import { getMarkdownPlugins } from '#utils/markdown/plugins.mjs';
  * @property {(languageId?: string) => string} resolveLanguage - Resolves a language, falling back to plain text for unknown ones
  * @property {(code: string, lang: string, meta?: Record<string, unknown>) => string} highlightToHtml - Highlights code, returning the inner HTML of its `<code>` element
  * @property {(code: string, lang: string, meta?: Record<string, unknown>) => ReturnType<import('shiki').HighlighterCore['codeToHast']>} highlightToHast - Highlights code, returning a HAST tree
- * @property {Array<import('shiki').LanguageRegistration>} langs - The languages it highlights
+ * @property {Array<Language>} langs - The languages it highlights
  */
 
 /**
@@ -52,6 +62,54 @@ let engine;
 
 // The highlighters of the options given, by their JSON
 const highlighters = new Map();
+
+// What code in an unknown language is highlighted as
+const FALLBACK_LANGUAGE = 'text';
+
+// The languages Shiki bundles. Registering a grammar takes time and memory,
+// and slows down every highlight after it, so each one is only imported and
+// registered once code in it is highlighted (see `resolveLanguage`).
+const BUNDLED_LANGUAGES = bundledLanguagesInfo.map(({ id, name, aliases }) => ({
+  name: id,
+  displayName: name,
+  aliases,
+}));
+
+// The bundled language each of their names and aliases stands for, as code
+// names its language by either
+const BUNDLED_NAMES = new Map(
+  BUNDLED_LANGUAGES.flatMap(({ name, aliases = [] }) =>
+    [name, ...aliases].map(alias => [alias, name])
+  )
+);
+
+/**
+ * Imports a bundled language: its grammar, and those of the languages it
+ * embeds.
+ *
+ * @param {string} name - A name or alias of the language
+ * @returns {Array<import('shiki').LanguageRegistration>}
+ */
+const importBundledLanguage = name =>
+  require(`shiki/langs/${BUNDLED_NAMES.get(name)}.mjs`).default;
+
+/**
+ * Adds the bundled languages that languages embed, which Shiki registers
+ * along with them.
+ *
+ * @param {Array<import('shiki').LanguageRegistration>} langs - The languages
+ * @returns {Array<import('shiki').LanguageRegistration>}
+ */
+const withEmbeddedLanguages = langs => {
+  const names = new Set(langs.map(({ name }) => name));
+
+  const embedded = langs
+    .flatMap(({ embeddedLangs = [] }) => embeddedLangs)
+    .filter(name => !names.has(name) && BUNDLED_NAMES.has(name))
+    .flatMap(importBundledLanguage);
+
+  return [...embedded, ...langs];
+};
 
 /**
  * Imports a list of options, each given as it is, or as a module (a path
@@ -119,12 +177,11 @@ const importHighlighter = async ({
 
   const coreOptions = {
     engine: regexEngine,
-    langs: [...LANGS, ...importedLangs],
-    // A copy, as Shiki adds the aliases of the languages it bundles to it
+    // The bundled languages are registered as code uses them
+    langs: withEmbeddedLanguages(importedLangs),
+    // A copy, as Shiki adds the aliases of the languages it registers to it
     langAlias: { ...langAlias },
   };
-
-  const highlighterOptions = { transformers: importedTransformers };
 
   // Without themes of its own, the highlighter has a default light and dark one
   if (themes) {
@@ -134,58 +191,116 @@ const importHighlighter = async ({
     ]);
 
     coreOptions.themes = [light, dark];
-    highlighterOptions.themes = { light: light.name, dark: dark.name };
-    highlighterOptions.defaultColor = 'light';
   }
 
-  let highlighter;
+  let shiki;
+  let highlightOptions;
 
   /**
-   * Gives the Shiki highlighter, creating it on first use.
+   * Gives the Shiki instance, creating it on first use.
+   *
+   * @returns {import('shiki').HighlighterCore}
    */
-  const current = () =>
-    (highlighter ??= createSyntaxHighlighter({
-      coreOptions,
-      highlighterOptions,
-    }));
+  const current = () => {
+    if (!shiki) {
+      ({ shiki } = createSyntaxHighlighter({ coreOptions }));
+
+      // The themes are given by name: Shiki keeps the themes it loaded parsed,
+      // but parses a theme object it's given again for every highlight
+      const [light, dark] = shiki.getLoadedThemes();
+
+      highlightOptions = {
+        themes: { light, dark },
+        defaultColor: 'light',
+        transformers: importedTransformers,
+      };
+    }
+
+    return shiki;
+  };
+
+  /**
+   * Resolves a language, falling back to plain text for unknown ones. A
+   * bundled language is registered the first time it's resolved.
+   *
+   * @param {string} [languageId]
+   * @returns {string}
+   */
+  const resolveLanguage = languageId => {
+    if (!languageId) {
+      return FALLBACK_LANGUAGE;
+    }
+
+    const instance = current();
+    const name = instance.resolveLangAlias(languageId.toLowerCase());
+
+    if (isSpecialLang(name) || instance.getLoadedLanguages().includes(name)) {
+      return languageId;
+    }
+
+    if (!BUNDLED_NAMES.has(name)) {
+      return FALLBACK_LANGUAGE;
+    }
+
+    instance.loadLanguageSync(importBundledLanguage(name));
+
+    return languageId;
+  };
+
+  /**
+   * The options Shiki highlights code with.
+   *
+   * @param {string} lang - The language of the code
+   * @param {Record<string, unknown>} meta - Its metadata
+   */
+  const optionsFor = (lang, meta) => ({
+    lang: resolveLanguage(lang),
+    ...highlightOptions,
+    meta,
+  });
 
   return {
-    langs: coreOptions.langs,
+    langs: [...BUNDLED_LANGUAGES, ...importedLangs],
 
     /**
      * The Shiki instance.
      */
     get shiki() {
-      return current().shiki;
+      return current();
     },
 
-    /**
-     * Resolves a language, falling back to plain text for unknown ones.
-     *
-     * @param {string} [languageId]
-     */
-    resolveLanguage: languageId => current().resolveLanguage(languageId),
+    resolveLanguage,
 
     /**
      * Highlights code, returning the inner HTML of its `<code>` element.
      *
-     * @param {...any} args - The code, its language, and its metadata
+     * @param {string} code - The code
+     * @param {string} lang - Its language
+     * @param {Record<string, unknown>} [meta] - Its metadata
      */
-    highlightToHtml: (...args) => current().highlightToHtml(...args),
+    highlightToHtml: (code, lang, meta = {}) =>
+      current()
+        .codeToHtml(code, optionsFor(lang, meta))
+        // Shiki wraps the highlighted code in a <pre> and a <code>
+        .match(/<code>(.+?)<\/code>/s)[1],
 
     /**
      * Highlights code, returning a HAST tree.
      *
-     * @param {...any} args - The code, its language, and its metadata
+     * @param {string} code - The code
+     * @param {string} lang - Its language
+     * @param {Record<string, unknown>} [meta] - Its metadata
      */
-    highlightToHast: (...args) => current().highlightToHast(...args),
+    highlightToHast: (code, lang, meta = {}) =>
+      current().codeToHast(code, optionsFor(lang, meta)),
   };
 };
 
 /**
  * Creates a highlighter of every language Shiki bundles, with the given
  * options (see `./rehype.mjs`). Its Shiki instance is created on first use,
- * and the same options give the same highlighter.
+ * each bundled language is registered once code in it is highlighted, and the
+ * same options give the same highlighter.
  *
  * @param {import('./rehype.mjs').ShikiOptions} [options] - The options
  * @returns {Promise<SyntaxHighlighter>}

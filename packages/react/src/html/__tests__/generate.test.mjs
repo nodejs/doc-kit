@@ -150,8 +150,14 @@ describe('web generate', () => {
     assert.match(html, /File system body[\s\S]*Zlib body/);
     assert.doesNotMatch(html, /Index body/);
     // Their tables of contents, concatenated
-    assert.match(html, /href=#fs[\s\S]*href=#zlib/);
+    assert.match(html, /href="#fs"[\s\S]*href="#zlib"/);
     assert.doesNotMatch(html, /View As/);
+    // Unlike the module pages, it is left unminified
+    assert.match(html, /<html lang="en">/);
+    assert.match(
+      await readFile(join(output, 'fs.html'), 'utf8'),
+      /<html lang=en>/
+    );
   });
 
   it('renders chunk pages with navigation back to their module', async context => {
@@ -295,6 +301,24 @@ describe('web generate', () => {
     const code = await readFile(join(output, 'assets', client), 'utf8');
 
     assert.match(code, /__DOC_KIT_PLUGIN__/);
+  });
+
+  it('fails with what the default bundler throws, from its child process', async context => {
+    await createTestConfiguration(context);
+
+    const fs = createEntry('fs', 'File system');
+    const content = await buildContent([fs], fs);
+    const page = toPage(content);
+
+    // A page program that cannot compile
+    page.content = '<p>never closed';
+
+    await assert.rejects(generate([page]), error => {
+      assert.ok(error instanceof Error);
+      assert.doesNotMatch(error.message, /exit code/);
+
+      return true;
+    });
   });
 
   it('uses a custom bundler adapter for server and client output', async context => {

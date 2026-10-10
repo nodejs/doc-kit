@@ -22,7 +22,12 @@ import {
 import { resolveMarkdown } from '#utils/markdown/plugins.mjs';
 import { deepMerge } from '#utils/misc.mjs';
 
-import { DEFAULT_CHUNK_SIZE, DEFAULT_MAX_THREADS } from './constants.mjs';
+import {
+  DEFAULT_CHUNK_SIZE,
+  DEFAULT_MAX_THREADS,
+  DEFAULT_MAX_WORKER_HEAP_SIZE,
+  HEAP_SIZE_LIMIT,
+} from './constants.mjs';
 
 const configExplorer = cosmiconfig('doc-kit');
 
@@ -79,6 +84,8 @@ export const getDefaultConfig = (generators, config) =>
         process.arch === 'riscv64'
           ? 1
           : Math.min(cpus().length, DEFAULT_MAX_THREADS),
+      // No more than V8 gives this process: less on a machine with less memory
+      workerHeapSize: Math.min(HEAP_SIZE_LIMIT, DEFAULT_MAX_WORKER_HEAP_SIZE),
       chunkSize: DEFAULT_CHUNK_SIZE,
     })
   );
@@ -226,6 +233,7 @@ export const createConfigFromCLIOptions = options => ({
   },
   target: options.target,
   threads: options.threads,
+  workerHeapSize: options.workerHeapSize,
   chunkSize: options.chunkSize,
 });
 
@@ -250,7 +258,7 @@ export const assertRunnableOptions = config => {
 /**
  * Creates a complete run configuration by merging config file, user options, and defaults.
  * Processes and validates configuration values including version coercion, changelog parsing,
- * and constraint enforcement for threads and chunk size.
+ * and constraint enforcement for threads, worker heap size and chunk size.
  *
  * @param {import('../../../bin/commands/generate.mjs').CLIOptions} options - User-provided configuration options
  * @returns {Promise<import('./types').Configuration>} The configuration
@@ -275,6 +283,7 @@ export const createRunConfiguration = async options => {
 
   // These need to be coerced
   merged.threads = Math.max(merged.threads, 1);
+  merged.workerHeapSize = Math.max(merged.workerHeapSize, 1);
   merged.chunkSize = Math.max(merged.chunkSize, 1);
 
   if (process.arch === 'riscv64' && merged.threads > 1) {

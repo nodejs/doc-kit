@@ -47,6 +47,24 @@ export const omitKeys = (obj, keys = []) =>
   );
 
 /**
+ * Flattens a string built up by concatenation, in place.
+ *
+ * V8 represents `a + b` as a rope that points at both halves instead of
+ * copying them, so a long string assembled from many small pieces (generated
+ * code, rendered HTML) keeps every one of those pieces alive: around ten times
+ * the size of its text. Reading one of its characters makes V8 flatten it into
+ * a single contiguous string, after which the pieces can be garbage collected.
+ *
+ * @param {string} string
+ * @returns {string} The same string, flattened
+ */
+export const flatten = string => {
+  string.charCodeAt(0);
+
+  return string;
+};
+
+/**
  * Recursively merges plain objects from left to right.
  * @template T
  * @param {...T} objects - Any number of objects to merge

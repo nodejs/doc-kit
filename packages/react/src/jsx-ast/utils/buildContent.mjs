@@ -29,11 +29,11 @@ import {
 } from '../constants.mjs';
 import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
+import { getFullName } from './getFullName.mjs';
 import { renderAsJSX } from './render.mjs';
 import {
   insertSignatureCodeBlock,
   createSignatureTable,
-  getFullName,
 } from './signature.mjs';
 
 /**

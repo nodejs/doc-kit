@@ -135,7 +135,22 @@ Top-level, alongside `target` and `global`:
 
 - `threads` {number} Worker threads used for generation. Defaults to your
   CPU count.
+- `workerHeapSize` {number} Heap size limit of each worker thread (V8's old
+  space), in MB. Defaults to V8's own limit, at most `512`: V8 lets a heap grow
+  to several times its live data before collecting it, the more the higher its
+  limit. A worker running out of memory fails the build; raise it then. When
+  Node's `--max-old-space-size` is set (`NODE_OPTIONS` takes it too), it limits
+  the workers instead, and the main thread, which runs the generators with
+  `threads: 1`.
 - `chunkSize` {number} Items processed per worker thread. **Default:** `10`.
+
+> [!NOTE]
+> On Node.js 26, a worker thread that ends leaves its memory for the threads
+> started after it to reuse, rather than giving it back. Building the Node.js
+> docs, that's ~800MB held while the site is bundled. Passing
+> `--no-memory-pool-share-memory-on-teardown` to the `node` running doc-kit
+> gives it back. Node.js 24 gives it back by itself after a few seconds, and
+> doesn't have the flag.
 
 ## Generator options
 
@@ -196,6 +211,7 @@ own.
 - `rehypePlugins` {Array} Run on the HTML of the generators rendering
   Markdown, such as `jsx-ast`, before code is highlighted.
 - `recmaPlugins` {Array} Run on the JavaScript `jsx-ast` compiles the pages to.
+  Highlighted code is in it as the markup it renders to, rather than as JSX.
 
 A generator only takes the plugins its pipeline has a place for: `jsx-ast`
 takes all three kinds, `ast`, `metadata`, and `json` take remark plugins, and
@@ -261,17 +277,18 @@ precedence):
 
 CLI options map to configuration properties:
 
-| CLI Option             | Config Property    | Example                   |
-| ---------------------- | ------------------ | ------------------------- |
-| `--input <path>`       | `global.input`     | `--input src/`            |
-| `--output <path>`      | `global.output`    | `--output dist/`          |
-| `--ignore <pattern>`   | `global.ignore[]`  | `--ignore test/`          |
-| `--minify`             | `global.minify`    | `--minify`                |
-| `--git-ref <ref>`      | `global.ref`       | `--git-ref v20.0.0`       |
-| `--version <version>`  | `global.version`   | `--version 20.0.0`        |
-| `--changelog <url>`    | `global.changelog` | `--changelog https://...` |
-| `--index <url>`        | `global.index`     | `--index file://...`      |
-| `--type-map <map>`     | `metadata.typeMap` | `--type-map file://...`   |
-| `--target <generator>` | `target`           | `--target json`           |
-| `--threads <n>`        | `threads`          | `--threads 4`             |
-| `--chunk-size <n>`     | `chunkSize`        | `--chunk-size 10`         |
+| CLI Option                | Config Property    | Example                   |
+| ------------------------- | ------------------ | ------------------------- |
+| `--input <path>`          | `global.input`     | `--input src/`            |
+| `--output <path>`         | `global.output`    | `--output dist/`          |
+| `--ignore <pattern>`      | `global.ignore[]`  | `--ignore test/`          |
+| `--minify`                | `global.minify`    | `--minify`                |
+| `--git-ref <ref>`         | `global.ref`       | `--git-ref v20.0.0`       |
+| `--version <version>`     | `global.version`   | `--version 20.0.0`        |
+| `--changelog <url>`       | `global.changelog` | `--changelog https://...` |
+| `--index <url>`           | `global.index`     | `--index file://...`      |
+| `--type-map <map>`        | `metadata.typeMap` | `--type-map file://...`   |
+| `--target <generator>`    | `target`           | `--target json`           |
+| `--threads <n>`           | `threads`          | `--threads 4`             |
+| `--worker-heap-size <mb>` | `workerHeapSize`   | `--worker-heap-size 1024` |
+| `--chunk-size <n>`        | `chunkSize`        | `--chunk-size 10`         |

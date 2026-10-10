@@ -45,6 +45,8 @@ export type Page = PageCode | ComposedPage;
 export type PageTask = Pick<PageCode, 'data' | 'headings' | 'readingTime'> & {
   // `file:` URL of the compiled module.
   moduleURL: string;
+  // `false` leaves the page unminified even when `minify` is set.
+  minify?: boolean;
 };
 
 // The client assets every page loads, as paths relative to the output root.
@@ -90,6 +92,9 @@ export type WebBundler = {
   // Bundles the client entry into `config.output` and returns the assets every
   // page must load.
   buildClient(options: ClientBundleOptions): Promise<ClientAssets>;
+  // Releases what the bundler holds. Called once every page program is
+  // compiled, before the pages are rendered, and not called again after.
+  close?(): Promise<void>;
 };
 
 export type Configuration = {

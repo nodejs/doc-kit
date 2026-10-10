@@ -107,7 +107,7 @@ const createGenerator = () => {
    * @returns {Promise<unknown[]>} Results of all requested generators
    */
   const runGenerators = async configuration => {
-    const { target, threads } = configuration;
+    const { target, threads, workerHeapSize } = configuration;
 
     // Resolve shorthand names and load the full dependency closure up front,
     // so scheduling below is fully synchronous.
@@ -132,7 +132,7 @@ const createGenerator = () => {
     cache.populateConsumerCounts(targets, specifier => inputOf.get(specifier));
 
     // Create worker pool
-    pool = createWorkerPool(threads);
+    pool = createWorkerPool(threads, workerHeapSize);
 
     // Schedule all generators
     for (const specifier of targets) {

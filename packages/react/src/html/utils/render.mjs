@@ -5,8 +5,7 @@ import { dirname, join } from 'node:path';
 
 import logger from '@doc-kit/core/logger/index.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
-import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
+import { flatten, omitKeys } from '@doc-kit/core/utils/misc.mjs';
 
 import { pageFileName, populatePage } from './processing.mjs';
 
@@ -35,7 +34,7 @@ export const processChunk = async (tasks, indices, { template, assets }) => {
   const written = [];
 
   for (const index of indices) {
-    const { moduleURL, data, headings, readingTime } = tasks[index];
+    const { moduleURL, data, headings, readingTime, minify } = tasks[index];
 
     const { default: render } = await import(moduleURL);
 
@@ -47,14 +46,23 @@ export const processChunk = async (tasks, indices, { template, assets }) => {
       'changes',
     ]);
 
+    const dehydrated = await render({ metadata, headings, readingTime });
+
     let html = populatePage({
       template,
       data,
-      dehydrated: await render({ metadata, headings, readingTime }),
+      // Rendered a tag at a time, so flattened before it is templated and
+      // minified (see `flatten`): as rendered, `all.html` alone is ~400MB
+      dehydrated: flatten(dehydrated),
       assets,
     });
 
-    if (config.minify) {
+    if (config.minify && minify !== false) {
+      // Loaded on first use, so that only the threads rendering pages load
+      // the minifier (~30MB of WASM)
+      const { minifyHTML } =
+        await import('@doc-kit/core/utils/html-minifier.mjs');
+
       html = await minifyHTML(html);
     }
 

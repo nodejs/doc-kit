@@ -23,11 +23,11 @@ export const createTypeAnnotationHandler = getHighlighter => (state, node) => {
     return typeAnnotationToHast(state, node);
   }
 
-  const { shiki } = getHighlighter();
+  const { shiki, resolveLanguage } = getHighlighter();
   const [lightTheme, darkTheme] = shiki.getLoadedThemes();
 
   const root = shiki.codeToHast(node.value, {
-    lang: node.data?.typescript ? 'typescript' : 'text',
+    lang: resolveLanguage(node.data?.typescript ? 'typescript' : 'text'),
     themes: { light: lightTheme, dark: darkTheme },
     decorations: links.map(({ start, end, href }) => ({
       start,
