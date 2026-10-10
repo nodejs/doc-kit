@@ -196,6 +196,7 @@ own.
 - `rehypePlugins` {Array} Run on the HTML of the generators rendering
   Markdown, such as `jsx-ast`, before code is highlighted.
 - `recmaPlugins` {Array} Run on the JavaScript `jsx-ast` compiles the pages to.
+  Highlighted code is in it as the markup it renders to, rather than as JSX.
 
 A generator only takes the plugins its pipeline has a place for: `jsx-ast`
 takes all three kinds, `ast`, `metadata`, and `json` take remark plugins, and
