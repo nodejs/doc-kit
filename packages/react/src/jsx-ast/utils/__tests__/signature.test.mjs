@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { generateSignature, getFullName } from '../signature.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
+
+import {
+  createSignatureCodeBlock,
+  generateSignature,
+  getFullName,
+} from '../signature.mjs';
 
 describe('generateSignature', () => {
   describe('function signatures', () => {
@@ -243,6 +249,36 @@ describe('generateSignature', () => {
 
       assert.strictEqual(sig, 'NoExtends(param): void');
     });
+  });
+});
+
+describe('createSignatureCodeBlock', () => {
+  it('highlights the signature, its code embedded as markup', async () => {
+    // Signatures are highlighted by the Shiki plugin of `jsx-ast`
+    await loadMarkdownPlugins({
+      name: 'jsx-ast',
+      markdown: {
+        rehypePlugins: [
+          import.meta.resolve('@doc-kit/core/plugins/shiki/rehype.mjs'),
+        ],
+      },
+    });
+
+    const block = createSignatureCodeBlock('fn', {
+      params: [{ name: 'a' }],
+      return: { type: 'string' },
+    });
+
+    assert.deepStrictEqual(block.properties, { className: ['signature'] });
+
+    const [pre] = block.children;
+    const [code] = pre.children;
+
+    assert.match(pre.properties.class, /^shiki /);
+    assert.equal(code.type, 'mdxJsxFlowElement');
+    assert.ok(
+      code.attributes.some(({ name }) => name === 'dangerouslySetInnerHTML')
+    );
   });
 });
 

@@ -5,6 +5,7 @@ import parseSignature from '@doc-kit/core/utils/signature/parseSignature.mjs';
 import { h as createElement } from 'hastscript';
 
 import { JSX_IMPORTS } from '../../html/constants.mjs';
+import { embedHighlightedBlocks } from '../plugins/static-markup.mjs';
 import { createJSXElement } from './ast.mjs';
 import { parseListIntoProperties } from './types.mjs';
 
@@ -68,7 +69,9 @@ export const createSignatureCodeBlock = (functionName, signature, heading) => {
   const highlighter = getHighlighter('jsx-ast');
   const highlighted = highlighter.highlightToHast(sig, 'typescript');
 
-  return createElement('div', { class: 'signature' }, [highlighted]);
+  return createElement('div', { class: 'signature' }, [
+    embedHighlightedBlocks(highlighted),
+  ]);
 };
 
 /**
