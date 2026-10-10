@@ -1,9 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 import { u } from 'unist-builder';
 
 import { buildPages } from '../buildPages.mjs';
+
+// Pages are serialised with the pipeline of `llms-txt-full`
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../../index.mjs'))
+);
 
 const entry = (path, text, extra = {}) => ({
   path,
@@ -22,6 +29,30 @@ describe('buildPages', () => {
     assert.deepEqual(pages, [
       { path: '/a', markdown: 'First.\n\nSecond.\n' },
       { path: '/b', markdown: 'Other.\n' },
+    ]);
+  });
+
+  it('serialises type annotations back to Markdown', () => {
+    const content = u('root', [
+      u('paragraph', [
+        u('text', 'Returns a '),
+        u('typeAnnotation', { value: 'Promise<string>' }),
+        u('text', '.'),
+      ]),
+    ]);
+
+    assert.deepEqual(buildPages([{ path: '/a', content }]), [
+      { path: '/a', markdown: 'Returns a {Promise<string>}.\n' },
+    ]);
+  });
+
+  it('serialises the JSX of MDX pages', () => {
+    const content = u('root', [
+      u('mdxJsxFlowElement', { name: 'Foo', attributes: [] }, []),
+    ]);
+
+    assert.deepEqual(buildPages([{ path: '/a', content, mdx: true }]), [
+      { path: '/a', markdown: '<Foo />\n' },
     ]);
   });
 
