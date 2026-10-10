@@ -3,21 +3,7 @@ import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 
 import { ROUTER_DATA_ATTRIBUTE } from '../ui/constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
-import createConfigSource from './config.mjs';
 import { relativeOrAbsolute } from './relativeOrAbsolute.mjs';
-
-/**
- * Creates the virtual imports for one bundle target.
- *
- * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} datas - Per-page metadata
- * @param {Record<string, string>} virtualImports
- * @param {boolean} server
- * @returns {Record<string, string>}
- */
-export const createVirtualImports = (datas, virtualImports, server) => ({
-  ...virtualImports,
-  '#theme/config': createConfigSource(datas, server),
-});
 
 /**
  * Populates a template string by evaluating it as a JavaScript template literal,

@@ -34,6 +34,7 @@ await loadMarkdownPlugins({
 
 const {
   default: createConfigSource,
+  createVirtualImports,
   buildVersionEntries,
   buildPageList,
   buildChunkGroups,
@@ -315,6 +316,20 @@ describe('createConfigSource', () => {
 
     assert.match(source, /export const pages = \[\["File System","\/fs"\]\];/);
     assert.match(source, /export const chunks = \{"\/fs":/);
+  });
+});
+
+describe('createVirtualImports', () => {
+  it('adds the `#theme/config` module to the configured ones', () => {
+    const datas = [makeEntry('fs', 'File System', '/fs')];
+    const imports = createVirtualImports(
+      datas,
+      { 'virtual:extra': 'export default 1;' },
+      true
+    );
+
+    assert.equal(imports['virtual:extra'], 'export default 1;');
+    assert.equal(imports['#theme/config'], createConfigSource(datas, true));
   });
 });
 

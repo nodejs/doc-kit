@@ -12,7 +12,6 @@ import { resolveBundler } from './bundlers/index.mjs';
 import { buildAllPage } from './utils/all.mjs';
 import { copyStaticAssets } from './utils/copying.mjs';
 import createProgramBuilder, { moduleFileName } from './utils/generate.mjs';
-import { createVirtualImports } from './utils/processing.mjs';
 import { createPageWriter } from './utils/render.mjs';
 
 const htmlLogger = logger.child('html');
@@ -46,6 +45,10 @@ export async function generate(input, worker) {
   // Every page's metadata, in render order — the sidebar, the index and the
   // cross links need the whole set.
   const datas = [...pages, ...(all ? [all] : [])].map(({ data }) => data);
+
+  // Loaded here rather than with the generator, so the threads rendering
+  // pages, which load this module too, never load what only this needs
+  const { createVirtualImports } = await import('./utils/config.mjs');
 
   const bundler = await resolveBundler(config.bundler);
   const { buildLibraryProgram, buildPageProgram, clientProgram } =
