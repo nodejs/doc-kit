@@ -3,12 +3,20 @@ import { describe, it } from 'node:test';
 
 import { u } from 'unist-builder';
 
+import { loadGenerator } from '#generators/loader.mjs';
+import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
+
 import {
   toChanges,
   toNumbers,
   toStability,
   toVersions,
 } from '../lifecycle.mjs';
+
+// Markdown is serialised with the pipeline of `json`
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../../index.mjs'))
+);
 
 describe('toVersions', () => {
   it('always yields an array of strings', () => {

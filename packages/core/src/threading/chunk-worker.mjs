@@ -3,6 +3,7 @@ import { workerData } from 'node:worker_threads';
 import { loadGenerator } from '#generators/loader.mjs';
 import logger from '#logger/index.mjs';
 import { setConfig } from '#utils/configuration/index.mjs';
+import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
 
 if (workerData?.logLevel !== undefined) {
   logger.setLogLevel(workerData.logLevel);
@@ -25,6 +26,9 @@ export default async ({
   await setConfig(configuration);
 
   const generator = await loadGenerator(generatorSpecifier);
+
+  // Plugins can't be sent to workers, which import the pipeline themselves
+  await loadMarkdownPlugins(generator, configuration[generator.name]?.markdown);
 
   return generator.processChunk(input, itemIndices, extra);
 };

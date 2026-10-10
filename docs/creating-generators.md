@@ -468,6 +468,64 @@ Use a dependent when a generator transforms an intermediate representation
 format of its own. See the [`section-pages`](./generators/section-pages.md) generator for
 a worked example.
 
+## Markdown pipelines
+
+A generator processing Markdown declares its [unified](https://unifiedjs.com/)
+pipeline as `markdown`, listing plugins as the
+[`markdown` option](./configuration.md#markdown-plugins) does, with paths
+relative to its module. The rehype list starts with `remark-rehype`, and the
+recma list with `rehype-recma`. Each list takes the configured plugins in place
+of its `'...'`, and a list without one takes none. As every thread running the
+generator imports it, options may be anything, functions included.
+
+```mjs displayName="index.mjs"
+export default {
+  name: 'my-generator',
+
+  dependsOn: '@doc-kit/core/metadata',
+
+  markdown: {
+    remarkPlugins: ['remark-parse', 'remark-gfm', '...'],
+    rehypePlugins: [
+      ['remark-rehype', { allowDangerousHtml: true }],
+      '...',
+      ['rehype-stringify', { allowDangerousHtml: true }],
+    ],
+  },
+
+  generate,
+};
+```
+
+`getProcessor(name)` gives the generator's processor, on each thread it runs
+on:
+
+```mjs displayName="generate.mjs"
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
+
+export async function generate(input) {
+  const processor = getProcessor('my-generator');
+
+  return Promise.all(
+    input.map(async ({ content }) =>
+      processor.stringify(await processor.run(content))
+    )
+  );
+}
+```
+
+`getProcessor(name, { mdx: true })` returns an MDX processor (plugins can
+check `this.data('mdx')`), and `getProcessor(name, { configured: false })` one
+without the configured plugins. A generator rendering Markdown (with rehype or
+recma plugins) only takes its own remark plugins, as the global ones already
+ran when `ast` parsed the Markdown.
+
+A plugin needing asynchronous setup can export an async `load(options)`
+returning the plugin, instead of a default export. The Shiki plugin does, and
+`getHighlighter(name)` (from `@doc-kit/core/plugins/shiki/highlighter.mjs`)
+returns the highlighter of a generator's Shiki plugin, to highlight code as its
+pipeline does.
+
 ## File Output
 
 ### Writing Output Files

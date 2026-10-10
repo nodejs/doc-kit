@@ -62,4 +62,30 @@ export type GlobalConfiguration = {
 
   // Git ref (i.e. HEAD)
   ref: string;
+
+  // Markdown plugins added to the pipeline of each generator processing
+  // Markdown. A generator's own `markdown` adds to them, rather than
+  // replacing them.
+  markdown: MarkdownConfiguration;
+};
+
+// A plugin's module specifier (a package name, or a path relative to the file
+// declaring it), alone or with its options
+export type PluginEntry = string | [specifier: string, options?: unknown];
+
+export type MarkdownConfiguration = {
+  // remark plugins, run on Markdown syntax trees
+  remarkPlugins: Array<PluginEntry>;
+
+  // rehype plugins, run on HTML syntax trees
+  rehypePlugins: Array<PluginEntry>;
+
+  // recma plugins, run on JavaScript syntax trees
+  recmaPlugins: Array<PluginEntry>;
+};
+
+// A generator's Markdown pipeline, where each list takes the configured
+// plugins in place of its `'...'`
+export type MarkdownPipeline = {
+  [List in keyof MarkdownConfiguration]?: Array<PluginEntry | '...'>;
 };

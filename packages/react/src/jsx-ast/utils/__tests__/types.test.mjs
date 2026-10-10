@@ -1,15 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
 
-// Mock remark
-mock.module('../remark.mjs', {
-  exports: {
-    getRemarkRecma: () => ({
-      runSync: () => ({
-        body: [{ expression: 'mock-expression' }],
-      }),
-    }),
-  },
+// Mock the rendering of inline nodes
+mock.module('../render.mjs', {
+  exports: { renderAsJSX: () => 'mock-expression' },
 });
 
 const { parseListIntoProperties } = await import('../types.mjs');

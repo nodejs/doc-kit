@@ -1,37 +1,32 @@
 'use strict';
 
-import { highlighter } from '#utils/highlighter.mjs';
-
 import { typeAnnotationToHast } from './hast.mjs';
 
-// Kept apart from `./hast.mjs` on purpose: importing this module loads Shiki
-// (every grammar plus the regex engine), which only the pipelines that
-// highlight should pay for. The `ast` and `metadata` stages never do.
-const [lightTheme, darkTheme] = highlighter.shiki.getLoadedThemes();
-
 /**
- * Syntax-highlighted mdast→hast handler for `typeAnnotation` nodes, used by
- * the web (JSX) pipeline. The whole type is highlighted as one inline
- * fragment, and each resolved identifier's exact character range is wrapped
- * in an `<a>` via Shiki decorations. Values that are not TypeScript (display
- * names such as `HTTP/2 Headers Object`) are highlighted as plain text, so
- * their prose is not coloured as operators and numeric literals.
+ * Creates the syntax-highlighted mdast→hast handler for `typeAnnotation`
+ * nodes, used by the web (JSX) pipeline. The whole type is highlighted as one
+ * inline fragment, and each resolved identifier's exact character range is
+ * wrapped in an `<a>` via Shiki decorations. Values that are not TypeScript
+ * (display names such as `HTTP/2 Headers Object`) are highlighted as plain
+ * text, so their prose is not coloured as operators and numeric literals.
  *
  * Falls back to the minimal handler when the type failed to parse or nothing
  * resolved (no point paying for highlighting then).
  *
- * @param {import('mdast-util-to-hast').State} state
- * @param {import('mdast').Node} node
- * @returns {import('hast').Element}
+ * @param {() => import('#plugins/shiki/highlighter.mjs').SyntaxHighlighter} getHighlighter - Gives the highlighter, once a type is highlighted
+ * @returns {(state: import('mdast-util-to-hast').State, node: import('mdast').Node) => import('hast').Element}
  */
-export const typeAnnotationToHighlightedHast = (state, node) => {
+export const createTypeAnnotationHandler = getHighlighter => (state, node) => {
   const links = node.data?.links ?? [];
 
   if (node.data?.parseError || links.length === 0) {
     return typeAnnotationToHast(state, node);
   }
 
-  const root = highlighter.shiki.codeToHast(node.value, {
+  const { shiki } = getHighlighter();
+  const [lightTheme, darkTheme] = shiki.getLoadedThemes();
+
+  const root = shiki.codeToHast(node.value, {
     lang: node.data?.typescript ? 'typescript' : 'text',
     themes: { light: lightTheme, dark: darkTheme },
     decorations: links.map(({ start, end, href }) => ({

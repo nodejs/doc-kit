@@ -7,7 +7,7 @@ import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { writeFile } from '@doc-kit/core/utils/file.mjs';
 import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
-import { getRemarkRehypeWithShiki as remark } from '@doc-kit/core/utils/remark-shiki.mjs';
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
 
 import buildContent from './utils/buildContent.mjs';
 import { replaceTemplateValues } from './utils/replaceTemplateValues.mjs';
@@ -41,7 +41,7 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
     );
 
     const toc = String(
-      remark().processSync(
+      getProcessor('legacy-html').processSync(
         tableOfContents(nodes, {
           maxDepth: 5,
           parser: tableOfContents.parseToCNode,
@@ -93,7 +93,7 @@ export async function* generate(input, worker) {
     : headNodes;
 
   const navigation = String(
-    remark().processSync(
+    getProcessor('legacy-html').processSync(
       tableOfContents(indexOfFiles, {
         maxDepth: 1,
         parser: tableOfContents.parseNavigationNode,

@@ -1,5 +1,6 @@
 'use strict';
 
+import { getHighlighter } from '@doc-kit/core/plugins/shiki/highlighter.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 import {
@@ -8,7 +9,6 @@ import {
 } from '@doc-kit/core/utils/generators.mjs';
 import { parseInline, renderAsHTML } from '@doc-kit/core/utils/inline.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
-import { LANGS } from '@node-core/rehype-shiki';
 
 import { getSortedHeadNodes } from '../../jsx-ast/utils/getSortedHeadNodes.mjs';
 
@@ -142,9 +142,11 @@ export function buildDocumentationIndex(input) {
  * @returns {Array<[string[], string]>}
  */
 export function buildLanguageDisplayNameMap() {
+  const { langs } = getHighlighter('jsx-ast');
+
   return [
     ...new Map(
-      LANGS.map(({ name, aliases = [], displayName }) => [
+      langs.map(({ name, aliases = [], displayName }) => [
         name,
         [[...aliases, name], displayName],
       ])

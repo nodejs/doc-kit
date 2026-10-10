@@ -3,6 +3,9 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
+import { pathToFileURL } from 'node:url';
+
+import logger from '../../../logger/index.mjs';
 
 // Mock dependencies
 const mockParseChangelog = mock.fn(async changelog => [changelog]);
@@ -22,7 +25,11 @@ const createMockConfig = (overrides = {}) => ({
 // Synthetic generators keyed by specifier; the identity resolver below means
 // shorthand names and specifiers are the same thing in these tests.
 const mockGenerators = {
-  json: { name: 'json', defaultConfiguration: { format: 'json' } },
+  json: {
+    name: 'json',
+    defaultConfiguration: { format: 'json' },
+    markdown: { remarkPlugins: ['file:///syntax.mjs', '...'] },
+  },
   html: { name: 'html', defaultConfiguration: { format: 'html' } },
   markdown: { name: 'markdown' },
   web: {
@@ -31,6 +38,11 @@ const mockGenerators = {
       showSearchBox:
         Array.isArray(config.target) && config.target.includes('orama-db'),
     }),
+    markdown: {
+      remarkPlugins: ['...'],
+      rehypePlugins: ['...'],
+      recmaPlugins: ['...'],
+    },
   },
 };
 
@@ -39,6 +51,7 @@ mock.module('../../../generators/loader.mjs', {
   exports: {
     resolveGeneratorSpecifier: specifier => specifier,
     loadGenerator: async specifier => mockGenerators[specifier],
+    getGeneratorModule: () => undefined,
     // Defaults are computed from the loaded generators; returning the full
     // set regardless of targets keeps the assertions below simple.
     loadGenerators: async () => new Map(Object.entries(mockGenerators)),
@@ -139,6 +152,48 @@ describe('config.mjs', () => {
 
       assert.strictEqual(result.global.project, 'Node.js');
       assert.strictEqual(result.global.repository, 'nodejs/node');
+    });
+
+    it('should resolve Markdown plugins from the file declaring them', async () => {
+      const dir = mkdtempSync(join(tmpdir(), 'doc-kit-config-'));
+
+      writeFileSync(
+        join(dir, 'preset.mjs'),
+        'export default { "jsx-ast": { markdown: { rehypePlugins: ["./rehype.mjs"] } } };'
+      );
+
+      mockConfigLoad.mock.mockImplementationOnce(async () => ({
+        config: {
+          extends: '../preset.mjs',
+          global: {
+            markdown: { remarkPlugins: [['../remark.mjs', { a: 1 }]] },
+          },
+        },
+        filepath: join(dir, 'config', 'doc-kit.config.mjs'),
+      }));
+
+      const result = await loadConfigFile('any');
+
+      assert.deepStrictEqual(result.global.markdown.remarkPlugins, [
+        [pathToFileURL(join(dir, 'remark.mjs')).href, { a: 1 }],
+      ]);
+      // A preset's plugins resolve from the preset
+      assert.deepStrictEqual(result['jsx-ast'].markdown.rehypePlugins, [
+        pathToFileURL(join(dir, 'rehype.mjs')).href,
+      ]);
+    });
+
+    it('should reject Markdown plugins that are not module specifiers', async () => {
+      mockConfigLoad.mock.mockImplementationOnce(async () => ({
+        config: { global: { markdown: { rehypePlugins: [() => {}] } } },
+        filepath: '/doc-kit.config.mjs',
+      }));
+
+      await assert.rejects(loadConfigFile('any'), {
+        name: 'TypeError',
+        message:
+          /^global\.markdown\.rehypePlugins\[0\] in \/doc-kit\.config\.mjs must be a module specifier/,
+      });
     });
   });
 
@@ -321,6 +376,64 @@ describe('config.mjs', () => {
       assert.ok(config.json);
       assert.ok(config.html);
       assert.ok(config.markdown);
+    });
+
+    /**
+     * Creates a run configuration from a configuration file's contents.
+     *
+     * @param {object} contents - The configuration file's contents
+     */
+    const configureWith = contents => {
+      mockConfigLoad.mock.mockImplementationOnce(async () => ({
+        config: createMockConfig(contents),
+        filepath: '/doc-kit.config.mjs',
+      }));
+
+      return createRunConfiguration({ configFile: '/doc-kit.config.mjs' });
+    };
+
+    const url = name => pathToFileURL(`/plugins/${name}.mjs`).href;
+
+    it('should give each generator the Markdown plugins its pipeline takes', async () => {
+      const config = await configureWith({
+        global: {
+          markdown: {
+            remarkPlugins: ['/plugins/math.mjs'],
+            rehypePlugins: ['/plugins/katex.mjs'],
+          },
+        },
+        web: { markdown: { remarkPlugins: ['/plugins/web.mjs'] } },
+      });
+
+      assert.deepStrictEqual(config.json.markdown, {
+        remarkPlugins: [url('math')],
+      });
+      // The global remark plugins ran when `ast` parsed what `web` renders
+      assert.deepStrictEqual(config.web.markdown, {
+        remarkPlugins: [url('web')],
+        rehypePlugins: [url('katex')],
+        recmaPlugins: [],
+      });
+      assert.strictEqual(config.html.markdown, undefined);
+    });
+
+    it('should ignore the Markdown plugins a generator does not take', async t => {
+      const warn = t.mock.method(logger, 'warn', () => {});
+
+      const config = await configureWith({
+        json: { markdown: { rehypePlugins: ['/plugins/rehype.mjs'] } },
+        html: { markdown: { remarkPlugins: ['/plugins/remark.mjs'] } },
+      });
+
+      assert.deepStrictEqual(config.json.markdown, { remarkPlugins: [] });
+      assert.strictEqual(config.html.markdown, undefined);
+      assert.deepStrictEqual(
+        warn.mock.calls.map(({ arguments: [message] }) => message),
+        [
+          'Ignoring `json.markdown.rehypePlugins`: `json` does not take them.',
+          'Ignoring `html.markdown.remarkPlugins`: `html` does not take them.',
+        ]
+      );
     });
   });
 

@@ -16,6 +16,15 @@ export default {
 
   hasParallelProcessor: true,
 
+  markdown: {
+    remarkPlugins: [
+      'remark-parse',
+      '#plugins/type-annotations/remark.mjs',
+      'remark-gfm',
+      '...',
+    ],
+  },
+
   generate,
   processChunk,
 };

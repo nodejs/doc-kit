@@ -71,6 +71,14 @@ declare global {
     hasParallelProcessor?: boolean;
 
     /**
+     * The unified plugins this generator processes Markdown with, listed as
+     * in the `markdown` option, with paths relative to its module. Each list
+     * takes the configured plugins in place of its `'...'`.
+     * `getProcessor(name)` gives its processor.
+     */
+    markdown?: import('../utils/configuration/types').MarkdownPipeline;
+
+    /**
      * The immediate generator that this generator depends on.
      * For example, the `html` generator depends on the `react` generator.
      *

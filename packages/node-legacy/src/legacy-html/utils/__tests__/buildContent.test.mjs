@@ -3,9 +3,16 @@
 import assert from 'node:assert/strict';
 import { before, describe, it } from 'node:test';
 
+import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 
 import buildContent from '../buildContent.mjs';
+
+// The content is rendered with the pipeline of `legacy-html`
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../../index.mjs'))
+);
 
 const createEntry = slug => {
   const text = 'DEP0001: deprecated API';

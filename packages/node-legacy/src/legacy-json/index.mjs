@@ -1,5 +1,6 @@
 'use strict';
 
+import { rehypeOptions } from '../utils/rehypeOptions.mjs';
 import { generate, processChunk } from './generate.mjs';
 
 /**
@@ -27,6 +28,15 @@ export default {
   },
 
   hasParallelProcessor: true,
+
+  // Renders the descriptions' Markdown into HTML. It takes no configured
+  // plugins, which would change the legacy output
+  markdown: {
+    rehypePlugins: [
+      ['remark-rehype', rehypeOptions],
+      ['rehype-stringify', { allowDangerousHtml: true }],
+    ],
+  },
 
   generate,
   processChunk,

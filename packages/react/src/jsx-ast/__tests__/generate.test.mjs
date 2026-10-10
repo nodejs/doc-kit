@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import getConfig, {
   setConfig,
 } from '@doc-kit/core/utils/configuration/index.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 
 import { generate, processChunk } from '../generate.mjs';
+
+// Pages are rendered with the pipeline of `jsx-ast`
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../index.mjs'))
+);
 
 const createEntry = (api, name, { stabilityIndex = '2' } = {}) => {
   const heading = {

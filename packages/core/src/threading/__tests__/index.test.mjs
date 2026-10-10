@@ -1,4 +1,4 @@
-import { strictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -8,6 +8,10 @@ import createWorkerPool from '../index.mjs';
 
 const reporterSpecifier = fileURLToPath(
   import.meta.resolve('./fixtures/log-level-reporter.mjs')
+);
+
+const pluginsReporterSpecifier = fileURLToPath(
+  import.meta.resolve('./fixtures/markdown-plugins-reporter.mjs')
 );
 
 /**
@@ -76,6 +80,36 @@ describe('createWorkerPool', () => {
       });
 
       strictEqual(levelInWorker, LogLevel.info);
+    } finally {
+      await pool.destroy();
+    }
+  });
+
+  it('should load the Markdown pipeline of the generator in the worker', async () => {
+    const pool = createWorkerPool(1);
+
+    try {
+      const [plugins] = await pool.run({
+        generatorSpecifier: pluginsReporterSpecifier,
+        input: [null],
+        itemIndices: [0],
+        extra: {},
+        configuration: {
+          'markdown-plugins-reporter': {
+            markdown: {
+              rehypePlugins: [
+                [
+                  import.meta.resolve('./fixtures/rehype-plugin.mjs'),
+                  { configured: true },
+                ],
+              ],
+            },
+          },
+        },
+      });
+
+      // The configured plugin is the one its pipeline has, which it configures
+      deepStrictEqual(plugins, ['rehypeFixture {"configured":true}']);
     } finally {
       await pool.destroy();
     }

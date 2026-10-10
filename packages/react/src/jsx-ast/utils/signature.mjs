@@ -1,4 +1,4 @@
-import { highlighter } from '@doc-kit/core/utils/highlighter.mjs';
+import { getHighlighter } from '@doc-kit/core/plugins/shiki/highlighter.mjs';
 import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
 import { parseListItem } from '@doc-kit/core/utils/signature/parseList.mjs';
 import parseSignature from '@doc-kit/core/utils/signature/parseSignature.mjs';
@@ -65,6 +65,7 @@ export const generateSignature = (
  */
 export const createSignatureCodeBlock = (functionName, signature, heading) => {
   const sig = generateSignature(functionName, signature, heading);
+  const highlighter = getHighlighter('jsx-ast');
   const highlighted = highlighter.highlightToHast(sig, 'typescript');
 
   return createElement('div', { class: 'signature' }, [highlighted]);

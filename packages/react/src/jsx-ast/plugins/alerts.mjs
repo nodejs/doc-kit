@@ -2,9 +2,9 @@
 
 import { SKIP, visit } from 'unist-util-visit';
 
-import { JSX_IMPORTS } from '../../../html/constants.mjs';
-import { ALERT_MARKER, GITHUB_ALERT_TYPES } from '../../constants.mjs';
-import { createJSXElement } from '../ast.mjs';
+import { JSX_IMPORTS } from '../../html/constants.mjs';
+import { ALERT_MARKER, GITHUB_ALERT_TYPES } from '../constants.mjs';
+import { createJSXElement } from '../utils/ast.mjs';
 
 /**
  * Converts a marker keyword into a human-readable title (e.g. `NOTE` -> `Note`).

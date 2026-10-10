@@ -1,12 +1,11 @@
 'use strict';
 
-import { endianness } from 'node:os';
-
-import createHighlighter from '@node-core/rehype-shiki';
+import { createHighlighter } from '@doc-kit/core/plugins/shiki/highlighter.mjs';
+import shikiConfig from '@doc-kit/core/shiki.config.mjs';
 import { h as createElement } from 'hastscript';
 import { SKIP, visit } from 'unist-util-visit';
 
-import shikiConfig from '../../shiki.config.mjs';
+const highlighter = await createHighlighter();
 
 // This is what Remark will use as prefix within a <pre> className
 // to attribute the current language of the <pre> element
@@ -38,22 +37,8 @@ function isCodeBlock(node) {
   );
 }
 
-export const highlighter = await createHighlighter({
-  // riscv64 with sv39 has limited virtual memory space, where creating
-  // too many (>20) wasm memory instances fails.
-  // https://github.com/nodejs/node/pull/60591
-  //
-  // The wasm highlighter is currently not compatible with big endian.
-  // https://github.com/nodejs/node/pull/62512#issuecomment-4243469950
-  wasm: process.arch !== 'riscv64' && endianness() === 'LE',
-});
-
 /**
  * Creates a HAST transformer for Shiki which is used for transforming our codeboxes
- *
- * @deprecated This is used only for the legacy-html generator, please use `@node-core/rehype-shiki` directly instead.
- *
- * @type {import('unified').Plugin}
  */
 export default function rehypeShikiji() {
   /**

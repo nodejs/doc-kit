@@ -27,6 +27,9 @@
   "dependencies": {
     "@doc-kit/core": "workspace:*",
     "hastscript": "^9.0.1",
+    "rehype-stringify": "^10.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
     "unist-builder": "^4.0.0",
     "unist-util-visit": "^5.1.0"
   }

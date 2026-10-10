@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { getRemarkRehype } from '../remark.mjs';
+import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
 
-describe('getRemarkRehype', () => {
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../index.mjs'))
+);
+
+describe('the Markdown pipeline of legacy-json', () => {
   it('degrades MDX nodes instead of crashing rehype-stringify', () => {
-    const processor = getRemarkRehype();
+    const processor = getProcessor('legacy-json');
 
     const tree = {
       type: 'root',
