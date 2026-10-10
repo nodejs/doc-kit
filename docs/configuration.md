@@ -144,6 +144,14 @@ Top-level, alongside `target` and `global`:
   `threads: 1`.
 - `chunkSize` {number} Items processed per worker thread. **Default:** `10`.
 
+> [!NOTE]
+> On Node.js 26, a worker thread that ends leaves its memory for the threads
+> started after it to reuse, rather than giving it back. Building the Node.js
+> docs, that's ~800MB held while the site is bundled. Passing
+> `--no-memory-pool-share-memory-on-teardown` to the `node` running doc-kit
+> gives it back. Node.js 24 gives it back by itself after a few seconds, and
+> doesn't have the flag.
+
 ## Generator options
 
 Each generator documents its own options on its reference page — see the
