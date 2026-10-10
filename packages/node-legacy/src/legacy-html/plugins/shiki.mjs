@@ -41,6 +41,12 @@ function isCodeBlock(node) {
  * Creates a HAST transformer for Shiki which is used for transforming our codeboxes
  */
 export default function rehypeShikiji() {
+  const [lightTheme, darkTheme] = shikiConfig.themes;
+
+  // Loaded so they can be given by name, as Shiki parses a theme object it's
+  // given again for every code block
+  highlighter.shiki.loadThemeSync(lightTheme, darkTheme);
+
   /**
    * @param {import('hast').Root} tree - The HAST tree to be transformed.
    */
@@ -90,9 +96,9 @@ export default function rehypeShikiji() {
       const { children } = highlighter.shiki.codeToHast(
         preElement.children[0].value,
         {
-          lang: languageId,
+          lang: highlighter.resolveLanguage(languageId),
           // Allows support for dual themes (light, dark) for Shiki
-          themes: { light: shikiConfig.themes[0], dark: shikiConfig.themes[1] },
+          themes: { light: lightTheme.name, dark: darkTheme.name },
         }
       );
 

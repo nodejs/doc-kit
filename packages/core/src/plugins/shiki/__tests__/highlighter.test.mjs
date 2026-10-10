@@ -86,6 +86,57 @@ describe('createHighlighter', () => {
     );
   });
 
+  it('registers a bundled language once code in it is highlighted', async () => {
+    const highlighter = await createHighlighter({
+      langAlias: { py: 'python' },
+    });
+    const loaded = () => highlighter.shiki.getLoadedLanguages();
+
+    assert.ok(!loaded().includes('python'));
+    assert.ok(!loaded().includes('javascript'));
+
+    // By its name, an alias of its own, or one of the options
+    assert.equal(highlighter.resolveLanguage('py'), 'py');
+    assert.equal(highlighter.resolveLanguage('mjs'), 'mjs');
+
+    assert.ok(loaded().includes('python'));
+    assert.ok(loaded().includes('javascript'));
+    assert.ok(loaded().includes('cjs'));
+
+    assert.equal(highlighter.resolveLanguage(undefined), 'text');
+    assert.equal(highlighter.resolveLanguage('plaintext'), 'plaintext');
+  });
+
+  it('lists the bundled languages without registering them', async () => {
+    const highlighter = await createHighlighter({ langs: [grammar] });
+
+    assert.deepStrictEqual(
+      highlighter.langs.find(({ name }) => name === 'rust'),
+      { name: 'rust', displayName: 'Rust', aliases: ['rs'] }
+    );
+    assert.equal(highlighter.langs.at(-1), grammar);
+    assert.ok(!highlighter.shiki.getLoadedLanguages().includes('rust'));
+  });
+
+  it('registers the bundled languages a language embeds', async () => {
+    const highlighter = await createHighlighter({
+      langs: [
+        {
+          ...grammar,
+          name: 'oxcscript',
+          scopeName: 'source.oxcscript',
+          embeddedLangs: ['javascript'],
+          patterns: [{ include: 'source.js' }],
+        },
+      ],
+    });
+
+    assert.match(
+      highlighter.highlightToHtml('const on = 1', 'oxcscript'),
+      /--shiki-dark/
+    );
+  });
+
   it('gives the same highlighter for the same options', async () => {
     const highlighter = await createHighlighter({ langs: [grammar] });
 
