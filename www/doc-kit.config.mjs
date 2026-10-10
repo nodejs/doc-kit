@@ -22,8 +22,6 @@ const PUBLIC_GENERATORS = [
   'json',
   'json-all',
   'json-simple',
-  'legacy-html',
-  'legacy-html-all',
   'legacy-json',
   'legacy-json-all',
   'man-page',
