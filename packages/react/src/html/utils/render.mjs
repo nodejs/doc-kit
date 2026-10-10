@@ -5,7 +5,6 @@ import { dirname, join } from 'node:path';
 
 import logger from '@doc-kit/core/logger/index.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
 import { flatten, omitKeys } from '@doc-kit/core/utils/misc.mjs';
 
 import { pageFileName, populatePage } from './processing.mjs';
@@ -59,6 +58,11 @@ export const processChunk = async (tasks, indices, { template, assets }) => {
     });
 
     if (config.minify && minify !== false) {
+      // Loaded on first use, so that only the threads rendering pages load
+      // the minifier (~30MB of WASM)
+      const { minifyHTML } =
+        await import('@doc-kit/core/utils/html-minifier.mjs');
+
       html = await minifyHTML(html);
     }
 

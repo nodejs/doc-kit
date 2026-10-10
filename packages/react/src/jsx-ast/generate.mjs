@@ -3,7 +3,6 @@ import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { flatten } from '@doc-kit/core/utils/misc.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
-import buildContent from './utils/buildContent.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
 
@@ -22,6 +21,10 @@ import { buildNotFoundPage } from './utils/synthetic/404.mjs';
  * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(slicedInput, itemIndices) {
+  // Loaded on first use rather than with the generator, so the main thread,
+  // which never builds a page, does not load what building one takes
+  const { default: buildContent } = await import('./utils/buildContent.mjs');
+
   const results = [];
 
   for (const idx of itemIndices) {

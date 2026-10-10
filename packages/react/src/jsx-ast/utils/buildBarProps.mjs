@@ -3,7 +3,7 @@
 import { visit } from 'unist-util-visit';
 
 import { TOC_MAX_HEADING_DEPTH } from '../constants.mjs';
-import { getFullName } from './signature.mjs';
+import { getFullName } from './getFullName.mjs';
 
 // Callable heading types whose ToC label should be the bare function name
 // rather than the full signature.
