@@ -1,0 +1,32 @@
+{
+  "name": "@doc-kit/typedoc",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "A TypeDoc plugin writing API references as doc-kit Markdown",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodejs/doc-kit.git",
+    "directory": "packages/typedoc"
+  },
+  "license": "MIT",
+  "scripts": {
+    "test": "node --experimental-test-module-mocks --test \"src/**/*.test.mjs\"",
+    "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots \"src/**/*.test.mjs\""
+  },
+  "main": "./src/index.mjs",
+  "files": [
+    "src",
+    "!src/**/*.test.mjs",
+    "!src/**/__tests__",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "dependencies": {
+    "@doc-kit/core": "workspace:*",
+    "typedoc": "^0.28.20"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}
