@@ -50,9 +50,7 @@ static server will do the trick; for example:
 npx serve out -p 3000
 ```
 
-Then open the printed URL (usually <http://localhost:3000>). The
-`legacy-html-all` output from earlier has no such requirement — `out/all.html`
-opens straight from disk.
+Then open the printed URL (usually <http://localhost:3000>).
 
 ## Customize the `html` generator output
 

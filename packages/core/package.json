@@ -25,7 +25,6 @@
     "./json-simple": "./src/generators/json-simple/index.mjs",
     "./metadata": "./src/generators/metadata/index.mjs",
     "./package.json": "./package.json",
-    "./shiki.config.mjs": "./shiki.config.mjs",
     "./src/*": "./src/*",
     "./*": [
       "./src/*",
@@ -46,7 +45,6 @@
     "src",
     "!src/**/*.test.mjs",
     "!src/**/__tests__",
-    "shiki.config.mjs",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"

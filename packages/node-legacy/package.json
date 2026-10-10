@@ -2,7 +2,7 @@
   "name": "@node-core/doc-kit-legacy",
   "type": "module",
   "version": "1.0.4",
-  "description": "Node.js legacy-format generators for @doc-kit/core: legacy-html, legacy-html-all, legacy-json, and legacy-json-all",
+  "description": "Node.js legacy-format generators for @doc-kit/core: legacy-json and legacy-json-all",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
@@ -10,8 +10,6 @@
   },
   "license": "MIT",
   "exports": {
-    "./legacy-html": "./src/legacy-html/index.mjs",
-    "./legacy-html-all": "./src/legacy-html-all/index.mjs",
     "./legacy-json": "./src/legacy-json/index.mjs",
     "./legacy-json-all": "./src/legacy-json-all/index.mjs",
     "./package.json": "./package.json"
@@ -26,11 +24,7 @@
   ],
   "dependencies": {
     "@doc-kit/core": "workspace:*",
-    "hastscript": "^9.0.1",
     "rehype-stringify": "^10.0.1",
-    "remark-parse": "^11.0.0",
-    "remark-rehype": "^11.1.2",
-    "unist-builder": "^4.0.0",
-    "unist-util-visit": "^5.1.0"
+    "remark-rehype": "^11.1.2"
   }
 }

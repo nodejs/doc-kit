@@ -116,7 +116,7 @@ comparators](docs/contributing/comparators.md) — live under
 
    ```bash
    node packages/cli/bin/cli.mjs generate \
-     -t legacy-html \
+     -t html \
      -i ../node/doc/api/fs.md \
      -o out \
      --index ../node/doc/api/index.md \
@@ -136,7 +136,7 @@ comparators](docs/contributing/comparators.md) — live under
    Add `--log-level debug` before the `generate` subcommand to see the full pipeline trace:
 
    ```bash
-   node packages/cli/bin/cli.mjs --log-level debug generate -t legacy-html -i ../node/doc/api/fs.md -o out
+   node packages/cli/bin/cli.mjs --log-level debug generate -t html -i ../node/doc/api/fs.md -o out
    ```
 
 > [!TIP]
