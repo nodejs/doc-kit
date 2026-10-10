@@ -45,6 +45,8 @@ export type Page = PageCode | ComposedPage;
 export type PageTask = Pick<PageCode, 'data' | 'headings' | 'readingTime'> & {
   // `file:` URL of the compiled module.
   moduleURL: string;
+  // `false` leaves the page unminified even when `minify` is set.
+  minify?: boolean;
 };
 
 // The client assets every page loads, as paths relative to the output root.

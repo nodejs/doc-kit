@@ -49,7 +49,8 @@ from the module pages' compiled content rather than built again from scratch.
   [`navigation`](#navigation). **Default:** `{}`.
 - `generateAllPage` {boolean} When `true`, writes `all.html`: every module
   page's content on one page, in sidebar order, assembled from the module pages
-  rather than built again. Chunk pages and the index are left out.
+  rather than built again. Chunk pages and the index are left out. It is never
+  minified: the minifier would need about twelve times its size in memory.
   **Default:** `true`.
 - `bundler` {WebBundler} Adapter that bundles the component library and the
   client assets, and compiles page programs. See
@@ -509,9 +510,9 @@ Since the template supports arbitrary JS expressions, you can use conditionals a
 <title>${title}</title> ${assets}
 ```
 
-The populated page is the final HTML: it is minified when `minify` is set and
-written as is. Put `${assets}` in the `<head>`, or the page loads no script and
-no stylesheet.
+The populated page is the final HTML: it is minified when `minify` is set
+(except `all.html`) and written as is. Put `${assets}` in the `<head>`, or the
+page loads no script and no stylesheet.
 
 ## Client-side navigation
 

@@ -28,10 +28,10 @@ const htmlLogger = logger.child('html');
  * 2. The client assets are bundled once; every page loads the same ones.
  * 3. Each page's program is compiled (JSX to a plain module) and written to a
  * temporary directory, one at a time, so no page is held longer than that.
- * 4. The worker pool imports, renders, templates, minifies and writes the
+ * 4. `all.html`, when enabled, is a program that imports the module pages'
+ * content, so it is compiled from what was already compiled.
+ * 5. The worker pool imports, renders, templates, minifies and writes the
  * pages, one page in memory per worker.
- * 5. `all.html`, when enabled, is a program that imports the module pages'
- * content, so it is written last from what was already compiled.
  *
  * @type {import('./types').Generator['generate']}
  */
@@ -109,18 +109,26 @@ export async function generate(input, worker) {
       tasks.push(await compile(page));
     }
 
+    // The composed page imports the other pages' compiled programs, which
+    // exist from here on, so it is rendered by the worker pool alongside them.
+    // Rendering it on this thread instead would hold the whole site in it and
+    // block the pool from shutting down its idle workers until it is done.
+    // It goes first: it takes by far the longest, so the other pages are
+    // rendered while it is.
+    //
+    // It is not minified. The minifier's memory grows to about twelve times
+    // the page it is given and is never returned, and this page is the whole
+    // site: minifying the Node.js docs' ~35MB `all.html` takes ~400MB and over
+    // a second, for a page 2% smaller once compressed.
+    if (all) {
+      const allTask = await compile(all);
+
+      tasks.unshift({ ...allTask, minify: false });
+    }
+
     htmlLogger.debug(`Compiled ${tasks.length} page programs`);
 
-    const writePages = createPageWriter(worker);
-    const extra = { template, assets };
-
-    await writePages(tasks, extra);
-
-    // The composed page imports the others' compiled programs, so it can only
-    // be rendered once those exist — which they now do.
-    if (all) {
-      await writePages([await compile(all)], extra);
-    }
+    await createPageWriter(worker)(tasks, { template, assets });
   } finally {
     await rm(outDir, { recursive: true, force: true });
   }

@@ -35,7 +35,7 @@ export const processChunk = async (tasks, indices, { template, assets }) => {
   const written = [];
 
   for (const index of indices) {
-    const { moduleURL, data, headings, readingTime } = tasks[index];
+    const { moduleURL, data, headings, readingTime, minify } = tasks[index];
 
     const { default: render } = await import(moduleURL);
 
@@ -54,7 +54,7 @@ export const processChunk = async (tasks, indices, { template, assets }) => {
       assets,
     });
 
-    if (config.minify) {
+    if (config.minify && minify !== false) {
       html = await minifyHTML(html);
     }
 
