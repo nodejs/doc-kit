@@ -4,8 +4,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
 import { pathToFileURL } from 'node:url';
+import { getHeapStatistics } from 'node:v8';
 
 import logger from '../../../logger/index.mjs';
+import { DEFAULT_MAX_WORKER_HEAP_SIZE } from '../constants.mjs';
 
 // Mock dependencies
 const mockParseChangelog = mock.fn(async changelog => [changelog]);
@@ -211,6 +213,7 @@ describe('config.mjs', () => {
         typeMap: { String: 'string' },
         target: 'json',
         threads: 4,
+        workerHeapSize: 1024,
         chunkSize: 5,
       };
 
@@ -230,6 +233,7 @@ describe('config.mjs', () => {
         metadata: { typeMap: { String: 'string' } },
         target: 'json',
         threads: 4,
+        workerHeapSize: 1024,
         chunkSize: 5,
       });
     });
@@ -330,11 +334,25 @@ describe('config.mjs', () => {
     it('should enforce minimum constraints', async () => {
       const config = await createRunConfiguration({
         threads: -5,
+        workerHeapSize: 0,
         chunkSize: 0,
       });
 
       assert.strictEqual(config.threads, 1);
+      assert.strictEqual(config.workerHeapSize, 1);
       assert.strictEqual(config.chunkSize, 1);
+    });
+
+    it("should default the worker heap size to V8's limit, at most 512MB", async () => {
+      const config = await createRunConfiguration({ version: '20.0.0' });
+
+      assert.strictEqual(
+        config.workerHeapSize,
+        Math.min(
+          Math.floor(getHeapStatistics().heap_size_limit / 1024 ** 2),
+          DEFAULT_MAX_WORKER_HEAP_SIZE
+        )
+      );
     });
 
     it('should work without config file', async () => {

@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -12,6 +12,10 @@ const reporterSpecifier = fileURLToPath(
 
 const pluginsReporterSpecifier = fileURLToPath(
   import.meta.resolve('./fixtures/markdown-plugins-reporter.mjs')
+);
+
+const heapLimitReporter = fileURLToPath(
+  import.meta.resolve('./fixtures/heap-limit-reporter.mjs')
 );
 
 /**
@@ -110,6 +114,26 @@ describe('createWorkerPool', () => {
 
       // The configured plugin is the one its pipeline has, which it configures
       deepStrictEqual(plugins, ['rehypeFixture {"configured":true}']);
+    } finally {
+      await pool.destroy();
+    }
+  });
+
+  it("limits each worker's heap to the given size", async () => {
+    const pool = createWorkerPool(1, 512);
+
+    try {
+      const [workerLimit] = await pool.run({
+        generatorSpecifier: heapLimitReporter,
+        input: [null],
+        itemIndices: [0],
+        extra: {},
+        configuration: {},
+      });
+
+      strictEqual(pool.options.resourceLimits.maxOldGenerationSizeMb, 512);
+      // Its old space, plus a young generation of a few dozen MB
+      ok(workerLimit < 1024 ** 3);
     } finally {
       await pool.destroy();
     }

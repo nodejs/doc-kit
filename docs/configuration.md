@@ -135,6 +135,13 @@ Top-level, alongside `target` and `global`:
 
 - `threads` {number} Worker threads used for generation. Defaults to your
   CPU count.
+- `workerHeapSize` {number} Heap size limit of each worker thread (V8's old
+  space), in MB. Defaults to V8's own limit, at most `512`: V8 lets a heap grow
+  to several times its live data before collecting it, the more the higher its
+  limit. A worker running out of memory fails the build; raise it then. When
+  Node's `--max-old-space-size` is set (`NODE_OPTIONS` takes it too), it limits
+  the workers instead, and the main thread, which runs the generators with
+  `threads: 1`.
 - `chunkSize` {number} Items processed per worker thread. **Default:** `10`.
 
 ## Generator options
@@ -262,17 +269,18 @@ precedence):
 
 CLI options map to configuration properties:
 
-| CLI Option             | Config Property    | Example                   |
-| ---------------------- | ------------------ | ------------------------- |
-| `--input <path>`       | `global.input`     | `--input src/`            |
-| `--output <path>`      | `global.output`    | `--output dist/`          |
-| `--ignore <pattern>`   | `global.ignore[]`  | `--ignore test/`          |
-| `--minify`             | `global.minify`    | `--minify`                |
-| `--git-ref <ref>`      | `global.ref`       | `--git-ref v20.0.0`       |
-| `--version <version>`  | `global.version`   | `--version 20.0.0`        |
-| `--changelog <url>`    | `global.changelog` | `--changelog https://...` |
-| `--index <url>`        | `global.index`     | `--index file://...`      |
-| `--type-map <map>`     | `metadata.typeMap` | `--type-map file://...`   |
-| `--target <generator>` | `target`           | `--target json`           |
-| `--threads <n>`        | `threads`          | `--threads 4`             |
-| `--chunk-size <n>`     | `chunkSize`        | `--chunk-size 10`         |
+| CLI Option                | Config Property    | Example                   |
+| ------------------------- | ------------------ | ------------------------- |
+| `--input <path>`          | `global.input`     | `--input src/`            |
+| `--output <path>`         | `global.output`    | `--output dist/`          |
+| `--ignore <pattern>`      | `global.ignore[]`  | `--ignore test/`          |
+| `--minify`                | `global.minify`    | `--minify`                |
+| `--git-ref <ref>`         | `global.ref`       | `--git-ref v20.0.0`       |
+| `--version <version>`     | `global.version`   | `--version 20.0.0`        |
+| `--changelog <url>`       | `global.changelog` | `--changelog https://...` |
+| `--index <url>`           | `global.index`     | `--index file://...`      |
+| `--type-map <map>`        | `metadata.typeMap` | `--type-map file://...`   |
+| `--target <generator>`    | `target`           | `--target json`           |
+| `--threads <n>`           | `threads`          | `--threads 4`             |
+| `--worker-heap-size <mb>` | `workerHeapSize`   | `--worker-heap-size 1024` |
+| `--chunk-size <n>`        | `chunkSize`        | `--chunk-size 10`         |

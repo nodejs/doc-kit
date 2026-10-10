@@ -14,6 +14,9 @@ export type Configuration = {
   // The number of threads the process is allowed to use
   threads: number;
 
+  // The heap size limit of each worker thread (V8's old space), in MB
+  workerHeapSize: number;
+
   // Number of items to process per worker thread
   chunkSize: number;
 } & {
