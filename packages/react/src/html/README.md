@@ -54,7 +54,8 @@ from the module pages' compiled content rather than built again from scratch.
   **Default:** `true`.
 - `bundler` {WebBundler} Adapter that bundles the component library and the
   client assets, and compiles page programs. See
-  [Bundler adapters](#bundler-adapters). **Default:** `createViteBundler()`.
+  [Bundler adapters](#bundler-adapters). **Default:** the Vite adapter, run
+  in a child process (see [Vite adapter](#vite-adapter)).
 
 ### `head`
 
@@ -195,6 +196,8 @@ omitted rather than rendered empty.
   JavaScript Node can import.
 - `buildClient` {Function} Bundle the client `entry` into `config.output` and
   return the assets every page loads.
+- `close` {Function} Optional. Release what the adapter holds. Called once
+  every page program is compiled, before the pages are rendered.
 
 The `bundler` option accepts a small Doc Kit adapter rather than configuration
 for a particular build system.
@@ -267,9 +270,11 @@ export default {
 
 ### Vite adapter
 
-When `bundler` is omitted, the generator imports and uses
-`createViteBundler()` automatically. To customize Vite, import the adapter
-directly and pass Vite's `UserConfig` to it:
+When `bundler` is omitted, the generator runs the Vite adapter in a child
+process of its own, and ends it once every page program is compiled. Vite
+bundles with Rolldown, whose native memory a process only gets back when it
+exits, so it is returned before the pages are rendered. To customize Vite,
+import the adapter directly and pass Vite's `UserConfig` to it:
 
 ```js
 // doc-kit.config.mjs
@@ -317,9 +322,9 @@ hashed names of the fonts to preload. A manifest is written either way; pass
 `build: { manifest: true }` (or a file name) to `createViteBundler` to keep it
 in the output for another tool.
 
-The adapter is only ever used on the main thread, so function-valued plugins
-and hooks are supported. Worker threads receive the `html` configuration with
-its function values removed.
+An adapter passed as `bundler` runs in the generator's own process, on the
+main thread, so function-valued plugins and hooks are supported. Worker threads
+receive the `html` configuration with its function values removed.
 
 ### Default `imports`
 

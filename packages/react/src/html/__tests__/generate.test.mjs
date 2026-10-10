@@ -303,6 +303,24 @@ describe('web generate', () => {
     assert.match(code, /__DOC_KIT_PLUGIN__/);
   });
 
+  it('fails with what the default bundler throws, from its child process', async context => {
+    await createTestConfiguration(context);
+
+    const fs = createEntry('fs', 'File system');
+    const content = await buildContent([fs], fs);
+    const page = toPage(content);
+
+    // A page program that cannot compile
+    page.content = '<p>never closed';
+
+    await assert.rejects(generate([page]), error => {
+      assert.ok(error instanceof Error);
+      assert.doesNotMatch(error.message, /exit code/);
+
+      return true;
+    });
+  });
+
   it('uses a custom bundler adapter for server and client output', async context => {
     const { config, output } = await createTestConfiguration(context);
     const calls = [];

@@ -92,6 +92,9 @@ export type WebBundler = {
   // Bundles the client entry into `config.output` and returns the assets every
   // page must load.
   buildClient(options: ClientBundleOptions): Promise<ClientAssets>;
+  // Releases what the bundler holds. Called once every page program is
+  // compiled, before the pages are rendered, and not called again after.
+  close?(): Promise<void>;
 };
 
 export type Configuration = {
