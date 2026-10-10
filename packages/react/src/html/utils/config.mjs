@@ -223,3 +223,20 @@ export default function createConfigSource(input, server = false) {
 
   return lines.join('\n');
 }
+
+/**
+ * Creates the virtual imports for one bundle target.
+ *
+ * Only the thread bundling the site needs this module: it loads Shiki (see
+ * `buildLanguageDisplayNameMap`) and a Markdown processor of its own, which
+ * the threads rendering pages have no use for.
+ *
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} datas - Per-page metadata
+ * @param {Record<string, string>} virtualImports
+ * @param {boolean} server
+ * @returns {Record<string, string>}
+ */
+export const createVirtualImports = (datas, virtualImports, server) => ({
+  ...virtualImports,
+  '#theme/config': createConfigSource(datas, server),
+});
