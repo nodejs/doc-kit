@@ -8,6 +8,7 @@ import {
   isPlainObject,
   isAsyncIterable,
   omitKeys,
+  flatten,
   deepMerge,
 } from '../misc.mjs';
 
@@ -110,6 +111,22 @@ describe('omitKeys', () => {
     const fn = () => {};
     const obj = { a: fn, b: new Map(), c: null, d: [1, 2] };
     assert.deepStrictEqual(omitKeys(obj, ['b']), { a: fn, c: null, d: [1, 2] });
+  });
+});
+
+describe('flatten', () => {
+  it('should return the same string', () => {
+    let string = '';
+
+    for (let i = 0; i < 1000; i++) {
+      string += `piece ${i} `;
+    }
+
+    assert.strictEqual(flatten(string), string);
+  });
+
+  it('should handle the empty string', () => {
+    assert.strictEqual(flatten(''), '');
   });
 });
 

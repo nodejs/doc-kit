@@ -1,5 +1,6 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
+import { flatten } from '@doc-kit/core/utils/misc.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from './utils/buildContent.mjs';
@@ -15,6 +16,9 @@ import { buildNotFoundPage } from './utils/synthetic/404.mjs';
  * crosses back to or accumulates on the main thread. Only the code string, the
  * table of contents and the page metadata are returned.
  *
+ * The code is generated a few characters at a time, so it is flattened before
+ * the next page is built (see `flatten`).
+ *
  * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(slicedInput, itemIndices) {
@@ -25,7 +29,10 @@ export async function processChunk(slicedInput, itemIndices) {
 
     const { content, ...page } = await buildContent(entries, head);
 
-    results.push({ ...page, content: toJs(content, { handlers: jsx }).value });
+    results.push({
+      ...page,
+      content: flatten(toJs(content, { handlers: jsx }).value),
+    });
   }
 
   return results;
