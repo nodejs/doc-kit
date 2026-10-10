@@ -1,5 +1,23 @@
 # @doc-kit/generator-react
 
+## 0.5.0
+
+### Minor Changes
+
+- [#1117](https://github.com/nodejs/doc-kit/pull/1117) [`d704bbf`](https://github.com/nodejs/doc-kit/commit/d704bbf87dbc65017b2e4f1a46a8c4f762f935d9) Thanks [@ovflowd](https://github.com/ovflowd)! - feat(html): navigate between pages client-side with the Navigation API, prefetching them on hover, keep the search index and remote config in memory across pages, scope speculation rules to links that leave the site, and hash fonts (reported through the bundler's new `fonts`) so every asset can be cached immutably
+
+- [#1127](https://github.com/nodejs/doc-kit/pull/1127) [`c50e75f`](https://github.com/nodejs/doc-kit/commit/c50e75f8f50c84b6ff3b16b84059bd0f53ca5d1c) Thanks [@ovflowd](https://github.com/ovflowd)! - Add the `llms-txt-full` generator, writing a `llms-full.txt` file holding the Markdown of every page, each preceded by its URL.
+
+- [#1157](https://github.com/nodejs/doc-kit/pull/1157) [`a4c9684`](https://github.com/nodejs/doc-kit/commit/a4c9684fd46f14b3bcbaf2e8f01a246a47ee27cd) Thanks [@ovflowd](https://github.com/ovflowd)! - Add a `markdown` option to add remark, rehype, and recma plugins to the generators processing Markdown, or configure the ones they use, such as Shiki. The `@doc-kit/core` modules the generators' pipelines replace are removed (`utils/remark.mjs`, `utils/remark-shiki.mjs`, and `utils/highlighter.mjs`), and `utils/type-annotations` moves to `plugins/type-annotations`
+
+### Patch Changes
+
+- [#1158](https://github.com/nodejs/doc-kit/pull/1158) [`ad96574`](https://github.com/nodejs/doc-kit/commit/ad96574b3787c715ec2ef3806e8d14037c600fac) Thanks [@ovflowd](https://github.com/ovflowd)! - Stop the Vite builds from warning about every `"use client"` directive in dependencies
+
+- [#1162](https://github.com/nodejs/doc-kit/pull/1162) [`802ba72`](https://github.com/nodejs/doc-kit/commit/802ba72696f38f02e108367f3fe509c3825d4a4c) Thanks [@avivkeller](https://github.com/avivkeller)! - Allow trackpad swipe back and forward navigation
+- Updated dependencies [[`c50e75f`](https://github.com/nodejs/doc-kit/commit/c50e75f8f50c84b6ff3b16b84059bd0f53ca5d1c), [`a4c9684`](https://github.com/nodejs/doc-kit/commit/a4c9684fd46f14b3bcbaf2e8f01a246a47ee27cd)]:
+  - @doc-kit/core@1.3.0
+
 ## 0.4.2
 
 ### Patch Changes
