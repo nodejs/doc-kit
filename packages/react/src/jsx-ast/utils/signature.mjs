@@ -68,7 +68,9 @@ export const createSignatureCodeBlock = (functionName, signature, heading) => {
   const highlighter = getHighlighter('jsx-ast');
   const highlighted = highlighter.highlightToHast(sig, 'typescript');
 
-  return createElement('div', { class: 'signature' }, [highlighted]);
+  return createElement('div', { class: 'signature', dataSignatureRaw: sig }, [
+    highlighted,
+  ]);
 };
 
 /**

@@ -6,6 +6,7 @@ import {
   GITHUB_BLOB_URL,
   populate,
 } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { highlighter } from '@doc-kit/core/utils/highlighter.mjs';
 import { parseInline } from '@doc-kit/core/utils/inline.mjs';
 import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
 import { annotateOverloads } from '@doc-kit/core/utils/overloads.mjs';
@@ -27,7 +28,7 @@ import {
   TYPES_WITH_METHOD_SIGNATURES,
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
-import { createJSXElement } from './ast.mjs';
+import { createJSXElement, createAttributeNode } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
 import { renderAsJSX } from './render.mjs';
 import {
@@ -312,14 +313,149 @@ export const processEntry = entry => {
 };
 
 /**
- * Builds a page's content: every entry processed and wrapped in one JSX
- * fragment, plus the table of contents and reading time the layout needs.
- *
- * The layout itself (`<Layout>`) is not part of the content. The `html`
- * generator wraps each page in it, which lets a page be assembled from other
- * pages' content — `all.html` is the module pages concatenated — without
- * building those modules a second time.
- *
+ * Groups consecutive overloaded function API entries into a single OverloadTabs component.
+ * @param {Array<import('estree').Node>} processedChildren - The processed JSX AST nodes for the API entries
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} originalEntries - The original API metadata entries containing the overload flags
+ * @returns {Array<import('estree').Node>} The final array of layout children with overloads grouped
+ */
+export const groupOverloadsIntoTabs = (processedChildren, originalEntries) => {
+  const finalChildren = [];
+  let activeOverloadGroup;
+
+  /**
+   * Wraps an AST node's children in a styled panel `div` for tab rendering.
+   * @param {import('estree').Node} rootNode - The root node whose children will be wrapped.
+   * @returns {import('estree').Node} The new `div` AST node containing the children.
+   */
+  const wrapInDiv = rootNode => {
+    return createJSXElement('div', {
+      inline: false,
+      className: 'overload-panel',
+      children: rootNode.children || [],
+    });
+  };
+
+  /**
+   * Extracts the raw signature string from an API entry node and removes the signature node from its children.
+   * @param {import('estree').Node} node - The AST node representing the API entry.
+   * @returns {string|undefined} The raw TypeScript signature string, or undefined if not found.
+   */
+  const extractSignature = ({ children = [] }) => {
+    const signatureIndex = children.findIndex(
+      c =>
+        c.properties?.className?.includes('signature') ||
+        c.properties?.class === 'signature'
+    );
+
+    if (signatureIndex !== -1) {
+      const [signatureNode] = children.splice(signatureIndex, 1) ?? [];
+
+      return signatureNode.properties?.dataSignatureRaw;
+    }
+  };
+
+  /**
+   * Finalizes the active overload group by generating a combined signatures block
+   */
+  const pushOverloadGroup = () => {
+    if (!activeOverloadGroup) {
+      return;
+    }
+
+    // Deduplicate signatures and join with a single newline
+    const uniqueSignatures = [...new Set(activeOverloadGroup.signatures)];
+    const combinedSignatureRaw = uniqueSignatures.join('\n');
+
+    const highlighted = highlighter.highlightToHast(
+      combinedSignatureRaw,
+      'typescript'
+    );
+    const combinedSignatureNode = createElement('div', { class: 'signature' }, [
+      highlighted,
+    ]);
+
+    // Push combined signatures
+    finalChildren.push(combinedSignatureNode);
+
+    // Inject properties needed by CodeTabs component
+    const count = activeOverloadGroup.signatures.length;
+
+    const languagesArr = [];
+    const displayNamesArr = [];
+
+    for (let i = 0; i < count; i++) {
+      languagesArr.push('overload');
+      displayNamesArr.push(`Overload #${i + 1}`);
+    }
+
+    activeOverloadGroup.tabsNode.attributes.push(
+      createAttributeNode('languages', languagesArr.join('|')),
+      createAttributeNode('displayNames', displayNamesArr.join('|'))
+    );
+
+    // Push the tabs
+    finalChildren.push(activeOverloadGroup.tabsNode);
+
+    activeOverloadGroup = undefined;
+  };
+
+  /**
+   * Processes a single API entry node belonging to an overload group.
+   * It extracts its signature and pushes its remaining content into a new tab panel.
+   * @param {import('estree').Node} node - The AST node to process and add to the active group.
+   */
+  const processOverloadNode = node => {
+    const signatureRaw = extractSignature(node);
+
+    signatureRaw && activeOverloadGroup.signatures.push(signatureRaw);
+    activeOverloadGroup.tabsNode.children.push(wrapInDiv(node));
+  };
+
+  for (const [i, current] of processedChildren.entries()) {
+    const isOverload = originalEntries[i].heading?.data?.isOverload;
+
+    if (!isOverload) {
+      pushOverloadGroup();
+      finalChildren.push(current);
+      continue;
+    }
+
+    // Remove the heading from subsequent overloads as they are grouped under the first heading
+    current.children.shift();
+
+    if (activeOverloadGroup) {
+      processOverloadNode(current);
+      continue;
+    }
+
+    // Pop the previous node as it is the first entry of this overload group
+    const last = finalChildren.pop();
+    activeOverloadGroup = {
+      // Shift out the first node's heading to serve as the main heading for the entire group
+      firstHeading: last?.children?.shift?.(),
+      signatures: [],
+      tabsNode: createJSXElement(JSX_IMPORTS.CodeTabs.name, {
+        inline: false,
+        children: [],
+      }),
+    };
+
+    processOverloadNode(last);
+    processOverloadNode(current);
+
+    if (activeOverloadGroup.firstHeading) {
+      finalChildren.push(activeOverloadGroup.firstHeading);
+    }
+  }
+
+  pushOverloadGroup();
+
+  return finalChildren;
+};
+
+/**
+ * Builds the overall document layout tree
+
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - API documentation metadata entries
  */
 export const createDocumentContent = async entries => {
@@ -337,7 +473,7 @@ export const createDocumentContent = async entries => {
     root: createTree('root', [
       createJSXElement(null, {
         inline: false,
-        children: entries.map(processEntry),
+        children: groupOverloadsIntoTabs(entries.map(processEntry), entries),
       }),
     ]),
   };
