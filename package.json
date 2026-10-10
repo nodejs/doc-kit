@@ -22,6 +22,8 @@
     "run": "node packages/cli/bin/cli.mjs",
     "watch": "node --watch packages/cli/bin/cli.mjs",
     "docs:build": "bash scripts/vercel-docs-build.sh",
+    "preview:docs": "node scripts/preview.mjs docs",
+    "preview:node": "node scripts/preview.mjs node",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "release": "changeset publish"
