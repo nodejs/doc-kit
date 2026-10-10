@@ -21,5 +21,15 @@ export default {
     pageURL: llmsTxt.defaultConfiguration.pageURL,
   },
 
+  markdown: {
+    // Pages are serialised back to Markdown, type annotations included
+    remarkPlugins: [
+      '@doc-kit/core/plugins/type-annotations/remark.mjs',
+      'remark-gfm',
+      'remark-stringify',
+      '...',
+    ],
+  },
+
   generate,
 };

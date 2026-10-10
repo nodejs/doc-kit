@@ -1,4 +1,4 @@
-import { getRemark, getRemarkMdx } from '@doc-kit/core/utils/remark.mjs';
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
 
 /**
  * The Markdown of every page, from the content of its entries, in the order
@@ -18,10 +18,12 @@ export const buildPages = entries => {
   }
 
   return [...pages].map(([path, sections]) => {
-    const remark = sections[0].mdx ? getRemarkMdx() : getRemark();
+    const processor = getProcessor('llms-txt-full', {
+      mdx: sections[0].mdx,
+    });
 
     const markdown = sections
-      .map(({ content }) => remark.stringify(content).trim())
+      .map(({ content }) => processor.stringify(content).trim())
       .filter(Boolean)
       .join('\n\n');
 
