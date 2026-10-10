@@ -2,6 +2,8 @@ import Piscina from 'piscina';
 
 import logger from '#logger/index.mjs';
 
+import { WORKER_HEAP_SIZE } from './constants.mjs';
+
 const poolLogger = logger.child('WorkerPool');
 
 const workerScript = import.meta.resolve('./chunk-worker.mjs');
@@ -23,6 +25,7 @@ export default function createWorkerPool(threads) {
     minThreads: 0,
     maxThreads: threads,
     idleTimeout: 1_000,
+    resourceLimits: { maxOldGenerationSizeMb: WORKER_HEAP_SIZE },
     workerData: { logLevel: logger.getLogLevel() },
   });
 }

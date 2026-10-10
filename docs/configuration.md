@@ -134,7 +134,8 @@ these for that generator alone, except `markdown`, which it adds to.
 Top-level, alongside `target` and `global`:
 
 - `threads` {number} Worker threads used for generation. Defaults to your
-  CPU count.
+  CPU count. Each worker's heap is limited to 512MB; to raise the limit, run
+  Node.js with `--max-old-space-size` (directly or through `NODE_OPTIONS`).
 - `chunkSize` {number} Items processed per worker thread. **Default:** `10`.
 
 ## Generator options
