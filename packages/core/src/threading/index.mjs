@@ -24,7 +24,9 @@ export default function createWorkerPool(threads) {
     filename: workerScript,
     minThreads: 0,
     maxThreads: threads,
-    idleTimeout: 1_000,
+    // A worker idle for 250ms ends, so its heap is gone during a long stretch
+    // of work on the main thread, such as bundling the site
+    idleTimeout: 250,
     resourceLimits: { maxOldGenerationSizeMb: WORKER_HEAP_SIZE },
     workerData: { logLevel: logger.getLogLevel() },
   });
