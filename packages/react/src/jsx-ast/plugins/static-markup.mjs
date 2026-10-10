@@ -1,5 +1,6 @@
 'use strict';
 
+import { createTypeAnnotationHandler } from '@doc-kit/core/plugins/type-annotations/highlighter.mjs';
 import { toJsxRuntime } from 'hast-util-to-jsx-runtime';
 import { renderToString } from 'preact-render-to-string';
 import { Fragment, jsx, jsxs } from 'preact/jsx-runtime';
@@ -38,21 +39,33 @@ const render = children =>
   );
 
 /**
- * Turns the `<code>` of highlighted code into a JSX `<code>` holding its
- * markup as it is.
+ * The attributes and the markup of the `<code>` of highlighted code.
  *
  * @param {import('hast').Element} code - The `<code>`
- * @param {boolean} [inline] - Whether it's a type's, rather than a block's
+ * @returns {{ attributes: Record<string, unknown>, html: string }}
  */
-const embedCode = (
-  { properties: { class: className, ...properties }, children },
-  inline = false
-) =>
-  createJSXElement('code', {
-    inline,
+const toMarkup = ({
+  properties: { class: className, ...properties },
+  children,
+}) => ({
+  attributes: {
     className: [className].flat().join(' ') || undefined,
     ...properties,
-    dangerouslySetInnerHTML: { __html: render(children) },
+  },
+  html: render(children),
+});
+
+/**
+ * A JSX `<code>` holding highlighted markup as it is.
+ *
+ * @param {ReturnType<typeof toMarkup>} markup
+ * @param {boolean} [inline] - Whether it's a type's, rather than a block's
+ */
+const createCodeElement = ({ attributes, html }, inline = false) =>
+  createJSXElement('code', {
+    inline,
+    ...attributes,
+    dangerouslySetInnerHTML: { __html: html },
   });
 
 /**
@@ -68,7 +81,7 @@ export const embedHighlightedBlocks = tree => {
 
     if (node.tagName === 'pre' && code?.tagName === 'code') {
       if (isHighlighted(node)) {
-        node.children[0] = embedCode(code);
+        node.children[0] = createCodeElement(toMarkup(code));
       }
 
       return SKIP;
@@ -79,25 +92,46 @@ export const embedHighlightedBlocks = tree => {
 };
 
 /**
- * Wraps a `typeAnnotation` handler of `remark-rehype`, embedding the types it
- * highlights.
+ * Creates the `typeAnnotation` handler of `remark-rehype` highlighting types
+ * and embedding them.
  *
- * @param {(state: import('mdast-util-to-hast').State, node: import('mdast').Node) => import('hast').Element} handler
- * @returns {typeof handler}
+ * Every highlighted type is kept, by highlighter: the same few hundred types
+ * are highlighted thousands of times, `{string}` alone on most pages.
+ *
+ * @param {() => import('@doc-kit/core/plugins/shiki/highlighter.mjs').SyntaxHighlighter} getHighlighter - Gives the highlighter, once a type is highlighted
+ * @returns {(state: import('mdast-util-to-hast').State, node: import('mdast').Node) => import('hast').ElementContent}
  */
-export const embedHighlightedTypes = handler => (state, node) => {
-  const result = handler(state, node);
+export const embedHighlightedTypes = getHighlighter => {
+  const highlight = createTypeAnnotationHandler(getHighlighter);
+  const highlighted = new WeakMap();
 
-  // A type that didn't parse, or links nowhere, isn't highlighted
-  if (!isHighlighted(result)) {
-    return result;
-  }
+  return (state, node) => {
+    const highlighter = getHighlighter();
 
-  const code = embedCode(result, true);
+    if (!highlighted.has(highlighter)) {
+      highlighted.set(highlighter, new Map());
+    }
 
-  state.patch(node, code);
+    const types = highlighted.get(highlighter);
+    const key = JSON.stringify([node.value, node.data]);
 
-  return code;
+    if (!types.has(key)) {
+      const result = highlight(state, node);
+
+      // A type that didn't parse, or links nowhere, isn't highlighted
+      if (!isHighlighted(result)) {
+        return result;
+      }
+
+      types.set(key, toMarkup(result));
+    }
+
+    const code = createCodeElement(types.get(key), true);
+
+    state.patch(node, code);
+
+    return code;
+  };
 };
 
 /**

@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { createHighlighter } from '@doc-kit/core/plugins/shiki/highlighter.mjs';
-import { createTypeAnnotationHandler } from '@doc-kit/core/plugins/type-annotations/highlighter.mjs';
 import { toString } from 'hast-util-to-string';
 import rehypeRaw from 'rehype-raw';
 import { unified } from 'unified';
@@ -13,9 +12,7 @@ import rehypeStaticMarkup, {
 
 const highlighter = await createHighlighter();
 
-const embedTypes = embedHighlightedTypes(
-  createTypeAnnotationHandler(() => highlighter)
-);
+const embedTypes = embedHighlightedTypes(() => highlighter);
 
 // A minimal mdast-util-to-hast state: the handlers only use patch/applyData
 const state = { patch: () => {}, applyData: (_, result) => result };
@@ -132,6 +129,53 @@ describe('embedHighlightedTypes', () => {
     assert.match(html, /<a href="mdn.io\/promise" class="type-link">/);
     assert.doesNotMatch(html, /<pre|<code/);
     assert.equal(textContent(html), 'Promise<string>');
+  });
+
+  it('highlights the same type once for each highlighter', async () => {
+    let calls = 0;
+
+    // The highlighter, counting what its Shiki instance highlights
+    const counting = {
+      resolveLanguage: highlighter.resolveLanguage,
+      get shiki() {
+        const { shiki } = highlighter;
+
+        return {
+          ...shiki,
+          codeToHast: (...args) => {
+            calls++;
+
+            return shiki.codeToHast(...args);
+          },
+        };
+      },
+    };
+
+    const themed = await createHighlighter({
+      themes: { light: 'github-light', dark: 'github-dark' },
+    });
+
+    let current = counting;
+
+    const embed = embedHighlightedTypes(() => current);
+
+    const promise = () =>
+      makeNode('Promise<string>', {
+        typescript: true,
+        links: [{ start: 0, end: 7, text: 'Promise', href: 'mdn.io/promise' }],
+      });
+
+    const first = embed(state, promise());
+    const second = embed(state, promise());
+
+    assert.equal(calls, 1);
+    // Each type is a node of its own, with the same markup
+    assert.notEqual(second, first);
+    assert.equal(innerHTML(second), innerHTML(first));
+
+    current = themed;
+
+    assert.notEqual(innerHTML(embed(state, promise())), innerHTML(first));
   });
 
   it('leaves a type that was not highlighted as it is', () => {
