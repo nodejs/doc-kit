@@ -6,6 +6,9 @@ npm-debug.log
 out
 base
 
+# Wrangler local state
+.wrangler
+
 # Docs site content, assembled by scripts/build-docs-content.mjs
 www/content
 
