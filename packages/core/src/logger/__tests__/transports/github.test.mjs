@@ -148,6 +148,43 @@ describe('github', () => {
     );
   });
 
+  it('should escape messages and files', t => {
+    process.env.FORCE_COLOR = '1';
+
+    t.mock.timers.enable({ apis: ['Date'] });
+
+    const fn = t.mock.method(process.stdout, 'write');
+
+    // noop
+    fn.mock.mockImplementation(() => {});
+
+    github({
+      level: LogLevel.info,
+      message: '100%: a, b\r\nc',
+      metadata: {
+        file: {
+          path: 'a,b:c%.md',
+          position: {
+            start: { line: 1 },
+            end: { line: 2 },
+          },
+        },
+      },
+      timestamp: Date.now(),
+    });
+
+    const callsArgs = process.stdout.write.mock.calls.map(
+      call => call.arguments[0]
+    );
+
+    strictEqual(process.stdout.write.mock.callCount(), 1);
+    // The message keeps its `,` and `:`, which only separate properties
+    strictEqual(
+      callsArgs[0].trim(),
+      '::notice file=a%2Cb%3Ac%25.md,line=1,endLine=2::[00:00:00.000] \x1B[32mINFO\x1B[39m: 100%25: a, b%0D%0Ac'
+    );
+  });
+
   it('should print child logger name', t => {
     process.env.FORCE_COLOR = '1';
 

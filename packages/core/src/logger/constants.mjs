@@ -32,3 +32,38 @@ export const levelToColorMap = {
   [LogLevel.error]: 'magenta',
   [LogLevel.fatal]: 'red',
 };
+
+/**
+ * Maps log level numbers to the GitHub Actions workflow commands reporting
+ * them.
+ */
+export const levelToGitHubCommand = {
+  [LogLevel.debug]: 'debug',
+  [LogLevel.info]: 'notice',
+  [LogLevel.warn]: 'warning',
+  [LogLevel.error]: 'error',
+  [LogLevel.fatal]: 'error',
+};
+
+/**
+ * Maps the characters a workflow command's message can't hold to their
+ * escapes. A command is a line, `::command key=value,key=value::message`,
+ * so its message, which runs to the end of the line, can't break it, nor hold
+ * the `%` an escape starts with.
+ */
+export const commandDataEscapes = {
+  '%': '%25',
+  '\r': '%0D',
+  '\n': '%0A',
+};
+
+/**
+ * Maps the characters a workflow command's property can't hold to their
+ * escapes: those its message can't, and the `,` separating properties and
+ * the `:` of the `::` ending them.
+ */
+export const commandPropertyEscapes = {
+  ...commandDataEscapes,
+  ':': '%3A',
+  ',': '%2C',
+};

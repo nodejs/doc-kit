@@ -71,9 +71,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@actions/core':
-        specifier: ^3.0.0
-        version: 3.0.1
       '@doc-kit/generator-react':
         specifier: workspace:>=0.1.0
         version: link:../react
