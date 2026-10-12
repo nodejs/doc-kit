@@ -222,9 +222,10 @@ export const createViteConfig = ({
       // first paint, whenever — or whether — its islands load.
       ...(server ? {} : { cssCodeSplit: false }),
 
-      // Browser output follows the generator's minification setting. The
-      // server library is only ever executed, never shipped.
-      minify: server ? false : (vite.build?.minify ?? webConfig.minify),
+      // Browser output is minified unless `vite.build.minify` says otherwise:
+      // the generator's `minify` only covers the pages' HTML. The server
+      // library is only ever executed, never shipped.
+      minify: server ? false : (vite.build?.minify ?? true),
 
       rolldownOptions: {
         ...vite.build?.rolldownOptions,

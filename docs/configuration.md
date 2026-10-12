@@ -109,7 +109,7 @@ Everything under the `global` key applies to every generator:
   logos, and templated text. Defaults to the `name` in your `package.json`.
 - `version` {string|SemVer} Documentation version. **Default:**
   `process.version`.
-- `minify` {boolean} Whether to minify output. **Default:** `true`.
+- `minify` {boolean} Whether to minify output. **Default:** `false`.
 - `repository` {string} GitHub repository in `owner/repo` format; without
   one, repository UI is omitted.
 - `ref` {string} Git reference (branch, tag, or commit SHA). **Default:**
