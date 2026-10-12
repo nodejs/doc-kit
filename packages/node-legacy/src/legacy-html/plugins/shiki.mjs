@@ -39,6 +39,8 @@ function isCodeBlock(node) {
 
 /**
  * Creates a HAST transformer for Shiki which is used for transforming our codeboxes
+ *
+ * @deprecated This plugin is deprecated and will be removed soon.
  */
 export default function rehypeShikiji() {
   /**
