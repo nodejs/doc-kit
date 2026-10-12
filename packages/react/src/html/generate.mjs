@@ -42,6 +42,41 @@ export async function generate(input, worker) {
   const pages = [...input];
   const all = config.generateAllPage ? buildAllPage(pages) : undefined;
 
+  // The built library and the compiled page programs live here until every
+  // page is written; the directory is removed afterwards
+  const outDir = await mkdtemp(join(tmpdir(), 'doc-kit-html-'));
+
+  try {
+    const { assets, tasks } = await buildPrograms({
+      pages,
+      all,
+      outDir,
+      config,
+    });
+
+    await createPageWriter(worker)(tasks, { template, assets });
+  } finally {
+    await rm(outDir, { recursive: true, force: true });
+  }
+
+  await copyStaticAssets(config);
+}
+
+/**
+ * Bundles the component library and the client assets, and compiles every
+ * page's program into `outDir`, for the worker pool to render.
+ *
+ * Everything it sets up for that, the bundler included, is let go once it
+ * returns: with one thread, the pages are rendered on this thread next.
+ *
+ * @param {object} options
+ * @param {Array<import('./types').Page>} options.pages - Every page, in render order
+ * @param {import('./types').ComposedPage} [options.all] - `all.html`, when enabled
+ * @param {string} options.outDir - Where the library and the programs are written
+ * @param {import('./types').ResolvedWebConfiguration} options.config
+ * @returns {Promise<{ assets: import('./types').ClientAssets, tasks: Array<import('./types').PageTask> }>}
+ */
+const buildPrograms = async ({ pages, all, outDir, config }) => {
   // Every page's metadata, in render order — the sidebar, the index and the
   // cross links need the whole set.
   const datas = [...pages, ...(all ? [all] : [])].map(({ data }) => data);
@@ -54,82 +89,72 @@ export async function generate(input, worker) {
   const { buildLibraryProgram, buildPageProgram, clientProgram } =
     createProgramBuilder();
 
-  // The built library and the compiled page programs live here until every
-  // page is written; the directory is removed afterwards
-  const outDir = await mkdtemp(join(tmpdir(), 'doc-kit-html-'));
+  const libraryURL = await bundler.buildServer({
+    entry: buildLibraryProgram(),
+    virtualImports: createVirtualImports(datas, config.virtualImports, true),
+    outDir,
+    config,
+  });
 
-  try {
-    const libraryURL = await bundler.buildServer({
-      entry: buildLibraryProgram(),
-      virtualImports: createVirtualImports(datas, config.virtualImports, true),
-      outDir,
-      config,
-    });
+  htmlLogger.debug('Built the component library');
 
-    htmlLogger.debug('Built the component library');
+  const assets = await bundler.buildClient({
+    entry: clientProgram,
+    virtualImports: createVirtualImports(datas, config.virtualImports, false),
+    config,
+  });
 
-    const assets = await bundler.buildClient({
-      entry: clientProgram,
-      virtualImports: createVirtualImports(datas, config.virtualImports, false),
-      config,
-    });
+  htmlLogger.debug('Built the client assets', assets);
 
-    htmlLogger.debug('Built the client assets', assets);
+  const modulesDir = join(outDir, 'pages');
+  await mkdir(modulesDir);
 
-    const modulesDir = join(outDir, 'pages');
-    await mkdir(modulesDir);
+  /**
+   * Compiles a page's program to disk and describes it for the workers.
+   *
+   * @param {import('./types').Page} page
+   * @returns {Promise<import('./types').PageTask>}
+   */
+  const compile = async page => {
+    const file = join(modulesDir, moduleFileName(page.data.api));
 
-    /**
-     * Compiles a page's program to disk and describes it for the workers.
-     *
-     * @param {import('./types').Page} page
-     * @returns {Promise<import('./types').PageTask>}
-     */
-    const compile = async page => {
-      const file = join(modulesDir, moduleFileName(page.data.api));
+    await writeFile(
+      file,
+      await bundler.compile(
+        buildPageProgram(page, libraryURL),
+        `${page.data.api}.jsx`
+      )
+    );
 
-      await writeFile(
-        file,
-        await bundler.compile(
-          buildPageProgram(page, libraryURL),
-          `${page.data.api}.jsx`
-        )
-      );
+    const { data, headings, readingTime } = page;
 
-      const { data, headings, readingTime } = page;
-
-      return {
-        moduleURL: pathToFileURL(file).href,
-        data,
-        headings,
-        readingTime,
-      };
+    return {
+      moduleURL: pathToFileURL(file).href,
+      data,
+      headings,
+      readingTime,
     };
+  };
 
-    const tasks = [];
+  const tasks = [];
 
-    for (const page of pages) {
-      tasks.push(await compile(page));
-    }
-
-    // The composed page imports the other pages' compiled programs, which
-    // exist from here on, so it is rendered by the worker pool alongside them.
-    // Rendering it on this thread instead would hold the whole site in it and
-    // block the pool from shutting down its idle workers until it is done.
-    // It goes first: it takes by far the longest, so the other pages are
-    // rendered while it is.
-    if (all) {
-      const allTask = await compile(all);
-
-      tasks.unshift(allTask);
-    }
-
-    htmlLogger.debug(`Compiled ${tasks.length} page programs`);
-
-    await createPageWriter(worker)(tasks, { template, assets });
-  } finally {
-    await rm(outDir, { recursive: true, force: true });
+  for (const page of pages) {
+    tasks.push(await compile(page));
   }
 
-  await copyStaticAssets(config);
-}
+  // The composed page imports the other pages' compiled programs, which
+  // exist from here on, so it is rendered by the worker pool alongside them.
+  // Rendering it on this thread instead would hold the whole site in it and
+  // block the pool from shutting down its idle workers until it is done.
+  // It goes first: it takes by far the longest, so the other pages are
+  // rendered while it is.
+  if (all) {
+    const allTask = await compile(all);
+
+    tasks.unshift(allTask);
+  }
+
+  htmlLogger.debug(`Compiled ${tasks.length} page programs`);
+
+  return { assets, tasks };
+};
