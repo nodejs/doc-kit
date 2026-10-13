@@ -1,5 +1,17 @@
 # @node-core/doc-kit-legacy
 
+## 1.1.0
+
+### Minor Changes
+
+- [#1156](https://github.com/nodejs/doc-kit/pull/1156) [`6d5f9d1`](https://github.com/nodejs/doc-kit/commit/6d5f9d17d9f265c62db0f878c4e03903881b11c9) Thanks [@ovflowd](https://github.com/ovflowd)! - Builds take about half the memory and a third of the time (measured on the Node.js API docs): Shiki registers each language once code in it is highlighted, highlighted code reaches pages as static markup rather than a tree per token, `all.html` is rendered by the worker pool, output is no longer minified by default (serve it compressed instead), idle workers end after 250ms, and each worker's heap is limited to 512MB, which Node.js's `--max-old-space-size` raises.
+
+### Patch Changes
+
+- [#1157](https://github.com/nodejs/doc-kit/pull/1157) [`a4c9684`](https://github.com/nodejs/doc-kit/commit/a4c9684fd46f14b3bcbaf2e8f01a246a47ee27cd) Thanks [@ovflowd](https://github.com/ovflowd)! - Add a `markdown` option to add remark, rehype, and recma plugins to the generators processing Markdown, or configure the ones they use, such as Shiki. The `@doc-kit/core` modules the generators' pipelines replace are removed (`utils/remark.mjs`, `utils/remark-shiki.mjs`, and `utils/highlighter.mjs`), and `utils/type-annotations` moves to `plugins/type-annotations`
+- Updated dependencies [[`6d5f9d1`](https://github.com/nodejs/doc-kit/commit/6d5f9d17d9f265c62db0f878c4e03903881b11c9), [`c50e75f`](https://github.com/nodejs/doc-kit/commit/c50e75f8f50c84b6ff3b16b84059bd0f53ca5d1c), [`a4c9684`](https://github.com/nodejs/doc-kit/commit/a4c9684fd46f14b3bcbaf2e8f01a246a47ee27cd)]:
+  - @doc-kit/core@1.3.0
+
 ## 1.0.4
 
 ### Patch Changes
