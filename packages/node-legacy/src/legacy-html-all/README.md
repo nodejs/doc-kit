@@ -8,6 +8,6 @@ The `legacy-html-all` generator creates a single `all.html` file containing all 
 - `templatePath` {string} Path to the HTML template file. Inherited from
   `legacy-html`. **Default:** `'template.html'`.
 - `minify` {boolean} Whether to minify the output HTML. Inherited from
-  `global`. **Default:** `true`.
+  `global`. **Default:** `false`.
 - `version` {Object} Version object containing version information. Inherited
   from `global`. **Default:** `process.version`.

@@ -109,7 +109,7 @@ Everything under the `global` key applies to every generator:
   logos, and templated text. Defaults to the `name` in your `package.json`.
 - `version` {string|SemVer} Documentation version. **Default:**
   `process.version`.
-- `minify` {boolean} Whether to minify output. **Default:** `true`.
+- `minify` {boolean} Whether to minify output. **Default:** `false`.
 - `repository` {string} GitHub repository in `owner/repo` format; without
   one, repository UI is omitted.
 - `ref` {string} Git reference (branch, tag, or commit SHA). **Default:**
@@ -134,7 +134,8 @@ these for that generator alone, except `markdown`, which it adds to.
 Top-level, alongside `target` and `global`:
 
 - `threads` {number} Worker threads used for generation. Defaults to your
-  CPU count.
+  CPU count. Each worker's heap is limited to 512MB; to raise the limit, run
+  Node.js with `--max-old-space-size` (directly or through `NODE_OPTIONS`).
 - `chunkSize` {number} Items processed per worker thread. **Default:** `10`.
 
 ## Generator options

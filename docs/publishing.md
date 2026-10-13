@@ -56,6 +56,22 @@ costs a request per asset each time a new tab opens the site. On Vercel:
 Within a visit, moving between pages loads no assets at all: the site
 navigates client-side, swapping in the next page's content.
 
+## Compress the pages
+
+doc-kit doesn't minify its output by default: compressed (gzip or brotli), as
+hosts serve it, it is far smaller than minifying would make it.
+
+Cloudflare, Vercel, Netlify, and GitHub Pages compress on their own, and so
+does `npx serve out`. If you serve the output yourself, turn compression on:
+
+- **nginx:** `gzip on;` compresses HTML; add the other types with
+  `gzip_types text/css application/javascript application/json;`.
+- **Caddy:** `encode zstd gzip`.
+- **Apache:** with `mod_deflate`,
+  `AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json`.
+- **Amazon S3:** serve the bucket through CloudFront, with **Compress objects
+  automatically** on.
+
 ## Tell doc-kit its public URL
 
 Set `baseURL` to where the site will live. Generators that emit absolute

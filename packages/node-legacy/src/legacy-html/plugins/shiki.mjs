@@ -39,6 +39,8 @@ function isCodeBlock(node) {
 
 /**
  * Creates a HAST transformer for Shiki which is used for transforming our codeboxes
+ *
+ * @deprecated This plugin is deprecated and will be removed soon.
  */
 export default function rehypeShikiji() {
   /**
@@ -90,7 +92,7 @@ export default function rehypeShikiji() {
       const { children } = highlighter.shiki.codeToHast(
         preElement.children[0].value,
         {
-          lang: languageId,
+          lang: highlighter.resolveLanguage(languageId),
           // Allows support for dual themes (light, dark) for Shiki
           themes: { light: shikiConfig.themes[0], dark: shikiConfig.themes[1] },
         }

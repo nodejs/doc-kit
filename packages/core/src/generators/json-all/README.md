@@ -23,7 +23,7 @@ generator's schema for the documents.
 
 - `output` {string} The directory where `all.json` will be written.
 - `minify` {boolean} Whether to minify the output. Inherited from `global`.
-  **Default:** `true`.
+  **Default:** `false`.
 - `index` {Array} The `{ api }` objects defining the document order. Inherited
   from `global`.
 - `schemaURL` {string} Where the bundle's schema is published.
