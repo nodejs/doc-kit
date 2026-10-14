@@ -13,14 +13,10 @@ export default {
         { text: 'About', link: 'https://nodejs.org/en/about' },
         { text: 'Download', link: 'https://nodejs.org/en/download' },
         { text: 'Docs', link: 'https://nodejs.org/docs/latest/api/' },
+        { text: 'Blog', link: 'https://nodejs.org/en/blog/' },
         {
           text: 'Contribute',
           link: 'https://github.com/nodejs/node/blob/main/CONTRIBUTING.md',
-          target: '_blank',
-        },
-        {
-          text: 'Courses',
-          link: 'https://training.linuxfoundation.org/openjs-certification-candidate-resources/',
           target: '_blank',
         },
       ],
