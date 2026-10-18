@@ -3,8 +3,6 @@
 import getConfig from '#utils/configuration/index.mjs';
 import { loadFromURL } from '#utils/loaders.mjs';
 
-import { parseApiDoc } from './utils/parse.mjs';
-
 /**
  * Process a chunk of API doc files in a worker thread.
  * Called by chunk-worker.mjs for parallel processing.
@@ -12,6 +10,10 @@ import { parseApiDoc } from './utils/parse.mjs';
  * @type {import('./types').Generator['processChunk']}
  */
 export async function processChunk(fullInput, itemIndices, typeMap) {
+  // Loaded on first use rather than with the generator, so the main thread,
+  // which never parses, does not load the TypeScript parser (~40MB of WASM)
+  const { parseApiDoc } = await import('./utils/parse.mjs');
+
   const results = [];
 
   for (const idx of itemIndices) {

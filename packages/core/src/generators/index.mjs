@@ -10,6 +10,8 @@
  * which is how third-party generator packages are loaded.
  */
 export const publicGenerators = {
+  json: '@doc-kit/core/json',
+  'json-all': '@doc-kit/core/json-all',
   'json-simple': '@doc-kit/core/json-simple',
   'legacy-html': '@node-core/doc-kit-legacy/legacy-html',
   'legacy-html-all': '@node-core/doc-kit-legacy/legacy-html-all',
@@ -20,6 +22,7 @@ export const publicGenerators = {
   'api-links': '@node-core/doc-kit/api-links',
   'orama-db': '@doc-kit/generator-react/orama-db',
   'llms-txt': '@doc-kit/generator-react/llms-txt',
+  'llms-txt-full': '@doc-kit/generator-react/llms-txt-full',
   sitemap: '@doc-kit/generator-react/sitemap',
   html: '@doc-kit/generator-react/html',
   'section-pages': '@doc-kit/generator-react/section-pages',

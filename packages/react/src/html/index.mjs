@@ -3,24 +3,24 @@
 import { join } from 'node:path';
 
 import { generate } from './generate.mjs';
-import { processChunk } from './utils/minify.mjs';
+import { processChunk } from './utils/render.mjs';
 
 /**
- * Web generator - transforms JSX AST entries into complete web bundles.
+ * Web generator - transforms the pages' JSX into a complete static site.
  *
- * This generator processes JSX AST entries and produces:
+ * This generator takes the `jsx-ast` output and produces:
  * - Server-side rendered HTML pages
  * - Client-side JavaScript with code splitting
  * - Bundled CSS styles
  *
- * The configured bundler writes the complete static site to the output
- * directory; this terminal generator does not return an in-memory copy.
+ * The configured bundler builds the component library and the client assets
+ * once each; the pages are then compiled, rendered, templated, minified and
+ * written one at a time by the worker pool, so memory scales with the largest
+ * page rather than with the site. `all.html` is assembled from the module
+ * pages' compiled content instead of being built again from scratch.
  *
- * `jsx-ast` serializes each page's JSX AST to a `code` string inside its worker,
- * so this generator only ever handles small `{ data, code }` items — the heavy
- * ASTs (notably the giant `all` page) never reach the main thread. Bundling and
- * rendering run once over the accumulated code, since code-splitting and the
- * sidebar need every entry together.
+ * This terminal generator writes to the output directory and does not return
+ * an in-memory copy.
  *
  * @type {import('./types').Generator}
  */
@@ -82,14 +82,18 @@ export default {
       showCrossLinks: false,
     },
 
+    // Whether to write `all.html`: every module page's content on one page,
+    // assembled from the module pages rather than built again.
+    generateAllPage: true,
+
     // When omitted, the Vite adapter is loaded lazily during generation.
     bundler: undefined,
   }),
 
   generate,
 
-  // Minifying the rendered pages is the one step of the bundle that scales
-  // with the page count, so it is farmed out to the worker pool.
+  // Rendering, templating, minifying and writing the pages scales with the
+  // page count, so it is farmed out to the worker pool.
   hasParallelProcessor: true,
 
   processChunk,

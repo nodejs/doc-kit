@@ -1,7 +1,7 @@
 {
   "name": "@node-core/doc-kit-legacy",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Node.js legacy-format generators for @doc-kit/core: legacy-html, legacy-html-all, legacy-json, and legacy-json-all",
   "repository": {
     "type": "git",
@@ -27,6 +27,9 @@
   "dependencies": {
     "@doc-kit/core": "workspace:*",
     "hastscript": "^9.0.1",
+    "rehype-stringify": "^10.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
     "unist-builder": "^4.0.0",
     "unist-util-visit": "^5.1.0"
   }

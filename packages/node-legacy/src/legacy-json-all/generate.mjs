@@ -4,6 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 
 import { legacyToJSON } from '../utils/legacyToJSON.mjs';
 
@@ -36,8 +37,10 @@ export async function generate(input) {
 
   // Create a map of api name to index position for sorting
   const indexOrder = new Map(
-    config.index?.map(({ api }, position) => [`doc/api/${api}.md`, position]) ??
-      []
+    config.index?.map(({ api }, position) => [
+      populate(config.sourceURL, { path: `${api}.md` }),
+      position,
+    ]) ?? []
   );
 
   // Sort input by index order (documents not in index go to the end)

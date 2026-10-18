@@ -2,7 +2,8 @@ packages:
   - 'packages/*'
 
 allowBuilds:
+  esbuild: false
   unrs-resolver: false
+  workerd: false
 
-minimumReleaseAgeExclude:
-  - '@node-core/ui-components@1.7.6'
+minimumReleaseAgeExcludePrune: true

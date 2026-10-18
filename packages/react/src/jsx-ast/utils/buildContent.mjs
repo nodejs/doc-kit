@@ -7,38 +7,40 @@ import {
   populate,
 } from '@doc-kit/core/utils/configuration/templates.mjs';
 import { parseInline } from '@doc-kit/core/utils/inline.mjs';
-import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
-import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
+import { annotateOverloads } from '@doc-kit/core/utils/overloads.mjs';
+import { splitTypedItems, UNIST } from '@doc-kit/core/utils/queries/index.mjs';
+import { removeStabilityPrefix } from '@doc-kit/core/utils/stability.mjs';
 import { transformNodesToString } from '@doc-kit/core/utils/unist.mjs';
 import { h as createElement } from 'hastscript';
 import { slice } from 'mdast-util-slice-markdown';
 import { u as createTree } from 'unist-builder';
 import { SKIP, visit } from 'unist-util-visit';
 
-import { createJSXElement } from './ast.mjs';
-import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
-import { annotateOverloads } from './overloads.mjs';
-import { getRemarkRecma as remark } from './remark.mjs';
-import { renderAsJSX } from './render.mjs';
 import { JSX_IMPORTS } from '../../html/constants.mjs';
 import {
   STABILITY_LEVELS,
   LIFECYCLE_LABELS,
   INTERNATIONALIZABLE,
-  STABILITY_PREFIX_LENGTH,
   DEPRECATION_TYPE_PATTERNS,
   ALERT_LEVELS,
   TYPES_WITH_METHOD_SIGNATURES,
   TYPE_PREFIX_LENGTH,
 } from '../constants.mjs';
+import { createJSXElement } from './ast.mjs';
+import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
+import { getFullName } from './hast.mjs';
+import { renderAsJSX } from './render.mjs';
 import {
   insertSignatureCodeBlock,
   createSignatureTable,
-  getFullName,
 } from './signature.mjs';
 
 /**
+ * Estimates the reading time of a page's text, as display text.
  *
+ * @param {string} text
+ * @returns {Promise<string>}
  */
 const readingTime = text =>
   import('reading-time').then(({ default: rt }) => rt(text).text);
@@ -192,14 +194,10 @@ export const createHeadingElement = (content, changeElement) => {
  * @param {import('unist').Parent} parent - The parent node containing the stability node
  */
 export const transformStabilityNode = (node, index, parent) => {
-  // Calculate slice start to skip the stability prefix + index length
-  const start = STABILITY_PREFIX_LENGTH + node.data.index.length;
   const stabilityLevel = parseInt(node.data.index, 10);
 
   parent.children[index] = createJSXElement(JSX_IMPORTS.AlertBox.name, {
-    children: slice(node, start, undefined, {
-      textHandling: { boundaries: 'preserve' },
-    }).node.children[0].children,
+    children: removeStabilityPrefix(node).children[0].children,
     level: STABILITY_LEVELS[stabilityLevel],
     title: `Stability: ${node.data.index}`,
   });
@@ -293,25 +291,18 @@ export const processEntry = entry => {
       // bullets that happen to share the same loose list in the source
       // markdown). Split those off so they render as regular content instead
       // of being silently swallowed by the signature table.
-      const firstNonTyped = node.children.findIndex(
-        item => !UNIST.isTypedListItem(item)
-      );
+      const { typed, rest } = splitTypedItems(node);
 
-      if (firstNonTyped === -1) {
+      if (rest.length === 0) {
         parent.children[idx] = createSignatureTable(node);
         return;
       }
 
-      const typedItems = node.children.slice(0, firstNonTyped);
-      const restItems = node.children.slice(firstNonTyped);
-
       const replacements = [];
-      if (typedItems.length > 0) {
-        replacements.push(
-          createSignatureTable({ ...node, children: typedItems })
-        );
+      if (typed.length > 0) {
+        replacements.push(createSignatureTable({ ...node, children: typed }));
       }
-      replacements.push({ ...node, children: restItems });
+      replacements.push({ ...node, children: rest });
 
       parent.children.splice(idx, 1, ...replacements);
     });
@@ -321,54 +312,58 @@ export const processEntry = entry => {
 };
 
 /**
- * Builds the overall document layout tree
+ * Builds a page's content: every entry processed and wrapped in one JSX
+ * fragment, plus the table of contents and reading time the layout needs.
+ *
+ * The layout itself (`<Layout>`) is not part of the content. The `html`
+ * generator wraps each page in it, which lets a page be assembled from other
+ * pages' content — `all.html` is the module pages concatenated — without
+ * building those modules a second time.
+ *
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - API documentation metadata entries
- * @param {Object} metadata - Raw page metadata from the head entry
  */
-export const createDocumentLayout = async (entries, metadata) => {
+export const createDocumentContent = async entries => {
   // Collapse overloaded function headings into one stable ToC entry, tagging the
   // underlying headings with compact anchors / overload flags read just below.
   annotateOverloads(entries);
 
   const { showReadingTime } = getConfig('jsx-ast');
 
-  return createTree('root', [
-    createJSXElement(JSX_IMPORTS.Layout.name, {
-      metadata,
-      headings: extractHeadings(entries),
-      readingTime: showReadingTime
-        ? await readingTime(extractTextContent(entries))
-        : undefined,
-      children: entries.map(processEntry),
-    }),
-  ]);
+  return {
+    headings: extractHeadings(entries),
+    readingTime: showReadingTime
+      ? await readingTime(extractTextContent(entries))
+      : undefined,
+    root: createTree('root', [
+      createJSXElement(null, {
+        inline: false,
+        children: entries.map(processEntry),
+      }),
+    ]),
+  };
 };
 
 /**
- * @typedef {import('estree').Node & { data: import('@doc-kit/core/generators/metadata/types').MetadataEntry }} JSXContent
+ * @typedef {Object} PageContent
+ * @property {import('@doc-kit/core/generators/metadata/types').MetadataEntry} data - The page's head entry
+ * @property {Array<ReturnType<typeof extractHeadings>[number]>} headings - The table of contents
+ * @property {string | undefined} readingTime - Set when `showReadingTime` is on
+ * @property {import('estree-jsx').JSXFragment} content - The processed entries, as one JSX fragment
  *
- * Transforms API metadata entries into processed MDX content
+ * Transforms API metadata entries into a page's JSX content
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} metadataEntries - API documentation metadata entries
  * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} head - Main API metadata entry with version information
- * @returns {Promise<JSXContent>}
+ * @returns {Promise<PageContent>}
  */
 const buildContent = async (metadataEntries, head) => {
-  // The metadata is the heading without the node children
-  const metadata = omitKeys(head, [
-    'content',
-    'heading',
-    'stability',
-    'changes',
-  ]);
-
-  // Create root document AST with all layout components and processed content
-  const root = await createDocumentLayout(metadataEntries, metadata);
+  const { headings, readingTime, root } =
+    await createDocumentContent(metadataEntries);
 
   // Run remark processor to transform AST (parse markdown, plugins, etc.)
-  const ast = await remark().run(root);
+  const ast = await getProcessor('jsx-ast').run(root);
 
-  // The final MDX content is the expression in the Program's first body node
-  return { ...ast.body[0].expression, data: head };
+  // The fragment is the expression in the Program's first body node
+  return { data: head, headings, readingTime, content: ast.body[0].expression };
 };
 
 export default buildContent;

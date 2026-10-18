@@ -1,8 +1,9 @@
-import type { JSXContent } from '../jsx-ast/utils/buildContent.mjs';
 import type { GlobalConfiguration } from '@doc-kit/core/utils/configuration/types';
-import type SideBar from '@node-core/ui-components/Containers/Sidebar';
 import type NavBar from '@node-core/ui-components/Containers/NavBar';
+import type SideBar from '@node-core/ui-components/Containers/Sidebar';
 import type { ComponentProps } from 'preact';
+
+import type { PageCode } from '../jsx-ast/types';
 
 // An attribute bag rendered into an HTML tag. `true` becomes a valueless
 // attribute (e.g. `crossorigin`); `false`/`null`/`undefined` are omitted.
@@ -30,35 +31,65 @@ export type HeadConfig = {
 
 export type ResolvedWebConfiguration = Configuration & GlobalConfiguration;
 
+// A page assembled from other pages' content (`all.html`): `parts` lists the
+// `api`s whose compiled programs it imports, in order.
+export type ComposedPage = Omit<PageCode, 'content' | 'readingTime'> & {
+  parts: Array<string>;
+};
+
+// What the generator turns into a page program.
+export type Page = PageCode | ComposedPage;
+
+// A compiled page program, ready for a worker to import and render, with the
+// data the layout is rendered with.
+export type PageTask = Pick<PageCode, 'data' | 'headings' | 'readingTime'> & {
+  // `file:` URL of the compiled module.
+  moduleURL: string;
+};
+
+// The client assets every page loads, as paths relative to the output root.
+export type ClientAssets = {
+  // Module scripts, in load order.
+  scripts: Array<string>;
+  // Chunks the scripts statically import, to preload.
+  preloads: Array<string>;
+  // Stylesheets.
+  stylesheets: Array<string>;
+  // Fonts to preload, so text does not wait on the stylesheet to request them.
+  fonts?: Array<string>;
+};
+
 export type ServerBundleOptions = {
-  // Server-side JSX programs keyed by `${api}.jsx`.
-  entries: Map<string, string>;
-  // In-memory modules that the bundler must make available to the entries.
+  // The component library's source: re-exports of every component, the JSX
+  // runtime (`h`, `Fragment`) and `renderToStringAsync`.
+  entry: string;
+  // In-memory modules that the bundler must make available to the entry.
   virtualImports: Record<string, string>;
+  // Where to write the built library.
+  outDir: string;
   config: ResolvedWebConfiguration;
 };
 
 export type ClientBundleOptions = {
   // The client-side program every page loads, hydrating its server-rendered
-  // markup; the bundler serves it at the identifier `getEntryId()` returns.
+  // markup.
   entry: string;
   // In-memory modules that the bundler must make available to the entry.
   virtualImports: Record<string, string>;
-  // Populated HTML keyed by its output-relative file name.
-  pages: Map<string, string>;
-  // Minifies final pages (keyed like `pages`) across the worker pool. Bundlers
-  // call it on the HTML they are about to write when `config.minify` is set.
-  minifyPages: (pages: Map<string, string>) => Promise<Map<string, string>>;
   config: ResolvedWebConfiguration;
 };
 
 export type WebBundler = {
-  // Returns the module identifier embedded in every page's client script tag.
-  getEntryId(): string;
-  // Returns rendered HTML keyed by API name.
-  render(options: ServerBundleOptions): Promise<Map<string, string>>;
-  // Bundles the client entries and writes the complete site.
-  build(options: ClientBundleOptions): Promise<void>;
+  // Bundles the component library for Node and returns the `file:` URL of the
+  // built module. Page programs import from it.
+  buildServer(options: ServerBundleOptions): Promise<string>;
+  // Turns one page program — a module using JSX — into plain JavaScript Node
+  // can import. JSX must compile to calls of the `_jsx` and `_Fragment`
+  // bindings the program imports (the classic runtime; see `JSX_PRAGMA`).
+  compile(code: string, fileName: string): Promise<string>;
+  // Bundles the client entry into `config.output` and returns the assets every
+  // page must load.
+  buildClient(options: ClientBundleOptions): Promise<ClientAssets>;
 };
 
 export type Configuration = {
@@ -83,11 +114,14 @@ export type Configuration = {
     navbar?: ComponentProps<typeof NavBar>['navItems'];
     showCrossLinks?: boolean;
   };
+  // Whether to write `all.html`, every module page's content on one page.
+  generateAllPage: boolean;
   // Optional bundler adapter. When omitted, the Vite adapter is loaded lazily.
   bundler?: WebBundler;
 };
 
 export type Generator = GeneratorMetadata<
   Configuration,
-  Generate<Array<JSXContent>, Promise<void>>
+  Generate<Array<PageCode>, Promise<void>>,
+  ProcessChunk<PageTask, string, { template: string; assets: ClientAssets }>
 >;

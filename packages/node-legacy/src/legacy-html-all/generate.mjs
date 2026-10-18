@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
-import { getRemarkRehype as remark } from '@doc-kit/core/utils/remark.mjs';
+import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
 
 import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValues.mjs';
 import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
@@ -38,7 +38,7 @@ export async function generate(input) {
   }));
 
   // Generates the global Table of Contents (Sidebar Navigation)
-  const parsedSideNav = remark().processSync(
+  const parsedSideNav = getProcessor('legacy-html').processSync(
     tableOfContents(sideNavigationFromValues, {
       maxDepth: 1,
       parser: tableOfContents.parseNavigationNode,

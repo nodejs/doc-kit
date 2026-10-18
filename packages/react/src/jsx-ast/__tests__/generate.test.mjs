@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import getConfig, {
   setConfig,
 } from '@doc-kit/core/utils/configuration/index.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 
 import { generate, processChunk } from '../generate.mjs';
+
+// Pages are rendered with the pipeline of `jsx-ast`
+await loadMarkdownPlugins(
+  await loadGenerator(import.meta.resolve('../index.mjs'))
+);
 
 const createEntry = (api, name, { stabilityIndex = '2' } = {}) => {
   const heading = {
@@ -60,22 +67,29 @@ const createWorker = seenItems => ({
 });
 
 describe('jsx-ast generate', () => {
-  it('does not attach raw section entries to regular JSX content', async () => {
+  it('returns the page content as a JSX fragment alongside its ToC', async () => {
     await setConfig({ target: ['jsx-ast'] });
 
     const fs = createEntry('fs', 'File system');
-    const [content] = await processChunk([{ head: fs, entries: [fs] }], [0]);
+    const [page] = await processChunk([{ head: fs, entries: [fs] }], [0]);
 
-    assert.equal(content.data.api, 'fs');
-    assert.equal('sectionEntries' in content, false);
+    assert.equal(page.data.api, 'fs');
+    assert.equal('sectionEntries' in page, false);
+    // The layout is the html generator's: only the content is serialized
+    assert.match(page.content, /^<>/);
+    assert.doesNotMatch(page.content, /<Layout/);
+    assert.match(page.content, /File system body/);
+    assert.deepEqual(
+      page.headings.map(({ value }) => value),
+      ['File system']
+    );
+    assert.equal(page.readingTime, undefined);
   });
 
   it('respects jsx-ast synthetic page flags', async () => {
     await setConfig({ target: ['jsx-ast'] });
 
-    const jsxAstConfig = getConfig('jsx-ast');
-    jsxAstConfig.generateAllPage = false;
-    jsxAstConfig.generateNotFoundPage = false;
+    getConfig('jsx-ast').generateNotFoundPage = false;
 
     const seenItems = [];
     const results = await collect(

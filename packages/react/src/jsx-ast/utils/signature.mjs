@@ -1,12 +1,14 @@
-import { highlighter } from '@doc-kit/core/utils/highlighter.mjs';
+import { getHighlighter } from '@doc-kit/core/plugins/shiki/highlighter.mjs';
 import { UNIST } from '@doc-kit/core/utils/queries/index.mjs';
 import { parseListItem } from '@doc-kit/core/utils/signature/parseList.mjs';
 import parseSignature from '@doc-kit/core/utils/signature/parseSignature.mjs';
 import { h as createElement } from 'hastscript';
 
-import { createJSXElement } from './ast.mjs';
-import { parseListIntoProperties } from './types.mjs';
 import { JSX_IMPORTS } from '../../html/constants.mjs';
+import { embedHighlightedBlocks } from '../plugins/static-markup.mjs';
+import { createJSXElement } from './ast.mjs';
+import { getFullName } from './hast.mjs';
+import { parseListIntoProperties } from './types.mjs';
 
 /**
  * Generates a string representation of a function or class signature.
@@ -65,33 +67,12 @@ export const generateSignature = (
  */
 export const createSignatureCodeBlock = (functionName, signature, heading) => {
   const sig = generateSignature(functionName, signature, heading);
+  const highlighter = getHighlighter('jsx-ast');
   const highlighted = highlighter.highlightToHast(sig, 'typescript');
 
-  return createElement('div', { class: 'signature' }, [highlighted]);
-};
-
-/**
- * Infers the "real" function name from a heading node.
- * Useful when auto-generated headings differ from code tokens.
- *
- * @param {import('@doc-kit/core/generators/metadata/types').HeadingData} heading - Metadata with name and text fields.
- * @param {any} fallback - Fallback value if inference fails.
- */
-export const getFullName = ({ name, text }, fallback = name) => {
-  // If the name and text are identical, just use fallback
-  if (name === text) {
-    return fallback;
-  }
-
-  // Attempt to extract inline code from heading text
-  const code = text.trim().match(/`([^`]+)`/)?.[1];
-
-  // If inline code includes the name, return a clean version of it
-  return code?.includes(name)
-    ? code
-        .slice(0, code.indexOf(name) + name.length) // Truncate everything after the name.
-        .replace(/^["']|new\s*/g, '') // Strip quotes or "new" keyword
-    : fallback;
+  return createElement('div', { class: 'signature' }, [
+    embedHighlightedBlocks(highlighted),
+  ]);
 };
 
 /**

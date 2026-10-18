@@ -18,3 +18,13 @@ export const writeFile = (file, ...args) =>
   fs
     .mkdir(dirname(file), { recursive: true })
     .then(() => fs.writeFile(file, ...args));
+
+/**
+ * Writes a value as JSON
+ *
+ * @param {string} file
+ * @param {unknown} value
+ * @param {boolean} [minify]
+ */
+export const writeJSON = (file, value, minify = false) =>
+  writeFile(file, JSON.stringify(value, null, minify ? 0 : 2));

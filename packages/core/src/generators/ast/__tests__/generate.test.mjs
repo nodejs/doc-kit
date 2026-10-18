@@ -1,20 +1,31 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { after, before, describe, it } from 'node:test';
+import { pathToFileURL } from 'node:url';
+
+import { loadGenerator } from '#generators/loader.mjs';
+import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
 
 import { STABILITY_INDEX_URL } from '../constants.mjs';
 import { processChunk } from '../generate.mjs';
 
+const ast = await loadGenerator(import.meta.resolve('../index.mjs'));
+
+// Files are parsed with the pipeline of `ast`
+await loadMarkdownPlugins(ast);
+
 let dir;
+
+const toPosixPath = value => value.split(sep).join('/');
 
 // Writes `content` to `<name>` in the temp dir and returns the
 // `[path, parent]` tuple `processChunk` expects.
 const file = async (name, content) => {
   const path = join(dir, name);
   await writeFile(path, content);
-  return [path, dir];
+  return [toPosixPath(path), toPosixPath(dir)];
 };
 
 // Runs a single file through `processChunk` and returns its result entry.
@@ -152,6 +163,42 @@ describe('processChunk', () => {
       const link = blockquote.children[0].children.find(n => n.type === 'link');
 
       assert.strictEqual(link.url, STABILITY_INDEX_URL);
+    });
+  });
+
+  describe('remark plugins', () => {
+    before(async () => {
+      // Records the file it runs on, and the headings of its document
+      await writeFile(
+        join(dir, 'recorder.mjs'),
+        `export default () => (tree, file) => {
+          const headings = tree.children.filter(node => node.type === 'heading');
+
+          tree.data = { recorded: file.path + ':' + headings.length };
+        };`
+      );
+
+      await loadMarkdownPlugins(ast, {
+        remarkPlugins: [pathToFileURL(join(dir, 'recorder.mjs')).href],
+      });
+    });
+
+    after(() => loadMarkdownPlugins(ast));
+
+    it('run on each whole document, knowing its file', async () => {
+      const tuple = await file('plugged.md', '# A\n\n## B\n\n## C\n');
+
+      const { tree } = await process(tuple);
+
+      assert.strictEqual(tree.data.recorded, `${tuple[0]}:3`);
+    });
+
+    it('run on MDX documents too', async () => {
+      const tuple = await file('plugged.mdx', '# A\n\n<B />\n');
+
+      const { tree } = await process(tuple);
+
+      assert.strictEqual(tree.data.recorded, `${tuple[0]}:1`);
     });
   });
 

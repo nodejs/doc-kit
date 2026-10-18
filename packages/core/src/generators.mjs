@@ -9,6 +9,7 @@ import { resolvePipeline } from './generators/pipeline.mjs';
 import logger from './logger/index.mjs';
 import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
+import { loadMarkdownPlugins } from './utils/markdown/plugins.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
 
 const generatorsLogger = logger.child('generators');
@@ -77,6 +78,9 @@ const createGenerator = () => {
         const dependencyInput = await getDependencyInput(dependsOn);
 
         generatorsLogger.debug(`Starting "${name}"`);
+
+        // Load its Markdown pipeline, for what it processes on this thread
+        await loadMarkdownPlugins(generator, configuration[name]?.markdown);
 
         // Create parallel worker for streaming generators
         const worker = hasParallelProcessor

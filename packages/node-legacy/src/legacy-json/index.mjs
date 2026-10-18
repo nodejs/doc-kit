@@ -1,5 +1,6 @@
 'use strict';
 
+import { rehypeOptions } from '../utils/rehypeOptions.mjs';
 import { generate, processChunk } from './generate.mjs';
 
 /**
@@ -23,9 +24,19 @@ export default {
   defaultConfiguration: {
     ref: 'main',
     minify: false,
+    sourceURL: 'doc/api/{path}',
   },
 
   hasParallelProcessor: true,
+
+  // Renders the descriptions' Markdown into HTML. It takes no configured
+  // plugins, which would change the legacy output
+  markdown: {
+    rehypePlugins: [
+      ['remark-rehype', rehypeOptions],
+      ['rehype-stringify', { allowDangerousHtml: true }],
+    ],
+  },
 
   generate,
   processChunk,

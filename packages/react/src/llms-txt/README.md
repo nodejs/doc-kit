@@ -8,4 +8,4 @@ The `llms-txt` generator creates a `llms.txt` file to provide information to Lar
 - `templatePath` {string} Path to the template file.
   **Default:** `'template.txt'`.
 - `pageURL` {string} URL template for documentation page links.
-  **Default:** `'{baseURL}/latest/api{path}.md'`.
+  **Default:** `'{baseURL}{path}.md'`.

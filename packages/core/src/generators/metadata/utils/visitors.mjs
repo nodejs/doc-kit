@@ -2,8 +2,8 @@
 
 import { SKIP } from 'unist-util-visit';
 
+import { getProcessor } from '#utils/markdown/processor.mjs';
 import { QUERIES } from '#utils/queries/index.mjs';
-import { getRemark as remark } from '#utils/remark.mjs';
 import { transformNodesToString } from '#utils/unist.mjs';
 
 import { transformUnixManualToLink } from './transformers.mjs';
@@ -41,7 +41,7 @@ const updateReferences = (query, transformer, node, parent) => {
   // and adding those nodes to the parent.
   const {
     children: [newNode],
-  } = remark().parse(replacedTypes);
+  } = getProcessor('metadata').parse(replacedTypes);
 
   // Find the index of the original node in the parent
   const index = parent.children.indexOf(node);

@@ -380,4 +380,35 @@ describe('createLogger', () => {
       strictEqual(transport.mock.callCount(), 1); // Debug should be filtered
     });
   });
+
+  describe('getLogLevel', () => {
+    it('should return the level the logger was created with', t => {
+      const logger = createLogger(t.mock.fn(), LogLevel.warn);
+
+      strictEqual(logger.getLogLevel(), LogLevel.warn);
+    });
+
+    it('should default to info when no level is given', t => {
+      const logger = createLogger(t.mock.fn());
+
+      strictEqual(logger.getLogLevel(), LogLevel.info);
+    });
+
+    it('should reflect a level set afterwards', t => {
+      const logger = createLogger(t.mock.fn(), LogLevel.info);
+
+      logger.setLogLevel('fatal');
+
+      strictEqual(logger.getLogLevel(), LogLevel.fatal);
+    });
+
+    it('should reflect the propagated level on children', t => {
+      const logger = createLogger(t.mock.fn(), LogLevel.info);
+      const child = logger.child('module');
+
+      logger.setLogLevel(LogLevel.error);
+
+      strictEqual(child.getLogLevel(), LogLevel.error);
+    });
+  });
 });

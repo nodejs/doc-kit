@@ -8,7 +8,7 @@ import { SemVer } from 'semver';
 
 let content;
 mock.module('../../utils/loaders.mjs', {
-  namedExports: {
+  exports: {
     loadFromURL: async () => content,
   },
 });

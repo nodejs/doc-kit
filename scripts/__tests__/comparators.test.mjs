@@ -163,10 +163,20 @@ test('comparators report added and removed output files', async t => {
   ]);
 
   assert.match(sizes, /2 files changed/);
-  assert.match(sizes, /`generator\/added\.json` \| — \| 12\.00 B/);
-  assert.match(sizes, /`generator\/removed\.json` \| 12\.00 B \| —/);
-  assert.match(objects, /`generator\/added\.json` added/);
-  assert.match(objects, /`generator\/removed\.json` removed/);
+  const added = `generator${path.sep}added.json`;
+  const removed = `generator${path.sep}removed.json`;
+  const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  assert.match(
+    sizes,
+    new RegExp(`\`${escapeRegExp(added)}\` \\| — \\| 12\\.00 B`)
+  );
+  assert.match(
+    sizes,
+    new RegExp(`\`${escapeRegExp(removed)}\` \\| 12\\.00 B \\| —`)
+  );
+  assert.match(objects, new RegExp(`\`${escapeRegExp(added)}\` added`));
+  assert.match(objects, new RegExp(`\`${escapeRegExp(removed)}\` removed`));
   assert.doesNotMatch(sizes, /comparison\.txt|4\.00 KB/);
   assert.doesNotMatch(objects, /comparison\.txt/);
 });

@@ -18,6 +18,7 @@ export default {
 
   defaultConfiguration: {
     minify: false,
+    sourceURL: 'doc/api/{path}',
   },
 
   generate,

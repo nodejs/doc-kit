@@ -82,5 +82,6 @@ export default {
 
   sitemap: {
     indexURL: '{baseURL}/latest/api/',
+    pageURL: '{baseURL}/latest/api{path}.html',
   },
 };

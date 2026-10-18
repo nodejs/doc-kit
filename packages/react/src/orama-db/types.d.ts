@@ -1,5 +1,5 @@
-import type { Orama, RawData } from '@orama/orama';
 import type { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
+import type { Orama, RawData } from '@orama/orama';
 
 /**
  * Schema for the Orama database entry

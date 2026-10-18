@@ -102,7 +102,7 @@ const syntheticGenerators = {
 };
 
 mock.module('../generators/loader.mjs', {
-  namedExports: {
+  exports: {
     resolveGeneratorSpecifier: specifier => specifier,
     loadGenerator: async specifier => syntheticGenerators[specifier],
     loadGenerators: async targets => {
@@ -132,18 +132,33 @@ mock.module('../generators/loader.mjs', {
 });
 
 mock.module('../threading/index.mjs', {
-  defaultExport: () => ({
-    run: async () => undefined,
-    destroy: async () => undefined,
-  }),
+  exports: {
+    default: () => ({
+      run: async () => undefined,
+      destroy: async () => undefined,
+    }),
+  },
 });
 
 mock.module('../threading/parallel.mjs', {
-  defaultExport: () => ({
-    async *stream() {
-      // Unused: the mocked generators return their own async generators
+  exports: {
+    default: () => ({
+      async *stream() {
+        // Unused: the mocked generators return their own async generators
+      },
+    }),
+  },
+});
+
+// The Markdown pipelines loaded, with the generators that had run by then
+const loadedPipelines = [];
+
+mock.module('../utils/markdown/plugins.mjs', {
+  exports: {
+    loadMarkdownPlugins: async ({ name }, markdown) => {
+      loadedPipelines.push({ name, markdown, ran: Object.keys(runs) });
     },
-  }),
+  },
 });
 
 const createGenerator = (await import('../generators.mjs')).default;
@@ -209,6 +224,25 @@ describe('createGenerator orchestration', () => {
 
     assert.deepStrictEqual(results, [
       { all: { d: [{ meta: 1 }, { spliced: true }] } },
+    ]);
+  });
+
+  it('loads the Markdown pipeline of each generator as it starts', async () => {
+    const { runGenerators } = createGenerator();
+    const markdown = { remarkPlugins: ['file:///plugin.mjs'] };
+
+    loadedPipelines.length = 0;
+
+    await runGenerators({
+      target: ['gen-a'],
+      threads: 1,
+      'gen-a': { markdown },
+    });
+
+    assert.deepStrictEqual(loadedPipelines, [
+      { name: 'ast', markdown: undefined, ran: [] },
+      { name: 'metadata', markdown: undefined, ran: ['ast'] },
+      { name: 'gen-a', markdown, ran: ['ast', 'metadata'] },
     ]);
   });
 });

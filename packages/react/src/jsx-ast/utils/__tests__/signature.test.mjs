@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { generateSignature, getFullName } from '../signature.mjs';
+import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
+
+import { createSignatureCodeBlock, generateSignature } from '../signature.mjs';
 
 describe('generateSignature', () => {
   describe('function signatures', () => {
@@ -246,130 +248,32 @@ describe('generateSignature', () => {
   });
 });
 
-describe('getFullName', () => {
-  it('returns fallback when name equals text', () => {
-    const result = getFullName({ name: 'test', text: 'test' }, 'fallback');
-    assert.strictEqual(result, 'fallback');
-  });
-
-  it('returns name as fallback when name equals text and no fallback provided', () => {
-    const result = getFullName({ name: 'test', text: 'test' });
-    assert.strictEqual(result, 'test');
-  });
-
-  it('extracts inline code that includes the name', () => {
-    const result = getFullName({
-      name: 'myFunc',
-      text: 'This is `myFunc(param1, param2)` function',
-    });
-    assert.strictEqual(result, 'myFunc');
-  });
-
-  it('handles inline code with extra content after name', () => {
-    const result = getFullName({
-      name: 'authenticate',
-      text: 'The `authenticate(user, password)` method',
-    });
-    assert.strictEqual(result, 'authenticate');
-  });
-
-  it('strips quotes from the beginning', () => {
-    const result = getFullName({
-      name: 'func',
-      text: 'The `"func"()` method',
-    });
-    assert.strictEqual(result, 'func');
-  });
-
-  it('strips single quotes from the beginning', () => {
-    const result = getFullName({
-      name: 'func',
-      text: "The `'func'()` method",
-    });
-    assert.strictEqual(result, 'func');
-  });
-
-  it('strips "new" keyword from the beginning', () => {
-    const result = getFullName({
-      name: 'Constructor',
-      text: 'The `new Constructor()` call',
-    });
-    assert.strictEqual(result, 'Constructor');
-  });
-
-  it('strips "new " with space from the beginning', () => {
-    const result = getFullName({
-      name: 'MyClass',
-      text: 'The `new MyClass(param)` constructor',
-    });
-    assert.strictEqual(result, 'MyClass');
-  });
-
-  it('returns fallback when no inline code found', () => {
-    const result = getFullName(
-      {
-        name: 'func',
-        text: 'This is a function without code blocks',
+describe('createSignatureCodeBlock', () => {
+  it('highlights the signature, its code embedded as markup', async () => {
+    // Signatures are highlighted by the Shiki plugin of `jsx-ast`
+    await loadMarkdownPlugins({
+      name: 'jsx-ast',
+      markdown: {
+        rehypePlugins: [
+          import.meta.resolve('@doc-kit/core/plugins/shiki/rehype.mjs'),
+        ],
       },
-      'fallback'
-    );
-    assert.strictEqual(result, 'fallback');
-  });
-
-  it('returns fallback when inline code does not include name', () => {
-    const result = getFullName(
-      {
-        name: 'myFunc',
-        text: 'This is `otherFunc()` function',
-      },
-      'fallback'
-    );
-    assert.strictEqual(result, 'fallback');
-  });
-
-  it('handles empty inline code', () => {
-    const result = getFullName(
-      {
-        name: 'func',
-        text: 'This has `` empty code',
-      },
-      'fallback'
-    );
-    assert.strictEqual(result, 'fallback');
-  });
-
-  it('handles multiple inline code blocks, uses first match', () => {
-    const result = getFullName({
-      name: 'func',
-      text: 'This has `func()` and `other()` code',
     });
-    assert.strictEqual(result, 'func');
-  });
 
-  it('handles complex inline code with parameters', () => {
-    const result = getFullName({
-      name: 'processData',
-      text: 'The `processData(input, options = {})` method processes data',
+    const block = createSignatureCodeBlock('fn', {
+      params: [{ name: 'a' }],
+      return: { type: 'string' },
     });
-    assert.strictEqual(result, 'processData');
-  });
 
-  it('strips both quotes and new keyword', () => {
-    const result = getFullName({
-      name: 'MyClass',
-      text: '`"new MyClass"()`',
-    });
-    assert.strictEqual(result, 'MyClass');
-  });
+    assert.deepStrictEqual(block.properties, { className: ['signature'] });
 
-  it('handles text with no backticks', () => {
-    const result = getFullName(
-      {
-        name: 'func',
-        text: 'This function does something',
-      },
-      'fallbackValue'
+    const [pre] = block.children;
+    const [code] = pre.children;
+
+    assert.match(pre.properties.class, /^shiki /);
+    assert.equal(code.type, 'mdxJsxFlowElement');
+    assert.ok(
+      code.attributes.some(({ name }) => name === 'dangerouslySetInnerHTML')
     );
-    assert.strictEqual(result, 'fallbackValue');
   });
 });

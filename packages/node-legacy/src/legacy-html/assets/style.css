@@ -1032,7 +1032,6 @@ kbd {
 }
 
 .copy-button {
-  outline: none;
   font-size: 10px;
   color: #fff;
   background-color: var(--green1);
@@ -1053,6 +1052,11 @@ kbd {
 
 .copy-button:hover {
   background-color: var(--green2);
+}
+
+.copy-button:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
 }
 
 :root:not(.has-js) .copy-button {

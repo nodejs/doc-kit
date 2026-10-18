@@ -23,6 +23,55 @@ convention). Two things to know about the result:
   index alongside the pages by targeting both generators — `target: ['html',
 'orama-db']`, so the search box has data to query.
 
+## Cache the assets
+
+Every file the `html` generator writes to `assets/` (scripts, stylesheets,
+fonts) is named after a hash of its content, so a changed file always gets a
+new name. Serve that directory with a long-lived, immutable cache, and let
+everything else (the pages, the search index) revalidate:
+
+```
+/assets/*   Cache-Control: public, max-age=31536000, immutable
+```
+
+Most hosts default to revalidating every file on every load instead, which
+costs a request per asset each time a new tab opens the site. On Vercel:
+
+```json displayName="vercel.json"
+{
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Within a visit, moving between pages loads no assets at all: the site
+navigates client-side, swapping in the next page's content.
+
+## Compress the pages
+
+doc-kit doesn't minify its output by default: compressed (gzip or brotli), as
+hosts serve it, it is far smaller than minifying would make it.
+
+Cloudflare, Vercel, Netlify, and GitHub Pages compress on their own, and so
+does `npx serve out`. If you serve the output yourself, turn compression on:
+
+- **nginx:** `gzip on;` compresses HTML; add the other types with
+  `gzip_types text/css application/javascript application/json;`.
+- **Caddy:** `encode zstd gzip`.
+- **Apache:** with `mod_deflate`,
+  `AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json`.
+- **Amazon S3:** serve the bucket through CloudFront, with **Compress objects
+  automatically** on.
+
 ## Tell doc-kit its public URL
 
 Set `baseURL` to where the site will live. Generators that emit absolute

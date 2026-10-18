@@ -15,14 +15,17 @@ npx @doc-kit/cli generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o ou
 | [`html`](./generators/html.md)                   | The modern documentation site: server-rendered, hydrated, themeable. |
 | [`orama-db`](./generators/orama-db.md)           | The search index behind the `html` site's search box.                |
 | [`llms-txt`](./generators/llms-txt.md)           | An [`llms.txt`](https://llmstxt.org/) index for language models.     |
+| [`llms-txt-full`](./generators/llms-txt-full.md) | Every page's Markdown in one `llms-full.txt`, for language models.   |
 | [`sitemap`](./generators/sitemap.md)             | A `sitemap.xml` for search engines.                                  |
 | [`section-pages`](./generators/section-pages.md) | The `html` site and sitemap, plus one page per section of a module.  |
 
 ### JSON ([`@doc-kit/core`](./packages/core.md))
 
-| Target                                       | Output                                                   |
-| -------------------------------------------- | -------------------------------------------------------- |
-| [`json-simple`](./generators/json-simple.md) | A simplified JSON rendering of the parsed documentation. |
+| Target                                       | Output                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------ |
+| [`json`](./generators/json.md)               | One schema-described JSON document per source file.                |
+| [`json-all`](./generators/json-all.md)       | Those documents bundled into a single `all.json`.                  |
+| [`json-simple`](./generators/json-simple.md) | A dump of the parsed metadata entries, for debugging the pipeline. |
 
 ### Legacy ([`@node-core/doc-kit-legacy`](./packages/node-legacy.md))
 

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { GITHUB_EDIT_URL } from '@doc-kit/core/utils/configuration/templates.mjs';
 
+import { rehypeOptions } from '../utils/rehypeOptions.mjs';
 import { generate, processChunk } from './generate.mjs';
 
 /**
@@ -33,6 +34,17 @@ export default {
   },
 
   hasParallelProcessor: true,
+
+  // Renders the pages' Markdown into HTML, highlighting their code. It takes
+  // no configured plugins, which would change the legacy output
+  markdown: {
+    remarkPlugins: ['remark-parse'],
+    rehypePlugins: [
+      ['remark-rehype', rehypeOptions],
+      './plugins/shiki.mjs',
+      ['rehype-stringify', { allowDangerousHtml: true }],
+    ],
+  },
 
   generate,
   processChunk,

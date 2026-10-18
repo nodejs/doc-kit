@@ -1,5 +1,39 @@
 # @node-core/doc-kit
 
+## 2.0.6
+
+### Patch Changes
+
+- Updated dependencies [[`6d5f9d1`](https://github.com/nodejs/doc-kit/commit/6d5f9d17d9f265c62db0f878c4e03903881b11c9), [`c50e75f`](https://github.com/nodejs/doc-kit/commit/c50e75f8f50c84b6ff3b16b84059bd0f53ca5d1c), [`a4c9684`](https://github.com/nodejs/doc-kit/commit/a4c9684fd46f14b3bcbaf2e8f01a246a47ee27cd)]:
+  - @doc-kit/core@1.3.0
+
+## 2.0.5
+
+### Patch Changes
+
+- [#1142](https://github.com/nodejs/doc-kit/pull/1142) [`3b3a4e9`](https://github.com/nodejs/doc-kit/commit/3b3a4e9a3b1ca93110dfa2907106ac6d49ba4997) Thanks [@avivkeller](https://github.com/avivkeller)! - fix(sitemap): emit fully resolved page URLs
+
+## 2.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`615aabe`](https://github.com/nodejs/doc-kit/commit/615aabeb1955a8028146e26fd4589c1172f58367)]:
+  - @doc-kit/core@1.2.1
+
+## 2.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47), [`2a356c3`](https://github.com/nodejs/doc-kit/commit/2a356c356858c631c45f1826edfa42a24b435d51)]:
+  - @doc-kit/core@1.2.0
+
+## 2.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`0a9dc37`](https://github.com/nodejs/doc-kit/commit/0a9dc37dc96f8044c76c3ca9b35e97895a87d1fd), [`da5d8e6`](https://github.com/nodejs/doc-kit/commit/da5d8e63d0d33fe7a95c46afb8d5140d576827b4)]:
+  - @doc-kit/core@1.1.0
+
 ## 2.0.1
 
 ### Patch Changes

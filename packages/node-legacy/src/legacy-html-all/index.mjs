@@ -1,7 +1,7 @@
 'use strict';
 
-import { generate } from './generate.mjs';
 import legacyHtml from '../legacy-html/index.mjs';
+import { generate } from './generate.mjs';
 
 /**
  * This generator generates the legacy HTML pages of the legacy API docs

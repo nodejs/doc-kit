@@ -1,5 +1,40 @@
 # @node-core/doc-kit-legacy
 
+## 1.1.0
+
+### Minor Changes
+
+- [#1156](https://github.com/nodejs/doc-kit/pull/1156) [`6d5f9d1`](https://github.com/nodejs/doc-kit/commit/6d5f9d17d9f265c62db0f878c4e03903881b11c9) Thanks [@ovflowd](https://github.com/ovflowd)! - Builds take about half the memory and a third of the time (measured on the Node.js API docs): Shiki registers each language once code in it is highlighted, highlighted code reaches pages as static markup rather than a tree per token, `all.html` is rendered by the worker pool, output is no longer minified by default (serve it compressed instead), idle workers end after 250ms, and each worker's heap is limited to 512MB, which Node.js's `--max-old-space-size` raises.
+
+### Patch Changes
+
+- [#1157](https://github.com/nodejs/doc-kit/pull/1157) [`a4c9684`](https://github.com/nodejs/doc-kit/commit/a4c9684fd46f14b3bcbaf2e8f01a246a47ee27cd) Thanks [@ovflowd](https://github.com/ovflowd)! - Add a `markdown` option to add remark, rehype, and recma plugins to the generators processing Markdown, or configure the ones they use, such as Shiki. The `@doc-kit/core` modules the generators' pipelines replace are removed (`utils/remark.mjs`, `utils/remark-shiki.mjs`, and `utils/highlighter.mjs`), and `utils/type-annotations` moves to `plugins/type-annotations`
+- Updated dependencies [[`6d5f9d1`](https://github.com/nodejs/doc-kit/commit/6d5f9d17d9f265c62db0f878c4e03903881b11c9), [`c50e75f`](https://github.com/nodejs/doc-kit/commit/c50e75f8f50c84b6ff3b16b84059bd0f53ca5d1c), [`a4c9684`](https://github.com/nodejs/doc-kit/commit/a4c9684fd46f14b3bcbaf2e8f01a246a47ee27cd)]:
+  - @doc-kit/core@1.3.0
+
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`615aabe`](https://github.com/nodejs/doc-kit/commit/615aabeb1955a8028146e26fd4589c1172f58367)]:
+  - @doc-kit/core@1.2.1
+
+## 1.0.3
+
+### Patch Changes
+
+- [#1079](https://github.com/nodejs/doc-kit/pull/1079) [`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47) Thanks [@avivkeller](https://github.com/avivkeller)! - feat: the `json` and `json-all` generators
+- Updated dependencies [[`c4ec767`](https://github.com/nodejs/doc-kit/commit/c4ec76753c523cccb636a7f294669ec81d77dd47), [`2a356c3`](https://github.com/nodejs/doc-kit/commit/2a356c356858c631c45f1826edfa42a24b435d51)]:
+  - @doc-kit/core@1.2.0
+
+## 1.0.2
+
+### Patch Changes
+
+- [#1087](https://github.com/nodejs/doc-kit/pull/1087) [`40c4397`](https://github.com/nodejs/doc-kit/commit/40c4397eda625dccbabb8e881e9bcb69a8fac6fa) Thanks [@OmerDavidson](https://github.com/OmerDavidson)! - Show a focus outline on the code block copy button
+- Updated dependencies [[`0a9dc37`](https://github.com/nodejs/doc-kit/commit/0a9dc37dc96f8044c76c3ca9b35e97895a87d1fd), [`da5d8e6`](https://github.com/nodejs/doc-kit/commit/da5d8e63d0d33fe7a95c46afb8d5140d576827b4)]:
+  - @doc-kit/core@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes

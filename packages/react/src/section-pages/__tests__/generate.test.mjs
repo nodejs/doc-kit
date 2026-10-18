@@ -191,6 +191,36 @@ describe('section-pages generate', () => {
     assert.equal(readFile.content.children[3].children[0].url, '#class-fsdir');
   });
 
+  it('re-targets type annotation links authored for the module page', async () => {
+    const input = createModule();
+    const readFile = input[2];
+
+    readFile.content.children.push({
+      type: 'typeAnnotation',
+      value: 'string|Buffer',
+      data: {
+        links: [
+          { href: 'https://example.com' },
+          { href: 'buffer.html#class-buffer' },
+        ],
+      },
+    });
+
+    const output = await generate(input);
+    const chunk = output.find(e => e.path === '/fs/readFile');
+
+    assert.deepEqual(
+      chunk.content.children[2].data.links.map(({ href }) => href),
+      ['https://example.com', '../buffer.html#class-buffer']
+    );
+
+    // The full page keeps its own links
+    assert.equal(
+      readFile.content.children[2].data.links[1].href,
+      'buffer.html#class-buffer'
+    );
+  });
+
   it('never splits excluded modules', async () => {
     getConfig('section-pages').exclude = ['fs'];
 

@@ -2,11 +2,11 @@ import NavBar from '@node-core/ui-components/Containers/NavBar';
 import styles from '@node-core/ui-components/Containers/NavBar/index.module.css';
 import GitHubIcon from '@node-core/ui-components/Icons/Social/GitHub';
 
-import SearchBox from './SearchBox';
-import ThemeToggle from './ThemeToggle.jsx';
-
 import { repository, showSearchBox, navigation } from '#theme/config';
 import Logo from '#theme/Logo';
+
+import SearchBox from './SearchBox';
+import ThemeToggle from './ThemeToggle.jsx';
 
 /**
  * NavBar component that displays the headings, search, etc.

@@ -18,4 +18,4 @@ The `legacy-html` generator creates legacy HTML documentation pages for Node.js 
 - `index` {Array} Array of `{ api, section }` objects defining the
   documentation structure.
 - `minify` {boolean} Whether to minify the output HTML. Inherited from
-  `global`. **Default:** `true`.
+  `global`. **Default:** `false`.

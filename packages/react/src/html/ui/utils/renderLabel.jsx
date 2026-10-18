@@ -16,11 +16,17 @@ export const renderLabel = label => {
   }
 
   // Odd-indexed segments sat between a pair of backticks.
-  return segments.map((segment, index) =>
-    index % 2 ? (
-      <code key={`code:${segment}`}>{segment}</code>
+  return segments.map((segment, index) => {
+    if (!segment) {
+      return null;
+    }
+
+    return index % 2 ? (
+      // oxlint-disable-next-line react-x/no-array-index-key -- the label is a fixed string, so the segment list never reorders
+      <code key={index}>{segment}</code>
     ) : (
-      <span key={`text:${segment}`}>{segment}</span>
-    )
-  );
+      // oxlint-disable-next-line react-x/no-array-index-key -- the label is a fixed string, so the segment list never reorders
+      <span key={index}>{segment}</span>
+    );
+  });
 };

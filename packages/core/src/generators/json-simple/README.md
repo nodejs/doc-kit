@@ -6,4 +6,4 @@ The `json-simple` generator creates a simplified JSON version of the API documen
 
 - `output` {string} The directory where `api-docs.json` will be written.
 - `minify` {boolean} Whether to minify the output JSON. Inherited from
-  `global`. **Default:** `true`.
+  `global`. **Default:** `false`.
