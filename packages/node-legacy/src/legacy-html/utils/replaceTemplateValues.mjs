@@ -1,6 +1,7 @@
 'use strict';
 
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { normalize } from 'verkit';
 
 import {
   buildToC,
@@ -28,7 +29,7 @@ export const replaceTemplateValues = (
     .replace('__ID__', api)
     .replace(/__FILENAME__/g, api)
     .replace('__SECTION__', section)
-    .replace(/__VERSION__/g, `v${config.version.version}`)
+    .replace(/__VERSION__/g, `v${normalize(config.version)}`)
     .replace(/__TOC__/g, tableOfContents.wrapToC(toc))
     .replace(/__GTOC__/g, nav)
     .replace('__CONTENT__', content)

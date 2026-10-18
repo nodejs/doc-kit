@@ -1,6 +1,6 @@
 'use strict';
 
-import { coerce, major } from 'semver';
+import { coerce, getMajor } from 'verkit';
 
 import { transformNodeToString } from './unist.mjs';
 
@@ -45,7 +45,7 @@ export const groupNodesByModule = nodes => {
 /**
  * Parses the SemVer string into a Node.js-alike version
  *
- * @param {import('semver').SemVer} version The version to be parsed
+ * @param {import('verkit').SemVer} version The version to be parsed
  */
 export const getVersionFromSemVer = version =>
   version.minor === 0
@@ -59,8 +59,8 @@ export const getVersionFromSemVer = version =>
  * This is a safe fallback to ensure that we always have a SemVer compatible version
  * even if the input is not a valid SemVer string
  *
- * @param {string|import('semver').SemVer} version SemVer compatible version (maybe)
- * @returns {import('semver').SemVer} SemVer compatible version
+ * @param {string|import('verkit').SemVer} version SemVer compatible version (maybe)
+ * @returns {import('verkit').SemVer} SemVer compatible version
  */
 export const coerceSemVer = version => {
   const coercedVersion = coerce(version);
@@ -76,12 +76,12 @@ export const coerceSemVer = version => {
 /**
  * Gets compatible versions for an entry
  *
- * @param {string | import('semver').SemVer} introduced
+ * @param {string | import('verkit').SemVer} introduced
  * @param {Array<import('../parsers/types').ReleaseEntry>} releases
  * @returns {Array<import('../parsers/types').ReleaseEntry>}
  */
 export const getCompatibleVersions = (introduced, releases) => {
-  const coercedMajor = major(coerceSemVer(introduced));
+  const coercedMajor = getMajor(coerceSemVer(introduced));
   // All Node.js versions that support the current API; If there's no "introduced_at" field,
   // we simply show all versions, as we cannot pinpoint the exact version
   return releases.filter(release => release.version.major >= coercedMajor);

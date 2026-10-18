@@ -1,5 +1,6 @@
 import Select from '@node-core/ui-components/Common/Select';
 import SideBar from '@node-core/ui-components/Containers/Sidebar';
+import { normalize } from 'verkit';
 
 import {
   project,
@@ -114,7 +115,7 @@ const Sidebar = ({ metadata }) => {
   const remote = useRemoteConfig();
   const availableVersions = remote?.versions ?? versions;
 
-  const currentVersion = `v${version.version}`;
+  const currentVersion = `v${normalize(version)}`;
 
   // Filter versions by compatibility and resolve per-page URL
   const compatibleVersions = availableVersions

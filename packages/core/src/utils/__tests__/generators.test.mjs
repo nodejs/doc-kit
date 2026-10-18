@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { normalize } from 'verkit';
+
 import {
   getEntryDescription,
   groupNodesByModule,
@@ -103,17 +105,17 @@ describe('getVersionFromSemVer', () => {
 describe('coerceSemVer', () => {
   it('returns valid semver unchanged', () => {
     const result = coerceSemVer('1.2.3');
-    assert.equal(result.version, '1.2.3');
+    assert.equal(normalize(result), '1.2.3');
   });
 
   it('coerces invalid version to fallback', () => {
     const result = coerceSemVer('invalid');
-    assert.equal(result.version, '0.0.0');
+    assert.equal(normalize(result), '0.0.0');
   });
 
   it('handles null input', () => {
     const result = coerceSemVer(null);
-    assert.equal(result.version, '0.0.0');
+    assert.equal(normalize(result), '0.0.0');
   });
 });
 
