@@ -5,7 +5,11 @@ import shikiConfig from '@doc-kit/core/shiki.config.mjs';
 import { h as createElement } from 'hastscript';
 import { SKIP, visit } from 'unist-util-visit';
 
-const highlighter = await createHighlighter();
+const [lightTheme, darkTheme] = shikiConfig.themes;
+
+const highlighter = await createHighlighter({
+  themes: { light: lightTheme, dark: darkTheme },
+});
 
 // This is what Remark will use as prefix within a <pre> className
 // to attribute the current language of the <pre> element
@@ -93,8 +97,9 @@ export default function rehypeShikiji() {
         preElement.children[0].value,
         {
           lang: highlighter.resolveLanguage(languageId),
-          // Allows support for dual themes (light, dark) for Shiki
-          themes: { light: shikiConfig.themes[0], dark: shikiConfig.themes[1] },
+          // Allows support for dual themes (light, dark) for Shiki. Given by
+          // name, as Shiki parses a theme object again for every highlight
+          themes: { light: lightTheme.name, dark: darkTheme.name },
         }
       );
 
