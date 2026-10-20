@@ -1,4 +1,3 @@
-import { strictEqual } from 'assert';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../../constants.mjs';
@@ -21,14 +20,11 @@ describe('github', () => {
       timestamp: Date.now(),
     });
 
-    const callsArgs = process.stdout.write.mock.calls.map(
-      call => call.arguments[0]
-    );
-
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
-      callsArgs[0].trim(),
-      '::debug::[00:00:00.000] \x1B[34mDEBUG\x1B[39m: Test message'
+    t.assert.callCount(process.stdout.write, 1);
+    t.assert.nthCalledWith(
+      process.stdout.write,
+      1,
+      '::debug::[00:00:00.000] \x1B[34mDEBUG\x1B[39m: Test message\n'
     );
   });
 
@@ -47,14 +43,11 @@ describe('github', () => {
       timestamp: Date.now(),
     });
 
-    const callsArgs = process.stdout.write.mock.calls.map(
-      call => call.arguments[0]
-    );
-
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
-      callsArgs[0].trim(),
-      '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message'
+    t.assert.callCount(process.stdout.write, 1);
+    t.assert.nthCalledWith(
+      process.stdout.write,
+      1,
+      '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message\n'
     );
   });
 
@@ -74,14 +67,11 @@ describe('github', () => {
       timestamp: Date.now(),
     });
 
-    const callsArgs = process.stdout.write.mock.calls.map(
-      call => call.arguments[0]
-    );
-
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
-      callsArgs[0].trim(),
-      '::error ::[00:00:00.000] \x1B[35mERROR\x1B[39m: Test message'
+    t.assert.callCount(process.stdout.write, 1);
+    t.assert.nthCalledWith(
+      process.stdout.write,
+      1,
+      '::error ::[00:00:00.000] \x1B[35mERROR\x1B[39m: Test message\n'
     );
   });
 
@@ -101,14 +91,11 @@ describe('github', () => {
       timestamp: Date.now(),
     });
 
-    const callsArgs = process.stdout.write.mock.calls.map(
-      call => call.arguments[0]
-    );
-
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
-      callsArgs[0].trim(),
-      '::error ::[00:00:00.000] \x1B[31mFATAL\x1B[39m: Test message'
+    t.assert.callCount(process.stdout.write, 1);
+    t.assert.nthCalledWith(
+      process.stdout.write,
+      1,
+      '::error ::[00:00:00.000] \x1B[31mFATAL\x1B[39m: Test message\n'
     );
   });
 
@@ -137,14 +124,11 @@ describe('github', () => {
       timestamp: Date.now(),
     });
 
-    const callsArgs = process.stdout.write.mock.calls.map(
-      call => call.arguments[0]
-    );
-
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
-      callsArgs[0].trim(),
-      '::notice file=test.md,line=1,endLine=1::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message'
+    t.assert.callCount(process.stdout.write, 1);
+    t.assert.nthCalledWith(
+      process.stdout.write,
+      1,
+      '::notice file=test.md,line=1,endLine=1::[00:00:00.000] \x1B[32mINFO\x1B[39m: Test message\n'
     );
   });
 
@@ -173,15 +157,12 @@ describe('github', () => {
       timestamp: Date.now(),
     });
 
-    const callsArgs = process.stdout.write.mock.calls.map(
-      call => call.arguments[0]
-    );
-
-    strictEqual(process.stdout.write.mock.callCount(), 1);
+    t.assert.callCount(process.stdout.write, 1);
     // The message keeps its `,` and `:`, which only separate properties
-    strictEqual(
-      callsArgs[0].trim(),
-      '::notice file=a%2Cb%3Ac%25.md,line=1,endLine=2::[00:00:00.000] \x1B[32mINFO\x1B[39m: 100%25: a, b%0D%0Ac'
+    t.assert.nthCalledWith(
+      process.stdout.write,
+      1,
+      '::notice file=a%2Cb%3Ac%25.md,line=1,endLine=2::[00:00:00.000] \x1B[32mINFO\x1B[39m: 100%25: a, b%0D%0Ac\n'
     );
   });
 
@@ -201,14 +182,11 @@ describe('github', () => {
       module: 'child1',
     });
 
-    const callsArgs = process.stdout.write.mock.calls.map(
-      call => call.arguments[0]
-    );
-
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
-      callsArgs[0].trim(),
-      '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m (child1): Test message'
+    t.assert.callCount(process.stdout.write, 1);
+    t.assert.nthCalledWith(
+      process.stdout.write,
+      1,
+      '::notice ::[00:00:00.000] \x1B[32mINFO\x1B[39m (child1): Test message\n'
     );
   });
 
@@ -228,14 +206,11 @@ describe('github', () => {
       timestamp: Date.now(),
     });
 
-    const callsArgs = process.stdout.write.mock.calls.map(
-      call => call.arguments[0]
-    );
-
-    strictEqual(process.stdout.write.mock.callCount(), 1);
-    strictEqual(
-      callsArgs[0].trim(),
-      '::notice ::[00:00:00.000] INFO: Test message'
+    t.assert.callCount(process.stdout.write, 1);
+    t.assert.nthCalledWith(
+      process.stdout.write,
+      1,
+      '::notice ::[00:00:00.000] INFO: Test message\n'
     );
   });
 });

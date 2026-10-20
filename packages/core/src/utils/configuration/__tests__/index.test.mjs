@@ -95,7 +95,7 @@ describe('config.mjs', () => {
   beforeEach(resetAllMocks);
 
   describe('loadConfigFile', () => {
-    it('should load config from file path', async () => {
+    it('should load config from file path', async t => {
       const mockConfig = { custom: 'config' };
       mockConfigLoad.mock.mockImplementationOnce(async filePath => ({
         config: mockConfig,
@@ -105,12 +105,9 @@ describe('config.mjs', () => {
       const result = await loadConfigFile('path/to/config.mjs');
 
       assert.deepStrictEqual(result, mockConfig);
-      assert.strictEqual(mockConfigLoad.mock.calls.length, 1);
-      assert.strictEqual(
-        mockConfigLoad.mock.calls[0].arguments[0],
-        'path/to/config.mjs'
-      );
-      assert.strictEqual(mockConfigSearch.mock.calls.length, 0);
+      t.assert.callCount(mockConfigLoad, 1);
+      t.assert.nthCalledWith(mockConfigLoad, 1, 'path/to/config.mjs');
+      t.assert.callCount(mockConfigSearch, 0);
     });
 
     it('should merge extends presets underneath the config file', async () => {
@@ -337,7 +334,7 @@ describe('config.mjs', () => {
       assert.strictEqual(config.chunkSize, 1);
     });
 
-    it('should work without config file', async () => {
+    it('should work without config file', async t => {
       const config = await createRunConfiguration({
         version: '20.0.0',
         threads: 4,
@@ -345,8 +342,8 @@ describe('config.mjs', () => {
 
       assert.ok(config);
       assert.strictEqual(config.threads, 4);
-      assert.strictEqual(mockConfigLoad.mock.calls.length, 0);
-      assert.strictEqual(mockConfigSearch.mock.calls.length, 1);
+      t.assert.callCount(mockConfigLoad, 0);
+      t.assert.callCount(mockConfigSearch, 1);
     });
 
     it('should default to project-neutral values', async () => {

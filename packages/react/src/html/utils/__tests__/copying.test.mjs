@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
 
@@ -21,21 +20,21 @@ describe('copyStaticAssets', () => {
     mockCp.mock.mockImplementation(() => Promise.resolve());
   });
 
-  it('does nothing if config.pathsToCopy is not an array', async () => {
+  it('does nothing if config.pathsToCopy is not an array', async t => {
     await copyStaticAssets({ pathsToCopy: undefined });
-    assert.strictEqual(mockCp.mock.callCount(), 0);
+    t.assert.callCount(mockCp, 0);
   });
 
-  it('ignores falsy items in pathsToCopy array', async () => {
+  it('ignores falsy items in pathsToCopy array', async t => {
     const config = {
       output: '/out',
       pathsToCopy: [null, undefined, false, ''],
     };
     await copyStaticAssets(config);
-    assert.strictEqual(mockCp.mock.callCount(), 0);
+    t.assert.callCount(mockCp, 0);
   });
 
-  it('copies simple string paths correctly to the output directory', async () => {
+  it('copies simple string paths correctly to the output directory', async t => {
     const config = {
       output: '/out',
       pathsToCopy: ['src/assets', 'docs/images'],
@@ -43,22 +42,20 @@ describe('copyStaticAssets', () => {
 
     await copyStaticAssets(config);
 
-    assert.strictEqual(mockCp.mock.callCount(), 2);
+    t.assert.callCount(mockCp, 2);
 
-    assert.deepStrictEqual(mockCp.mock.calls[0].arguments, [
-      'src/assets',
-      join('/out', 'assets'),
-      { recursive: true, force: true },
-    ]);
+    t.assert.nthCalledWith(mockCp, 1, 'src/assets', join('/out', 'assets'), {
+      recursive: true,
+      force: true,
+    });
 
-    assert.deepStrictEqual(mockCp.mock.calls[1].arguments, [
-      'docs/images',
-      join('/out', 'images'),
-      { recursive: true, force: true },
-    ]);
+    t.assert.nthCalledWith(mockCp, 2, 'docs/images', join('/out', 'images'), {
+      recursive: true,
+      force: true,
+    });
   });
 
-  it('copies object mappings correctly and strips leading slashes from dest', async () => {
+  it('copies object mappings correctly and strips leading slashes from dest', async t => {
     const config = {
       output: '/out',
       pathsToCopy: [
@@ -71,22 +68,26 @@ describe('copyStaticAssets', () => {
 
     await copyStaticAssets(config);
 
-    assert.strictEqual(mockCp.mock.callCount(), 2);
+    t.assert.callCount(mockCp, 2);
 
-    assert.deepStrictEqual(mockCp.mock.calls[0].arguments, [
+    t.assert.nthCalledWith(
+      mockCp,
+      1,
       'src/custom',
       join('/out', 'dest-folder/custom'),
-      { recursive: true, force: true },
-    ]);
+      { recursive: true, force: true }
+    );
 
-    assert.deepStrictEqual(mockCp.mock.calls[1].arguments, [
+    t.assert.nthCalledWith(
+      mockCp,
+      2,
       'src/another',
       join('/out', 'another-folder'),
-      { recursive: true, force: true },
-    ]);
+      { recursive: true, force: true }
+    );
   });
 
-  it('ignores ENOENT errors silently', async () => {
+  it('ignores ENOENT errors silently', async t => {
     // Simulate an ENOENT error when trying to copy
     mockCp.mock.mockImplementationOnce(() => {
       const err = new Error('File not found');
@@ -99,11 +100,11 @@ describe('copyStaticAssets', () => {
       pathsToCopy: ['missing-file'],
     });
 
-    assert.strictEqual(mockCp.mock.callCount(), 1);
-    assert.strictEqual(mockLogError.mock.callCount(), 0);
+    t.assert.callCount(mockCp, 1);
+    t.assert.callCount(mockLogError, 0);
   });
 
-  it('logs errors that are not ENOENT using the logger', async () => {
+  it('logs errors that are not ENOENT using the logger', async t => {
     // Simulate a generic/permission error
     mockCp.mock.mockImplementationOnce(() => {
       throw new Error('Permission denied');
@@ -114,12 +115,12 @@ describe('copyStaticAssets', () => {
       pathsToCopy: ['protected-file'],
     });
 
-    assert.strictEqual(mockCp.mock.callCount(), 1);
-    assert.strictEqual(mockLogError.mock.callCount(), 1);
+    t.assert.callCount(mockCp, 1);
+    t.assert.callCount(mockLogError, 1);
 
-    const logMessage = mockLogError.mock.calls[0].arguments[0];
-    assert.equal(
-      logMessage,
+    t.assert.nthCalledWith(
+      mockLogError,
+      1,
       `[html-generator] Failed to copy asset from protected-file to ${join('/out', 'protected-file')}: Permission denied`
     );
   });
