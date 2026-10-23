@@ -21,6 +21,8 @@
     "prepare": "husky || exit 0",
     "run": "node packages/cli/bin/cli.mjs",
     "watch": "node --watch packages/cli/bin/cli.mjs",
+    "preview:docs": "node scripts/preview.mjs docs",
+    "preview:node": "node scripts/preview.mjs node",
     "docs:build": "node --run build:site",
     "build:site": "bash scripts/deployments/site/main.sh",
     "build:beta": "bash scripts/deployments/beta/main.sh",
