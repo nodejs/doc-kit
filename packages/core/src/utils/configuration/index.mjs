@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { isMainThread } from 'node:worker_threads';
 
 import { cosmiconfig } from 'cosmiconfig';
-import { coerce } from 'semver';
+import { coerce } from 'verkit';
 
 import {
   loadGenerators,

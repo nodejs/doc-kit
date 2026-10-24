@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
-import { SemVer } from 'semver';
+import { parse } from 'verkit';
 
 // The languages Shiki bundles, as `@doc-kit/core` imports them
 const core = createRequire(
@@ -44,8 +44,8 @@ const {
 const config = await setConfig({
   version: 'v22.0.0',
   changelog: [
-    { version: new SemVer('20.0.0'), isLts: true, isCurrent: false },
-    { version: new SemVer('22.0.0'), isLts: false, isCurrent: true },
+    { version: parse('20.0.0'), isLts: true, isCurrent: false },
+    { version: parse('22.0.0'), isLts: false, isCurrent: true },
   ],
 });
 
@@ -78,8 +78,8 @@ describe('buildVersionEntries', () => {
   it('creates version entries with labels and URL templates', () => {
     const result = buildVersionEntries(
       [
-        { version: new SemVer('20.0.0'), isLts: true, isCurrent: false },
-        { version: new SemVer('22.0.0'), isLts: false, isCurrent: true },
+        { version: parse('20.0.0'), isLts: true, isCurrent: false },
+        { version: parse('22.0.0'), isLts: false, isCurrent: true },
       ],
       'https://nodejs.org/docs/latest-{version}/api{path}.html'
     );
@@ -99,7 +99,7 @@ describe('buildVersionEntries', () => {
 
   it('does not append a label suffix for versions that are neither LTS nor Current', () => {
     const result = buildVersionEntries(
-      [{ version: new SemVer('18.0.0'), isLts: false, isCurrent: false }],
+      [{ version: parse('18.0.0'), isLts: false, isCurrent: false }],
       '{version}'
     );
 
@@ -108,7 +108,7 @@ describe('buildVersionEntries', () => {
 
   it('formats minor versions when minor is non-zero', () => {
     const result = buildVersionEntries(
-      [{ version: new SemVer('21.7.0'), isLts: false, isCurrent: false }],
+      [{ version: parse('21.7.0'), isLts: false, isCurrent: false }],
       '{version}'
     );
 

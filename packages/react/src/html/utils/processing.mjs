@@ -1,5 +1,6 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { normalize } from 'verkit';
 
 import { ROUTER_DATA_ATTRIBUTE } from '../ui/constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
@@ -210,7 +211,7 @@ export const populatePage = ({ template, data, dehydrated, assets }) => {
 
   const titleSuffix = populate(config.title, {
     ...config,
-    version: config.version.version,
+    version: normalize(config.version),
   });
 
   const root = resolvePageRoot(data);

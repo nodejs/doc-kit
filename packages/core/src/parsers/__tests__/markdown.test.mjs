@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
 
 import dedent from 'dedent';
-import { SemVer } from 'semver';
+import { parse } from 'verkit';
 
 let content;
 mock.module('../../utils/loaders.mjs', {
@@ -25,8 +25,8 @@ describe('parseChangelog', () => {
     const results = await parseChangelog('...');
 
     assert.deepStrictEqual(results, [
-      { version: new SemVer('24.0.0'), isLts: false },
-      { version: new SemVer('22.0.0'), isLts: true },
+      { version: parse('24.0.0'), isLts: false },
+      { version: parse('22.0.0'), isLts: true },
     ]);
   });
 });

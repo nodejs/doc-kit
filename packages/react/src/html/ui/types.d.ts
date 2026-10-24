@@ -1,6 +1,6 @@
 import { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 import { GlobalConfiguration } from '@doc-kit/core/utils/configuration/types';
-import { SemVer } from 'semver';
+import { SemVer } from 'verkit';
 
 import { Configuration } from '../types';
 

@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { minifyHTML } from '@doc-kit/core/utils/html-minifier.mjs';
 import { getProcessor } from '@doc-kit/core/utils/markdown/processor.mjs';
+import { normalize } from 'verkit';
 
 import { replaceTemplateValues } from '../legacy-html/utils/replaceTemplateValues.mjs';
 import tableOfContents from '../legacy-html/utils/tableOfContents.mjs';
@@ -50,7 +51,7 @@ export async function generate(input) {
     path: 'all',
     added: '',
     section: 'All',
-    version: `v${config.version.version}`,
+    version: `v${normalize(config.version)}`,
     toc: aggregatedToC,
     nav: String(parsedSideNav),
     content: aggregatedContent,

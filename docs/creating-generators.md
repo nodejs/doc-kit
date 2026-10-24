@@ -138,7 +138,7 @@ export async function generate(input, worker) {
 /**
  * Transform metadata entries to MyFormat
  * @param {Array<MetadataEntry>} entries
- * @param {import('semver').SemVer} version
+ * @param {import('verkit').SemVer} version
  * @returns {string}
  */
 function transformToMyFormat(entries, version) {

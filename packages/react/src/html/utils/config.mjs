@@ -9,6 +9,7 @@ import {
 } from '@doc-kit/core/utils/generators.mjs';
 import { parseInline, renderAsHTML } from '@doc-kit/core/utils/inline.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
+import { normalize } from 'verkit';
 
 import { getSortedHeadNodes } from '../../jsx-ast/utils/getSortedHeadNodes.mjs';
 
@@ -181,7 +182,7 @@ export default function createConfigSource(input, server = false) {
     config.editURL &&
     populate(config.editURL, {
       ...config,
-      version: `v${configVersion.version}`,
+      version: `v${normalize(configVersion)}`,
     });
   const pageURL = populate(config.pageURL, config);
 

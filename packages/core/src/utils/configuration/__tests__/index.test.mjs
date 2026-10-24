@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
+import { normalize } from 'verkit';
+
 import logger from '../../../logger/index.mjs';
 
 // Mock dependencies
@@ -291,7 +293,7 @@ describe('config.mjs', () => {
 
       assert.strictEqual(config.global.input, 'custom-src/');
       assert.strictEqual(config.global.output, 'custom-dist/');
-      assert.strictEqual(config.global.version.version, '20.0.0');
+      assert.strictEqual(normalize(config.global.version), '20.0.0');
       assert.deepStrictEqual(config.target, ['html', 'orama-db']);
       assert.strictEqual(config.threads, 2);
       assert.strictEqual(config.web.showSearchBox, true);

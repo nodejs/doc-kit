@@ -1,6 +1,6 @@
 'use strict';
 
-import { coerce } from 'semver';
+import { coerce } from 'verkit';
 
 import { loadFromURL } from '#utils/loaders.mjs';
 

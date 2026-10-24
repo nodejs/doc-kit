@@ -1,4 +1,4 @@
-import type { SemVer } from 'semver';
+import type { SemVer } from 'verkit';
 
 export interface ReleaseEntry {
   version: SemVer;
