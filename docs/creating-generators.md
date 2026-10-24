@@ -524,7 +524,9 @@ A plugin needing asynchronous setup can export an async `load(options)`
 returning the plugin, instead of a default export. The Shiki plugin does, and
 `getHighlighter(name)` (from `@doc-kit/core/plugins/shiki/highlighter.mjs`)
 returns the highlighter of a generator's Shiki plugin, to highlight code as its
-pipeline does.
+pipeline does. It registers Shiki's bundled languages as code in them is
+highlighted, so before using its `shiki` instance directly, pass the language
+through its `resolveLanguage`.
 
 ## File Output
 

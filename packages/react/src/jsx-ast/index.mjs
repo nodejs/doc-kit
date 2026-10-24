@@ -1,10 +1,10 @@
 'use strict';
 
 import { getHighlighter } from '@doc-kit/core/plugins/shiki/highlighter.mjs';
-import { createTypeAnnotationHandler } from '@doc-kit/core/plugins/type-annotations/highlighter.mjs';
 
 import { AST_NODE_TYPES } from './constants.mjs';
 import { generate, processChunk } from './generate.mjs';
+import { embedHighlightedTypes } from './plugins/static-markup.mjs';
 
 /**
  * Generator for converting MDAST to JSX AST.
@@ -40,9 +40,10 @@ export default {
           // within our Markdown and we trust the sources of the Markdown files
           allowDangerousHtml: true,
           passThrough: ['element', ...Object.values(AST_NODE_TYPES.MDX)],
-          // Types are highlighted, with their links embedded
+          // Types are highlighted, with their links embedded, as static
+          // markup (see `./plugins/static-markup.mjs`)
           handlers: {
-            typeAnnotation: createTypeAnnotationHandler(() =>
+            typeAnnotation: embedHighlightedTypes(() =>
               getHighlighter('jsx-ast')
             ),
           },
@@ -52,6 +53,8 @@ export default {
       // The configured rehype plugins run before code blocks are highlighted
       '...',
       '@doc-kit/core/plugins/shiki/rehype.mjs',
+      // Highlighted code reaches the pages as the markup it renders to
+      './plugins/static-markup.mjs',
       './plugins/transformer.mjs',
     ],
     recmaPlugins: ['rehype-recma', 'recma-jsx', '...', 'recma-stringify'],

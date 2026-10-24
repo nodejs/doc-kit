@@ -62,7 +62,7 @@ export const getDefaultConfig = (generators, config) =>
       global: {
         project: detectProject() ?? 'API Docs',
         version: process.version,
-        minify: true,
+        minify: false,
         ref: 'HEAD',
         // Without release history there is nothing to build a version picker
         // from, so generators render single-version output.

@@ -102,21 +102,21 @@ describe('web generate', () => {
     ]);
 
     assert.match(fsHTML, /View As/);
-    assert.match(fsHTML, /href=fs\.json/);
-    assert.match(fsHTML, /href=fs\.md/);
+    assert.match(fsHTML, /href="fs\.json"/);
+    assert.match(fsHTML, /href="fs\.md"/);
     assert.doesNotMatch(notFoundHTML, /View As/);
     // Assets resolve from the page: relative for real pages, from the root
     // for synthetic ones, which are served at any path
-    assert.match(fsHTML, /src=\.\.\/assets\/client-[^ ]+\.js/);
-    assert.match(fsHTML, /href=\.\.\/assets\/[^ ]+\.css/);
-    assert.match(notFoundHTML, /src=\/assets\/client-[^ ]+\.js/);
-    assert.match(fsHTML, /on:idle[^>]*data-island-name=SearchBox/);
+    assert.match(fsHTML, /src="\.\.\/assets\/client-[^"]+\.js"/);
+    assert.match(fsHTML, /href="\.\.\/assets\/[^"]+\.css"/);
+    assert.match(notFoundHTML, /src="\/assets\/client-[^"]+\.js"/);
+    assert.match(fsHTML, /on:idle[^>]*data-island-name="SearchBox"/);
     // The manifest the asset tags were read from does not ship
     assert.equal((await readdir(output)).includes('.vite'), false);
 
     // Fonts are hashed like every other asset, and preloaded from where the
     // bundler actually wrote them
-    const fonts = [...fsHTML.matchAll(/href=\.\.\/(assets\/[^ ]+\.woff2)/g)];
+    const fonts = [...fsHTML.matchAll(/href="\.\.\/(assets\/[^"]+\.woff2)"/g)];
     const written = await readdir(join(output, 'assets'));
 
     assert.strictEqual(fonts.length, FONTS.length);
@@ -150,7 +150,7 @@ describe('web generate', () => {
     assert.match(html, /File system body[\s\S]*Zlib body/);
     assert.doesNotMatch(html, /Index body/);
     // Their tables of contents, concatenated
-    assert.match(html, /href=#fs[\s\S]*href=#zlib/);
+    assert.match(html, /href="#fs"[\s\S]*href="#zlib"/);
     assert.doesNotMatch(html, /View As/);
   });
 
@@ -209,30 +209,30 @@ describe('web generate', () => {
     ]);
 
     // Assets and module files resolve from the nested directory
-    assert.match(readFileHTML, /src=\.\.\/assets\//);
-    assert.match(readFileHTML, /href=\.\.\/fs\.json/);
-    assert.match(readFileHTML, /href=\.\.\/fs\.html#fsreadfile/);
+    assert.match(readFileHTML, /src="\.\.\/assets\//);
+    assert.match(readFileHTML, /href="\.\.\/fs\.json"/);
+    assert.match(readFileHTML, /href="\.\.\/fs\.html#fsreadfile"/);
 
     // The sidebar nests the module's sections, repeating the module itself
     assert.match(readFileHTML, /<details[^>]*open/);
     assert.match(
       readFileHTML,
-      /href=\.\.\/fs\.html[^>]*>(<[^>]*>)*File system/
+      /href="\.\.\/fs\.html"[^>]*>(<[^>]*>)*File system/
     );
-    assert.match(readFileHTML, /href=callback-api\.html/);
+    assert.match(readFileHTML, /href="callback-api\.html"/);
 
     // Previous/next step through the module's sections
     assert.match(readFileHTML, /Callback API/);
-    assert.match(readFileHTML, /href=watch\.html/);
+    assert.match(readFileHTML, /href="watch\.html"/);
     assert.match(fsHTML, /Next/);
 
     // Links were re-targeted for the chunk page
-    assert.match(readFileHTML, /href=watch\.html#fswatch/);
-    assert.match(readFileHTML, /href=\.\.\/net\.html/);
+    assert.match(readFileHTML, /href="watch\.html#fswatch"/);
+    assert.match(readFileHTML, /href="\.\.\/net\.html"/);
 
     // The full page is untouched, and lists sections in its own sidebar
-    assert.match(fsHTML, /href=fs\.json/);
-    assert.match(fsHTML, /href=fs\/readFile\.html/);
+    assert.match(fsHTML, /href="fs\.json"/);
+    assert.match(fsHTML, /href="fs\/readFile\.html"/);
   });
 
   it('renders the configurable head without hardcoded defaults', async context => {
@@ -252,10 +252,10 @@ describe('web generate', () => {
 
     assert.match(html, /Custom project docs/);
     assert.match(html, /https:\/\/example\.com\/og\.png/);
-    assert.match(html, /href=https:\/\/example\.com\/favicon\.ico/);
-    assert.match(html, /content=#abcdef/);
+    assert.match(html, /href="https:\/\/example\.com\/favicon\.ico"/);
+    assert.match(html, /content="#abcdef"/);
     assert.doesNotMatch(html, /nodejs\.org/);
-    assert.match(html, /property=og:type content=website/);
+    assert.match(html, /property="og:type" content="website"/);
   });
 
   it('uses the base URL for absolute client assets', async context => {
@@ -268,8 +268,8 @@ describe('web generate', () => {
     await generate([toPage(content)]);
     const html = await readFile(join(output, '404.html'), 'utf8');
 
-    assert.match(html, /src=https:\/\/example\.com\/docs\/assets\//);
-    assert.match(html, /href=https:\/\/example\.com\/docs\/assets\//);
+    assert.match(html, /src="https:\/\/example\.com\/docs\/assets\//);
+    assert.match(html, /href="https:\/\/example\.com\/docs\/assets\//);
   });
 
   it('applies configured Vite plugins to the client build', async context => {
@@ -367,18 +367,18 @@ describe('web generate', () => {
     assert.match(html, /<article data-custom-ssr>fs:1<\/article>/);
     assert.match(
       html,
-      /<script type=module crossorigin src=\.\/custom\/index\.js>/
+      /<script type="module" crossorigin src="\.\/custom\/index\.js">/
     );
     assert.match(html, /data-router/);
     // The adapter reported no fonts, so there are none to preload
-    assert.doesNotMatch(html, /as=font/);
+    assert.doesNotMatch(html, /as="font"/);
     assert.match(
       html,
-      /<link rel=modulepreload crossorigin href=\.\/custom\/shared\.js>/
+      /<link rel="modulepreload" crossorigin href="\.\/custom\/shared\.js" \/>/
     );
     assert.match(
       html,
-      /<link rel=stylesheet crossorigin href=\.\/custom\/index\.css>/
+      /<link rel="stylesheet" crossorigin href="\.\/custom\/index\.css" \/>/
     );
     assert.deepStrictEqual(calls, ['server', 'client', 'compile']);
   });

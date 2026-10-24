@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * The default `threads` ceiling. Each worker that highlights code holds Shiki's
- * grammars and regex engine (~300MB) on top of the pages it is building, so
- * past a few threads memory, not CPU, is what runs out. `--threads` raises it.
+ * The default `threads` ceiling. Each worker holds a heap of its own, with the
+ * libraries and the pages it is working on, so past a few threads memory, not
+ * CPU, is what runs out. `--threads` raises it.
  */
 export const DEFAULT_MAX_THREADS = 4;
 

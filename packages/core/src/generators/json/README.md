@@ -18,7 +18,7 @@ Files keep the input's directory layout: `doc/api/some/fs.md` becomes `out/some/
 
 - `output` {string} The directory to write the documents to.
 - `minify` {boolean} Whether to minify the output. Inherited from `global`.
-  **Default:** `true`.
+  **Default:** `false`.
 - `repository` {string} The `owner/name` repository source links resolve
   against. Inherited from `global`; without one, `sourceLink.url` is `null`.
 - `schemaURL` {string} Where the schema is published. `{schemaVersion}` is
