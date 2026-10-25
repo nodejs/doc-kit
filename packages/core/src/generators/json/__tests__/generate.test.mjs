@@ -5,10 +5,10 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import Ajv from 'ajv';
-import { globSync } from 'tinyglobby';
 
 import { loadGenerator } from '#generators/loader.mjs';
 import { parseApiDoc } from '#generators/metadata/utils/parse.mjs';
+import { findFiles } from '#utils/glob.mjs';
 import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
 import { getProcessor } from '#utils/markdown/processor.mjs';
 import { QUERIES } from '#utils/queries/index.mjs';
@@ -77,7 +77,7 @@ const find = ({ children }, predicate) => {
 };
 
 describe('json', () => {
-  for (const name of globSync('*.md', { cwd: fileURLToPath(fixtures) })) {
+  for (const name of findFiles('*.md', { cwd: fileURLToPath(fixtures) })) {
     it(`builds a valid document for ${name}`, async t => {
       const document = await buildFixture(name);
 

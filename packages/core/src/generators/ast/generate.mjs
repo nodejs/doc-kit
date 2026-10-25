@@ -3,12 +3,11 @@
 import { readFile } from 'node:fs/promises';
 import { relative, sep } from 'node:path/posix';
 
-import globParent from 'glob-parent';
-import { globSync } from 'tinyglobby';
 import { parse as parseYaml } from 'yaml';
 
 import getConfig from '#utils/configuration/index.mjs';
 import { withExt } from '#utils/file.mjs';
+import { findFiles, globParent } from '#utils/glob.mjs';
 import { getProcessor } from '#utils/markdown/processor.mjs';
 import { QUERIES } from '#utils/queries/index.mjs';
 
@@ -117,7 +116,7 @@ export async function* generate(_, worker) {
   const files = config.input.flatMap(input => {
     const parent = globParent(input);
 
-    return globSync(input, { ignore: config.ignore }).map(child => [
+    return findFiles(input, { ignore: config.ignore }).map(child => [
       child,
       parent,
     ]);
