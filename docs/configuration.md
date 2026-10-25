@@ -12,7 +12,7 @@ Use `--config-file <path>` to load a specific file instead of searching.
 Configuration files can be either:
 
 - **JavaScript** (`.js`, `.mjs`, `.cjs`)
-- **TypeScript** (`.ts`, when `typescript` is installed in the project)
+- **TypeScript** (`.ts`, loaded through Node.js type stripping, so only erasable syntax such as type annotations works)
 - **JSON** (`.json`)
 - **YAML** (`.yaml`, `.yml`, or an extensionless rc file)
 
