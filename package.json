@@ -50,6 +50,6 @@
     "lint-staged": "17.6.0",
     "oxfmt": "0.71.0",
     "oxlint": "1.86.0",
-    "wrangler": "4.148.0"
+    "wrangler": "4.151.1"
   }
 }

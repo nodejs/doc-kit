@@ -3,7 +3,18 @@ packages:
 
 allowBuilds:
   esbuild: false
-  unrs-resolver: false
   workerd: false
 
+# piscina's optional thread-priority binding (one native binary per
+# platform). doc-kit never sets `niceIncrement`, so it's never loaded.
+ignoredOptionalDependencies:
+  - '@napi-rs/nice'
+
+# 7 days, the same cooldown Dependabot uses
+minimumReleaseAge: 10080
+
 minimumReleaseAgeExcludePrune: true
+
+# Refuse a release whose publishing evidence is weaker than an earlier
+# release of the same package (trusted publishing -> token, provenance -> none)
+trustPolicy: no-downgrade
