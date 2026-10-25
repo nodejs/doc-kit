@@ -26,6 +26,8 @@ import {
   ALERT_LEVELS,
   TYPES_WITH_METHOD_SIGNATURES,
   TYPE_PREFIX_LENGTH,
+  WORDS_PER_MINUTE,
+  CJK_CHARACTERS,
 } from '../constants.mjs';
 import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
@@ -38,12 +40,8 @@ import {
 
 const wordSegmenter = new Intl.Segmenter('en', { granularity: 'word' });
 
-// Hiragana, CJK ideographs and Hangul syllables each read as one word
-const CJK_CHARACTERS = /[\u3040-\u309f\u4e00-\u9fff\uac00-\ud7a3]/gu;
-
 /**
- * Estimates the reading time of a page's text, as display text,
- * at 200 words per minute.
+ * Estimates the reading time of a page's text, as display text.
  *
  * @param {string} text
  * @returns {string}
@@ -57,7 +55,7 @@ const readingTime = text => {
     }
   }
 
-  return `${Math.ceil(words / 200)} min read`;
+  return `${Math.ceil(words / WORDS_PER_MINUTE)} min read`;
 };
 
 /**
