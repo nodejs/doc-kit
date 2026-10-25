@@ -1,5 +1,11 @@
 # @node-core/doc-kit-legacy
 
+## 1.1.1
+
+### Patch Changes
+
+- [#1169](https://github.com/nodejs/doc-kit/pull/1169) [`dc73c34`](https://github.com/nodejs/doc-kit/commit/dc73c34e6d676149cff09a5b158696de4cd853f8) Thanks [@araujogui](https://github.com/araujogui)! - `legacy-html` builds about 30% faster: Shiki no longer parses its themes again for every code block.
+
 ## 1.1.0
 
 ### Minor Changes
