@@ -13,6 +13,10 @@ ignoredOptionalDependencies:
 # 3 days. Dependabot waits 7, so its version bumps always clear this
 minimumReleaseAge: 4320
 
+# Published by the Node.js website team, who maintain doc-kit too
+minimumReleaseAgeExclude:
+  - '@node-core/*'
+
 minimumReleaseAgeExcludePrune: true
 
 # Refuse a release whose publishing evidence is weaker than an earlier
