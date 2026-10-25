@@ -10,8 +10,8 @@ allowBuilds:
 ignoredOptionalDependencies:
   - '@napi-rs/nice'
 
-# 7 days, the same cooldown Dependabot uses
-minimumReleaseAge: 10080
+# 3 days. Dependabot waits 7, so its version bumps always clear this
+minimumReleaseAge: 4320
 
 minimumReleaseAgeExcludePrune: true
 
