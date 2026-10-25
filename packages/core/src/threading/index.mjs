@@ -28,6 +28,8 @@ export default function createWorkerPool(threads) {
     // of work on the main thread, such as bundling the site
     idleTimeout: 250,
     resourceLimits: { maxOldGenerationSizeMb: WORKER_HEAP_SIZE },
+    // Nothing reads the pool's run/wait histograms, so don't record them per task
+    recordTiming: false,
     workerData: { logLevel: logger.getLogLevel() },
   });
 }
