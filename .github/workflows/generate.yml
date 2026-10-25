@@ -115,7 +115,7 @@ jobs:
             compare: file-size
     steps:
       - name: Setup environment
-        uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
+        uses: nodejs/web-team/actions/setup-environment@9340c90fe703e7448529fdd6ea07e1fb48c042c7
         with:
           use-version-file: true
           pnpm: true

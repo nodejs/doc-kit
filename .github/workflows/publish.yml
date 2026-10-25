@@ -33,34 +33,14 @@ jobs:
       pull-requests: write # open/update the "Version Packages" PR
       # For npm OIDC (https://docs.npmjs.com/trusted-publishers)
       id-token: write
-    # These steps stay inline instead of using `nodejs/web-team/actions/setup-environment`,
-    # which persists the checkout token and restores the pnpm store from the Actions cache.
-    # Neither belongs in a job that holds `id-token: write`. `changesets/action` pushes
-    # commits and tags through the GitHub API, so it doesn't need the checkout token.
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+      - name: Setup environment
+        uses: nodejs/web-team/actions/setup-environment@9340c90fe703e7448529fdd6ea07e1fb48c042c7
         with:
-          egress-policy: audit
-
-      - name: Git Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: '.nvmrc'
+          use-version-file: true
+          pnpm: true
           registry-url: 'https://registry.npmjs.org'
-          package-manager-cache: false
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          fetch-depth: 0
 
       - name: Create Release Pull Request or Publish
         id: changesets
