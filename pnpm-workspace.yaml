@@ -5,20 +5,14 @@ allowBuilds:
   esbuild: false
   workerd: false
 
-# piscina's optional thread-priority binding (one native binary per
-# platform). doc-kit never sets `niceIncrement`, so it's never loaded.
 ignoredOptionalDependencies:
   - '@napi-rs/nice'
 
-# 3 days. Dependabot waits 7, so its version bumps always clear this
 minimumReleaseAge: 4320
 
-# Published by the Node.js website team, who maintain doc-kit too
 minimumReleaseAgeExclude:
   - '@node-core/*'
 
 minimumReleaseAgeExcludePrune: true
 
-# Refuse a release whose publishing evidence is weaker than an earlier
-# release of the same package (trusted publishing -> token, provenance -> none)
 trustPolicy: no-downgrade
