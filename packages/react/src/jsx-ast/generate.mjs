@@ -1,3 +1,5 @@
+import { isMainThread } from 'node:worker_threads';
+
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
@@ -24,7 +26,11 @@ export async function processChunk(slicedInput, itemIndices) {
   const results = [];
 
   for (const idx of itemIndices) {
-    const { head, entries } = slicedInput[idx];
+    // Building a page changes its entries. A worker has its own copy, but on
+    // the main thread they're the metadata other generators read too
+    const { head, entries } = isMainThread
+      ? structuredClone(slicedInput[idx])
+      : slicedInput[idx];
 
     const { content, ...page } = await buildContent(entries, head);
 
