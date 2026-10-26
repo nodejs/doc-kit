@@ -2,10 +2,7 @@ import Piscina from 'piscina';
 
 import logger from '#logger/index.mjs';
 
-import {
-  WORKER_HEAP_SIZE,
-  WORKER_YOUNG_GENERATION_SIZE,
-} from './constants.mjs';
+import { WORKER_HEAP_SIZE, WORKER_GEN_SIZE } from './constants.mjs';
 
 const poolLogger = logger.child('WorkerPool');
 
@@ -32,7 +29,7 @@ export default function createWorkerPool(threads) {
     idleTimeout: 250,
     resourceLimits: {
       maxOldGenerationSizeMb: WORKER_HEAP_SIZE,
-      maxYoungGenerationSizeMb: WORKER_YOUNG_GENERATION_SIZE,
+      maxYoungGenerationSizeMb: WORKER_GEN_SIZE,
     },
     recordTiming: false,
     workerData: { logLevel: logger.getLogLevel() },
