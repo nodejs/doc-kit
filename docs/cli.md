@@ -40,3 +40,17 @@ Runs the generators and writes their output. Requires a `target` and an
   links).
 - `-p, --threads <n>` {number} Worker threads to use (minimum 1).
 - `--chunk-size <n>` {number} Items per worker thread (minimum 1).
+
+## `doc-kit preview`
+
+```bash
+npx @doc-kit/cli preview [options]
+```
+
+Serves the generated docs over HTTP for local verification. Every `generate`
+option is accepted: when any of them is passed, the docs are built first
+(same semantics as `doc-kit generate`); otherwise the existing output
+directory is served as-is (`./out` by default).
+
+- `--port <n>` {number} Port to serve on. **Default:** `3000`.
+- Every option of [`doc-kit generate`](#doc-kit-generate).
