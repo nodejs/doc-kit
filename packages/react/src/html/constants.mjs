@@ -92,3 +92,14 @@ export const FONTS = [
   'open-sans-latin-wght-italic.woff2',
   'ibm-plex-mono-latin-400-normal.woff2',
 ];
+
+/**
+ * The environment variables that size the thread pools of Vite's native
+ * bundler, read when they start: rolldown's runtime, and the Rayon pool
+ * rolldown and lightningcss share.
+ * @see https://rolldown.rs/guide/troubleshooting
+ */
+export const BUNDLER_THREAD_VARIABLES = [
+  'ROLLDOWN_WORKER_THREADS',
+  'RAYON_NUM_THREADS',
+];
