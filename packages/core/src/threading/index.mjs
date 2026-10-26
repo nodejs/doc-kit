@@ -2,7 +2,10 @@ import Piscina from 'piscina';
 
 import logger from '#logger/index.mjs';
 
-import { WORKER_HEAP_SIZE } from './constants.mjs';
+import {
+  WORKER_HEAP_SIZE,
+  WORKER_YOUNG_GENERATION_SIZE,
+} from './constants.mjs';
 
 const poolLogger = logger.child('WorkerPool');
 
@@ -27,7 +30,10 @@ export default function createWorkerPool(threads) {
     // A worker idle for 250ms ends, so its heap is gone during a long stretch
     // of work on the main thread, such as bundling the site
     idleTimeout: 250,
-    resourceLimits: { maxOldGenerationSizeMb: WORKER_HEAP_SIZE },
+    resourceLimits: {
+      maxOldGenerationSizeMb: WORKER_HEAP_SIZE,
+      maxYoungGenerationSizeMb: WORKER_YOUNG_GENERATION_SIZE,
+    },
     recordTiming: false,
     workerData: { logLevel: logger.getLogLevel() },
   });

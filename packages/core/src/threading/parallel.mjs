@@ -96,17 +96,29 @@ export default function createParallelWorker(
         { generator: name, chunks: chunks.length, chunkSize, threads }
       );
 
-      const runInOneGo = threads <= 1 || items.length <= 2;
+      // On this thread, one chunk at a time, so their work isn't all held at
+      // once, and on a copy, as a worker gets, which the chunk can change
+      if (threads <= 1 || items.length <= 2) {
+        for (const indices of chunks) {
+          const input = structuredClone(indices.map(i => items[i]));
+
+          yield await generator.processChunk(
+            input,
+            input.keys().toArray(),
+            extra
+          );
+        }
+
+        return;
+      }
 
       // Start every chunk immediately, but emit results in submission order.
       // Handle errors as each task settles so a later failure cannot become an
       // unhandled rejection while earlier chunks are still running.
       const tasks = chunks.map(indices => {
-        const task = runInOneGo
-          ? generator.processChunk(items, indices, extra)
-          : pool.run(
-              createTask(items, indices, extra, configuration, specifier, name)
-            );
+        const task = pool.run(
+          createTask(items, indices, extra, configuration, specifier, name)
+        );
 
         return task.then(
           result => ({ result }),

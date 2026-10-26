@@ -39,20 +39,19 @@ export async function generate(input, worker) {
 
   const template = await readFile(config.templatePath, 'utf-8');
 
-  const pages = [...input];
-  const all = config.generateAllPage ? buildAllPage(pages) : undefined;
-
   // The built library and the compiled page programs live here until every
   // page is written; the directory is removed afterwards
   const outDir = await mkdtemp(join(tmpdir(), 'doc-kit-html-'));
 
   try {
     const { assets, tasks } = await buildPrograms({
-      pages,
-      all,
+      pages: [...input],
       outDir,
       config,
     });
+
+    // The pages' programs are compiled, so rendering doesn't need their code
+    input = undefined;
 
     await createPageWriter(worker)(tasks, { template, assets });
   } finally {
@@ -71,12 +70,13 @@ export async function generate(input, worker) {
  *
  * @param {object} options
  * @param {Array<import('./types').Page>} options.pages - Every page, in render order
- * @param {import('./types').ComposedPage} [options.all] - `all.html`, when enabled
  * @param {string} options.outDir - Where the library and the programs are written
  * @param {import('./types').ResolvedWebConfiguration} options.config
  * @returns {Promise<{ assets: import('./types').ClientAssets, tasks: Array<import('./types').PageTask> }>}
  */
-const buildPrograms = async ({ pages, all, outDir, config }) => {
+const buildPrograms = async ({ pages, outDir, config }) => {
+  const all = config.generateAllPage ? buildAllPage(pages) : undefined;
+
   // Every page's metadata, in render order — the sidebar, the index and the
   // cross links need the whole set.
   const datas = [...pages, ...(all ? [all] : [])].map(({ data }) => data);
