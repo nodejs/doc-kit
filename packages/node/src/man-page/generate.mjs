@@ -68,8 +68,8 @@ export async function generate(input) {
   const template = await readFile(config.templatePath, 'utf-8');
 
   const filledTemplate = template
-    .replace('__OPTIONS__', output.options)
-    .replace('__ENVIRONMENT__', output.env);
+    .replace('__OPTIONS__', () => output.options)
+    .replace('__ENVIRONMENT__', () => output.env);
 
   if (config.output) {
     await writeFile(join(config.output, config.fileName), filledTemplate);
