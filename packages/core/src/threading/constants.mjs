@@ -21,4 +21,4 @@ export const WORKER_HEAP_SIZE = 512;
  * from the machine's memory, as if each worker were the only one, so it made up
  * over half of a worker's heap. Node.js's `--max-semi-space-size` replaces it.
  */
-export const WORKER_YOUNG_GENERATION_SIZE = 64;
+export const WORKER_YOUNG_GENERATION_SIZE = 96;
