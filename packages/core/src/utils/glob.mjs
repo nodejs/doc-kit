@@ -28,14 +28,15 @@ export const findFiles = (patterns, { cwd = process.cwd(), ignore } = {}) => {
 /**
  * Returns the directory part of a glob pattern before its first glob segment,
  * e.g. `doc/api` for `doc/api/*.md`, or the parent directory of a plain path.
+ * Like `fs.globSync`, it reads backslashes as separators, never as escapes.
  *
- * @param {string} pattern - A glob pattern with POSIX separators
+ * @param {string} pattern - A glob pattern
  * @returns {string}
  */
 export const globParent = pattern => {
-  const segments = pattern.split('/');
+  const segments = pattern.replaceAll('\\', '/').split('/');
   const index = segments.findIndex(segment => GLOB_SEGMENT.test(segment));
   const parent = segments.slice(0, index === -1 ? -1 : index).join('/');
 
-  return parent || (pattern.startsWith('/') ? '/' : '.');
+  return parent || (segments[0] === '' ? '/' : '.');
 };

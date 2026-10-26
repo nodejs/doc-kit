@@ -62,6 +62,17 @@ describe('globParent', () => {
     assert.strictEqual(globParent('a/{b,c}/*.md'), 'a');
     assert.strictEqual(globParent('a/b/[x-y]*.md'), 'a/b');
     assert.strictEqual(globParent('a/+(b|c)/*.md'), 'a');
+    assert.strictEqual(globParent('a/b?d/*.md'), 'a');
+  });
+
+  it('should treat as plain what fs.globSync matches literally', () => {
+    assert.strictEqual(globParent('a/(b|c)/*.md'), 'a/(b|c)');
+    assert.strictEqual(globParent('a/b+c/*.md'), 'a/b+c');
+  });
+
+  it('should read backslashes as separators, like fs.globSync', () => {
+    assert.strictEqual(globParent('doc\\api\\*.md'), 'doc/api');
+    assert.strictEqual(globParent('C:\\docs\\*.md'), 'C:/docs');
   });
 
   it('should return the parent directory of a plain path', () => {
