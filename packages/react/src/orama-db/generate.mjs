@@ -32,16 +32,26 @@ export async function generate(input) {
         child => child.type === 'paragraph'
       );
 
+      const href = `${entry.path}.html#${entry.heading.data.slug}`;
+
       return {
+        // Orama makes up a time-based id when none is given, which would
+        // change the saved index on every build
+        id: href,
         title: hierarchicalTitle,
         description: paragraph
           ? transformNodeToString(paragraph, true)
           : undefined,
-        href: `${entry.path}.html#${entry.heading.data.slug}`,
+        href,
         siteSection: headings[0].heading.data.name,
       };
     })
   );
+
+  // The saved index follows insertion order, which depends on the order the
+  // generator's input arrives in. Sort without a locale so it is stable on
+  // every machine.
+  documents.sort((a, b) => (a.href < b.href ? -1 : a.href > b.href ? 1 : 0));
 
   // Insert all documents
   await insertMultiple(db, documents);
