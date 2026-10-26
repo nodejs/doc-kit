@@ -17,8 +17,13 @@ const { runGenerators } = createGenerator();
 const DEFAULT_OUTPUT = './out';
 
 /**
- * Whether any option besides `--port` was passed on the command line, meaning
- * the docs should be (re)built before serving
+ * Options that only affect serving, and therefore don't trigger a build
+ */
+const SERVE_OPTIONS = ['host', 'port'];
+
+/**
+ * Whether any option besides the serving ones (`--host`, `--port`) was passed
+ * on the command line, meaning the docs should be (re)built before serving
  *
  * @param {Command} command - The `preview` command
  * @returns {boolean}
@@ -26,7 +31,7 @@ const DEFAULT_OUTPUT = './out';
 const shouldBuild = command =>
   command.options.some(
     option =>
-      option.attributeName() !== 'port' &&
+      !SERVE_OPTIONS.includes(option.attributeName()) &&
       command.getOptionValueSource(option.attributeName()) === 'cli'
   );
 
@@ -39,6 +44,9 @@ const preview = new Command('preview')
     new Option('--port <number>', 'Port to serve on')
       .default(3000)
       .argParser(Number)
+  )
+  .addOption(
+    new Option('--host <host>', 'Host to listen on').default('localhost')
   );
 
 generateOptions.forEach(option => preview.addOption(option));
@@ -66,10 +74,10 @@ export default preview.action(
       );
     }
 
-    const server = await serve(output, { port: opts.port });
+    const server = await serve(output, { host: opts.host, port: opts.port });
 
     logger.info(
-      `Serving ${output} at http://localhost:${server.address().port}/ ` +
+      `Serving ${output} at http://${opts.host}:${server.address().port}/ ` +
         '(Ctrl+C to stop)'
     );
   })

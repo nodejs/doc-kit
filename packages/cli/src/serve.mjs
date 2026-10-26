@@ -114,17 +114,19 @@ export const createStaticServer = directory => {
 };
 
 /**
- * Serves a directory over HTTP
+ * Serves a directory over HTTP. This is a minimal server for local testing
+ * and previewing only — it is not production grade.
  *
  * @param {string} directory - The directory to serve files from
  * @param {Object} [options] - Serving options
+ * @param {string} [options.host='localhost'] - The host to listen on
  * @param {number} [options.port=3000] - The port to listen on (`0` picks a free one)
  * @returns {Promise<import('node:http').Server>} The listening server
  */
-export const serve = (directory, { port = 3000 } = {}) =>
+export const serve = (directory, { host = 'localhost', port = 3000 } = {}) =>
   new Promise((resolvePromise, reject) => {
     const server = createStaticServer(directory);
 
     server.on('error', reject);
-    server.listen(port, () => resolvePromise(server));
+    server.listen(port, host, () => resolvePromise(server));
   });

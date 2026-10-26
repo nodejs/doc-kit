@@ -30,12 +30,13 @@ generator packages, which must be installed alongside this one. Custom
 generators load by import specifier — any module whose default export is a
 generator works as a `--target`.
 
-To verify the output locally, `preview` serves it over HTTP. Passing any
-`generate` option builds first; otherwise the existing output directory
+To verify the output locally, `preview` serves it over HTTP — the built-in
+server is meant for local testing only and is not production grade. Passing
+any `generate` option builds first; otherwise the existing output directory
 (`./out` by default) is served as-is.
 
 ```sh
-npx @doc-kit/cli preview --port 3000
+npx @doc-kit/cli preview --host localhost --port 3000
 ```
 
 ## Contributing

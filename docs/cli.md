@@ -52,5 +52,10 @@ option is accepted: when any of them is passed, the docs are built first
 (same semantics as `doc-kit generate`); otherwise the existing output
 directory is served as-is (`./out` by default).
 
+> **Note:** The preview server is meant for local testing only — it is not
+> production grade. Do not use it to deploy your documentation.
+
 - `--port <n>` {number} Port to serve on. **Default:** `3000`.
+- `--host <host>` {string} Host to listen on (e.g. `localhost`, `0.0.0.0`).
+  **Default:** `'localhost'`.
 - Every option of [`doc-kit generate`](#doc-kit-generate).
