@@ -2,6 +2,7 @@
 
 import { readFile, cp } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import { isMainThread } from 'node:worker_threads';
 
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { writeFile } from '@doc-kit/core/utils/file.mjs';
@@ -33,7 +34,11 @@ export async function processChunk(slicedInput, itemIndices, navigation) {
   const results = [];
 
   for (const idx of itemIndices) {
-    const { head, nodes, headNodes } = slicedInput[idx];
+    // Building the content changes the entries. A worker has its own copy, but
+    // on the main thread they're the metadata other generators read too
+    const { head, nodes, headNodes } = isMainThread
+      ? structuredClone(slicedInput[idx])
+      : slicedInput[idx];
 
     const nav = navigation.replace(
       `class="nav-${head.api}"`,
