@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { LogLevel } from '../../logger/constants.mjs';
 import logger from '../../logger/index.mjs';
+import { WORKER_GEN_SIZE, WORKER_HEAP_SIZE } from '../constants.mjs';
 import createWorkerPool from '../index.mjs';
 
 const reporterSpecifier = fileURLToPath(
@@ -110,6 +111,19 @@ describe('createWorkerPool', () => {
 
       // The configured plugin is the one its pipeline has, which it configures
       deepStrictEqual(plugins, ['rehypeFixture {"configured":true}']);
+    } finally {
+      await pool.destroy();
+    }
+  });
+
+  it("should limit each worker's old and young generation", async () => {
+    const pool = createWorkerPool(1);
+
+    try {
+      deepStrictEqual(pool.options.resourceLimits, {
+        maxOldGenerationSizeMb: WORKER_HEAP_SIZE,
+        maxYoungGenerationSizeMb: WORKER_GEN_SIZE,
+      });
     } finally {
       await pool.destroy();
     }

@@ -229,4 +229,32 @@ describe('createParallelWorker', () => {
 
     await rejects(result, /chunk failed/);
   });
+
+  it('should process one chunk at a time, in order, with a single thread', async () => {
+    let running = 0;
+    let mostRunning = 0;
+
+    const generator = {
+      name: 'sequential',
+      async processChunk(items, indices) {
+        mostRunning = Math.max(mostRunning, ++running);
+
+        await new Promise(resolve => setImmediate(resolve));
+
+        running--;
+
+        return indices.map(index => items[index]);
+      },
+    };
+
+    const worker = createParallelWorker('sequential', generator, null, {
+      threads: 1,
+      chunkSize: 2,
+    });
+
+    const chunks = await collectChunks(worker.stream([1, 2, 3, 4, 5], {}));
+
+    strictEqual(mostRunning, 1);
+    deepStrictEqual(chunks, [[1, 2], [3, 4], [5]]);
+  });
 });
