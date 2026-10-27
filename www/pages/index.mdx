@@ -1,6 +1,330 @@
 ---
 title: doc-kit
 layout: home
+# Sections come from `www/theme/home/sections.jsx`, which reads their numbers
+# from `www/theme/data.mjs`. The outputs are excerpts, with `…` marking what's
+# cut. Notes go here, as MDX comments would reach llms-full.txt and the JSON.
 ---
 
-<Home />
+<Hero
+  badge="Building the next Node.js API docs"
+  badgeLink="https://beta.docs.nodejs.org/"
+  title="The docs toolkit"
+  accent="for APIs."
+>
+
+doc-kit reads your API from Markdown, MDX, TypeScript and JSDoc, and keeps its signatures, typed parameters, stability and history as data. From there it builds a fast, searchable site, JSON, LLMs.txt and anything else a generator can write.
+
+<Actions>
+  <Button href="/getting-started" primary>
+    Get started
+  </Button>
+  <Button href="/introduction">Why doc-kit?</Button>
+</Actions>
+
+```bash displayName="npm"
+npm i -D @doc-kit/cli @doc-kit/generator-react
+```
+
+```bash displayName="pnpm"
+pnpm add -D @doc-kit/cli @doc-kit/generator-react
+```
+
+```bash displayName="yarn"
+yarn add -D @doc-kit/cli @doc-kit/generator-react
+```
+
+```bash displayName="bun"
+bun add -d @doc-kit/cli @doc-kit/generator-react
+```
+
+</Hero>
+
+<UsedBy title="Documenting the JavaScript ecosystem" />
+
+<Stats label="doc-kit in numbers">
+  <Stat fact="requests">
+    requests a month to the Node.js API docs, built with{' '}
+    <span class="dk-nowrap">doc-kit</span>
+  </Stat>
+  <Stat fact="generators">
+    built-in generators, from the website to LLMs.txt. Yours is one module
+  </Stat>
+  <Stat fact="javascript">
+    of gzipped JavaScript up front. Islands load the rest as they hydrate
+  </Stat>
+</Stats>
+
+<Section id="performance" eyebrow="Performance" title="Parse once. Build in parallel.">
+
+doc-kit parses your docs once and builds every output from that one parse. So JSON, the search index and LLMs.txt add only a little to the time the site takes on its own.
+
+<Performance>
+
+- **Works in chunks.** The heavy stages split the work across a pool of worker threads, and the site and JSON are written chunk by chunk.
+- **Runs side by side.** Outputs that don't depend on each other run at the same time, all from the same API entries.
+- **Frees as it goes.** A stage's result is dropped once its last reader is done, so memory is reclaimed while the rest of the build runs.
+
+</Performance>
+
+</Section>
+
+<Section id="outputs" eyebrow="One source, many formats" title="Write it once. Every output agrees.">
+
+Document an API in Markdown, where a heading is a signature, a list holds typed parameters and a comment records history. Use MDX for pages that need components, or let the TypeDoc plugin write the Markdown from your TypeScript and JSDoc. <span class="dk-nowrap">doc-kit</span> parses it all once into typed API entries and builds every output from them.
+
+<Formats>
+
+```md displayName="kittens.md"
+# Kittens
+
+<!--introduced_in=v1.0.0-->
+
+The `kittens` module adopts, feeds, and pets kittens.
+
+## `kittens.adopt(name[, options])`
+
+<!-- YAML
+added: v1.0.0
+changes:
+  - version: v2.0.0
+    pr-url: https://github.com/acme/kittens/pull/42
+    description: Returns a promise.
+-->
+
+> Stability: 1 - Experimental
+
+- `name` {string} The kitten's name.
+- `options` {Object}
+  - `color` {string} Coat color. **Default:** `'tabby'`.
+  - `signal` {AbortSignal} Cancels the adoption.
+- Returns: {Promise} Fulfills with the adopted kitten.
+
+Adopts a kitten, once the paperwork is done.
+```
+
+```ts displayName="kittens.ts"
+// @doc-kit/typedoc turns this into doc-kit Markdown, with its signature,
+// typed parameters and stability.
+
+/**
+ * Adopts a kitten, once the paperwork is done.
+ *
+ * @param name - The kitten's name.
+ * @param options.color - Coat color.
+ * @param options.signal - Cancels the adoption.
+ * @returns The adopted kitten.
+ * @experimental
+ */
+export async function adopt(
+  name: string,
+  options: { color?: string; signal?: AbortSignal } = {}
+): Promise<Kitten> {
+  // …
+}
+```
+
+```js displayName="kittens.js"
+// Plain JavaScript works too: TypeDoc reads the JSDoc types, and
+// @doc-kit/typedoc writes the Markdown from them.
+
+/**
+ * Adopts a kitten, once the paperwork is done.
+ *
+ * @param {string} name The kitten's name.
+ * @param {object} [options]
+ * @param {string} [options.color] Coat color.
+ * @param {AbortSignal} [options.signal] Cancels the adoption.
+ * @returns {Promise<Kitten>} The adopted kitten.
+ * @experimental
+ */
+export async function adopt(name, options = {}) {
+  // …
+}
+```
+
+<CodeTabs languages="html|json|json|md" displayNames="Site|JSON|Search|LLMs.txt">
+
+<SitePreview />
+
+```json
+{
+  "$schema": "https://doc-kit.nodejs.org/schemas/api-doc/1.0.1.json",
+  "id": "kittens",
+  "type": "module",
+  "title": "Kittens",
+  "introducedIn": "v1.0.0",
+  "children": [
+    {
+      "kind": "method",
+      "name": "adopt",
+      "stability": { "index": "1", "description": "Experimental" },
+      "added": ["v1.0.0"],
+      "changes": [
+        {
+          "versions": ["v2.0.0"],
+          "prUrl": "https://github.com/acme/kittens/pull/42",
+          "description": "Returns a promise."
+        }
+      ],
+      "signature": {
+        "parameters": [
+          {
+            "name": "name",
+            "type": {
+              "text": "string",
+              "links": [{ "name": "string", "href": "https://developer.mozilla.org/…" }]
+            },
+            "description": "The kitten's name.",
+            "optional": false
+          },
+          { "name": "options", "optional": true, "properties": [ … ] }
+        ],
+        "returns": {
+          "type": { "text": "Promise", "links": [ … ] },
+          "description": "Fulfills with the adopted kitten."
+        }
+      }
+    }
+  ]
+}
+```
+
+<SearchPreview>
+
+Its entry in the search index:
+
+```json
+{
+  "title": "adopt",
+  "description": "Adopts a kitten, once the paperwork is done.",
+  "href": "/kittens.html#kittensadoptname-options",
+  "siteSection": "Kittens"
+}
+```
+
+</SearchPreview>
+
+```md
+# Kittens Documentation
+
+> API documentation for Kittens.
+
+…
+
+## API Documentations
+
+- [Kittens](https://kittens.dev/kittens.md): The `kittens` module adopts, feeds, and pets kittens.
+```
+
+</CodeTabs>
+
+</Formats>
+
+</Section>
+
+<Section id="features" eyebrow="Features" title="Made for API reference.">
+
+<Features>
+  <Feature art="api" title="Knows a method when it sees one" href="/writing-docs">
+    Classes, methods, events, properties and constructors are recognized by how you write their headings. Parameters, defaults, return values, stability and history become data, not decoration.
+  </Feature>
+  <Feature art="types" title="Types that link themselves" href="/writing-docs#types-that-link-themselves">
+    Write \{string|Buffer\} and each type links to its docs, found in your type map first, then on MDN for JavaScript built-ins and Web APIs, then in your own pages.
+  </Feature>
+  <Feature art="islands" title="Static pages, interactive islands" href="/generators/html#client-side-navigation">
+    Pages are rendered to static HTML at build time and load <Fact name="javascript" /> of gzipped JavaScript up front. The search box, theme switch and sidebar hydrate once the browser is idle, and code blocks the first time you reach for one. Links between pages swap the content in place.
+  </Feature>
+  <Feature art="ai" title="For people and for models" href="/generators/llms-txt">
+    The search index, a sitemap and LLMs.txt, in a short and a full version, come out of the same build as the site. People and models read the same docs.
+  </Feature>
+  <Feature art="theme" title="Make it yours" href="/customization">
+    Swap any part of the page for your own component, use components in MDX, restyle it with CSS or hand Vite your plugins. This site is <span class="dk-nowrap">doc-kit</span>, themed.
+  </Feature>
+  <Feature art="typescript" title="TypeScript and JSDoc, too" href="/packages/typedoc">
+    The experimental <span class="dk-nowrap">@doc-kit/typedoc</span> plugin turns TypeScript and JSDoc-annotated JavaScript into Markdown, so your reference lives next to your guides.
+  </Feature>
+</Features>
+
+</Section>
+
+<Section id="start" eyebrow="Getting started" title="Docs in three steps.">
+
+<Steps>
+
+<Step title="Install">
+
+The CLI and the generators that build the site.
+
+```bash displayName="npm"
+npm i -D @doc-kit/cli @doc-kit/generator-react
+```
+
+```bash displayName="pnpm"
+pnpm add -D @doc-kit/cli @doc-kit/generator-react
+```
+
+```bash displayName="yarn"
+yarn add -D @doc-kit/cli @doc-kit/generator-react
+```
+
+```bash displayName="bun"
+bun add -d @doc-kit/cli @doc-kit/generator-react
+```
+
+</Step>
+
+<Step title="Write">
+
+Markdown, with headings written like signatures and lists like parameters. Or let @doc-kit/typedoc write it from your TypeScript or JSDoc.
+
+```md
+# Kittens
+
+The `kittens` module adopts, feeds, and pets kittens.
+
+## `kittens.pet(kitten[, times])`
+
+- `kitten` {Kitten} The kitten to pet.
+- `times` {number} **Default:** `1`.
+- Returns: {boolean} Whether it purred.
+```
+
+</Step>
+
+<Step title="Generate">
+
+The site and its search index, then a local preview.
+
+```bash
+npx doc-kit generate -t html -t orama-db -i "docs/*.md" -o out
+npx serve out
+```
+
+</Step>
+
+</Steps>
+
+<Actions>
+  <Button href="/getting-started" primary>
+    Read the guide
+  </Button>
+  <Button href="/configuration">Configuration reference</Button>
+</Actions>
+
+</Section>
+
+<Closing title="Built in the open.">
+
+doc-kit is an open source project of the Node.js organization, shaped by the people who use it. Bring an issue, an idea, a generator or a pull request.
+
+<Actions>
+  <Button href="https://github.com/nodejs/doc-kit" primary>
+    doc-kit on GitHub
+  </Button>
+  <Button href="https://github.com/nodejs/doc-kit/blob/main/CONTRIBUTING.md">
+    Contributing guide
+  </Button>
+</Actions>
+
+</Closing>
