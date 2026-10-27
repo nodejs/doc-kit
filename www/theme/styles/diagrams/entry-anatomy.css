@@ -1,0 +1,73 @@
+/* The anatomy of an API entry (`docs/diagrams/entry-anatomy.svg`): its
+   Markdown in an editor and the page doc-kit renders from it in a browser,
+   numbered chips naming each part. A highlight walks through the source a
+   part at a time, 1.2s apart from 0.3s, its chip lighting as a pulse runs
+   in along its leader; a pulse carries each part through the entry into the
+   page, where what it becomes lights 0.6s later, the entry running while
+   they pass through it. The chips go idle top to bottom from 7.2s, the last
+   by 8.7s, and the picture rests until the loop comes round. Without
+   motion, the typed list's step stays lit, filling both the table and the
+   signature's return type. */
+
+.dk-illus-entry-anatomy {
+  .ea-src-0 {
+    --il-at: 0.3s;
+    --il-release: 6.3s;
+  }
+
+  .ea-src-1 {
+    --il-at: 1.5s;
+    --il-release: 5.4s;
+  }
+
+  .ea-src-2 {
+    --il-at: 2.7s;
+    --il-release: 4.5s;
+  }
+
+  .ea-src-3 {
+    --il-at: 3.9s;
+    --il-release: 3.6s;
+  }
+
+  .ea-src-4 {
+    --il-at: 5.1s;
+    --il-release: 2.7s;
+  }
+
+  .ea-src-5 {
+    --il-at: 6.3s;
+    --il-release: 1.8s;
+  }
+
+  /* What each part becomes, as its pulse arrives */
+  .ea-out-0 {
+    --il-at: 0.9s;
+  }
+
+  .ea-out-1 {
+    --il-at: 2.1s;
+  }
+
+  .ea-out-2 {
+    --il-at: 3.3s;
+  }
+
+  .ea-out-3 {
+    --il-at: 4.5s;
+  }
+
+  .ea-out-4 {
+    --il-at: 5.7s;
+  }
+
+  .ea-out-5 {
+    --il-at: 6.9s;
+  }
+
+  .ea-entry {
+    --il-at: 0.9s;
+    --il-run: 5.4s;
+    --il-release: 6.3s;
+  }
+}
