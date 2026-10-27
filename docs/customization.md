@@ -613,11 +613,11 @@ uses most of this page:
   [home page](https://github.com/nodejs/doc-kit/blob/main/www/pages/index.mdx),
   a 404 page, and doc-kit's layout for everything else.
 - A logo and a footer of its own.
-- Islands for the home page's animations and tabs, listed in `components`.
+- Islands for the home page's two animations, and the sections the page is
+  laid out with, all listed in `components`.
 - A stylesheet that swaps the typeface for Inter and keeps doc-kit's neutral
   palette, and a template that preloads Inter instead of Open Sans.
-- A `#theme/site` virtual module with doc-kit's version, for the footer, and
-  the JSON schema's, for the home page.
+- A `#theme/site` virtual module with doc-kit's version, for the footer.
 - A rehype plugin that inlines the diagrams, and `pathsToCopy` for its public
   files, fonts and JSON schemas.
 
