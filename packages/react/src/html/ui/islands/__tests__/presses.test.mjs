@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { holdPresses, PRESS_EVENTS } from '../presses.mjs';
+import { PRESS_EVENTS } from '../../constants.mjs';
+import { holdPresses } from '../presses.mjs';
 
 /**
  * A press event, with what a replay copies from it.
