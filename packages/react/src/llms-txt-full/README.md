@@ -1,9 +1,8 @@
-# `llms-txt-full` Generator
+# llms-full.txt
 
-The `llms-txt-full` generator creates a `llms-full.txt` file holding the Markdown of every page, each preceded by its URL, so Large Language Models (LLMs) can read the whole documentation in one request. Pages are rebuilt from their metadata entries, leaving out the ones other generators create.
+The `llms-txt-full` generator writes the Markdown of every page into one
+`llms-full.txt` file, each page after its URL, so a language model can read all
+of your documentation in a single request.
 
-## Configuring
-
-- `output` {string} The directory where `llms-full.txt` will be written.
-- `pageURL` {string} URL template for the URL preceding each page.
-  **Default:** `'{baseURL}{path}.md'`.
+It is documented with `llms.txt`, on
+[the llms.txt page](https://doc-kit.nodejs.org/generators/llms-txt#llms-fulltxt).

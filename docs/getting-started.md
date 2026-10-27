@@ -1,114 +1,165 @@
 # Getting started
 
-First, install doc-kit and a generator, like so:
+This guide takes you from one Markdown file to a documentation site with
+search, in a few minutes. Run the commands from your project's root, next to
+its `package.json`.
+
+![doc-kit generate writes kittens.html, all.html, 404.html, assets/ and the search index to out/, which any static host serves as is](./diagrams/build-output.svg)
+
+## Install
+
+Install the CLI, and the generators that build the site:
 
 ```bash
 npm install --save-dev @doc-kit/cli @doc-kit/generator-react
 ```
 
-Then, create your configuration file set up for your project:
+`@doc-kit/cli` gives you the `doc-kit` command and the core generators, such
+as `json`. `@doc-kit/generator-react` adds the website and what comes with it:
+the search index, `llms.txt` and a sitemap.
 
-```mjs displayName="doc-kit.config.mjs"
+## Write a page
+
+Create `docs/kittens.md`:
+
+```markdown displayName="docs/kittens.md"
+# Kittens
+
+The `kittens` module adopts, feeds, and pets kittens.
+
+## `kittens.adopt(name[, options])`
+
+<!-- YAML
+added: v1.0.0
+-->
+
+- `name` {string} The kitten's name.
+- `options` {Object}
+  - `color` {string} Coat color. **Default:** `'tabby'`.
+- Returns: {Promise} Fulfills with the adopted kitten.
+
+Adopts a kitten, once the paperwork is done.
+```
+
+It's regular Markdown, and reads as such on GitHub. doc-kit also reads the API
+in it: the heading is a method with its signature, the list holds its typed
+parameters, and the comment is its history.
+[Writing documentation](./writing-docs.md) covers the rest.
+
+> [!TIP]
+> Documenting a TypeScript or JavaScript project?
+> [`@doc-kit/typedoc`](./packages/typedoc.md) writes these pages from your
+> source code and its JSDoc comments; see
+> [Documenting TypeScript](./typescript.md).
+
+## Configure
+
+Create `doc-kit.config.mjs` next to your `package.json`:
+
+```js displayName="doc-kit.config.mjs"
 /** @type {import('@doc-kit/core/utils/configuration/types').Configuration} */
 export default {
-  target: ['html'],
+  target: ['html', 'orama-db'],
 
   global: {
+    project: 'Kittens',
+    version: '1.0.0',
     input: ['docs/**/*.md'],
     output: 'out',
   },
 };
 ```
 
-`doc-kit generate` reads that configuration; every option can also be passed as
-a CLI flag. See the [configuration reference](./configuration.md) for
-everything the file accepts.
+- `target` lists the generators to run: `html` builds the site, and
+  `orama-db` its search index.
+- `input` takes glob patterns, and `output` is the directory to write to.
+- `project` and `version` go into page titles. Without them, doc-kit uses the
+  `name` in your `package.json` and the version of Node.js running it.
 
-## Build and preview it
+`target`, `input`, `output` and `version` also have [CLI](./cli.md) flags,
+which win over the file. The [configuration reference](./configuration.md)
+lists every other option.
 
-With at least one Markdown file under `docs/`, build the site:
-
-```bash
-npx @doc-kit/cli generate
-```
-
-The pages land in `out/`. They use import maps and client-side hydration, so
-serve them over HTTP rather than opening the files from disk; any static server
-works:
+## Build and preview
 
 ```bash
-npx @doc-kit/cli generate -t html -t orama-db -i "docs/*.md" -o out
+npx doc-kit generate
 ```
 
-## Preview it locally
-
-The `html` output uses import maps and client-side hydration, so it must be
-served over HTTP — opening the files directly with `file://` will not work. Any
-static server will do the trick; for example:
+The site is written to `out/`: one page per Markdown file, plus `all.html`
+with every page on one. Its pages load their scripts as modules and hydrate in
+the browser, so serve them over HTTP rather than opening the files from disk:
 
 ```bash
-npx serve out -p 3000
+npx doc-kit preview
 ```
 
-Then open the printed URL (usually <http://localhost:3000>). The
-`legacy-html-all` output from earlier has no such requirement — `out/all.html`
-opens straight from disk.
+Then open <http://localhost:3000/kittens.html>. `preview` serves what
+`generate` built; pass it any `generate` option, such as
+`--config-file doc-kit.config.mjs`, and it builds first. Any other static
+server works too, such as `npx serve out`.
 
-## Customize the `html` generator output
+> [!TIP]
+> Add a `docs/index.md` and it becomes the site's home page, `index.html`.
 
-The power of the `html` generator comes from its customization hooks. Let's walk
-through a couple quick changes.
+## Make it yours
 
-Create a `doc-kit.config.mjs` file at the root of the project.
+To give the site your own logo and colors, add an `html` section to the
+configuration that points at a logo component and a stylesheet:
 
-```mjs displayName="doc-kit.config.mjs"
+```js displayName="doc-kit.config.mjs"
 import { join } from 'node:path';
 
-/** @type {import('@doc-kit/core/src/utils/configuration/types').Configuration} */
+/** @type {import('@doc-kit/core/utils/configuration/types').Configuration} */
 export default {
-  global: {
-    project: 'My Project', // Project name used in titles, the logo, and templates
-  },
+  // target and global as above
 
   html: {
-    head: {
-      html: [
-        // re-write the brand color for effect
-        `<style>
-          :root {
-            --color-brand-100: #f7f1fb;
-            --color-brand-200: #ead9fb;
-            --color-brand-300: #dbbdf9;
-            --color-brand-400: #c79bf2;
-            --color-brand-600: #9756d6;
-            --color-brand-700: #7d3cbe;
-            --color-brand-800: #642b9e;
-            --color-brand-900: #361b52;
-          }
-        </style>`,
-      ],
-    },
-    // use a custom logo component instead of the plain project name
-    // our logo.jsx file like this, just for the demo
-    // export default Logo = () =>
-    //   <svg height="30" width="30" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--color-brand-400)"/></svg>;
+    // Your component in place of the project's name
     imports: {
-      '#theme/Logo': join(import.meta.dirname, './logo.jsx'),
-      // You can also change things such as `#theme/Layout`,
-      // and more!
+      '#theme/Logo': join(import.meta.dirname, 'theme/Logo.jsx'),
     },
+
+    // Bundled after doc-kit's own styles, so your rules win
+    stylesheets: [join(import.meta.dirname, 'theme/styles.css')],
   },
 };
 ```
 
-Open the printed URL (usually <http://localhost:3000>) and your documentation is
-on screen.
+```jsx displayName="theme/Logo.jsx"
+export default () => <strong>Kittens</strong>;
+```
+
+```css displayName="theme/styles.css"
+:root {
+  --color-brand-100: #f7f1fb;
+  --color-brand-200: #ead9fb;
+  --color-brand-300: #dbbdf9;
+  --color-brand-400: #c79bf2;
+  --color-brand-500: #b07ae6;
+  --color-brand-600: #9756d6;
+  --color-brand-700: #7d3cbe;
+  --color-brand-800: #642b9e;
+  --color-brand-900: #361b52;
+}
+```
+
+> [!NOTE]
+> Theme components are compiled for Preact, so `preact` has to resolve from
+> your project. npm usually hoists it there from `@doc-kit/generator-react`;
+> with pnpm, add it yourself with `pnpm add --save-dev preact`.
+
+[Customizing the site](./customization.md) covers the other parts of the page
+you can replace, and the [Website generator](./generators/html.md) lists every
+option.
 
 ## Next steps
 
-- [Writing documentation](./writing-docs.md) — the Markdown conventions that
-  make `doc-kit` more than a static-site generator.
-- [Customizing the site](./customization.md) — your name, logo, navigation,
-  and components instead of the defaults.
-- [Publishing your docs](./publishing.md) — production builds, base URLs, and
-  hosting.
+- [Writing documentation](./writing-docs.md): the conventions that turn
+  Markdown into an API reference.
+- [Customizing the site](./customization.md): navigation, components, MDX and
+  the bundler.
+- [Generators](./generators.md): JSON, `llms.txt`, a sitemap, and every
+  other output doc-kit can build.
+- [Publishing your docs](./publishing.md): hosting, caching and base URLs.
+- [Creating generators](./creating-generators.md): outputs of your own.
