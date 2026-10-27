@@ -1,0 +1,96 @@
+/* doc-kit's logo and mascot, as `Brand.jsx` draws them. Kit, the doc-kit
+   cat, blinks, and snores when asleep. */
+
+.dk-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--dk-fg);
+  font-family: var(--dk-font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.dk-wordmark__cat {
+  width: 1.3em;
+  height: 1.3em;
+  flex: none;
+}
+
+.dk-kitten {
+  --dk-kitten-ink: var(--dk-fg);
+  --dk-kitten-paper: var(--dk-bg);
+
+  display: block;
+  overflow: visible;
+}
+
+.dk-kitten__head,
+.dk-kitten__paws rect {
+  fill: var(--dk-kitten-ink);
+}
+
+.dk-kitten__paws rect {
+  stroke: var(--dk-kitten-paper);
+  stroke-width: 0.8;
+}
+
+.dk-kitten__eyes,
+.dk-kitten__nose {
+  fill: var(--dk-kitten-paper);
+}
+
+.dk-kitten__closed {
+  stroke: var(--dk-kitten-paper);
+}
+
+.dk-kitten__zzz {
+  fill: var(--dk-fg-3);
+}
+
+.dk-kitten__eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dk-blink 6s infinite;
+}
+
+.dk-kitten__zzz text {
+  animation: dk-snore 3.6s ease-in-out infinite;
+
+  &:last-child {
+    animation-delay: 0.6s;
+  }
+}
+
+@keyframes dk-blink {
+  0%,
+  90%,
+  96%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  93% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes dk-snore {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dk-kitten * {
+    animation: none !important;
+  }
+}

@@ -4,6 +4,7 @@
 // site — from sources that live elsewhere in the repo:
 //
 //   docs/*.md                   the authored pages, guides, and reference docs
+//   www/pages/*.mdx             the site's own pages, such as the home page
 //   docs/contributing/*.md      repo-contributor docs, kept under `contributing/`
 //   packages/*/README.md        package READMEs, written to `packages/<dir>.md`
 //   packages/*/src/{,generators/}*/README.md
@@ -21,8 +22,17 @@ import { basename, dirname, join } from 'node:path';
 const ROOT = join(import.meta.dirname, '..');
 const CONTENT = join(ROOT, 'www', 'content');
 
+// Left out of the site: the legacy-format package, whose generators only
+// exist for Node.js's classic layouts, and the generators documented on
+// another generator's page. `www/public/_redirects` sends their old URLs on.
+const EXCLUDE = [
+  'packages/node-legacy/**',
+  'packages/*/src/{,generators/}{llms-txt-full,json-all,json-simple}/**',
+];
+
 const SOURCES = [
   { pattern: 'docs/*.md', rename: basename },
+  { pattern: 'www/pages/*.mdx', rename: basename },
   {
     pattern: 'docs/contributing/*.md',
     rename: file => `contributing/${basename(file)}`,
@@ -45,7 +55,9 @@ const SOURCES = [
 const collectPages = async () => {
   const groups = await Promise.all(
     SOURCES.map(async ({ pattern, rename }) => {
-      const files = await Array.fromAsync(glob(pattern, { cwd: ROOT }));
+      const files = await Array.fromAsync(
+        glob(pattern, { cwd: ROOT, exclude: EXCLUDE })
+      );
 
       return Promise.all(
         files.sort().map(async file => ({

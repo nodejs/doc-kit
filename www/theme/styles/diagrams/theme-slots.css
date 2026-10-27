@@ -1,0 +1,52 @@
+/* Theme slots (`docs/diagrams/theme-slots.svg`): the page exploded into the
+   slots `#theme/Layout` renders, and the footer swapped, as in the example
+   under the figure. By default it renders nothing, a dashed placeholder; at
+   1.2s the alias points at your file, its chip taking the note's place, and
+   the pulse runs in along its leader. At 1.8s your footer fills the slot,
+   solid, and lights, and a pulse drops down the footer's corner to the page,
+   which lights at 2.4s as it renders it. The chip goes at 7.2s and your
+   footer at 7.8s, leaving the placeholder for the next round, and the page
+   is idle by 9s, resting until the loop comes round. Only opacity and light
+   change; the static frame is the swapped page, your footer at its done
+   light. */
+
+.dk-illus-theme-slots {
+  .ts-file {
+    --il-at: 1.2s;
+  }
+
+  .ts-alias,
+  .ts-yours {
+    --il-at: 1.8s;
+  }
+
+  .ts-drop,
+  .ts-page {
+    --il-at: 2.4s;
+  }
+
+  /* The default's note, there whenever your file's chip isn't */
+  .ts-note {
+    opacity: 0;
+    animation: theme-slots-note var(--il-loop) var(--dk-ease) infinite both;
+  }
+}
+
+/* Out over 0.6s from 0.6s, before the chip shows at 1.2s, and back from
+   7.8s, once it has gone */
+@keyframes theme-slots-note {
+  0%,
+  5% {
+    opacity: 1;
+  }
+
+  10%,
+  65% {
+    opacity: 0;
+  }
+
+  67.5%,
+  100% {
+    opacity: 1;
+  }
+}
