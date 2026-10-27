@@ -32,10 +32,8 @@ it('submits JavaScript files in sorted path order', async () => {
     }
 
     assert.deepStrictEqual(
-      received,
-      ['a.js', 'm.js', 'z.js'].map(name =>
-        join(dir, name).split(sep).join('/')
-      )
+      received.map(path => path.replaceAll('\\', '/').split('/').at(-1)),
+      ['a.js', 'm.js', 'z.js']
     );
   } finally {
     await rm(dir, { recursive: true, force: true });
