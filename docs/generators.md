@@ -38,20 +38,20 @@ to the CLI.
 
 From [`@doc-kit/generator-react`](./packages/react.md).
 
-| Generator                                              | Target          | Output                                                                  |
-| ------------------------------------------------------ | --------------- | ----------------------------------------------------------------------- |
-| [llms.txt](./generators/llms-txt.md)                   | `llms-txt`      | An [`llms.txt`](https://llmstxt.org/) index linking to each page.       |
-| [llms-full.txt](./generators/llms-txt.md#llms-fulltxt) | `llms-txt-full` | `llms-full.txt`: every page's Markdown in one file, each after its URL. |
+| Generator                                      | Target          | Output                                                                  |
+| ---------------------------------------------- | --------------- | ----------------------------------------------------------------------- |
+| [llms.txt](./generators/llms-txt.md)           | `llms-txt`      | An [`llms.txt`](https://llmstxt.org/) index linking to each page.       |
+| [llms-full.txt](./generators/llms-txt-full.md) | `llms-txt-full` | `llms-full.txt`: every page's Markdown in one file, each after its URL. |
 
 ## Data
 
 From [`@doc-kit/core`](./packages/core.md), which comes with the CLI.
 
-| Generator                                       | Target        | Output                                                                 |
-| ----------------------------------------------- | ------------- | ---------------------------------------------------------------------- |
-| [JSON](./generators/json.md)                    | `json`        | One JSON document per source file, described by a published schema.    |
-| [JSON bundle](./generators/json.md#json-bundle) | `json-all`    | Every `json` document bundled into one `all.json`.                     |
-| [Debug JSON](./generators/json.md#debug-json)   | `json-simple` | `api-docs.json`, a dump of the API entries for debugging the pipeline. |
+| Generator                                 | Target        | Output                                                                 |
+| ----------------------------------------- | ------------- | ---------------------------------------------------------------------- |
+| [JSON](./generators/json.md)              | `json`        | One JSON document per source file, described by a published schema.    |
+| [JSON bundle](./generators/json-all.md)   | `json-all`    | Every `json` document bundled into one `all.json`.                     |
+| [Debug JSON](./generators/json-simple.md) | `json-simple` | `api-docs.json`, a dump of the API entries for debugging the pipeline. |
 
 ## For Node.js
 
@@ -65,6 +65,21 @@ shaped like it.
 | [Man page](./generators/man-page.md)           | `man-page`     | A man page in mdoc format (`node.1` by default), from a command-line reference page. |
 | [API links](./generators/api-links.md)         | `api-links`    | `apilinks.json`, mapping each exported API to the line defining it in the sources.   |
 | [Addon examples](./generators/addon-verify.md) | `addon-verify` | The C++ addon examples' code blocks, written out with a `binding.gyp` for the tests. |
+
+## Node.js's legacy formats
+
+From [`@node-core/doc-kit-legacy`](./packages/node-legacy.md), which you
+install next to the CLI. These write the HTML pages and JSON files of the
+Node.js API docs in the formats Node.js's original tooling made, for Node.js
+and the tools that read them. For your own docs, use the website and JSON
+generators above.
+
+| Generator                                                  | Target            | Output                                                                   |
+| ---------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------ |
+| [Legacy HTML](./generators/legacy-html.md)                 | `legacy-html`     | A classic Node.js HTML page per source file, with its `assets/`.         |
+| [Legacy single-page HTML](./generators/legacy-html-all.md) | `legacy-html-all` | `all.html`, every legacy HTML page one after another.                    |
+| [Legacy JSON](./generators/legacy-json.md)                 | `legacy-json`     | A classic Node.js JSON file per source file, with descriptions in HTML.  |
+| [Legacy JSON bundle](./generators/legacy-json-all.md)      | `legacy-json-all` | `all.json`, the sections of every legacy JSON file merged into one file. |
 
 ## Pipeline stages
 

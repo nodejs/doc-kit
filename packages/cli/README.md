@@ -17,11 +17,12 @@ and its JSON generators. The other generators live in their own packages,
 which you install next to the CLI. The command above adds the website
 generators; leave `@doc-kit/generator-react` out if you only need JSON.
 
-| Package                                                                 | Generators                                                                  |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [`@doc-kit/core`](https://doc-kit.nodejs.org/packages/core)             | `json`, `json-all`, `json-simple`                                           |
-| [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react) | `html`, `section-pages`, `orama-db`, `sitemap`, `llms-txt`, `llms-txt-full` |
-| [`@node-core/doc-kit`](https://doc-kit.nodejs.org/packages/node)        | `man-page`, `api-links`, `addon-verify`                                     |
+| Package                                                                        | Generators                                                                  |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| [`@doc-kit/core`](https://doc-kit.nodejs.org/packages/core)                    | `json`, `json-all`, `json-simple`                                           |
+| [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react)        | `html`, `section-pages`, `orama-db`, `sitemap`, `llms-txt`, `llms-txt-full` |
+| [`@node-core/doc-kit`](https://doc-kit.nodejs.org/packages/node)               | `man-page`, `api-links`, `addon-verify`                                     |
+| [`@node-core/doc-kit-legacy`](https://doc-kit.nodejs.org/packages/node-legacy) | `legacy-html`, `legacy-html-all`, `legacy-json`, `legacy-json-all`          |
 
 ## Build your docs
 

@@ -33,9 +33,10 @@ parentheses.
   [custom generator](./creating-generators.md). Only `json`, `json-all`, and
   `json-simple` come with the CLI. The others come from packages you install
   next to it, such as [`@doc-kit/generator-react`](./packages/react.md) for
-  `html`, `orama-db`, and the other web generators, and
+  `html`, `orama-db`, and the other web generators,
   [`@node-core/doc-kit`](./packages/node.md) for `man-page`, `api-links`, and
-  `addon-verify`.
+  `addon-verify`, and [`@node-core/doc-kit-legacy`](./packages/node-legacy.md)
+  for the `legacy-*` generators.
 - `-i`, `--input` {string[]} Glob patterns of the files to read
   (`global.input`).
 - `--ignore` {string[]} Glob patterns of files to leave out (`global.ignore`).
@@ -50,8 +51,8 @@ parentheses.
   Node.js's `CHANGELOG.md`, which the version selector is built from
   (`global.changelog`). Without one, the output covers a single version.
 - `--index` {string} URL or path of an `index.md` whose list of links
-  (`* [Title](file.md)`) sets the order of the documents in the JSON bundle
-  (`global.index`).
+  (`* [Title](file.md)`) sets the order of the documents in the JSON bundle,
+  the legacy HTML sidebar and the legacy JSON bundle (`global.index`).
 - `--git-ref` {string} Git branch, tag, or commit that links into your
   repository point to, such as edit links and the JSON output's source URLs
   (`global.ref`). The website's source code links follow

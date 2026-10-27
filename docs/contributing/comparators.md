@@ -38,10 +38,10 @@ Matrix entries without `compare` (at the moment `man-page`, `addon-verify` and
 
 ## Built-in comparators
 
-| Comparator         | What it reports                                                                                                    | Used by                                                                                                                                                     |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `file-size`        | Files added, removed or changed in size, largest change first, with the net change, in a collapsible table         | `web` (the former name of [`html`](../generators/html.md)), [`orama-db`](../generators/orama-db.md), [`llms-txt`](../generators/llms-txt.md), `legacy-html` |
-| `object-assertion` | Files added or removed, and an `assert.deepStrictEqual` diff for each file whose parsed JSON differs, one per file | [`json`](../generators/json.md), [`api-links`](../generators/api-links.md), `legacy-json`                                                                   |
+| Comparator         | What it reports                                                                                                    | Used by                                                                                                                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `file-size`        | Files added, removed or changed in size, largest change first, with the net change, in a collapsible table         | `web` (the former name of [`html`](../generators/html.md)), [`orama-db`](../generators/orama-db.md), [`llms-txt`](../generators/llms-txt.md), [`legacy-html`](../generators/legacy-html.md) |
+| `object-assertion` | Files added or removed, and an `assert.deepStrictEqual` diff for each file whose parsed JSON differs, one per file | [`json`](../generators/json.md), [`api-links`](../generators/api-links.md), [`legacy-json`](../generators/legacy-json.md)                                                                   |
 
 Both end with a **Performance estimate** section: the generation time and peak
 memory of each side, read from `benchmark.json`. It comes from a single CI run,

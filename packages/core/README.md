@@ -51,11 +51,11 @@ from with `dependsOn`. On every run, doc-kit:
 
 This package provides the JSON targets:
 
-| Target        | Writes                                                        | Reference                                                             |
-| ------------- | ------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `json`        | One JSON document per source file, described by a JSON schema | [JSON](https://doc-kit.nodejs.org/generators/json)                    |
-| `json-all`    | Every `json` document, bundled in one `all.json`              | [JSON bundle](https://doc-kit.nodejs.org/generators/json#json-bundle) |
-| `json-simple` | The API entries in one `api-docs.json`, for debugging doc-kit | [Debug JSON](https://doc-kit.nodejs.org/generators/json#debug-json)   |
+| Target        | Writes                                                        | Reference                                                       |
+| ------------- | ------------------------------------------------------------- | --------------------------------------------------------------- |
+| `json`        | One JSON document per source file, described by a JSON schema | [JSON](https://doc-kit.nodejs.org/generators/json)              |
+| `json-all`    | Every `json` document, bundled in one `all.json`              | [JSON bundle](https://doc-kit.nodejs.org/generators/json-all)   |
+| `json-simple` | The API entries in one `api-docs.json`, for debugging doc-kit | [Debug JSON](https://doc-kit.nodejs.org/generators/json-simple) |
 
 It also provides the pipeline stages. They write nothing, and run whenever a
 generator you ask for depends on them:
@@ -68,12 +68,13 @@ generator you ask for depends on them:
 
 The other generators, and the rest of doc-kit, live in companion packages:
 
-| Package                                                                 | Provides                                                                                                                              |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [`@doc-kit/cli`](https://doc-kit.nodejs.org/packages/cli)               | The `doc-kit` command, which runs this package                                                                                        |
-| [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react) | `html` (the website), `section-pages`, `orama-db` (the search index), `sitemap`, `llms-txt`, `llms-txt-full`, and the `jsx-ast` stage |
-| [`@node-core/doc-kit`](https://doc-kit.nodejs.org/packages/node)        | `man-page`, `api-links` and `addon-verify`, for building Node.js itself                                                               |
-| [`@doc-kit/typedoc`](https://doc-kit.nodejs.org/packages/typedoc)       | A TypeDoc plugin that writes the API of a TypeScript or JSDoc project as doc-kit Markdown                                             |
+| Package                                                                        | Provides                                                                                                                              |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [`@doc-kit/cli`](https://doc-kit.nodejs.org/packages/cli)                      | The `doc-kit` command, which runs this package                                                                                        |
+| [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react)        | `html` (the website), `section-pages`, `orama-db` (the search index), `sitemap`, `llms-txt`, `llms-txt-full`, and the `jsx-ast` stage |
+| [`@node-core/doc-kit`](https://doc-kit.nodejs.org/packages/node)               | `man-page`, `api-links` and `addon-verify`, for building Node.js itself                                                               |
+| [`@node-core/doc-kit-legacy`](https://doc-kit.nodejs.org/packages/node-legacy) | `legacy-html`, `legacy-html-all`, `legacy-json` and `legacy-json-all`, for Node.js's legacy HTML and JSON formats                     |
+| [`@doc-kit/typedoc`](https://doc-kit.nodejs.org/packages/typedoc)              | A TypeDoc plugin that writes the API of a TypeScript or JSDoc project as doc-kit Markdown                                             |
 
 The [generators overview](https://doc-kit.nodejs.org/generators) describes them
 all.

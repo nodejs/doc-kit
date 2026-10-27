@@ -18,7 +18,7 @@ npx doc-kit generate -t html -i "docs/**/*.md" -o out --type-map docs/type-map.j
 ```
 
 To look at the entries themselves, run the
-[Debug JSON](https://doc-kit.nodejs.org/generators/json#debug-json) target,
+[Debug JSON](https://doc-kit.nodejs.org/generators/json-simple) target,
 which writes them to `api-docs.json`.
 
 ## Configuring
