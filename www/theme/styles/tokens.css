@@ -47,15 +47,15 @@
     0 24px 64px -24px rgb(0 0 0 / 0.45), 0 1px 2px rgb(0 0 0 / 0.1);
   --dk-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Code, in the colors of doc-kit's code blocks (GitHub Light and Nord), but
-     for comments, a shade stronger to stay readable on the panes (4.5:1) */
+  /* Code drawn in the home page's illustrations, in the colors of doc-kit's
+     code blocks (GitHub Light and Nord), but for comments, a shade stronger to
+     stay readable on the cards (4.5:1) */
   --dk-tk-text: #1f2328;
   --dk-tk-keyword: #cf222e;
   --dk-tk-string: #0a3069;
   --dk-tk-comment: #656d76;
   --dk-tk-function: #8250df;
   --dk-tk-property: #953800;
-  --dk-tk-number: #0550ae;
   --dk-tk-type: #0550ae;
 }
 
@@ -92,6 +92,5 @@
   --dk-tk-comment: #7b88a1;
   --dk-tk-function: #88c0d0;
   --dk-tk-property: #88c0d0;
-  --dk-tk-number: #b48ead;
   --dk-tk-type: #8fbcbb;
 }

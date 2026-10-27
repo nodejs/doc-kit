@@ -56,22 +56,6 @@
       }
     }
 
-    /* Code tabs: the palette also left the selected tab no brighter than the
-       others. On narrow screens, tabs wrap rather than being cut off. */
-    [role='tablist'][class*='_tabsList'] {
-      flex-wrap: wrap;
-
-      > [role='tab'][class*='_tabsTrigger'] {
-        border-bottom-width: 2px;
-        color: var(--dk-fg-2);
-
-        &[data-state='active'] {
-          border-bottom-color: var(--dk-fg);
-          color: var(--dk-fg);
-        }
-      }
-    }
-
     /* White on doc-kit's light grey "Note" alert is hard to read */
     [class*='_alertBox'][class*='_neutral'] {
       background-color: var(--color-neutral-800);
