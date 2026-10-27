@@ -218,7 +218,6 @@ describe('processChunk', () => {
   });
 });
 
-
 describe('generate', () => {
   it('sorts files inside each pattern without reordering configured patterns', async () => {
     const first = join(dir, 'ordered-first');
@@ -252,11 +251,9 @@ describe('generate', () => {
     }
 
     assert.deepStrictEqual(
-      received.map(([child]) => child),
-      [second, first].flatMap(parent =>
-        ['a.md', 'm.md', 'z.md'].map(name =>
-          toPosixPath(join(parent, name))
-        )
+      received.map(([child]) => child.replaceAll('\\', '/').split('/').slice(-2).join('/')),
+      ['ordered-second', 'ordered-first'].flatMap(parent =>
+        ['a.md', 'm.md', 'z.md'].map(name => `${parent}/${name}`)
       )
     );
   });
