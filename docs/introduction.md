@@ -53,42 +53,40 @@ generator reading it is done with it, and the website generator holds one page
 per worker, so its memory follows your largest page rather than the size of
 the whole site.
 
-Building this site, 34 pages and 48,316 words, with its own
-[configuration](https://github.com/nodejs/doc-kit/blob/main/www/doc-kit.config.mjs)
-(medians of five clean builds):
+Building this site, 40 pages and 50,225 words, with its own
+[configuration](https://github.com/nodejs/doc-kit/blob/main/www/doc-kit.config.mjs):
 
-| Targets                         | Output                                | Time   |
-| ------------------------------- | ------------------------------------- | ------ |
-| `llms-txt`                      | `llms.txt`                            | 0.53 s |
-| `orama-db`                      | The search index                      | 0.55 s |
-| `json`                          | 34 JSON documents                     | 0.58 s |
-| `html`                          | The site: 34 pages, bundled with Vite | 2.81 s |
-| The configuration's six targets | All of it, 199 files                  | 3.0 s  |
+| Targets                     | Output                                | Time   |
+| --------------------------- | ------------------------------------- | ------ |
+| `llms-txt`                  | `llms.txt`                            | 0.56 s |
+| `orama-db`                  | The search index                      | 0.61 s |
+| `json`                      | 40 JSON documents                     | 0.63 s |
+| `html`                      | The site: 40 pages, bundled with Vite | 2.74 s |
+| The configuration's targets | All of it, 214 files                  | 2.94 s |
 
 Most of the website's time is Vite bundling its scripts and styles once, a
-cost that doesn't grow with the number of pages. The Node.js API reference
-shows how the rest scales, with 70 files and 574,627 words:
+cost that doesn't grow with the number of pages. The Node.js v26.12.1 API docs
+show how the rest scales, with 70 files and 574,627 words, built with the
+configuration of [the Node.js preview site](https://beta.docs.nodejs.org/):
 
 | Targets                                         | Output               | Time   |
 | ----------------------------------------------- | -------------------- | ------ |
-| `llms-txt`                                      | `llms.txt`           | 2.1 s  |
-| `orama-db`                                      | The search index     | 2.5 s  |
-| `json`                                          | 70 JSON documents    | 2.5 s  |
-| `section-pages`                                 | The site: 781 pages  | 8.8 s  |
-| `section-pages`, `json`, `llms-txt`, `orama-db` | All of it, 923 files | 10.1 s |
+| `llms-txt`                                      | `llms.txt`           | 2.4 s  |
+| `orama-db`                                      | The search index     | 2.8 s  |
+| `json`                                          | 70 JSON documents    | 2.9 s  |
+| `section-pages`                                 | The site: 781 pages  | 10.2 s |
+| `section-pages`, `json`, `llms-txt`, `orama-db` | All of it, 923 files | 10.8 s |
 
-Clean builds, median of three, on an AMD Ryzen 9 8945HX (16 cores) with
-Node.js 24.18 and doc-kit `ec7751f`, using the configuration of
-[the Node.js preview site](https://beta.docs.nodejs.org/). To reproduce them,
-run this from a doc-kit checkout with its dependencies installed:
+Each time is the median of five clean builds on an AMD Ryzen 9 8945HX
+(32 threads, 4 used by doc-kit) with Node.js 24.18 and doc-kit
+`b413a20`. To measure them on your machine, run this from a doc-kit
+checkout with its dependencies installed. It checks out the Node.js docs
+once, builds both sites, and writes the results to
+`www/theme/benchmarks.json`, which the home page reads:
 
 ```bash
-git clone --depth 1 --branch v26.12.1 https://github.com/nodejs/node.git node
-node packages/cli/bin/cli.mjs generate \
-  -t section-pages -t json -t llms-txt -t orama-db \
-  -i "node/doc/api/*.md" --ignore node/doc/api/quic.md \
-  --type-map node/doc/type-map.json -c node/CHANGELOG.md \
-  -v v26.12.1 --config-file beta/doc-kit.config.mjs -o out
+cd www
+node --run benchmark -- --runs 5 --node v26.12.1
 ```
 
 ## Light by default
