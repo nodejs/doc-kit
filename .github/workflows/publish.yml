@@ -35,12 +35,13 @@ jobs:
       id-token: write
     steps:
       - name: Setup environment
-        uses: nodejs/web-team/actions/setup-environment@9f3c83af227d721768d9dbb63009a47ed4f4282f
+        uses: nodejs/web-team/actions/setup-environment@4c0b18db11a8357664683d70ef1f27af08ecc766
         with:
           use-version-file: true
           pnpm: true
           registry-url: 'https://registry.npmjs.org'
           fetch-depth: 0
+          cache: false
 
       - name: Create Release Pull Request or Publish
         id: changesets

@@ -56,8 +56,7 @@
     "@swc/html-wasm": "^1.16.2",
     "@swc/wasm": "^1.15.46",
     "acorn": "^8.17.0",
-    "cosmiconfig": "^9.0.2",
-    "dedent": "^1.7.2",
+    "cosmiconfig": "^10.0.1",
     "github-slugger": "^2.0.0",
     "glob-parent": "^6.0.2",
     "mdast-util-slice-markdown": "^2.0.1",
@@ -83,6 +82,7 @@
   },
   "devDependencies": {
     "ajv": "^8.20.0",
+    "dedent": "^1.7.2",
     "hast-util-to-html": "^9.0.5",
     "hast-util-to-string": "^3.0.1"
   },

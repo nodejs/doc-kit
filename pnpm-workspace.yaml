@@ -3,7 +3,16 @@ packages:
 
 allowBuilds:
   esbuild: false
-  unrs-resolver: false
   workerd: false
 
+ignoredOptionalDependencies:
+  - '@napi-rs/nice'
+
+minimumReleaseAge: 4320
+
+minimumReleaseAgeExclude:
+  - '@node-core/*'
+
 minimumReleaseAgeExcludePrune: true
+
+trustPolicy: no-downgrade

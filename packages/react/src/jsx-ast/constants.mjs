@@ -50,6 +50,12 @@ export const TOC_MAX_HEADING_DEPTH = 3;
 // 'Type: '.length
 export const TYPE_PREFIX_LENGTH = 6;
 
+// Reading speed behind a page's estimated reading time
+export const WORDS_PER_MINUTE = 200;
+
+// Hiragana, CJK ideographs and Hangul syllables each read as one word
+export const CJK_CHARACTERS = /[\u3040-\u309f\u4e00-\u9fff\uac00-\ud7a3]/gu;
+
 /**
  * HTML tag to UI component mappings
  */

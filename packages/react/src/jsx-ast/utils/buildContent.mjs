@@ -26,6 +26,8 @@ import {
   ALERT_LEVELS,
   TYPES_WITH_METHOD_SIGNATURES,
   TYPE_PREFIX_LENGTH,
+  WORDS_PER_MINUTE,
+  CJK_CHARACTERS,
 } from '../constants.mjs';
 import { createJSXElement } from './ast.mjs';
 import { extractHeadings, extractTextContent } from './buildBarProps.mjs';
@@ -36,14 +38,25 @@ import {
   createSignatureTable,
 } from './signature.mjs';
 
+const wordSegmenter = new Intl.Segmenter('en', { granularity: 'word' });
+
 /**
  * Estimates the reading time of a page's text, as display text.
  *
  * @param {string} text
- * @returns {Promise<string>}
+ * @returns {string}
  */
-const readingTime = text =>
-  import('reading-time').then(({ default: rt }) => rt(text).text);
+const readingTime = text => {
+  let words = 0;
+
+  for (const { segment, isWordLike } of wordSegmenter.segment(text)) {
+    if (isWordLike) {
+      words += segment.match(CJK_CHARACTERS)?.length || 1;
+    }
+  }
+
+  return `${Math.ceil(words / WORDS_PER_MINUTE)} min read`;
+};
 
 /**
  * Processes lifecycle and change history data into a sorted array of change entries.
@@ -332,7 +345,7 @@ export const createDocumentContent = async entries => {
   return {
     headings: extractHeadings(entries),
     readingTime: showReadingTime
-      ? await readingTime(extractTextContent(entries))
+      ? readingTime(extractTextContent(entries))
       : undefined,
     root: createTree('root', [
       createJSXElement(null, {
