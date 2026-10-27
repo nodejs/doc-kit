@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import { loadGenerator } from '../../generators/loader.mjs';
@@ -177,4 +177,56 @@ describe('createParallelWorker', () => {
 
     await pool.destroy();
   });
+  it('yields concurrent worker results in submission order', async () => {
+    const resolvers = [];
+    const pool = {
+      run: task =>
+        new Promise(resolve => {
+          resolvers.push(() => resolve(task.input));
+        }),
+    };
+    const worker = createParallelWorker('ast-js', astJsGenerator, pool, {
+      threads: 2,
+      chunkSize: 1,
+    });
+
+    const result = collectStream(worker.stream([0, 1, 2, 3, 4], {}));
+    await Promise.resolve();
+
+    // All five tasks start before any result is yielded, but finish in reverse.
+    strictEqual(resolvers.length, 5);
+    for (const resolve of resolvers.toReversed()) {
+      resolve();
+    }
+
+    deepStrictEqual(await result, [0, 1, 2, 3, 4]);
+  });
+
+  it('propagates a later worker failure without an unhandled rejection', async () => {
+    const tasks = [];
+    const pool = {
+      run: task =>
+        new Promise((resolve, reject) => {
+          tasks.push({ resolve, reject, input: task.input });
+        }),
+    };
+    const worker = createParallelWorker('ast-js', astJsGenerator, pool, {
+      threads: 2,
+      chunkSize: 1,
+    });
+
+    const result = collectStream(worker.stream([0, 1, 2, 3], {}));
+    await Promise.resolve();
+    strictEqual(tasks.length, 4);
+
+    tasks[2].reject(new Error('chunk failed'));
+    for (const [index, task] of tasks.entries()) {
+      if (index !== 2) {
+        task.resolve(task.input);
+      }
+    }
+
+    await rejects(result, /chunk failed/);
+  });
+
 });

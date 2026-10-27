@@ -77,12 +77,12 @@ export default function createParallelWorker(
 
   return {
     /**
-     * Processes items in parallel, yielding results as chunks complete.
+     * Processes items in parallel, yielding results in submission order.
      *
      * @template T
      * @param {T[]} items - Items to process
      * @param {object} extra - Extra options
-     * @yields {R[]} Chunk results as they complete
+     * @yields {R[]} Chunk results in input order
      */
     async *stream(items, extra) {
       if (items.length === 0) {
@@ -98,42 +98,34 @@ export default function createParallelWorker(
 
       const runInOneGo = threads <= 1 || items.length <= 2;
 
-      // Submit all tasks to Piscina - each promise resolves to itself for removal
-      const pending = new Set(
-        chunks.map(indices => {
-          if (runInOneGo) {
-            const promise = generator
-              .processChunk(items, indices, extra)
-              .then(result => ({ promise, result }));
-
-            return promise;
-          }
-
-          const promise = pool
-            .run(
+      // Start every chunk immediately, but emit results in submission order.
+      // Handle errors as each task settles so a later failure cannot become an
+      // unhandled rejection while earlier chunks are still running.
+      const tasks = chunks.map(indices => {
+        const task = runInOneGo
+          ? generator.processChunk(items, indices, extra)
+          : pool.run(
               createTask(items, indices, extra, configuration, specifier, name)
-            )
-            .then(result => ({ promise, result }));
+            );
 
-          return promise;
-        })
-      );
+        return task.then(
+          result => ({ result }),
+          error => ({ error })
+        );
+      });
 
-      // Yield results as they complete (true parallel collection)
-      let completed = 0;
+      for (const [index, task] of tasks.entries()) {
+        const outcome = await task;
 
-      while (pending.size > 0) {
-        const { promise, result } = await Promise.race(pending);
+        if ('error' in outcome) {
+          throw outcome.error;
+        }
 
-        pending.delete(promise);
-
-        completed++;
-
-        parallelLogger.debug(`Chunk ${completed}/${chunks.length} completed`, {
+        parallelLogger.debug(`Chunk ${index + 1}/${chunks.length} completed`, {
           generator: name,
         });
 
-        yield result;
+        yield outcome.result;
       }
     },
   };

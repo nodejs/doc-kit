@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
 import { after, before, describe, it } from 'node:test';
@@ -7,9 +7,10 @@ import { pathToFileURL } from 'node:url';
 
 import { loadGenerator } from '#generators/loader.mjs';
 import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
+import { setConfig } from '#utils/configuration/index.mjs';
 
 import { STABILITY_INDEX_URL } from '../constants.mjs';
-import { processChunk } from '../generate.mjs';
+import { generate, processChunk } from '../generate.mjs';
 
 const ast = await loadGenerator(import.meta.resolve('../index.mjs'));
 
@@ -214,5 +215,49 @@ describe('processChunk', () => {
       assert.strictEqual(results[0].path, '/a');
       assert.strictEqual(results[1].path, '/c');
     });
+  });
+});
+
+
+describe('generate', () => {
+  it('sorts files inside each pattern without reordering configured patterns', async () => {
+    const first = join(dir, 'ordered-first');
+    const second = join(dir, 'ordered-second');
+    await mkdir(first);
+    await mkdir(second);
+
+    for (const name of ['z.md', 'a.md', 'm.md']) {
+      await writeFile(join(first, name), '# Title\n');
+      await writeFile(join(second, name), '# Title\n');
+    }
+
+    await setConfig({
+      target: ['ast'],
+      input: [
+        toPosixPath(join(second, '*.md')),
+        toPosixPath(join(first, '*.md')),
+      ],
+    });
+
+    let received;
+    const worker = {
+      async *stream(items) {
+        received = items;
+        yield [];
+      },
+    };
+
+    for await (const chunk of generate(undefined, worker)) {
+      assert.deepStrictEqual(chunk, []);
+    }
+
+    assert.deepStrictEqual(
+      received.map(([child]) => child),
+      [second, first].flatMap(parent =>
+        ['a.md', 'm.md', 'z.md'].map(name =>
+          toPosixPath(join(parent, name))
+        )
+      )
+    );
   });
 });
