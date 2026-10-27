@@ -53,14 +53,14 @@ first site.
 
 ## Generators
 
-| Target          | Writes                                                                                                                                              | Reference                                                                    |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `html`          | The site: a page per input file, `all.html`, `404.html`, their scripts and styles, and copies of `assets/`, `public/` and `static/` (`pathsToCopy`) | [Website](https://doc-kit.nodejs.org/generators/html)                        |
-| `section-pages` | A page per section of each module (`fs/readFile.html`), added to the site and sitemap                                                               | [Section pages](https://doc-kit.nodejs.org/generators/section-pages)         |
-| `orama-db`      | `orama-db.json`, the search index the site's search box loads                                                                                       | [Search index](https://doc-kit.nodejs.org/generators/orama-db)               |
-| `sitemap`       | `sitemap.xml`, listing every page for search engines                                                                                                | [Sitemap](https://doc-kit.nodejs.org/generators/sitemap)                     |
-| `llms-txt`      | `llms.txt`, a link to every page with its description, for language models                                                                          | [llms.txt](https://doc-kit.nodejs.org/generators/llms-txt)                   |
-| `llms-txt-full` | `llms-full.txt`, every page's Markdown in one file, each preceded by its URL                                                                        | [llms-full.txt](https://doc-kit.nodejs.org/generators/llms-txt#llms-fulltxt) |
+| Target          | Writes                                                                                                                                              | Reference                                                            |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `html`          | The site: a page per input file, `all.html`, `404.html`, their scripts and styles, and copies of `assets/`, `public/` and `static/` (`pathsToCopy`) | [Website](https://doc-kit.nodejs.org/generators/html)                |
+| `section-pages` | A page per section of each module (`fs/readFile.html`), added to the site and sitemap                                                               | [Section pages](https://doc-kit.nodejs.org/generators/section-pages) |
+| `orama-db`      | `orama-db.json`, the search index the site's search box loads                                                                                       | [Search index](https://doc-kit.nodejs.org/generators/orama-db)       |
+| `sitemap`       | `sitemap.xml`, listing every page for search engines                                                                                                | [Sitemap](https://doc-kit.nodejs.org/generators/sitemap)             |
+| `llms-txt`      | `llms.txt`, a link to every page with its description, for language models                                                                          | [llms.txt](https://doc-kit.nodejs.org/generators/llms-txt)           |
+| `llms-txt-full` | `llms-full.txt`, every page's Markdown in one file, each preceded by its URL                                                                        | [llms-full.txt](https://doc-kit.nodejs.org/generators/llms-txt-full) |
 
 The package also ships `jsx-ast`
 ([Page JSX](https://doc-kit.nodejs.org/generators/jsx-ast)), the stage that

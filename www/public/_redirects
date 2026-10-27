@@ -1,16 +1,6 @@
 # Pages the site no longer builds, sent to where their content lives now.
 # Cloudflare reads this file on deploy; it is not served.
 
-# Generators documented on another generator's page
-/generators/json-all /generators/json#json-bundle 301
-/generators/json-simple /generators/json#debug-json 301
-/generators/llms-txt-full /generators/llms-txt#llms-fulltxt 301
-
 # `html.generateAllPage` is off, and `docs/index.md` became the introduction
 /all / 301
 /index.md /introduction.md 301
-
-# The legacy-format package, documented in the repo only. Wildcard rules go
-# last: Cloudflare treats every rule after the first wildcard as dynamic.
-/packages/node-legacy https://github.com/nodejs/doc-kit/tree/main/packages/node-legacy 301
-/generators/legacy-* https://github.com/nodejs/doc-kit/tree/main/packages/node-legacy 301

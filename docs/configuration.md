@@ -164,7 +164,8 @@ can override any of them for that generator alone; see
   **Default:** `[]`, which builds a single version without a selector.
 - `index` {string|Array} The path or URL of an `index.md` whose links
   (`* [Title](file.md)`) set the order of the documents in the JSON bundle,
-  or, in a JavaScript file, the parsed list of `{ section, api }` objects.
+  the legacy HTML sidebar and the legacy JSON bundle, or, in a JavaScript
+  file, the parsed list of `{ section, api }` objects.
 - `pathsToCopy` {Array} Files and directories the `html` generator copies into
   the output directory. A string copies that path under its own name; an
   object maps source paths to destinations inside the output, such as
@@ -193,18 +194,21 @@ Each generator reads its options from the section named after it, which for
 built-in generators is the target name. Every generator's reference page
 lists its options:
 
-| Section            | Its own options                                                                                                       | Reference                                                                     |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `html`             | `title`, `pageURL`, `editURL`, `navigation`, `head`, `stylesheets`, `imports`, `components`, `templatePath`, and more | [Website](./generators/html.md), [Customizing the site](./customization.md)   |
-| `section-pages`    | `maxDepth`, `exclude`                                                                                                 | [Section pages](./generators/section-pages.md)                                |
-| `sitemap`          | `indexURL`, `pageURL`                                                                                                 | [Sitemap](./generators/sitemap.md)                                            |
-| `llms-txt`         | `templatePath`, `pageURL`                                                                                             | [llms.txt](./generators/llms-txt.md)                                          |
-| `llms-txt-full`    | `pageURL`                                                                                                             | [llms-full.txt](./generators/llms-txt.md#llms-fulltxt)                        |
-| `json`, `json-all` | `schemaURL`                                                                                                           | [JSON](./generators/json.md), [JSON bundle](./generators/json.md#json-bundle) |
-| `metadata`         | `typeMap`                                                                                                             | [API entries](./generators/metadata.md)                                       |
-| `jsx-ast`          | `ref`, `generateNotFoundPage`, `showReadingTime`                                                                      | [Page JSX](./generators/jsx-ast.md)                                           |
-| `man-page`         | `fileName`, `templatePath`, `cliOptionsHeaderSlug`, `envVarsHeaderSlug`                                               | [Man page](./generators/man-page.md)                                          |
-| `api-links`        | `sourceURL`                                                                                                           | [API links](./generators/api-links.md)                                        |
+| Section                          | Its own options                                                                                                       | Reference                                                                                         |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `html`                           | `title`, `pageURL`, `editURL`, `navigation`, `head`, `stylesheets`, `imports`, `components`, `templatePath`, and more | [Website](./generators/html.md), [Customizing the site](./customization.md)                       |
+| `section-pages`                  | `maxDepth`, `exclude`                                                                                                 | [Section pages](./generators/section-pages.md)                                                    |
+| `sitemap`                        | `indexURL`, `pageURL`                                                                                                 | [Sitemap](./generators/sitemap.md)                                                                |
+| `llms-txt`                       | `templatePath`, `pageURL`                                                                                             | [llms.txt](./generators/llms-txt.md)                                                              |
+| `llms-txt-full`                  | `pageURL`                                                                                                             | [llms-full.txt](./generators/llms-txt-full.md)                                                    |
+| `json`, `json-all`               | `schemaURL`                                                                                                           | [JSON](./generators/json.md), [JSON bundle](./generators/json-all.md)                             |
+| `metadata`                       | `typeMap`                                                                                                             | [API entries](./generators/metadata.md)                                                           |
+| `jsx-ast`                        | `ref`, `generateNotFoundPage`, `showReadingTime`                                                                      | [Page JSX](./generators/jsx-ast.md)                                                               |
+| `man-page`                       | `fileName`, `templatePath`, `cliOptionsHeaderSlug`, `envVarsHeaderSlug`                                               | [Man page](./generators/man-page.md)                                                              |
+| `api-links`                      | `sourceURL`                                                                                                           | [API links](./generators/api-links.md)                                                            |
+| `legacy-html`                    | `templatePath`, `additionalPathsToCopy`, `ref`, `pageURL`, `editURL`                                                  | [Legacy HTML](./generators/legacy-html.md)                                                        |
+| `legacy-html-all`                | `templatePath`                                                                                                        | [Legacy single-page HTML](./generators/legacy-html-all.md)                                        |
+| `legacy-json`, `legacy-json-all` | `sourceURL`                                                                                                           | [Legacy JSON](./generators/legacy-json.md), [Legacy JSON bundle](./generators/legacy-json-all.md) |
 
 `metadata.typeMap`, in the complete example above, is a JSON file mapping type
 names to the URLs documenting them, such as
