@@ -61,30 +61,70 @@ const guideItems = [
   { label: 'Creating generators', link: '/creating-generators' },
 ];
 
-// Components the pages and the theme render. The ones that hydrate on the
-// client must be listed here for doc-kit to register their islands.
-const COMPONENTS = {
-  Home: 'home/Home.jsx',
+// The home page's animations. They hydrate on the client, so they must be
+// listed in `components` for doc-kit to register their islands.
+const ISLANDS = {
   HeroFlow: 'components/HeroFlow.jsx',
   PipelineFlow: 'components/PipelineFlow.jsx',
-  InstallTabs: 'components/InstallTabs.jsx',
-  OutputTabs: 'components/OutputTabs.jsx',
-  CopyCode: 'components/CopyCode.jsx',
 };
 
-const componentAliases = Object.fromEntries(
-  Object.entries(COMPONENTS).map(([name, file]) => [
-    `#theme/${name}`,
-    join(THEME, file),
-  ])
-);
+// The components `www/pages/index.mdx` lays out its sections with, by the
+// module exporting them
+const HOME = {
+  'home/sections.jsx': [
+    'Hero',
+    'Actions',
+    'Button',
+    'UsedBy',
+    'Stats',
+    'Stat',
+    'Fact',
+    'Section',
+    'Performance',
+    'Formats',
+    'Features',
+    'Feature',
+    'Steps',
+    'Step',
+    'Closing',
+  ],
+  'home/previews.jsx': ['SitePreview', 'SearchPreview'],
+};
 
-const components = Object.fromEntries(
-  Object.keys(COMPONENTS).map(name => [name, `#theme/${name}`])
-);
+const componentAliases = {
+  ...Object.fromEntries(
+    Object.entries(ISLANDS).map(([name, file]) => [
+      `#theme/${name}`,
+      join(THEME, file),
+    ])
+  ),
+  ...Object.fromEntries(
+    Object.keys(HOME).map(file => [
+      `#theme/${file.replace(/\.jsx$/, '')}`,
+      join(THEME, file),
+    ])
+  ),
+};
+
+const components = {
+  ...Object.fromEntries(
+    Object.keys(ISLANDS).map(name => [name, `#theme/${name}`])
+  ),
+  ...Object.fromEntries(
+    Object.entries(HOME).flatMap(([file, names]) =>
+      names.map(name => [
+        name,
+        {
+          source: `#theme/${file.replace(/\.jsx$/, '')}`,
+          isDefaultExport: false,
+        },
+      ])
+    )
+  ),
+};
 
 // Build-time facts for the theme, as the `#theme/site` module
-const site = { version, schemaVersion: SCHEMA_VERSION };
+const site = { version };
 
 const INTER = dirname(
   require.resolve('@fontsource-variable/inter/package.json')
