@@ -251,7 +251,9 @@ describe('generate', () => {
     }
 
     assert.deepStrictEqual(
-      received.map(([child]) => child.replaceAll('\\', '/').split('/').slice(-2).join('/')),
+      received.map(([child]) =>
+        child.replaceAll('\\', '/').split('/').slice(-2).join('/')
+      ),
       ['ordered-second', 'ordered-first'].flatMap(parent =>
         ['a.md', 'm.md', 'z.md'].map(name => `${parent}/${name}`)
       )
