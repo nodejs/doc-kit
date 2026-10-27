@@ -51,12 +51,15 @@ const toProperty = name =>
 const parse = markup => {
   const root = { type: 'root', children: [] };
   const stack = [root];
-  const tokens = markup
-    .replace(/<\?xml[\s\S]*?\?>|<!--[\s\S]*?-->/g, '')
-    .split(/(<[^>]+>)/);
+  const tokens = markup.split(/(<[^>]+>)/);
 
   for (const token of tokens) {
     const parent = stack.at(-1);
+
+    // The XML declaration and comments
+    if (token.startsWith('<?') || token.startsWith('<!')) {
+      continue;
+    }
 
     if (!token.startsWith('<')) {
       if (token.trim()) {
