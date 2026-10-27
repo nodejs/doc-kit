@@ -1,9 +1,7 @@
-# `json-simple` Generator
+# Debug JSON
 
-The `json-simple` generator creates a simplified JSON version of the API documentation, primarily for debugging and testing purposes.
+The `json-simple` generator dumps the API entries doc-kit parsed from your
+sources into one `api-docs.json`, to debug the pipeline.
 
-## Configuring
-
-- `output` {string} The directory where `api-docs.json` will be written.
-- `minify` {boolean} Whether to minify the output JSON. Inherited from
-  `global`. **Default:** `false`.
+It is documented with `json`, on
+[the JSON page](https://doc-kit.nodejs.org/generators/json#debug-json).
