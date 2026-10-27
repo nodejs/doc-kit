@@ -14,12 +14,6 @@ importers:
       '@changesets/cli':
         specifier: ^3.0.3
         version: 3.0.3
-      '@doc-kit/generator-react':
-        specifier: workspace:*
-        version: link:packages/react
-      '@fontsource-variable/inter':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@node-core/doc-kit':
         specifier: workspace:*
         version: link:packages/node
@@ -62,9 +56,6 @@ importers:
       oxlint:
         specifier: 1.86.0
         version: 1.86.0
-      preact:
-        specifier: ^10.29.8
-        version: 10.29.8(preact-render-to-string@6.7.0)
       wrangler:
         specifier: 4.151.1
         version: 4.151.1(@types/node@24.10.15)
@@ -330,6 +321,18 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+
+  www:
+    devDependencies:
+      '@doc-kit/generator-react':
+        specifier: workspace:*
+        version: link:../packages/react
+      '@fontsource-variable/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
+      preact:
+        specifier: ^10.29.8
+        version: 10.29.8(preact-render-to-string@6.7.0)
 
 packages:
 
