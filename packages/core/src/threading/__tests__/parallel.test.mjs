@@ -106,7 +106,7 @@ describe('createParallelWorker', () => {
     await pool.destroy();
   });
 
-  it('should yield results as chunks complete', async () => {
+  it('should yield one result per input chunk', async () => {
     const pool = createWorkerPool(2);
     const worker = createParallelWorker('metadata', metadataGenerator, pool, {
       threads: 2,
@@ -177,6 +177,7 @@ describe('createParallelWorker', () => {
 
     await pool.destroy();
   });
+
   it('yields concurrent worker results in submission order', async () => {
     const resolvers = [];
     const pool = {
@@ -228,5 +229,4 @@ describe('createParallelWorker', () => {
 
     await rejects(result, /chunk failed/);
   });
-
 });
