@@ -1,14 +1,4 @@
-/**
- * The events of a click or a tap, or of a touch the browser cancels to scroll.
- */
-export const PRESS_EVENTS = [
-  'pointerdown',
-  'mousedown',
-  'pointerup',
-  'mouseup',
-  'click',
-  'pointercancel',
-];
+import { PRESS_EVENTS } from '../constants.mjs';
 
 /**
  * Holds on to the presses an island receives until its component has loaded.
@@ -42,6 +32,9 @@ export const holdPresses = island => {
   const hold = event => {
     presses.push(event);
 
+    // Only a click has a default action to hold back. Preventing a pointerdown
+    // would also suppress the mouse events that follow it, and a mousedown its
+    // focus and text selection.
     if (event.type === 'click') {
       event.preventDefault();
     }
