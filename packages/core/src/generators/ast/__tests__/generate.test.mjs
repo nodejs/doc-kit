@@ -6,8 +6,8 @@ import { after, before, describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
 import { loadGenerator } from '#generators/loader.mjs';
-import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
 import { setConfig } from '#utils/configuration/index.mjs';
+import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
 
 import { STABILITY_INDEX_URL } from '../constants.mjs';
 import { generate, processChunk } from '../generate.mjs';

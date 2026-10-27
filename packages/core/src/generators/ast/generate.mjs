@@ -119,9 +119,6 @@ export async function* generate(_, worker) {
     return findFiles(input, { ignore: config.ignore })
       .sort()
       .map(child => [child, parent]);
-      child,
-      parent,
-    ]);
   });
 
   // Parse markdown files in parallel using worker threads
