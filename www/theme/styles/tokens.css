@@ -1,0 +1,97 @@
+/* Design tokens. doc-kit's UI components read the `--color-*` and `--font-*`
+   properties; the site keeps doc-kit's own neutral palette and only swaps the
+   typeface. The `--dk-*` properties are the theme's own, derived from it. */
+
+:root {
+  --font-open-sans:
+    'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+  --dk-font-sans: var(--font-open-sans);
+  --dk-font-mono:
+    var(--font-ibm-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --header-height: var(--dk-header);
+
+  --dk-bg: #ffffff;
+  --dk-bg-soft: #f6f7f9;
+  --dk-bg-elevated: #ffffff;
+  --dk-code-bg: #f6f7f9;
+  --dk-fg: #0d121c;
+  --dk-fg-2: #4b5559;
+  --dk-fg-3: #637078;
+  --dk-line: #e9edf0;
+  --dk-line-strong: #d9e1e4;
+  --dk-accent: #0d121c;
+  --dk-accent-contrast: #ffffff;
+  --dk-scrim: rgb(13 18 28 / 0.32);
+
+  /* The animations' palette: hexadecimal only, as `canvas.mjs` reads it */
+  --dk-c-fg: #0d121c;
+  --dk-c-fg-2: #556066;
+  --dk-c-fg-3: #929fa5;
+  --dk-c-line: #e3e8eb;
+  --dk-c-line-strong: #cbd4d9;
+  --dk-c-face: #ffffff;
+  --dk-c-side: #eef1f4;
+  --dk-c-shade: #e2e7eb;
+  --dk-c-glow: #6e7b83;
+  --dk-c-pulse: #0d121c;
+
+  --dk-radius: 14px;
+  --dk-frame: 1200px;
+  --dk-gutter: clamp(16px, 4vw, 40px);
+  --dk-header: 64px;
+  --dk-shadow:
+    0 1px 2px rgb(13 18 28 / 0.04), 0 10px 30px -16px rgb(13 18 28 / 0.16);
+  --dk-shadow-lg:
+    0 24px 64px -24px rgb(0 0 0 / 0.45), 0 1px 2px rgb(0 0 0 / 0.1);
+  --dk-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Code, in the colors of doc-kit's code blocks (GitHub Light and Nord), but
+     for comments, a shade stronger to stay readable on the panes (4.5:1) */
+  --dk-tk-text: #1f2328;
+  --dk-tk-keyword: #cf222e;
+  --dk-tk-string: #0a3069;
+  --dk-tk-comment: #656d76;
+  --dk-tk-function: #8250df;
+  --dk-tk-property: #953800;
+  --dk-tk-number: #0550ae;
+  --dk-tk-type: #0550ae;
+}
+
+[data-theme='dark'] {
+  --dk-bg: #0d121c;
+  --dk-bg-soft: #111723;
+  --dk-bg-elevated: #141b27;
+  --dk-code-bg: #111723;
+  --dk-fg: #f6f7f9;
+  --dk-fg-2: #b1bcc2;
+  --dk-fg-3: #8592a0;
+  --dk-line: #212a33;
+  --dk-line-strong: #2c3437;
+  --dk-accent: #f6f7f9;
+  --dk-accent-contrast: #0d121c;
+  --dk-scrim: rgb(5 8 13 / 0.68);
+
+  --dk-c-fg: #f6f7f9;
+  --dk-c-fg-2: #b1bcc2;
+  --dk-c-fg-3: #6e7b83;
+  --dk-c-line: #1d252e;
+  --dk-c-line-strong: #2c3437;
+  --dk-c-face: #18202c;
+  --dk-c-side: #121924;
+  --dk-c-shade: #0f151e;
+  --dk-c-glow: #cbd4d9;
+  --dk-c-pulse: #ffffff;
+
+  --dk-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 16px 40px -20px rgb(0 0 0 / 0.7);
+
+  --dk-tk-text: #d8dee9;
+  --dk-tk-keyword: #81a1c1;
+  --dk-tk-string: #a3be8c;
+  --dk-tk-comment: #7b88a1;
+  --dk-tk-function: #88c0d0;
+  --dk-tk-property: #88c0d0;
+  --dk-tk-number: #b48ead;
+  --dk-tk-type: #8fbcbb;
+}

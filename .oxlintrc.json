@@ -207,6 +207,7 @@
       "files": [
         "packages/node-legacy/src/legacy-html/assets/*.js",
         "packages/react/src/html/ui/**/*",
+        "www/theme/components/**/*",
         "e2e/**/*.spec.js"
       ],
       "globals": {

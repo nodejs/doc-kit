@@ -14,6 +14,12 @@ importers:
       '@changesets/cli':
         specifier: ^3.0.3
         version: 3.0.3
+      '@doc-kit/generator-react':
+        specifier: workspace:*
+        version: link:packages/react
+      '@fontsource-variable/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@node-core/doc-kit':
         specifier: workspace:*
         version: link:packages/node
@@ -56,6 +62,9 @@ importers:
       oxlint:
         specifier: 1.89.0
         version: 1.89.0
+      preact:
+        specifier: ^10.29.8
+        version: 10.29.8(preact-render-to-string@6.8.1)
       wrangler:
         specifier: 4.151.1
         version: 4.151.1(@types/node@26.6.6)
@@ -764,6 +773,9 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@fontsource-variable/inter@5.3.0':
+    resolution: {integrity: sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==}
 
   '@fontsource-variable/open-sans@5.3.0':
     resolution: {integrity: sha512-VOfhZfLIOBVa6K/dTEu7scqQXYdGa4jBX8quFpQ0S6574B+W2EOBJf9PkqyVtMEI7WWIWNEbpvPc3vY1mN2mmQ==}
@@ -2921,6 +2933,14 @@ packages:
     peerDependencies:
       preact: '>=10 || >= 11.0.0-0'
 
+  preact@10.29.8:
+    resolution: {integrity: sha512-ej2aVZ+vZ8WO7tvlQWRM9N63A0KzF9q4mWJfDUHgYaIofWY9hu74QdnQrjoPMmZi2/nZ5gN0bJCQF49xQqx09Q==}
+    peerDependencies:
+      preact-render-to-string: '>=5'
+    peerDependenciesMeta:
+      preact-render-to-string:
+        optional: true
+
   preact@11.0.2:
     resolution: {integrity: sha512-ofG+Lqznbt13JKDjdWPLTo5ONBqcNgidqnLRzJBG6PZjzGXOLRd5y9r448+HUofTyDbgKWVrPhHP0IgcxEZslQ==}
     peerDependencies:
@@ -3878,6 +3898,8 @@ snapshots:
       react-dom: 19.2.8(react@19.3.0)
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@fontsource-variable/inter@5.3.0': {}
 
   '@fontsource-variable/open-sans@5.3.0': {}
 
@@ -6183,9 +6205,18 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
+  preact-render-to-string@6.8.1(preact@10.29.8):
+    dependencies:
+      preact: 10.29.8(preact-render-to-string@6.8.1)
+    optional: true
+
   preact-render-to-string@6.8.1(preact@11.0.2):
     dependencies:
       preact: 11.0.2(preact-render-to-string@6.8.1)
+
+  preact@10.29.8(preact-render-to-string@6.8.1):
+    optionalDependencies:
+      preact-render-to-string: 6.8.1(preact@10.29.8)
 
   preact@11.0.2(preact-render-to-string@6.8.1):
     optionalDependencies:

@@ -1,0 +1,396 @@
+/* What opens over the page: the search dialog and the theme menu. Their
+   components come from @node-core/ui-components and Orama, with hashed class
+   names, so they are matched on the stable part of each name. ui-components'
+   CSS modules land after this theme in the bundle, with the same specificity,
+   so each rule starts with `html` to outrank them. */
+
+html [class*='_dropDownContent'][role='menu'] {
+  /* Over the sticky navigation bar; Radix gives its wrapper the menu's
+     z-index */
+  z-index: 60;
+  min-width: 152px;
+  margin-top: 6px;
+  padding: 4px;
+  border: 1px solid var(--dk-line-strong);
+  border-radius: 10px;
+  background: var(--dk-bg-elevated);
+  box-shadow: var(--dk-shadow);
+
+  [class*='_dropDownItem'] {
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: var(--dk-fg-2);
+    font-size: 13.5px;
+    font-weight: 500;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    &[data-highlighted] {
+      background: var(--dk-bg-soft);
+      color: var(--dk-fg);
+    }
+  }
+
+  [class*='_activeItem'] {
+    background: var(--dk-fg);
+    color: var(--dk-bg);
+
+    &[data-highlighted] {
+      background: var(--dk-fg);
+      color: var(--dk-bg);
+    }
+  }
+}
+
+/* Closing the menu focuses its trigger again, which matches :focus-visible
+   even after a click; template.html marks pointer input */
+html[data-input='pointer'] button[class*='_themeToggle']:focus-visible {
+  outline: none;
+}
+
+/* The search button in the header */
+html button[class*='_searchButton'] {
+  border-color: var(--dk-line-strong);
+  border-radius: 10px;
+  background: var(--dk-bg);
+  color: var(--dk-fg-3);
+
+  &:hover {
+    border-color: var(--dk-fg-3);
+    background: var(--dk-bg);
+
+    [class*='_searchButtonShortcut'] {
+      background: var(--dk-bg-soft);
+    }
+  }
+
+  [class*='_searchButtonShortcut'] {
+    border: 1px solid var(--dk-line);
+    border-radius: 6px;
+    background: var(--dk-bg-soft);
+    color: var(--dk-fg-3);
+    font-family: var(--dk-font-mono);
+    font-size: 12px;
+
+    /* ui-components always writes ⌘ K; template.html marks the platforms
+       where the shortcut is Ctrl K */
+    [data-modifier='ctrl'] & {
+      font-size: 0;
+
+      &::before {
+        content: 'Ctrl K' / '';
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+/* The search dialog: centered near the top, over a dimmed page */
+html dialog[class*='_modalWrapper'] {
+  align-items: flex-start;
+  justify-content: center;
+  padding: max(10vh, 72px) 16px 16px;
+  background: var(--dk-scrim);
+  backdrop-filter: blur(3px);
+
+  @media (width < 640px) {
+    padding: 8px;
+  }
+}
+
+html [class*='_modalInner'][role='dialog'] {
+  position: relative;
+  inset: auto;
+  width: min(680px, 100%);
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  max-height: min(72vh, 640px);
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--dk-line-strong);
+  border-radius: 14px;
+  background: var(--dk-bg-elevated);
+  box-shadow: var(--dk-shadow-lg);
+
+  @media (width < 640px) {
+    max-height: calc(100svh - 16px);
+  }
+
+  /* Orama sizes these with utility classes the site doesn't load */
+  & > section {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    max-height: inherit;
+  }
+}
+
+html [class*='_modalContent'] {
+  display: flex;
+  width: 100%;
+  height: auto;
+  max-height: inherit;
+  flex-direction: column;
+  border: 0;
+  border-radius: 0;
+}
+
+/* Only shown on phones (ui-components hides it from 768px), centered on the
+   60px input row */
+html [class*='_modalCloseButton'] {
+  top: 12px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dk-fg-3);
+  font-size: 22px;
+  line-height: 1;
+
+  &:hover {
+    color: var(--dk-fg);
+  }
+}
+
+html [class*='_searchInputWrapper'] {
+  flex: none;
+
+  svg {
+    left: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--dk-fg-3);
+  }
+}
+
+html input[class*='_searchInput'] {
+  padding: 18px 18px 18px 48px;
+  border-bottom: 1px solid var(--dk-line);
+  color: var(--dk-fg);
+  font-family: var(--dk-font-sans);
+  font-size: 16px;
+
+  &::placeholder {
+    color: var(--dk-fg-3);
+  }
+
+  /* The browser's clear button, drawn in the theme's colors */
+  &::-webkit-search-cancel-button {
+    width: 16px;
+    height: 16px;
+    margin: 0 0 0 12px;
+    appearance: none;
+    background: var(--dk-fg-3);
+    cursor: pointer;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 4 8 8m0-8-8 8' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+
+  &::-webkit-search-cancel-button:hover {
+    background: var(--dk-fg);
+  }
+
+  /* Phones have the dialog's close button in its place */
+  @media (width < 48rem) {
+    padding-right: 56px;
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+  }
+}
+
+html
+  [class*='_modalContent']:has([aria-live]:empty)
+  input[class*='_searchInput'] {
+  border-bottom-color: transparent;
+}
+
+html [class*='_searchResultsWrapper'] {
+  padding: 4px 10px 10px;
+  color: var(--dk-fg);
+  scrollbar-width: thin;
+
+  /* Nothing to show before the first search */
+  &:has(> div > [aria-live]:empty) {
+    padding: 0;
+  }
+}
+
+/* Chips that don't fit fade out at the right edge, and scroll clear of the
+   fade at the end. The divider below stays unfaded. */
+html [class*='_facetTabsWrapper'] {
+  margin: 0 -10px 4px;
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--dk-line);
+  scroll-padding-inline: 10px 40px;
+  mask:
+    linear-gradient(to left, transparent, #000 40px),
+    linear-gradient(#000 0 0) bottom / 100% 1px no-repeat;
+}
+
+html [class*='_facetTabsList'] {
+  /* Lets the wrapper scroll instead, without clipping focus rings */
+  overflow: visible;
+
+  &::after {
+    content: '';
+    flex: none;
+    width: 30px;
+  }
+}
+
+html button[class*='_facetTabItem'] {
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--dk-line);
+  border-radius: 999px;
+  color: var(--dk-fg-2);
+  font-size: 12.5px;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--dk-fg-3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--dk-fg);
+    outline-offset: 2px;
+  }
+
+  &[class*='_facetTabItemSelected'] {
+    border: 1px solid var(--dk-fg);
+    background: var(--dk-fg);
+    color: var(--dk-bg);
+
+    [class*='_facetTabItemCount'] {
+      color: inherit;
+      opacity: 0.6;
+    }
+  }
+}
+
+html [class*='_facetTabItemCount'] {
+  color: var(--dk-fg-3);
+  font-family: var(--dk-font-mono);
+  font-size: 11px;
+}
+
+html
+  [class*='_searchResultsGroup']:not(
+    [class*='_searchResultsGroupTitle'],
+    [class*='_searchResultsGroupWrapper']
+  ) {
+  margin-bottom: 4px;
+  border-color: var(--dk-line);
+}
+
+html [class*='_searchResultsGroupTitle'] {
+  margin: 14px 0 6px;
+  padding-left: 10px;
+  color: var(--dk-fg-3);
+  font-family: var(--dk-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html [class*='_searchResultsGroupWrapper'] ul {
+  display: grid;
+  /* An auto track would grow to the unwrapped descriptions */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+html [class*='_searchResultsWrapper'] a[class*='_link'] {
+  gap: 12px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dk-fg);
+  text-decoration: none;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: var(--dk-fg-3);
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* A tint of the text color: --dk-bg-soft is darker than the dialog in dark
+     mode */
+  &:hover,
+  &:focus {
+    background: color-mix(in srgb, var(--dk-fg) 6%, transparent);
+  }
+
+  &:focus-visible {
+    border-color: var(--dk-fg-3);
+  }
+}
+
+html [class*='_hitDescription'] {
+  margin: 2px 0 0;
+  color: var(--dk-fg-3);
+  font-size: 13px;
+
+  code {
+    font-family: var(--dk-font-mono);
+    font-size: 0.92em;
+  }
+}
+
+html [class*='_modalContent'] [class*='_footer'] {
+  flex: none;
+  padding: 10px 16px;
+  border-top: 1px solid var(--dk-line);
+  background: var(--dk-bg-soft);
+
+  /* Its key hints, all it holds, only show from 1024px */
+  @media (width < 1024px) {
+    display: none;
+  }
+}
+
+html [class*='_shortcutItem'],
+html [class*='_shortcutLabel'] {
+  color: var(--dk-fg-3);
+  font-size: 12px;
+}
+
+html [class*='_shortcutKey'] {
+  display: inline-grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  padding: 0 5px;
+  border: 1px solid var(--dk-line-strong);
+  border-radius: 5px;
+  background: var(--dk-bg-elevated);
+  color: var(--dk-fg-2);
+  font-family: var(--dk-font-mono);
+  font-size: 11px;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}

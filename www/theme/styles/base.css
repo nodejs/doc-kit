@@ -1,0 +1,539 @@
+/* Elements and shared pieces: the header, buttons, code, the footer. */
+
+html {
+  background: var(--dk-bg);
+  scroll-padding-top: calc(var(--dk-header) + 16px);
+
+  /* The navigation bar sits in that padding, so focusing its own links would
+     scroll the page all the way up to bring them out of it */
+  &:has(.dk-shell > nav :focus) {
+    scroll-padding-top: 0;
+  }
+}
+
+body {
+  background: var(--dk-bg);
+  color: var(--dk-fg);
+  font-family: var(--dk-font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--dk-fg);
+  outline-offset: 2px;
+}
+
+/* For names browsers would break after a hyphen, like doc-kit */
+.dk-nowrap {
+  white-space: nowrap;
+}
+
+/* Read by screen readers, but not shown */
+.dk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The navigation bar, on every page: it stays at the top */
+.dk-shell > nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+
+  /* ui-components grows the link over the whole bar, past its logo */
+  a[aria-label='Home'] {
+    display: inline-flex;
+    max-width: max-content;
+    align-items: center;
+  }
+
+  /* The menu toggle, below 1280px: a target sized for a finger, with its icon
+     where it was */
+  label[for='sidebarItemToggler'] {
+    margin-right: -10px;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  /* The open menu hangs over the page, below the bar: growing the bar, which
+     stays at the top, would push the whole page down */
+  @media (width < 80rem) {
+    #sidebarItemToggler:checked + div {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      max-height: calc(100dvh - var(--dk-header));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background: var(--dk-bg);
+      box-shadow: var(--dk-shadow);
+    }
+
+    /* The closed menu holds the search box, and so the dialog Ctrl+K opens.
+       ui-components hides it with display: none, which would hide the
+       dialog too: hide it another way, so the dialog, fixed to the
+       viewport, can still show. */
+    #sidebarItemToggler:not(:checked) + div {
+      display: flex;
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+      visibility: hidden;
+
+      dialog {
+        visibility: visible;
+      }
+    }
+  }
+}
+
+/* Buttons and links */
+.dk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+
+  &.dk-actions--center {
+    justify-content: center;
+  }
+
+  /* On phones, the buttons share the row, or take a full row each once they
+     wrap, instead of stacking at their own widths */
+  @media (width < 640px) {
+    .dk-button {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+  }
+}
+
+.dk-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--dk-line-strong);
+  border-radius: 10px;
+  background: var(--dk-bg-elevated);
+  color: var(--dk-fg);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    opacity 0.2s;
+
+  &:hover {
+    border-color: var(--dk-fg-3);
+  }
+
+  &.dk-button--primary {
+    border-color: var(--dk-accent);
+    background: var(--dk-accent);
+    color: var(--dk-accent-contrast);
+
+    &:hover {
+      opacity: 0.86;
+    }
+  }
+}
+
+.dk-arrow {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Labels */
+.dk-eyebrow {
+  margin: 0 0 14px;
+  color: var(--dk-fg-3);
+  font-family: var(--dk-font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dk-lead {
+  margin: 0;
+  color: var(--dk-fg-2);
+  font-size: 17px;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.dk-muted {
+  margin: 0;
+  color: var(--dk-fg-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.dk-caption {
+  margin: 14px 0 0;
+  color: var(--dk-fg-3);
+  font-size: 12.5px;
+  line-height: 1.55;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--dk-fg);
+    }
+  }
+
+  code {
+    font-family: var(--dk-font-mono);
+  }
+}
+
+/* Code */
+.dk-code {
+  margin: 0;
+  overflow: auto;
+  border: 1px solid var(--dk-line);
+  border-radius: 10px;
+  background: var(--dk-code-bg);
+  color: var(--dk-tk-text);
+  font-family: var(--dk-font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  tab-size: 2;
+  scrollbar-width: thin;
+
+  code {
+    display: block;
+    width: max-content;
+    min-width: 100%;
+    padding: 16px 18px;
+    border: 0;
+    background: none;
+    font: inherit;
+  }
+}
+
+/* Commands wrap between their words rather than run out of sight, and a
+   wrapped line is indented under the one it continues */
+.dk-code--wrap code {
+  width: auto;
+  white-space: pre-wrap;
+  text-indent: 2ch hanging each-line;
+
+  span {
+    white-space: nowrap;
+  }
+}
+
+.tk-keyword {
+  color: var(--dk-tk-keyword);
+}
+
+.tk-string,
+.tk-code {
+  color: var(--dk-tk-string);
+}
+
+.tk-comment,
+.tk-fence,
+.tk-bullet {
+  color: var(--dk-tk-comment);
+}
+
+.tk-function {
+  color: var(--dk-tk-function);
+}
+
+.tk-property,
+.tk-flag,
+.tk-quote {
+  color: var(--dk-tk-property);
+}
+
+.tk-number {
+  color: var(--dk-tk-number);
+}
+
+.tk-type {
+  color: var(--dk-tk-type);
+}
+
+.tk-heading,
+.tk-strong {
+  color: var(--dk-tk-text);
+  font-weight: 600;
+}
+
+.tk-prompt,
+.dk-install__prompt {
+  color: var(--dk-fg-3);
+  user-select: none;
+}
+
+.tk-plain {
+  color: var(--dk-tk-text);
+}
+
+/* The install command */
+.dk-install {
+  max-width: 560px;
+  margin-top: 28px;
+  overflow: hidden;
+  border: 1px solid var(--dk-line);
+  border-radius: 10px;
+  background: var(--dk-code-bg);
+}
+
+.dk-install__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--dk-line);
+}
+
+.dk-install__tab {
+  margin-bottom: -1px;
+  padding: 9px 8px 8px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--dk-fg-3);
+  font-family: var(--dk-font-mono);
+  font-size: 12.5px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--dk-fg-2);
+  }
+
+  &[aria-selected='true'] {
+    border-bottom-color: var(--dk-fg);
+    color: var(--dk-fg);
+  }
+
+  /* Inside, as the box clips anything outside it */
+  &:focus-visible {
+    outline-offset: -2px;
+  }
+}
+
+.dk-install__command {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 6px 6px 16px;
+  font-family: var(--dk-font-mono);
+  font-size: 13px;
+
+  /* Wraps between words in a narrow box, indented under the command */
+  code {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 0;
+    border: 0;
+    background: none;
+    color: var(--dk-tk-text);
+    font: inherit;
+    text-indent: 2ch hanging;
+
+    span {
+      white-space: nowrap;
+    }
+  }
+}
+
+/* The copy button of the install command and of code blocks */
+.dk-copy {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--dk-fg-3);
+  cursor: pointer;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover {
+    border-color: var(--dk-line);
+    color: var(--dk-fg);
+  }
+
+  &[data-copied='true'] {
+    color: var(--dk-fg);
+  }
+}
+
+.dk-copy-code {
+  position: relative;
+  /* As a grid or flex item, it would otherwise grow to its widest line */
+  min-width: 0;
+
+  /* In line with the install command's button, and with the first line */
+  .dk-copy {
+    position: absolute;
+    top: 10px;
+    right: 7px;
+    background: var(--dk-code-bg);
+  }
+
+  /* Keeps the first line clear of the button */
+  .dk-code code {
+    padding-right: 44px;
+  }
+}
+
+/* The footer, on every page */
+.dk-footer {
+  border-top: 1px solid var(--dk-line);
+  color: var(--dk-fg-2);
+  font-size: 14px;
+}
+
+.dk-footer__inner {
+  display: grid;
+  gap: 40px;
+  max-width: var(--dk-frame);
+  margin: 0 auto;
+  padding: 56px var(--dk-gutter) 40px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  @media (width >= 768px) {
+    grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  }
+}
+
+.dk-footer__brand {
+  grid-column: 1 / -1;
+
+  @media (width >= 768px) {
+    grid-column: auto;
+  }
+
+  /* Nested, to outrank the wordmark's own size */
+  .dk-footer__logo {
+    font-size: 22px;
+  }
+
+  p {
+    max-width: 34ch;
+    margin: 16px 0 0;
+    line-height: 1.6;
+  }
+}
+
+.dk-footer__version code {
+  padding: 3px 8px;
+  border: 1px solid var(--dk-line);
+  border-radius: 999px;
+  color: var(--dk-fg-3);
+  font-family: var(--dk-font-mono);
+  font-size: 12px;
+}
+
+.dk-footer__title {
+  margin: 0 0 14px;
+  color: var(--dk-fg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dk-footer__column ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dk-footer a {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--dk-fg);
+  }
+}
+
+.dk-footer__legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  max-width: var(--dk-frame);
+  margin: 0 auto;
+  padding: 20px var(--dk-gutter) 32px;
+  border-top: 1px solid var(--dk-line);
+  color: var(--dk-fg-3);
+  font-size: 13px;
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+/* The 404 page */
+.dk-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: clamp(56px, 10vw, 120px) var(--dk-gutter);
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+}
+
+.dk-not-found__kitten {
+  width: 180px;
+  margin-bottom: 24px;
+}
+
+.dk-not-found__lead {
+  margin: 16px 0 0;
+  color: var(--dk-fg-2);
+  font-size: 17px;
+  line-height: 1.6;
+}

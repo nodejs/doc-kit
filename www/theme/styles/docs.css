@@ -1,0 +1,156 @@
+/* Documentation pages: doc-kit's own layout and components, as they are,
+   with the sidebar and outline kept below the sticky navigation bar. */
+
+.dk-shell--doc {
+  /* doc-kit's components' class names are hashed, so the layout is matched
+     on the stable part of its name */
+  [class*='_articleLayout'] {
+    @media (width >= 896px) {
+      & > :first-child {
+        top: var(--dk-header);
+      }
+    }
+
+    @media (width >= 80rem) {
+      & > :nth-child(2) > :last-child {
+        top: var(--dk-header);
+        max-height: calc(100svh - var(--dk-header));
+      }
+    }
+  }
+
+  main {
+    h1,
+    h2,
+    h3 {
+      letter-spacing: -0.02em;
+    }
+
+    /* The root's scroll-padding-top already clears the navigation bar, and
+       a margin would add to it */
+    :is(h1, h2, h3, h4, h5, h6)[id] {
+      scroll-margin-top: 0;
+    }
+
+    /* Code in headings reads as part of the heading, not as an inline chip */
+    :is(h1, h2, h3, h4, h5, h6) code:not(.type) {
+      padding: 0;
+      border: 0;
+      background: none;
+      font-size: 0.92em;
+      font-weight: inherit;
+    }
+
+    /* doc-kit's neutral palette turns links a grey lighter than the text
+       around them. Alerts and type links keep their own style. */
+    a:not([class], [class*='_alertBox'] a, :is(h1, h2, h3, h4, h5, h6) a) {
+      color: var(--dk-fg);
+      font-weight: 500;
+      text-decoration: underline;
+      text-decoration-color: var(--dk-fg-3);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+
+      &:hover {
+        text-decoration-color: currentColor;
+      }
+    }
+
+    /* Code tabs: the palette also left the selected tab no brighter than the
+       others. On narrow screens, tabs wrap rather than being cut off. */
+    [role='tablist'][class*='_tabsList'] {
+      flex-wrap: wrap;
+
+      > [role='tab'][class*='_tabsTrigger'] {
+        border-bottom-width: 2px;
+        color: var(--dk-fg-2);
+
+        &[data-state='active'] {
+          border-bottom-color: var(--dk-fg);
+          color: var(--dk-fg);
+        }
+      }
+    }
+
+    /* White on doc-kit's light grey "Note" alert is hard to read */
+    [class*='_alertBox'][class*='_neutral'] {
+      background-color: var(--color-neutral-800);
+
+      [class*='_title'] {
+        background-color: var(--color-neutral-900);
+      }
+    }
+
+    /* doc-kit breaks these anywhere, words included */
+    [class*='_description'] {
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+
+    /* Table cells too, and their code below 1024px. Code keeps
+       `overflow-wrap: break-word` instead, as `anywhere` would let the table
+       layout squeeze columns narrower than their words. */
+    table td {
+      word-break: normal;
+    }
+
+    table :is(td, th) code {
+      overflow-wrap: break-word;
+      word-break: normal;
+    }
+
+    /* A table wider than its wrapper scrolls in it, rather than widening the
+       page. In narrow ones, the last column, usually the prose, counts for at
+       most a share of the width, so the label and code columns before it keep
+       their tokens whole: Chrome sizes columns by their cells' max-width. */
+    .overflow-container {
+      container-type: inline-size;
+    }
+
+    @media (width > 40rem) {
+      @container (width < 50rem) {
+        table :is(td, th):last-child {
+          max-width: 64cqi;
+        }
+      }
+    }
+
+    /* Tables become a card per row on phones, with each cell's column name
+       beside it: lay the two out side by side, rather than the name over
+       the value */
+    @media (width <= 40rem) {
+      table:not([data-cards='false']) td {
+        display: table;
+        width: 100%;
+        padding-left: 0;
+        color: inherit;
+        table-layout: fixed;
+
+        &::before {
+          display: table-cell;
+          position: static;
+          width: 33.333%;
+          padding-right: 16px;
+          color: var(--dk-fg-2);
+          translate: none;
+        }
+      }
+    }
+  }
+}
+
+/* The list of the sidebar's select, below 896px, portaled into <body>: as wide
+   as the select rather than ui-components' 20rem, and over the navigation bar,
+   which would hide its top. Radix gives its wrapper the list's z-index. */
+[role='listbox'][class*='_dropdown']:not([class*='_inline']) {
+  z-index: 60;
+  max-width: none;
+}
+
+/* White on the palette's mid grey is too faint: highlight options in the
+   colors the theme menu marks its current item with */
+[role='listbox'][class*='_dropdown']:not([class*='_inline'])
+  [class*='_text'][data-highlighted] {
+  background-color: var(--dk-fg);
+  color: var(--dk-bg);
+}
