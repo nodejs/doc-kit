@@ -50,14 +50,14 @@ export async function generate(entries) {
   const urlset = apiPages
     .map(page =>
       entryTemplate
-        .replace('__LOC__', page.loc)
-        .replace('__LASTMOD__', page.lastmod)
-        .replace('__CHANGEFREQ__', page.changefreq)
-        .replace('__PRIORITY__', page.priority)
+        .replace('__LOC__', () => page.loc)
+        .replace('__LASTMOD__', () => page.lastmod)
+        .replace('__CHANGEFREQ__', () => page.changefreq)
+        .replace('__PRIORITY__', () => page.priority)
     )
     .join('');
 
-  const sitemap = template.replace('__URLSET__', urlset);
+  const sitemap = template.replace('__URLSET__', () => urlset);
 
   if (config.output) {
     await writeFile(join(config.output, 'sitemap.xml'), sitemap, 'utf-8');

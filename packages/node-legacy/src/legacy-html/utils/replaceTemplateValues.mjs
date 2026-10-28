@@ -27,16 +27,17 @@ export const replaceTemplateValues = (
   return apiTemplate
     .replace('__ID__', api)
     .replace(/__FILENAME__/g, api)
-    .replace('__SECTION__', section)
+    .replace('__SECTION__', () => section)
     .replace(/__VERSION__/g, `v${config.version.version}`)
-    .replace(/__TOC__/g, tableOfContents.wrapToC(toc))
-    .replace(/__GTOC__/g, nav)
-    .replace('__CONTENT__', content)
-    .replace(/__TOC_PICKER__/g, buildToC(toc))
-    .replace(/__GTOC_PICKER__/g, skipGtocPicker ? '' : buildNavigation(nav))
-    .replace('__ALTDOCS__', buildVersions(path, added, config.changelog))
-    .replace(
-      '__EDIT_ON_GITHUB__',
+    .replace(/__TOC__/g, () => tableOfContents.wrapToC(toc))
+    .replace(/__GTOC__/g, () => nav)
+    .replace('__CONTENT__', () => content)
+    .replace(/__TOC_PICKER__/g, () => buildToC(toc))
+    .replace(/__GTOC_PICKER__/g, () =>
+      skipGtocPicker ? '' : buildNavigation(nav)
+    )
+    .replace('__ALTDOCS__', () => buildVersions(path, added, config.changelog))
+    .replace('__EDIT_ON_GITHUB__', () =>
       skipGitHub
         ? ''
         : buildGitHub(populate(config.editURL, { ...config, path }))
