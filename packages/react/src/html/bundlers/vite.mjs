@@ -2,6 +2,7 @@ import { readFile, rm, rmdir } from 'node:fs/promises';
 import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import './wasm-fallback.mjs';
 import {
   build as viteBuild,
   defaultClientConditions,
