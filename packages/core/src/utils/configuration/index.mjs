@@ -22,7 +22,11 @@ import {
 import { resolveMarkdown } from '#utils/markdown/plugins.mjs';
 import { deepMerge } from '#utils/misc.mjs';
 
-import { DEFAULT_CHUNK_SIZE, DEFAULT_MAX_THREADS } from './constants.mjs';
+import {
+  DEFAULT_CHUNK_SIZE,
+  DEFAULT_MAX_THREADS,
+  DEFAULT_OUTPUT_DIRECTORY,
+} from './constants.mjs';
 
 const configExplorer = cosmiconfig('doc-kit');
 
@@ -63,6 +67,7 @@ export const getDefaultConfig = (generators, config) =>
         project: detectProject() ?? 'API Docs',
         version: process.version,
         minify: false,
+        output: DEFAULT_OUTPUT_DIRECTORY,
         ref: 'HEAD',
         // Without release history there is nothing to build a version picker
         // from, so generators render single-version output.

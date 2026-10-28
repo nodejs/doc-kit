@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 
 import createGenerator from '@doc-kit/core';
 import logger from '@doc-kit/core/logger/index.mjs';
+import { DEFAULT_OUTPUT_DIRECTORY } from '@doc-kit/core/utils/configuration/constants.mjs';
 import {
   assertRunnableOptions,
   setConfig,
@@ -13,8 +14,6 @@ import { errorWrap } from '../utils.mjs';
 import { generateOptions } from './generate.mjs';
 
 const { runGenerators } = createGenerator();
-
-const DEFAULT_OUTPUT = './out';
 
 /**
  * Options that only affect serving, and therefore don't trigger a build
@@ -57,7 +56,7 @@ export default preview.action(
       throw new Error(`Invalid port: ${opts.port}`);
     }
 
-    let output = opts.output ?? DEFAULT_OUTPUT;
+    let output = opts.output ?? DEFAULT_OUTPUT_DIRECTORY;
 
     if (shouldBuild(command)) {
       const config = await setConfig(opts);
@@ -65,7 +64,8 @@ export default preview.action(
 
       await runGenerators(config);
 
-      output = config.global.output ?? DEFAULT_OUTPUT;
+      // With the default coming from the configuration, this is always set
+      output = config.global.output;
     } else if (!existsSync(output)) {
       throw new Error(
         `Nothing to serve: \`${output}\` does not exist. Run ` +
