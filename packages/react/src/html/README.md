@@ -43,10 +43,10 @@ the placeholders described below.
   is the page's path without an extension (`/api/fs`; on section pages, their
   module's), and `{version}` the version with a `v` (`v22.11.0`).
   **Default:** none, which leaves the link out.
-- `pageURL` {string} Template for a page's URL in another version, which the
-  [version selector](#version-selector) links to. `{version}` is each
-  release's label, such as `v22.x`, and `{path}` the page's path.
-  **Default:** `'{baseURL}{path}.html'`.
+- `pageURL` {string} Template for a page's URL, for its canonical link and
+  for the [version selector](#version-selector)'s links to it in other
+  versions. `{version}` is a release's label, such as `v22.x`, and `{path}`
+  the page's path. **Default:** `'{baseURL}{path}.html'`.
 - `useAbsoluteURLs` {boolean} Link pages, and load the client assets, through
   absolute URLs under `baseURL` instead of relative ones. **Default:** `false`.
 - `showSearchBox` {boolean} Show the search box in the navigation bar. It
@@ -254,8 +254,9 @@ export default {
 };
 ```
 
-The built-in template writes the `<title>`, `og:title` and `og:type` itself,
-and the stylesheet bundles its own fonts, so none of them need an entry.
+The built-in template writes the `<title>`, `og:title`, `og:type`, the
+canonical link and `theme-color` itself, and the stylesheet bundles its own
+fonts, so none of them need an entry.
 
 ## Stylesheets
 
@@ -299,6 +300,9 @@ These variables are in scope:
   `<script type="speculationrules">`. Links within the site navigate
   client-side instead.
 - `dehydrated` {string} The server-rendered page, for the `<body>`.
+- `canonical` {string} The page's URL, from `pageURL` and `baseURL`, for a
+  `<link rel="canonical">`. It's empty without a `baseURL`, and on `404.html`
+  and `all.html`.
 - `root` {string} The site root, relative to the page (such as `'../'`), or
   absolute with `useAbsoluteURLs`. On `404.html` and `all.html`, which can be
   served from any path, it's `'/'` unless `useAbsoluteURLs` is on. Prefix your
