@@ -1,6 +1,5 @@
 # Pages the site no longer builds, sent to where their content lives now.
 # Cloudflare reads this file on deploy; it is not served.
 
-# `html.generateAllPage` is off, and `docs/index.md` became the introduction
-/all / 301
+# `docs/index.md` became the introduction
 /index.md /introduction.md 301

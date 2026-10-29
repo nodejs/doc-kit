@@ -1,3 +1,4 @@
+import { globSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,9 +18,8 @@ const REPOSITORY = 'nodejs/doc-kit';
 const BASE_URL = 'https://doc-kit.nodejs.org';
 
 const DESCRIPTION =
-  'doc-kit turns Markdown, MDX, TypeScript and JSDoc into API docs: a fast, ' +
-  "searchable site, JSON, LLMs.txt and more. It's the toolkit behind the " +
-  'Node.js API docs.';
+  'doc-kit turns Markdown and MDX into API docs: a fast, searchable site, ' +
+  "JSON, LLMs.txt and more. It's the toolkit behind the Node.js API docs.";
 
 // The generators' reference pages, by what they make. Each is named for its
 // output in the sidebar; its page gives its target name.
@@ -68,28 +68,19 @@ const ISLANDS = {
   PipelineFlow: 'components/PipelineFlow.jsx',
 };
 
-// The components `www/pages/index.mdx` lays out its sections with, by the
-// module exporting them
-const HOME = {
-  'home/sections.jsx': [
-    'Hero',
-    'Actions',
-    'Button',
-    'UsedBy',
-    'Stats',
-    'Stat',
-    'Fact',
-    'Section',
-    'Performance',
-    'Formats',
-    'Features',
-    'Feature',
-    'Steps',
-    'Step',
-    'Closing',
-  ],
-  'home/previews.jsx': ['SitePreview', 'SearchPreview'],
-};
+// The components `www/pages/index.mdx` lays out its sections with: every
+// export of these modules
+const HOME = Object.fromEntries(
+  ['home/sections.jsx'].map(file => [
+    file,
+    Array.from(
+      readFileSync(join(THEME, file), 'utf-8').matchAll(
+        /^export const (\w+)/gm
+      ),
+      ([, name]) => name
+    ),
+  ])
+);
 
 const componentAliases = {
   ...Object.fromEntries(
@@ -124,7 +115,13 @@ const components = {
 };
 
 // Build-time facts for the theme, as the `#theme/site` module
-const site = { version };
+const site = {
+  version,
+  generators: globSync(
+    'packages/{core/src/generators,react/src,node/src}/*/generate.mjs',
+    { cwd: REPO }
+  ).length,
+};
 
 const INTER = dirname(
   require.resolve('@fontsource-variable/inter/package.json')
@@ -167,9 +164,10 @@ export default {
 
   html: {
     title: '{project}',
+    // The host serves pages without their extension
+    pageURL: '{baseURL}{path}',
     templatePath: join(THEME, 'template.html'),
     stylesheets: [join(THEME, 'styles', 'index.css')],
-    generateAllPage: false,
 
     // Pages are assembled into `www/content/` at build time, so there is no
     // single source file a `{path}` template could point at. Link to the repo
@@ -244,6 +242,10 @@ export default {
             },
             { label: '`@doc-kit/typedoc`', link: '/packages/typedoc' },
             { label: '`@node-core/doc-kit`', link: '/packages/node' },
+            {
+              label: '`@node-core/doc-kit-legacy`',
+              link: '/packages/node-legacy',
+            },
           ],
         },
         {
