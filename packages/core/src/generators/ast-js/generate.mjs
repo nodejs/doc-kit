@@ -44,9 +44,9 @@ export async function processChunk(inputSlice, itemIndices) {
 export async function* generate(_, worker) {
   const config = getConfig('ast-js');
 
-  const files = findFiles(config.input, { ignore: config.ignore }).filter(
-    p => extname(p) === '.js'
-  );
+  const files = findFiles(config.input, { ignore: config.ignore })
+    .filter(p => extname(p) === '.js')
+    .sort();
 
   // Parse the Javascript sources into ASTs in parallel using worker threads
   // source is both the items list and the fullInput since we use sliceInput

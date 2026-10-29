@@ -116,10 +116,9 @@ export async function* generate(_, worker) {
   const files = config.input.flatMap(input => {
     const parent = globParent(input);
 
-    return findFiles(input, { ignore: config.ignore }).map(child => [
-      child,
-      parent,
-    ]);
+    return findFiles(input, { ignore: config.ignore })
+      .sort()
+      .map(child => [child, parent]);
   });
 
   // Parse markdown files in parallel using worker threads
