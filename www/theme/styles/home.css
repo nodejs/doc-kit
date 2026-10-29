@@ -555,6 +555,235 @@
   height: 500px;
 }
 
+/* The site, in miniature */
+.dk-mock {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  font-size: 13.5px;
+}
+
+.dk-mock__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+
+  p {
+    flex: 1;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+.dk-mock__kind {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-info-600);
+  color: var(--color-white);
+  font-family: var(--dk-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dk-mock__history {
+  padding: 3px 10px;
+  border: 1px solid var(--dk-line);
+  border-radius: 8px;
+  color: var(--dk-fg-2);
+  font-size: 12px;
+}
+
+.dk-mock__signature {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--dk-line);
+  border-radius: 8px;
+  color: var(--dk-tk-text);
+  font-family: var(--dk-font-mono);
+  font-size: 12.5px;
+}
+
+.dk-mock__stability {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--color-warning-600);
+  color: var(--color-white);
+  font-size: 12.5px;
+
+  span {
+    margin-right: 6px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--color-warning-700);
+    font-family: var(--dk-font-mono);
+    font-size: 11.5px;
+  }
+}
+
+.dk-mock__params {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--dk-line);
+  border-radius: 8px;
+}
+
+.dk-mock__param {
+  margin: 0;
+  padding: 10px 14px;
+
+  & + & {
+    border-top: 1px solid var(--dk-line);
+  }
+
+  code {
+    color: var(--dk-fg);
+    font-family: var(--dk-font-mono);
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+.dk-mock__text {
+  display: block;
+  margin-top: 4px;
+  color: var(--dk-fg-2);
+  font-size: 12.5px;
+
+  code {
+    font-weight: 400;
+  }
+}
+
+.dk-mock__nested {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--dk-line);
+  border-radius: 8px;
+
+  p {
+    margin: 0;
+  }
+}
+
+.dk-mock__returns {
+  background: var(--dk-bg-soft);
+}
+
+.dk-mock__type {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--dk-code-bg);
+  color: var(--dk-tk-type);
+  font-family: var(--dk-font-mono);
+  font-size: 12px;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+/* Search, in miniature */
+.dk-search-mock {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 20px 0;
+
+  /* Nested, to outrank the rule for code in a pane */
+  [role='tabpanel'] & [data-island-name='CodeBox'] > div {
+    flex: none;
+    width: auto;
+    max-width: none;
+    margin: 0 -20px;
+    border-top: 1px solid var(--dk-line);
+  }
+
+  & > p {
+    margin: 8px 0 0;
+    color: var(--dk-fg-3);
+    font-size: 12.5px;
+  }
+}
+
+.dk-search-mock__box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--dk-line-strong);
+  border-radius: 10px;
+  font-size: 14px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: var(--dk-fg-3);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+
+  span {
+    flex: 1;
+  }
+
+  kbd {
+    padding: 2px 6px;
+    border: 1px solid var(--dk-line);
+    border-radius: 5px;
+    color: var(--dk-fg-3);
+    font-family: var(--dk-font-mono);
+    font-size: 11px;
+
+    /* Like the header's search button, on platforms where it's Ctrl K */
+    [data-modifier='ctrl'] & {
+      font-size: 0;
+
+      &::before {
+        content: 'Ctrl K' / '';
+        font-size: 11px;
+      }
+    }
+  }
+}
+
+.dk-search-mock__result {
+  padding: 12px 14px;
+  border: 1px solid var(--dk-line);
+  border-radius: 10px;
+
+  p {
+    margin: 0;
+    color: var(--dk-fg-2);
+    font-size: 13px;
+  }
+
+  .dk-search-mock__section {
+    color: var(--dk-fg-3);
+    font-family: var(--dk-font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .dk-search-mock__title {
+    margin: 4px 0;
+    color: var(--dk-fg);
+    font-family: var(--dk-font-mono);
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
 /* Features */
 .dk-bento {
   display: grid;

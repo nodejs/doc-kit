@@ -64,7 +64,7 @@ const guideItems = [
 // The components `www/pages/index.mdx` lays out its sections with: every
 // export of these modules
 const HOME = Object.fromEntries(
-  ['home/sections.jsx'].map(file => [
+  ['home/sections.jsx', 'home/previews.jsx'].map(file => [
     file,
     Array.from(
       readFileSync(join(THEME, file), 'utf-8').matchAll(
