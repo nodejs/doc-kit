@@ -124,7 +124,9 @@ export async function adopt(name, options = {}) {
 }
 ```
 
-<CodeTabs languages="json|json|md" displayNames="JSON|Search index|LLMs.txt">
+<CodeTabs languages="html|json|json|md" displayNames="Site|JSON|Search|LLMs.txt">
+
+<SitePreview />
 
 ```json
 {
@@ -169,6 +171,10 @@ export async function adopt(name, options = {}) {
 }
 ```
 
+<SearchPreview>
+
+Its entry in the search index:
+
 ```json
 {
   "title": "adopt",
@@ -177,6 +183,8 @@ export async function adopt(name, options = {}) {
   "siteSection": "Kittens"
 }
 ```
+
+</SearchPreview>
 
 ```md
 # Kittens Documentation
