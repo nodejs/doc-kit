@@ -183,23 +183,6 @@ body {
   }
 }
 
-/* doc-kit's code tabs, on the documentation pages and the home page: the
-   neutral palette leaves the selected tab no brighter than the others. On
-   narrow screens, tabs wrap rather than being cut off. */
-:is(.dk-shell--doc main, .dk-home) [role='tablist'][class*='_tabsList'] {
-  flex-wrap: wrap;
-
-  > [role='tab'][class*='_tabsTrigger'] {
-    border-bottom-width: 2px;
-    color: var(--dk-fg-2);
-
-    &[data-state='active'] {
-      border-bottom-color: var(--dk-fg);
-      color: var(--dk-fg);
-    }
-  }
-}
-
 /* The colors of code in the home page's illustrations, which are drawn rather
    than highlighted */
 .tk-keyword {
