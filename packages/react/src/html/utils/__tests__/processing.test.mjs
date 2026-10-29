@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { beforeEach, describe, it } from 'node:test';
 
 import {
   default as getConfig,
@@ -12,6 +12,7 @@ import {
   buildHead,
   buildSpeculationRules,
   pageFileName,
+  populatePage,
   populateWithEvaluation,
   resolvePageRoot,
 } from '../processing.mjs';
@@ -292,5 +293,37 @@ describe('pageFileName', () => {
   it('derives the output file from the page path', () => {
     assert.strictEqual(pageFileName({ path: '/api/fs' }), 'api/fs.html');
     assert.strictEqual(pageFileName({ path: '/404' }), '404.html');
+  });
+});
+
+describe('populatePage', () => {
+  beforeEach(() => {
+    getConfig('html').baseURL = 'https://nodejs.org/docs';
+  });
+
+  const canonical = data =>
+    populatePage({
+      template: '${canonical}',
+      data: { title: 'Page', ...data },
+      dehydrated: '',
+      assets: { scripts: [], preloads: [], stylesheets: [] },
+    });
+
+  it('links a page to its URL', () => {
+    assert.strictEqual(
+      canonical({ path: '/fs' }),
+      'https://nodejs.org/docs/fs.html'
+    );
+  });
+
+  it('links the index to the site root', () => {
+    assert.strictEqual(
+      canonical({ path: '/index' }),
+      'https://nodejs.org/docs/'
+    );
+  });
+
+  it('leaves synthetic pages without one', () => {
+    assert.strictEqual(canonical({ path: '/404', synthetic: true }), '');
   });
 });
