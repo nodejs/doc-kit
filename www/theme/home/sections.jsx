@@ -5,8 +5,6 @@ import CodeTabs from '@doc-kit/generator-react/html/ui/components/CodeTabs.jsx';
 import { toChildArray } from 'preact';
 
 import { Kitten } from '../components/Brand.jsx';
-import HeroFlow from '../components/HeroFlow.jsx';
-import PipelineFlow from '../components/PipelineFlow.jsx';
 import {
   BENCHMARK,
   GENERATOR_COUNT,
@@ -61,7 +59,16 @@ export const Hero = ({ badge, badgeLink, title, accent, children }) => (
       {children}
     </div>
     <div class="dk-hero__visual">
-      <HeroFlow />
+      {/* On phones, a drawing without the labels, too small to read there */}
+      <picture class="dk-animation">
+        <source media="(width < 420px)" srcset="/home/hero-narrow.svg" />
+        <img
+          src="/home/hero.svg"
+          width="552"
+          height="414"
+          alt="Markdown, MDX, TypeScript and JSDoc sources flow into doc-kit, which parses them once into typed API entries and writes HTML, JSON, the search index, llms.txt and a man page from them."
+        />
+      </picture>
     </div>
   </section>
 );
@@ -216,10 +223,15 @@ const Bench = ({ benchmark }) => {
 export const Performance = ({ children }) => (
   <div class="dk-split">
     <div class="dk-panel dk-flow">
-      <PipelineFlow
-        pages={SITE_BENCHMARK.pages}
-        documents={SITE_BENCHMARK.documents}
-      />
+      <picture class="dk-animation">
+        <source media="(width < 520px)" srcset="/home/pipeline-narrow.svg" />
+        <img
+          src="/home/pipeline.svg"
+          width="563"
+          height="422"
+          alt="doc-kit's worker pool, a slab with a lane for each of its four threads, and around it a tile for each generator this site's build runs, joined by rails from each generator to the ones that read its result. Each sends its work to the pool in chunks, collects every chunk back, and only then hands its whole result on. The outputs that read the same entries run side by side, and each result is freed once its last reader is done, which the memory trace below shows dipping."
+        />
+      </picture>
       {children}
     </div>
 
