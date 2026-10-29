@@ -46,12 +46,6 @@ html [class*='_dropDownContent'][role='menu'] {
   }
 }
 
-/* Closing the menu focuses its trigger again, which matches :focus-visible
-   even after a click; template.html marks pointer input */
-html[data-input='pointer'] button[class*='_themeToggle']:focus-visible {
-  outline: none;
-}
-
 /* The search button in the header */
 html button[class*='_searchButton'] {
   border-color: var(--dk-line-strong);
@@ -75,17 +69,6 @@ html button[class*='_searchButton'] {
     color: var(--dk-fg-3);
     font-family: var(--dk-font-mono);
     font-size: 12px;
-
-    /* ui-components always writes ⌘ K; template.html marks the platforms
-       where the shortcut is Ctrl K */
-    [data-modifier='ctrl'] & {
-      font-size: 0;
-
-      &::before {
-        content: 'Ctrl K' / '';
-        font-size: 12px;
-      }
-    }
   }
 }
 
