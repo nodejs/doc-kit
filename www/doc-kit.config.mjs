@@ -146,16 +146,6 @@ export default {
 
   'jsx-ast': {
     showReadingTime: true,
-
-    markdown: {
-      // Inlines `docs/diagrams/*.svg`, so they follow the color scheme
-      rehypePlugins: [
-        [
-          './theme/plugins/rehype-diagrams.mjs',
-          { directory: join(REPO, 'docs', 'diagrams') },
-        ],
-      ],
-    },
   },
 
   sitemap: {
