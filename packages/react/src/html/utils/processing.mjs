@@ -1,5 +1,6 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
+import { getVersionFromSemVer } from '@doc-kit/core/utils/generators.mjs';
 
 import { ROUTER_DATA_ATTRIBUTE } from '../ui/constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
@@ -216,6 +217,16 @@ export const populatePage = ({ template, data, dehydrated, assets }) => {
   const root = resolvePageRoot(data);
   const title = data.title ?? data.heading.data.name;
 
+  // Synthetic pages, such as `404.html`, aren't served at a URL of their own
+  const canonical =
+    config.baseURL && !data.synthetic
+      ? populate(data.path === '/index' ? '{baseURL}/' : config.pageURL, {
+          ...config,
+          version: `v${getVersionFromSemVer(config.version)}`,
+          path: data.path,
+        })
+      : '';
+
   return populateWithEvaluation(template, {
     title: escapeHTML(
       title ? (titleSuffix ? `${title} | ${titleSuffix}` : title) : titleSuffix
@@ -226,6 +237,7 @@ export const populatePage = ({ template, data, dehydrated, assets }) => {
     themeScript: THEME_SCRIPT,
     preloads: buildPreloads(assets.fonts ?? [], root),
     root,
+    canonical,
     metadata: data,
     config,
     head: buildHead(config.head),
