@@ -3,26 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${metadata.layout === 'home' ? 'doc-kit · The docs toolkit for APIs' : title}</title>
-    <meta
-      property="og:title"
-      content="${metadata.layout === 'home' ? 'doc-kit · The docs toolkit for APIs' : title}"
-    />
+    <title>${title}</title>
+    <meta property="og:title" content="${title}" />
     <meta property="og:type" content="website" />
-    ${metadata.synthetic ? '' : `<link rel="canonical" href="${config.baseURL}${metadata.path.replace(/(^|\/)index$/, '$1')}" />`}
-    <meta
-      name="theme-color"
-      content="#0d121c"
-      media="(prefers-color-scheme: dark)"
-    />
+    ${canonical && `<link rel="canonical" href="${canonical}" />`}
     <meta
       name="theme-color"
       content="#ffffff"
       media="(prefers-color-scheme: light)"
     />
+    <meta
+      name="theme-color"
+      content="#0d121c"
+      media="(prefers-color-scheme: dark)"
+    />
 
-    <!-- Inter is the site's typeface; of doc-kit's own fonts, only the
-         monospace one is used -->
+    <!-- The site's text is set in Inter, so of the fonts doc-kit preloads,
+         only its monospace one is kept -->
     <link
       rel="preload"
       href="${root}fonts/inter-latin-wght-normal.woff2"
@@ -56,29 +53,6 @@
     <!-- Apply theme before paint to avoid Flash of Unstyled Content -->
     <script>
       ${themeScript}
-    </script>
-    <!-- Marks the platforms where shortcuts take Ctrl instead of ⌘, and
-         whether the last input came from a pointer or the keyboard, for the
-         theme's CSS -->
-    <script>
-      (() => {
-        const root = document.documentElement;
-        const platform =
-          navigator.userAgentData?.platform || navigator.platform || '';
-
-        if (!/mac|iphone|ipad|ipod/i.test(platform)) {
-          root.dataset.modifier = 'ctrl';
-        }
-
-        const track = input => () => {
-          if (root.dataset.input !== input) {
-            root.dataset.input = input;
-          }
-        };
-
-        addEventListener('pointerdown', track('pointer'), true);
-        addEventListener('keydown', track('keyboard'), true);
-      })();
     </script>
     <script type="speculationrules">
       ${speculationRules}
