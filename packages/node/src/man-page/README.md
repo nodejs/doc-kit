@@ -5,15 +5,12 @@ page that documents a command's options and environment variables. Node.js
 uses it to build `node.1` from `doc/api/cli.md`, and it works for any command
 documented the same way.
 
-**Target:** `man-page` · **Package:** [`@node-core/doc-kit`](https://doc-kit.nodejs.org/packages/node) · **Reads:** [API entries](https://doc-kit.nodejs.org/generators/metadata) · **Writes:** `node.1`
-
 ## Usage
 
 The defaults fit Node.js's own page. From the root of a Node.js checkout:
 
 ```bash
-npm install --save-dev @doc-kit/cli @node-core/doc-kit
-npx doc-kit generate -t man-page -i doc/api/cli.md -o out
+npx @doc-kit/cli generate -t man-page -i doc/api/cli.md -o out
 ```
 
 This writes `out/node.1`; on Linux, read it with `man -l out/node.1`. Pass only
@@ -22,9 +19,6 @@ across everything it reads. For another command, see
 [Using your own template](#using-your-own-template).
 
 ## Configuring
-
-Options go in the `man-page` section of the
-[configuration file](https://doc-kit.nodejs.org/configuration):
 
 - `fileName` {string} The name of the file to write. **Default:** `'node.1'`.
 - `templatePath` {string} The mdoc template to fill in, as an absolute path or
@@ -35,8 +29,9 @@ Options go in the `man-page` section of the
 - `envVarsHeaderSlug` {string} The slug of the heading that starts the
   environment variables section. **Default:** `'environment-variables-1'`, the
   second "Environment variables" heading in Node.js's `cli.md`.
-- `output` {string} The directory to write the man page to. Without one,
-  nothing is written. **Default:** from `global.output` (`--output`).
+
+It writes to `output`, a
+[global option](https://doc-kit.nodejs.org/configuration#global-options).
 
 ## Writing the command-line page
 
@@ -70,14 +65,11 @@ Where mytool keeps its cache. **Default:** `~/.mytool`.
 - Options are the `###` headings between the options heading and the
   environment variables heading, so the options section must come first.
 - Environment variables are the `###` headings after their heading, up to the
-  next `#` or `##` heading. Follow the section with another `#` or `##`
-  heading: when it ends the page, its last variable is left out.
+  next `#` or `##` heading.
 - Text right under a section heading, and `####` headings with their content,
   are left out.
 
-A slug is the anchor doc-kit gives a heading when it builds the
-[API entries](https://doc-kit.nodejs.org/generators/metadata#heading-kinds):
-GitHub-style, lowercase with hyphens for spaces, and with `-1`, `-2` and so on
+A slug is the anchor doc-kit gives a heading: GitHub-style, lowercase with hyphens for spaces, and with `-1`, `-2` and so on
 when the same heading appears earlier on the page. Node.js's `cli.md` has a
 `#### Environment variables` heading under `--run`, so its section is
 `environment-variables-1`. A page like the one above, with a single
@@ -166,7 +158,7 @@ export default {
 
 With the page from
 [Writing the command-line page](#writing-the-command-line-page),
-`npx doc-kit generate -t man-page -i docs/cli.md -o out` writes
+`npx @doc-kit/cli generate -t man-page -i docs/cli.md -o out` writes
 `out/mytool.1`. In `man -l out/mytool.1`, after the name and synopsis from the
 template, its sections read:
 

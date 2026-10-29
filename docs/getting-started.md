@@ -26,44 +26,21 @@ Create `docs/kittens.md`:
 # Kittens
 
 The `kittens` module adopts, feeds, and pets kittens.
-
-## `kittens.adopt(name[, options])`
-
-<!-- YAML
-added: v1.0.0
--->
-
-- `name` {string} The kitten's name.
-- `options` {Object}
-  - `color` {string} Coat color. **Default:** `'tabby'`.
-- Returns: {Promise} Fulfills with the adopted kitten.
-
-Adopts a kitten, once the paperwork is done.
 ```
 
-It's regular Markdown, and reads as such on GitHub. doc-kit also reads the API
-in it: the heading is a method with its signature, the list holds its typed
-parameters, and the comment is its history.
-[Writing documentation](./writing-docs.md) covers the rest.
-
-> [!TIP]
-> Documenting a TypeScript or JavaScript project?
-> [`@doc-kit/typedoc`](./packages/typedoc.md) writes these pages from your
-> source code and its JSDoc comments; see
-> [Documenting TypeScript](./typescript.md).
+[Writing documentation](./writing-docs.md) shows how to document an API in
+it.
 
 ## Configure
 
 Create `doc-kit.config.mjs` next to your `package.json`:
 
-```js displayName="doc-kit.config.mjs"
+```mjs displayName="doc-kit.config.mjs"
 /** @type {import('@doc-kit/core/utils/configuration/types').Configuration} */
 export default {
   target: ['html', 'orama-db'],
 
   global: {
-    project: 'Kittens',
-    version: '1.0.0',
     input: ['docs/**/*.md'],
     output: 'out',
   },
@@ -73,17 +50,15 @@ export default {
 - `target` lists the generators to run: `html` builds the site, and
   `orama-db` its search index.
 - `input` takes glob patterns, and `output` is the directory to write to.
-- `project` and `version` go into page titles. Without them, doc-kit uses the
-  `name` in your `package.json` and the version of Node.js running it.
 
-`target`, `input`, `output` and `version` also have [CLI](./cli.md) flags,
-which win over the file. The [configuration reference](./configuration.md)
+`target`, `input` and `output` also have [CLI](./cli.md) flags, which win
+over the file. The [configuration reference](./configuration.md)
 lists every other option.
 
 ## Build and preview
 
 ```bash
-npx doc-kit generate
+npx @doc-kit/cli generate
 ```
 
 The site is written to `out/`: one page per Markdown file, plus `all.html`
@@ -91,7 +66,7 @@ with every page on one. Its pages load their scripts as modules and hydrate in
 the browser, so serve them over HTTP rather than opening the files from disk:
 
 ```bash
-npx doc-kit preview
+npx @doc-kit/cli preview
 ```
 
 Then open <http://localhost:3000/kittens.html>. `preview` serves what
