@@ -14,7 +14,11 @@ import { Kitten } from './components/Brand.jsx';
 const HomeLayout = ({ metadata, children }) => (
   <div class="dk-shell dk-shell--home">
     <NavBar metadata={metadata} />
-    <main class="dk-home">{children}</main>
+    {/* Not a <main>: ui-components styles everything in one as an article's
+        prose, its links, headings and spacing */}
+    <div class="dk-home" role="main">
+      {children}
+    </div>
     <Footer />
   </div>
 );
@@ -27,7 +31,7 @@ const HomeLayout = ({ metadata, children }) => (
 const NotFoundLayout = ({ metadata }) => (
   <div class="dk-shell">
     <NavBar metadata={metadata} />
-    <main class="dk-not-found">
+    <div class="dk-not-found" role="main">
       <Kitten id="dk-kitten-404" variant="sleep" class="dk-not-found__kitten" />
       <p class="dk-eyebrow">404 · Page not found</p>
       <h1>Kit curled up on this page and fell asleep.</h1>
@@ -43,7 +47,7 @@ const NotFoundLayout = ({ metadata }) => (
           Getting started
         </a>
       </div>
-    </main>
+    </div>
     <Footer />
   </div>
 );
