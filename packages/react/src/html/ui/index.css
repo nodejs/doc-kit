@@ -109,7 +109,7 @@ main {
   }
 
   /* Change history positioning */
-  div:has(> h1, > h2, > h3, > h4, > h5, > h6) {
+  .heading {
     display: flex;
     align-items: start;
     gap: 8px;
@@ -144,7 +144,7 @@ main {
   }
 
   @media (min-width: 768px) {
-    div:has(> h1, > h2, > h3, > h4, > h5, > h6) {
+    .heading {
       flex-direction: row;
       align-items: center;
 
@@ -186,6 +186,24 @@ main {
 
       &::after {
         all: unset !important;
+      }
+    }
+  }
+
+  /* Code tabs: the selected tab in the text color, as the neutral brand
+     palette leaves it no brighter than the others, and wrapping rather than
+     scrolling out of view on narrow screens. ui-components styles the
+     selected tab with four classes, hence as many of Radix's attributes. */
+  [role='tablist'] {
+    flex-wrap: wrap;
+
+    > [role='tab'][data-state='active'][aria-selected='true'][data-orientation] {
+      border-bottom-color: var(--color-neutral-900);
+      color: var(--color-neutral-900);
+
+      &:where([data-theme='dark'] *) {
+        border-bottom-color: var(--color-white);
+        color: var(--color-white);
       }
     }
   }
