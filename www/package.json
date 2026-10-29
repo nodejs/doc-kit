@@ -5,7 +5,6 @@
   "type": "module",
   "description": "doc-kit's documentation site, built with doc-kit",
   "scripts": {
-    "benchmark": "node benchmark.mjs",
     "og": "node og/render.mjs"
   },
   "devDependencies": {
