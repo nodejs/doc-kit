@@ -1,25 +1,10 @@
 import { PRESS_EVENTS } from '../constants.mjs';
 
 /**
- * Holds on to the presses an island receives until its component has loaded.
- *
- * An island that hydrates on interaction starts loading its component once one
- * of its events reaches it, and a press that follows can land before the
- * component is there to handle it. The returned function dispatches those
- * presses again, each once the innermost island around it is ready, as a press
- * inside a nested island needs that island hydrated too. A held click's default
- * action, such as following a link, waits for its replay.
- *
- * Only presses dispatched after loading has started are held, as the event that
- * started it has already reached the island by then. With is-land's default
- * `click,touchstart`, the click that hydrates an island is never handled, and a
- * tap replays its click but not its `pointerdown`. An island that has to handle
- * its first press hydrates on `pointerover,focusin,touchstart` instead, as
- * `CodeBox` and `CodeTabs` do.
- *
- * Replays are untrusted copies dispatched after the gesture has ended: they
- * can't capture the pointer, and a press released outside the island replays
- * without its release.
+ * Holds the presses an island receives while its component loads, so they
+ * can be replayed once it's ready (each once the innermost island around it
+ * has hydrated). Only presses after loading started are held: the one that
+ * started it has already been dispatched.
  *
  * @param {HTMLElement} island
  * @returns {() => void} Stops holding and replays what was held.
