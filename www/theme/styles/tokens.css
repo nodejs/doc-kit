@@ -25,7 +25,7 @@
   --dk-accent-contrast: #ffffff;
   --dk-scrim: rgb(13 18 28 / 0.32);
 
-  /* The animations' palette: hexadecimal only, as `canvas.mjs` reads it */
+  /* The illustrations' palette, which the SVGs copy when they're drawn */
   --dk-c-fg: #0d121c;
   --dk-c-fg-2: #556066;
   --dk-c-fg-3: #929fa5;

@@ -185,10 +185,12 @@
   }
 }
 
-.dk-hero-flow {
+/* The home page's animations, SVGs that scale with their column */
+.dk-animation,
+.dk-animation img {
   display: block;
   width: 100%;
-  height: clamp(340px, 40vw, 480px);
+  height: auto;
 }
 
 /* The strip of sites built with doc-kit */
@@ -298,37 +300,6 @@
 }
 
 /* Performance */
-.dk-pipeline-flow {
-  display: block;
-  width: 100%;
-  min-height: 360px;
-  max-height: 440px;
-  aspect-ratio: 4 / 3;
-
-  /* On a phone, out into the panel's padding, for its labels' room */
-  @media (width < 600px) {
-    width: calc(100% + 20px);
-    margin-inline: -10px;
-  }
-
-  /* Too narrow for the generators around the pool: taller, for the
-     arrangement that runs down instead */
-  @media (width < 520px) {
-    max-height: none;
-    aspect-ratio: 5 / 7;
-  }
-}
-
-/* Below 360px, the pipeline needs about 270px: the panel spans the section's
-   padding instead, rather than the canvas drawing past the panel's border */
-.dk-flow {
-  @media (width < 360px) {
-    margin-inline: -20px;
-    border-inline: 0;
-    border-radius: 0;
-  }
-}
-
 .dk-flow > ul {
   display: grid;
   gap: 10px 20px;
