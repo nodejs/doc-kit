@@ -17,15 +17,12 @@ it step by step, from a TypeScript or JavaScript project to a built site.
 
 ## Usage
 
-Install TypeDoc and the plugin, plus the doc-kit CLI and the website generators
-to build the site:
-
 ```bash
-npm install --save-dev typedoc@0.28 @doc-kit/typedoc @doc-kit/cli @doc-kit/generator-react
+npm install --save-dev typedoc @doc-kit/typedoc
 ```
 
 The plugin is built for TypeDoc 0.28. Load it in your TypeDoc configuration,
-and set where the reference goes with `docKit`:
+and set where the reference goes:
 
 ```js displayName="typedoc.config.mjs"
 import { load } from '@doc-kit/typedoc';
@@ -33,38 +30,27 @@ import { load } from '@doc-kit/typedoc';
 export default {
   plugin: [load],
   entryPoints: ['src/index.ts'],
-  // Source links are relative to this: the root of your repository
-  basePath: '.',
   docKit: 'docs/api',
 };
 ```
 
-Import `load` rather than naming the plugin as a string: TypeDoc imports
-plugins named by a string from its own installation, where package managers
-such as pnpm hide your project's dependencies. `docKit` is the shortcut for
-the plugin's `doc-kit` output, as `html` is for TypeDoc's own;
-`outputs: [{ name: 'doc-kit', path: 'docs/api' }]` works too.
+`docKit` is the `doc-kit` output's shortcut, like TypeDoc's `html` and `json`;
+`outputs: [{ name: 'doc-kit', path: 'docs/api' }]` works too. Passing `load`
+rather than the package name lets TypeDoc load the plugin from your project,
+which strict package managers such as pnpm keep apart from TypeDoc's own
+installation.
 
-Then point doc-kit at the Markdown, and at its type map:
+Then generate the reference, and point doc-kit at it:
+
+```bash
+npx typedoc --options typedoc.config.mjs
+```
 
 ```js displayName="doc-kit.config.mjs"
 export default {
-  target: ['html'],
-  global: {
-    input: ['docs/**/*.md'],
-    output: 'out',
-    repository: 'your-org/your-repo',
-  },
+  global: { input: ['docs/**/*.md'] },
   metadata: { typeMap: 'docs/api/type-map.json' },
 };
-```
-
-Generate the reference with TypeDoc, which finds `typedoc.config.mjs` on its
-own, then build the site:
-
-```bash
-npx typedoc
-npx doc-kit generate
 ```
 
 ## Output
@@ -104,7 +90,7 @@ no source link.
 
 `type-map.json` maps each class, interface, enum and type alias to its page,
 for doc-kit to
-[link the `{Type}` annotations](https://doc-kit.nodejs.org/generators/metadata#type-links)
+[link the `{Type}` annotations](https://doc-kit.nodejs.org/writing-docs#types-that-link-themselves)
 of the reference, and of any other page that names your types. Its paths
 start with [`docKitBasePath`](#options) and have no extension, so the type
 links need a host that serves `/api/classes/Watcher` from `Watcher.html` (see

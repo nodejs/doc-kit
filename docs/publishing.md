@@ -28,7 +28,7 @@ export default {
 Then build:
 
 ```bash
-npx doc-kit generate
+npx @doc-kit/cli generate
 ```
 
 Three settings matter most for a published site:
@@ -51,14 +51,11 @@ other global options.
 ## Check it locally
 
 ```bash
-npx doc-kit preview
+npx @doc-kit/cli preview
 ```
 
-`preview` serves the output directory (`./out` by default) on
-<http://localhost:3000>. Without options, it serves what is already there; pass
-any `generate` option, such as `--config-file doc-kit.config.mjs`, and it builds
-first. `--port` and `--host` change where it listens; the
-[CLI reference](./cli.md) has the details.
+`preview` serves the output directory on <http://localhost:3000>; see
+[`doc-kit preview`](./cli.md#doc-kit-preview) for its options.
 
 Always open the pages over HTTP, never straight from disk. The pages load
 their scripts as JavaScript modules, request their stylesheet with CORS, and
@@ -225,7 +222,7 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
-      - run: npx doc-kit generate
+      - run: npx @doc-kit/cli generate
       - uses: actions/upload-pages-artifact@v5
         with:
           path: out
@@ -255,7 +252,7 @@ Netlify installs your dependencies, runs the build `command` and publishes the
 
 ```toml displayName="netlify.toml"
 [build]
-  command = "npx doc-kit generate"
+  command = "npx @doc-kit/cli generate"
   publish = "out"
 
 [[headers]]
@@ -268,7 +265,7 @@ Netlify installs your dependencies, runs the build `command` and publishes the
 
 ```json displayName="vercel.json"
 {
-  "buildCommand": "npx doc-kit generate",
+  "buildCommand": "npx @doc-kit/cli generate",
   "outputDirectory": "out",
   "cleanUrls": true,
   "headers": [
@@ -328,7 +325,7 @@ As with Vercel, set the sitemap's `pageURL` to match (see
 [Page URLs](#page-urls)). Build, then deploy with Wrangler:
 
 ```bash
-npx doc-kit generate
+npx @doc-kit/cli generate
 npx wrangler deploy
 ```
 

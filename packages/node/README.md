@@ -26,29 +26,17 @@ npm install --save-dev @doc-kit/generator-react
 
 ## Generators
 
-The CLI loads each target name from this package: `man-page` loads
-`@node-core/doc-kit/man-page`.
-
 | Target                                                               | Input in Node.js    | Output                                                                                                               |
 | -------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | [`man-page`](https://doc-kit.nodejs.org/generators/man-page)         | `doc/api/cli.md`    | `node.1`, the `node` man page in mdoc format, with the options and environment variables that `cli.md` documents     |
 | [`api-links`](https://doc-kit.nodejs.org/generators/api-links)       | `lib/*.js`          | `apilinks.json`, which maps each API (such as `buffer.Buffer`) to the line on GitHub that defines it                 |
 | [`addon-verify`](https://doc-kit.nodejs.org/generators/addon-verify) | `doc/api/addons.md` | A folder per addon example (such as `02_function_arguments/`), with its C++ and JavaScript files and a `binding.gyp` |
 
-From the root of a Node.js checkout:
+## Usage
 
 ```sh
-npx doc-kit generate -t man-page -i doc/api/cli.md -o out
-npx doc-kit generate -t api-links -i "lib/*.js" -o out
-npx doc-kit generate -t addon-verify -i doc/api/addons.md -o out/addons
+npx @doc-kit/cli generate -t man-page -i "doc/api/cli.md" -o out
 ```
-
-> [!IMPORTANT]
-> `api-links` builds its URLs from the `repository` and `ref` options. doc-kit
-> sets no repository by default, so without one the URLs keep a literal
-> `{repository}`. Extend the [preset](#the-nodejs-preset), which sets
-> `nodejs/node`, or set `global.repository` in your configuration. Pass
-> `--git-ref` to link to a tag or commit instead of `HEAD`.
 
 ## The Node.js preset
 
@@ -119,15 +107,3 @@ export default {
   },
 };
 ```
-
-## Learn more
-
-- [Configuration](https://doc-kit.nodejs.org/configuration): configuration
-  files, `extends`, and how options merge.
-- [CLI](https://doc-kit.nodejs.org/cli): every `doc-kit generate` option.
-- [Customizing the site](https://doc-kit.nodejs.org/customization): colors,
-  logo, head tags and theme slots, to change what the preset sets.
-- [Man page](https://doc-kit.nodejs.org/generators/man-page),
-  [API links](https://doc-kit.nodejs.org/generators/api-links) and
-  [Addon examples](https://doc-kit.nodejs.org/generators/addon-verify): the
-  options of each generator in this package.

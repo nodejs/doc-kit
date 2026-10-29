@@ -1,17 +1,19 @@
 # Why doc-kit
 
-doc-kit is a documentation toolkit for APIs. It reads your API from Markdown,
-MDX, TypeScript and JSDoc, and turns it into documentation: a website with
-search, JSON described by a schema, `llms.txt` for language models, man pages,
-and any other format a generator can write.
+doc-kit is a documentation toolkit for APIs. It reads your API from Markdown
+and MDX, and turns it into documentation: a website with search, JSON
+described by a schema, `llms.txt` for language models, man pages, and any
+other format a generator can write. doc-kit doesn't read TypeScript or JSDoc
+itself: the experimental [`@doc-kit/typedoc`](./packages/typedoc.md) plugin
+turns them into Markdown first.
 
-It's the toolkit behind the [Node.js API reference](https://nodejs.org/api),
-which taught it most of what it knows. This page explains what sets it apart,
-and when another tool may suit you better.
+It's the toolkit behind the [Node.js API reference](https://nodejs.org/api).
+This page explains what sets it apart, and when another tool may suit you
+better.
 
 ## Built around the API
 
-Most documentation tools see a page. doc-kit also sees the API in it. A
+doc-kit reads the API described in your Markdown, not only its text. A
 heading like `server.listen(port[, callback])` is a method with its signature,
 the list under it holds its typed parameters, a YAML comment holds its
 history, and a `Stability:` blockquote says where it is in its lifecycle. That
@@ -24,9 +26,8 @@ API:
 - pages show each entry's history, stability and source;
 - the JSON output carries all of it, described by a published schema.
 
-TypeScript projects can skip most of the writing: the experimental
-[`@doc-kit/typedoc`](./packages/typedoc.md) plugin for TypeDoc turns their
-source and its JSDoc comments into the same Markdown. See
+For TypeScript projects, the `@doc-kit/typedoc` plugin writes that Markdown
+from the source and its JSDoc comments. See
 [Documenting TypeScript](./typescript.md).
 
 ## One parse, every output
@@ -85,8 +86,7 @@ once, builds both sites, and writes the results to
 `www/theme/benchmarks.json`, which the home page reads:
 
 ```bash
-cd www
-node --run benchmark -- --runs 5 --node v26.12.1
+node scripts/benchmark.mjs --runs 5 --node v26.12.1
 ```
 
 ## Light by default
@@ -107,12 +107,12 @@ hover over or press a link, so most navigations don't wait on the network.
 A few places doc-kit is already in use. Feel free to open a pull request to
 add yours.
 
-- <https://nodejs.org/api>, the Node.js API reference
-- <https://beta.docs.nodejs.org/>, its next version
-- <https://nodejs.org/learn>, the Node.js guides
-- <https://nodejs.org/llms.txt>
-- <https://webpack-doc-kit.vercel.app/>, a preview of webpack's docs
-- <https://undici.nodejs.org/>, Undici's docs
+- <https://nodejs.org/api> - `legacy-html`, `legacy-json`
+- <https://nodejs.org/llms.txt> - `llms-txt`
+- <https://beta.docs.nodejs.org/> - `html`, `orama-db`, `llms-txt`
+- <https://nodejs.org/learn> - `html`, `orama-db`, `llms-txt`
+- <https://webpack-doc-kit.vercel.app/> - `html`, `orama-db`, `llms-txt`
+- <https://undici.nodejs.org/> - `html`, `orama-db`, `llms-txt`
 
 ## When to use something else
 
@@ -130,9 +130,8 @@ takes you from one Markdown file to a site with search in a few minutes.
 doc-kit is an open source project of the Node.js organization. Bug reports,
 ideas and pull requests are welcome in the [issue tracker][], and the
 [contributing guide][] explains how to set up the repository. You can find the
-team in the [#nodejs-website channel][] on [the OpenJS Slack][].
+team in the `#nodejs-doc-kit` channel on [the OpenJS Slack][].
 
 [issue tracker]: https://github.com/nodejs/doc-kit/issues
 [contributing guide]: https://github.com/nodejs/doc-kit/blob/main/CONTRIBUTING.md
-[#nodejs-website channel]: https://openjs-foundation.slack.com/archives/CVAMEJ4UV
 [the OpenJS Slack]: http://slack.openjsf.org/

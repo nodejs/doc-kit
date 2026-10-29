@@ -7,13 +7,10 @@ index, JSON, a man page. You pick generators by their target name with
 your sources once and every generator reads that result.
 
 ```bash
-npx doc-kit generate -t html -t orama-db -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o out
 ```
 
 ![Generators form a graph through dependsOn; picking html and orama-db runs only them and what they depend on, parsing your sources once](./diagrams/generator-graph.svg)
-
-Each generator has a reference page laid out the same way: what it makes, how
-to run it, what it reads and writes, its options, then the details.
 
 ## The website
 
@@ -32,7 +29,6 @@ to the CLI.
   to choose yourself.
 - `section-pages` adds its pages to whichever of `html` and `sitemap` you also
   ask for. Ask for it on its own and you get both.
-- `web`, the former name of `html`, still works as a target.
 
 ## For language models
 
@@ -100,27 +96,8 @@ like any other generator: `--type-map`, for example, sets `metadata.typeMap`.
 
 ## Options
 
-Each generator reads its options from the configuration section named after it,
-and takes any option it doesn't set there from `global`. Each generator's page
-lists its options, and [Configuration](./configuration.md) covers the file
-itself.
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  target: ['html', 'orama-db', 'sitemap'],
-  global: {
-    input: ['docs/**/*.md'],
-    output: 'out',
-    baseURL: 'https://example.com',
-  },
-  html: {
-    title: '{project} documentation',
-  },
-};
-```
-
-With this file in place, `npx doc-kit generate` needs no flags. Targets you pass
-with `-t` replace the file's `target` list rather than adding to it.
+Each generator reads its options from the configuration section named after
+it. See [Generator options](./configuration.md#generator-options).
 
 ## Your own
 
@@ -130,7 +107,7 @@ It runs alongside the built-in ones, and reads its options from the section
 named after its `name`.
 
 ```bash
-npx doc-kit generate -t html -t ./generators/rss.mjs -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t @my-scope/my-generator -t ./generators/rss.mjs ...
 ```
 
 To write one, see [Creating generators](./creating-generators.md).
