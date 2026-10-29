@@ -6,18 +6,15 @@ themes, and client-side navigation. This page is the reference;
 [Customizing the site](https://doc-kit.nodejs.org/customization) walks through
 changing its look.
 
-**Target:** `html` · **Package:** [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react) · **Reads:** [Page JSX](https://doc-kit.nodejs.org/generators/jsx-ast) · **Writes:** `<page>.html`, `all.html`, `404.html`, `assets/`
-
 ## Usage
 
 ```bash
-npm install --save-dev @doc-kit/cli @doc-kit/generator-react
-npx doc-kit generate -t html -t orama-db -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t html -t orama-db -i "docs/**/*.md" -o out
 ```
 
 `orama-db` adds the [search index](https://doc-kit.nodejs.org/generators/orama-db)
 for the search box. The pages load their scripts as modules, so serve `out/`
-over HTTP (`npx doc-kit preview`) rather than opening it from disk.
+over HTTP (`npx @doc-kit/cli preview`) rather than opening it from disk.
 [Publishing your docs](https://doc-kit.nodejs.org/publishing) covers hosting.
 
 | Path                      | Contents                                                                                                                    |
@@ -28,36 +25,23 @@ over HTTP (`npx doc-kit preview`) rather than opening it from disk.
 | `assets/`                 | The client scripts, stylesheet and fonts. The Vite adapter names each after a hash of its content, so hosts can cache them. |
 | `<module>/<section>.html` | One page per section, when [`section-pages`](https://doc-kit.nodejs.org/generators/section-pages) runs in the same build.   |
 
-It then copies the paths in `pathsToCopy` into the output (see
-[Shared options](#shared-options)).
+It then copies the paths in
+[`pathsToCopy`](https://doc-kit.nodejs.org/configuration#global-options) into
+the output.
 
 ## Configuring
 
-Options go in the `html` section of the
-[configuration file](https://doc-kit.nodejs.org/configuration):
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  global: {
-    project: 'Kittens',
-    repository: 'my-org/kittens',
-  },
-  html: {
-    title: '{project} docs',
-    editURL: 'https://github.com/{repository}/edit/{ref}/docs{path}.md',
-  },
-};
-```
+Several options are
+[templates](https://doc-kit.nodejs.org/configuration#generator-options), with
+the placeholders described below.
 
 - `title` {string} Template for the site part of each page's `<title>`, which
-  follows the page's own title and a `|`. Placeholders take configuration
-  values, such as `{project}`; `{version}` is the version without a `v`
-  (`22.11.0`). Set it to `''` to title pages with their own title alone.
+  follows the page's own title and a `|`. `{version}` is the version without a
+  `v` (`22.11.0`). Set it to `''` to title pages with their own title alone.
   **Default:** `'{project} {version} Documentation'`.
 - `editURL` {string} Template for each page's "Edit this page" link. `{path}`
   is the page's path without an extension (`/api/fs`; on section pages, their
-  module's), `{version}` the version with a `v` (`v22.11.0`), and other
-  placeholders, such as `{repository}` and `{ref}`, take configuration values.
+  module's), and `{version}` the version with a `v` (`v22.11.0`).
   **Default:** none, which leaves the link out.
 - `pageURL` {string} Template for a page's URL in another version, which the
   [version selector](#version-selector) links to. `{version}` is each
@@ -109,24 +93,9 @@ Paths in `stylesheets`, `templatePath` and `imports` resolve against the
 working directory. Build them with `join(import.meta.dirname, ...)` to make
 them work wherever doc-kit runs from.
 
-### Shared options
-
-The generator also reads these
-[global options](https://doc-kit.nodejs.org/configuration#global-options). Set
-them under `global` to share them with other generators, or under `html` for
-the site alone.
-
-| Option        | What it does for the site                                                                                                                                                                                                               |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `output`      | The directory the site is written to.                                                                                                                                                                                                   |
-| `project`     | The site's name: the default logo, `{project}` in titles, and the version selector's label.                                                                                                                                             |
-| `repository`  | Adds a GitHub link to the navigation bar, and fills `{repository}` in templates.                                                                                                                                                        |
-| `ref`         | Fills `{ref}` in templates, such as `editURL`.                                                                                                                                                                                          |
-| `baseURL`     | The site's public URL, for `useAbsoluteURLs` and `{baseURL}` in `pageURL`.                                                                                                                                                              |
-| `version`     | `{version}` in titles, and the version selector's current entry. It defaults to the version of Node.js running doc-kit, so set it or drop `{version}` from `title`.                                                                     |
-| `changelog`   | The releases the version selector lists. Without one, there's no selector unless the [remote configuration](#remote-configuration) lists `versions`.                                                                                    |
-| `minify`      | Minifies each page's HTML. The bundler minifies the client assets on its own (see [Vite adapter](#vite-adapter)).                                                                                                                       |
-| `pathsToCopy` | Files and directories copied into the output after the pages: a string keeps the path's name, an object maps sources to output paths, and missing paths are skipped. Setting it replaces the default, `['assets', 'public', 'static']`. |
+The generator also reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options),
+such as `project`, `repository`, `baseURL`, `version` and `changelog`.
 
 ## Navigation
 
@@ -139,24 +108,18 @@ export default {
     navigation: {
       sidebar: [
         {
+          groupName: 'Guides',
+          items: [{ label: 'Getting started', link: '/getting-started' }],
+        },
+        {
           groupName: 'Reference',
-          items: [
-            { label: '`kittens`', link: '/api/kittens' },
-            {
-              label: 'Plugins',
-              link: '/api/plugins',
-              items: [
-                { label: 'Plugins', link: '/api/plugins' },
-                { label: 'Writing a plugin', link: '/api/writing-plugins' },
-              ],
-            },
-          ],
+          items: [{ label: '`fs`', link: '/fs' }],
         },
       ],
       navbar: [
-        { text: 'Blog', link: 'https://example.com/blog', target: '_blank' },
+        { text: 'Learn', link: 'https://nodejs.org/en/learn' },
+        { text: 'Download', link: 'https://nodejs.org/en/download' },
       ],
-      showCrossLinks: true,
     },
   },
 };
@@ -174,8 +137,7 @@ export default {
   `http://` or `https://` are used as written.
 - `items` {Object[]} Nested items. An item with `items` renders as a
   disclosure, open on the pages it lists. Its label opens and closes it and
-  isn't a link, so list the item's own page again as its first child, as
-  `Plugins` does above.
+  isn't a link, so list the item's own page again as its first child.
 
 When `section-pages` splits a module, the module's sections are nested under
 its item while you're on it, with the module repeated as the first child. An
@@ -278,16 +240,15 @@ attribute out. `html` holds raw markup for anything else.
 export default {
   html: {
     head: {
-      meta: [{ property: 'og:image', content: 'https://example.com/og.png' }],
-      links: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        {
-          rel: 'preconnect',
-          href: 'https://fonts.example.com',
-          crossorigin: true,
-        },
+      meta: [
+        { name: 'description', content: 'My project documentation' },
+        { property: 'og:image', content: 'https://example.com/og.png' },
       ],
-      html: ['<meta name="theme-color" content="#000000" />'],
+      links: [
+        { rel: 'icon', href: 'https://example.com/favicon.ico' },
+        { rel: 'stylesheet', href: 'https://example.com/fonts.css' },
+      ],
+      html: ['<meta name="theme-color" content="#000" />'],
     },
   },
 };
@@ -345,11 +306,11 @@ These variables are in scope:
 - `metadata` {Object} The page's metadata, frontmatter included.
 - `config` {Object} The resolved `html` configuration.
 
-For example, to add a canonical link and give the home page a title of its own:
+Since the template supports arbitrary JS expressions, you can use
+conditionals and method calls:
 
 ```html displayName="template.html"
-<title>${metadata.api === 'index' ? 'Kittens' : title}</title>
-<link rel="canonical" href="https://example.com/docs${metadata.path}.html" />
+<title>${title}</title> ${assets}
 ```
 
 The filled-in template is the page as written, minified first when `minify` is
@@ -371,12 +332,11 @@ replace that part; the aliases you leave out keep their defaults.
 | `#theme/Footer`     | `NoOp`: nothing                                                           | none                                              |
 
 ```js displayName="doc-kit.config.mjs"
-import { join } from 'node:path';
-
 export default {
   html: {
     imports: {
-      '#theme/Footer': join(import.meta.dirname, 'theme/Footer.jsx'),
+      '#theme/Logo': './src/MyLogo.jsx',
+      '#theme/Sidebar': './src/MySidebar.jsx',
     },
   },
 };
@@ -424,17 +384,17 @@ module's default export, or `{ name, source, isDefaultExport }`, where
 an alias defined in `imports`, a package, or an absolute path:
 
 ```js displayName="doc-kit.config.mjs"
-import { join } from 'node:path';
-
 export default {
   html: {
     components: {
+      // Shorthand — equivalent to { name: 'Hero', source: '#theme/Hero' }
       Hero: '#theme/Hero',
-      Stats: { name: 'Stats', source: '#theme/stats', isDefaultExport: false },
+      // Full descriptor
+      Stats: { name: 'Stats', source: '#theme/Stats' },
     },
     imports: {
-      '#theme/Hero': join(import.meta.dirname, 'theme/Hero.jsx'),
-      '#theme/stats': join(import.meta.dirname, 'theme/stats.jsx'),
+      '#theme/Hero': './src/components/Hero.jsx',
+      '#theme/Stats': './src/components/Stats.jsx',
     },
   },
 };
@@ -455,7 +415,7 @@ its export with `withIsland`, which hydrates it in the browser as an island:
 
 ```jsx displayName="theme/Counter.jsx"
 import withIsland from '@doc-kit/generator-react/html/ui/islands/withIsland.jsx';
-import { useState } from 'react';
+import { useState } from 'preact/hooks';
 
 const Counter = ({ start = 0 }) => {
   const [count, setCount] = useState(start);
@@ -491,7 +451,7 @@ hydrates it right away.
 
 Props are written into the page as JSON, so pass data, not functions. Children
 are rendered on the server and kept as they are. [Interactive components](https://doc-kit.nodejs.org/customization#interactive-components)
-in the guide walks through building one.
+in the guide has more on when islands hydrate.
 
 ## Theme config module
 
@@ -500,7 +460,7 @@ writes for each build. Import only what you need, and the rest is left out of
 the bundle:
 
 ```js
-import { project, version, pages } from '#theme/config';
+import { project, repository, editURL } from '#theme/config';
 ```
 
 | Export                   | Value                                                                                                                                         |
@@ -659,6 +619,18 @@ export default {
       plugins: [myVitePlugin()],
       define: {
         'process.env.ANALYTICS_ID': JSON.stringify('UA-XXXXX'),
+      },
+      resolve: {
+        alias: {
+          '@components': './src/components',
+        },
+      },
+      css: {
+        lightningcss: {
+          targets: {
+            chrome: 100 << 16,
+          },
+        },
       },
     }),
   },

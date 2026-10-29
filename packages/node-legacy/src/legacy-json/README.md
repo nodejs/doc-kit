@@ -7,15 +7,12 @@ that read those files; for API data of your own, use the
 [`json` generator](https://doc-kit.nodejs.org/generators/json), whose format a
 versioned schema describes.
 
-**Target:** `legacy-json` · **Package:** [`@node-core/doc-kit-legacy`](https://doc-kit.nodejs.org/packages/node-legacy) · **Reads:** [API entries](https://doc-kit.nodejs.org/generators/metadata) · **Writes:** one `.json` file per source file
-
 ## Usage
 
 From the root of a Node.js checkout:
 
 ```bash
-npm install --save-dev @doc-kit/cli @node-core/doc-kit-legacy
-npx doc-kit generate -t legacy-json -i "doc/api/*.md" -o out
+npx @doc-kit/cli generate -t legacy-json -i "doc/api/*.md" -o out
 ```
 
 The files keep the input's directory layout, from where the glob starts:
@@ -23,18 +20,14 @@ The files keep the input's directory layout, from where the glob starts:
 
 ## Configuring
 
-Options go in the `legacy-json` section of the
-[configuration file](https://doc-kit.nodejs.org/configuration):
-
 - `sourceURL` {string} The `source` each file records. `{path}` is the file's
   `api` identifier with `.md` (`fs.md`), and is the only placeholder.
   **Default:** `'doc/api/{path}'`.
-- `output` {string} The directory to write the files to. Without one, nothing
-  is written, and the files only go to
-  [`legacy-json-all`](https://doc-kit.nodejs.org/generators/legacy-json-all).
-  **Default:** from `global.output` (`--output`).
-- `minify` {boolean} Write the files without indentation. **Default:**
-  `false`, from `global.minify` (`--minify`).
+
+It also reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options).
+Without an `output`, the files only go to
+[`legacy-json-all`](https://doc-kit.nodejs.org/generators/legacy-json-all).
 
 The descriptions render Markdown with a fixed set of plugins, so a `markdown`
 section for this generator is ignored with a warning.

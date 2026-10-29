@@ -6,11 +6,11 @@ them locally with `doc-kit preview`. It comes from the
 shown in [Getting started](./getting-started.md), then run it with `npx`:
 
 ```bash
-npx doc-kit <command> [options]
+npx @doc-kit/cli [command] [options]
 ```
 
-`npx doc-kit --help` lists the commands, and `npx doc-kit generate --help`
-the options of one.
+`npx @doc-kit/cli --help` lists the commands, and
+`npx @doc-kit/cli generate --help` the options of one.
 
 ## `doc-kit generate`
 
@@ -18,7 +18,7 @@ Runs the generators and writes their output. It needs at least one target
 and an input, from flags or a [configuration file](#configuration-files):
 
 ```bash
-npx doc-kit generate -t html -t orama-db -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t html -t orama-db -i "docs/**/*.md" -o out
 ```
 
 Quote glob patterns, so they reach doc-kit as written instead of being
@@ -27,52 +27,48 @@ one flag (`-t html orama-db`) or the flag repeated (`-t html -t orama-db`).
 Each option except `--config-file` sets the configuration key named in
 parentheses.
 
-- `-t`, `--target` {string[]} Generators to run (`target`): built-in names,
-  such as `html` or `orama-db` (see the [generators overview](./generators.md)),
-  or the import specifier or path of a
-  [custom generator](./creating-generators.md). Only `json`, `json-all`, and
-  `json-simple` come with the CLI. The others come from packages you install
-  next to it, such as [`@doc-kit/generator-react`](./packages/react.md) for
-  `html`, `orama-db`, and the other web generators,
-  [`@node-core/doc-kit`](./packages/node.md) for `man-page`, `api-links`, and
-  `addon-verify`, and [`@node-core/doc-kit-legacy`](./packages/node-legacy.md)
-  for the `legacy-*` generators.
-- `-i`, `--input` {string[]} Glob patterns of the files to read
+- `-t, --target <name...>` {string[]} Generators to run (`target`): built-in
+  names, such as `html` or `orama-db`, or the import specifier or path of a
+  [custom generator](./creating-generators.md). The
+  [generators overview](./generators.md) lists the built-in ones and the
+  package each comes from.
+- `-i, --input <patterns...>` {string[]} Glob patterns of the files to read
   (`global.input`).
-- `--ignore` {string[]} Glob patterns of files to leave out (`global.ignore`).
-- `-o`, `--output` {string} Directory to write the output to
+- `--ignore <patterns...>` {string[]} Glob patterns of files to leave out
+  (`global.ignore`).
+- `-o, --output <dir>` {string} Directory to write the output to
   (`global.output`).
-- `--config-file` {string} Path of the configuration file to load, instead
-  of searching the working directory for one.
-- `-v`, `--version` {string} Version of the project being documented
+- `--config-file <path>` {string} Path of the configuration file to load,
+  instead of searching the working directory for one.
+- `-v, --version <semver>` {string} Version of the project being documented
   (`global.version`), coerced to semver, so `22` means `22.0.0`.
   **Default:** the version of Node.js running doc-kit.
-- `-c`, `--changelog` {string} URL or path of a changelog in the format of
+- `-c, --changelog <url>` {string} URL or path of a changelog in the format of
   Node.js's `CHANGELOG.md`, which the version selector is built from
   (`global.changelog`). Without one, the output covers a single version.
-- `--index` {string} URL or path of an `index.md` whose list of links
+- `--index <url>` {string} URL or path of an `index.md` whose list of links
   (`* [Title](file.md)`) sets the order of the documents in the JSON bundle,
   the legacy HTML sidebar and the legacy JSON bundle (`global.index`).
-- `--git-ref` {string} Git branch, tag, or commit that links into your
+- `--git-ref <ref>` {string} Git branch, tag, or commit that links into your
   repository point to, such as edit links and the JSON output's source URLs
   (`global.ref`). The website's source code links follow
   [`jsx-ast.ref`](./generators/jsx-ast.md#configuring) instead, which defaults
   to `'main'` and is set in a configuration file. **Default:** `'HEAD'`.
-- `--type-map` {string} URL or path of a JSON file mapping type names to the
-  URLs documenting them, used to link types (`metadata.typeMap`).
+- `--type-map <url>` {string} URL or path of a JSON file mapping type names to
+  the URLs documenting them, used to link types (`metadata.typeMap`).
 - `--minify` {boolean} Minify the output (`global.minify`). **Default:**
   `false`.
-- `-p`, `--threads` {number} Worker threads to use, at least 1 (`threads`).
+- `-p, --threads <n>` {number} Worker threads to use, at least 1 (`threads`).
   **Default:** the number of CPUs, up to 4.
-- `--chunk-size` {number} Items each worker processes per task, at least 1
+- `--chunk-size <n>` {number} Items each worker processes per task, at least 1
   (`chunkSize`). **Default:** `10`.
 
 ```bash
 # Build everything the configuration file describes
-npx doc-kit generate
+npx @doc-kit/cli generate
 
 # Build only the JSON output, minified, into dist/json
-npx doc-kit generate -t json -o dist/json --minify
+npx @doc-kit/cli generate -t json -o dist/json --minify
 ```
 
 When something fails, doc-kit logs the error and exits with code 1, so a
@@ -84,7 +80,7 @@ Serves the output directory over HTTP at <http://localhost:3000>, so you can
 check a build in the browser the way a host would serve it:
 
 ```bash
-npx doc-kit preview
+npx @doc-kit/cli preview [options]
 ```
 
 What it serves depends on the options you pass:
@@ -102,45 +98,38 @@ output's `404.html`, when it has one.
 It takes these options, plus every option of
 [`doc-kit generate`](#doc-kit-generate):
 
-- `--port` {number} Port to serve on; `0` picks a free one. **Default:**
+- `--port <n>` {number} Port to serve on; `0` picks a free one. **Default:**
   `3000`.
-- `--host` {string} Host to listen on; `0.0.0.0` makes the preview reachable
-  from other devices on your network. **Default:** `'localhost'`.
+- `--host <host>` {string} Host to listen on. **Default:** `'localhost'`.
 
 ```bash
 # Build with the configuration file, then serve its output directory
-npx doc-kit preview --config-file doc-kit.config.mjs
+npx @doc-kit/cli preview --config-file doc-kit.config.mjs
 
 # Build only the site, then serve it on another port
-npx doc-kit preview -t html --port 8080
+npx @doc-kit/cli preview -t html --port 8080
 ```
 
-> [!NOTE]
-> The preview server is for local testing, not for production. To publish,
-> upload the output directory to a static host; see
+> [!WARNING]
+> The preview server is meant for local testing only. It is not a secure,
+> production-grade server: don't expose it to other machines, and don't use
+> it to deploy your documentation. To publish, see
 > [Publishing your docs](./publishing.md).
 
 ## Global options
 
 These work with every command, before or after its name:
 
-- `--log-level` {string} Log only messages at this level or above: `debug`,
-  `info`, `warn`, `error`, or `fatal`. **Default:** `'info'`.
+- `--log-level <level>` {string} Log only messages at this level or above:
+  `debug`, `info`, `warn`, `error`, or `fatal`. **Default:** `'info'`.
 
 ```bash
-npx doc-kit generate --log-level debug
+npx @doc-kit/cli generate --log-level debug
 ```
 
 ## Configuration files
 
-Everything the `generate` flags set can also live in a configuration file,
-along with what they don't cover, such as generator options, Markdown plugins,
-and presets. Without `--config-file`, doc-kit looks for one in the working
-directory, such as `doc-kit.config.mjs`, `.doc-kitrc.yml`, or a `doc-kit` key
-in `package.json`. See
-[Where configuration lives](./configuration.md#where-configuration-lives) for
-every name it tries.
-
-Flags win over the file. A flag that takes a list, such as `--target`,
-replaces the configured list instead of adding to it. See
-[Configuration](./configuration.md) for the file's format and every key.
+Everything the `generate` flags set can also live in a
+[configuration file](./configuration.md), along with what they don't cover,
+such as generator options, Markdown plugins, and presets. Flags win over the
+file; see [Precedence](./configuration.md#precedence).

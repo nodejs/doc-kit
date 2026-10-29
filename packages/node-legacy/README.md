@@ -29,11 +29,12 @@ The CLI loads each target name from this package: `legacy-html` loads
 | [`legacy-json-all`](https://doc-kit.nodejs.org/generators/legacy-json-all) | `all.json`, the sections of every JSON file merged                          |
 
 `legacy-html-all` and `legacy-json-all` run `legacy-html` and `legacy-json`
-first, so one run writes all four. From the root of a Node.js checkout:
+first.
+
+## Usage
 
 ```sh
-npx doc-kit generate -t legacy-html-all -t legacy-json-all -i "doc/api/*.md" \
-  -o out --index doc/api/index.md --changelog CHANGELOG.md --version 24.1.0
+npx @doc-kit/cli generate -t legacy-html -t legacy-json -i "doc/api/*.md" -o out
 ```
 
 > [!IMPORTANT]
@@ -41,16 +42,5 @@ npx doc-kit generate -t legacy-html-all -t legacy-json-all -i "doc/api/*.md" \
 > version picker's links from `baseURL`, which have no flags. Set them under
 > `global` in your configuration file (`nodejs/node` and
 > `https://nodejs.org/docs`), or extend the
-> [Node.js preset](https://doc-kit.nodejs.org/packages/node#the-nodejs-preset),
-> which sets both, along with `changelog`.
-
-## Learn more
-
-- [Legacy HTML](https://doc-kit.nodejs.org/generators/legacy-html),
-  [Legacy single-page HTML](https://doc-kit.nodejs.org/generators/legacy-html-all),
-  [Legacy JSON](https://doc-kit.nodejs.org/generators/legacy-json) and
-  [Legacy JSON bundle](https://doc-kit.nodejs.org/generators/legacy-json-all):
-  the options and output of each generator in this package.
-- [Generators](https://doc-kit.nodejs.org/generators): every generator doc-kit
-  has.
-- [CLI](https://doc-kit.nodejs.org/cli): every `doc-kit generate` option.
+> [Node.js preset](https://doc-kit.nodejs.org/packages/node), which sets both,
+> along with `changelog`.

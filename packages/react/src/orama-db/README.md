@@ -6,13 +6,10 @@ The `orama-db` generator builds the search index behind the
 heading in your docs. Build it alongside `html` whenever your site should have
 search.
 
-**Target:** `orama-db` · **Package:** [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react) · **Reads:** [API entries](https://doc-kit.nodejs.org/generators/metadata) · **Writes:** `orama-db.json`
-
 ## Usage
 
 ```bash
-npm install --save-dev @doc-kit/cli @doc-kit/generator-react
-npx doc-kit generate -t html -t orama-db -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t html -t orama-db -i "docs/**/*.md" -o out
 ```
 
 Building both in one run adds a search box to the site's navigation bar, which
@@ -20,25 +17,10 @@ Ctrl+K or Cmd+K also opens.
 
 ## Configuring
 
-`orama-db` has no options of its own. It reads these global options, which you
-can also set in an `orama-db` section to apply to it alone:
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  'orama-db': {
-    minify: true,
-  },
-};
-```
-
-- `output` {string} The directory to write `orama-db.json` to. Keep it the
-  site's output directory, since the search box loads the index from the site
-  root. Without one, nothing is written. **Default:** from `global.output`
-  (`--output`).
-- `minify` {boolean} Write the index on a single line instead of indented. Its
-  nested JSON is mostly indentation, so this makes it about three times
-  smaller, and still noticeably smaller once your host compresses it.
-  **Default:** `false`, from `global.minify` (`--minify`).
+`orama-db` has no options of its own. It reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options).
+Keep its `output` the site's output directory, since the search box loads the
+index from the site root.
 
 ## What gets indexed
 
@@ -108,31 +90,6 @@ search indexes:
 
 The `meow` description skips the parameter list and takes the paragraph after
 it, and `Care` has no description because its section holds only a list.
-
-## How the site uses it
-
-- **The search box shows** when `orama-db` and `html` run together, since
-  that's when the website's
-  [`showSearchBox`](https://doc-kit.nodejs.org/generators/html#configuring)
-  option defaults to `true`. If you build the index in another run, set
-  `showSearchBox: true` under `html`.
-- **The index loads on the first search**, not with the page, and stays loaded
-  as the reader moves between pages. Browsers don't let a page opened from
-  disk fetch it, so serve the site over HTTP, with `npx doc-kit preview`
-  locally. When it can't be loaded, for example because `orama-db.json` isn't
-  at the site root, searches come back empty, and the next search tries again.
-- **It's fetched from the site root**, relative to the current page, so a site
-  published under a path (`https://example.com/docs/`) finds it too. With
-  `html`'s `useAbsoluteURLs` on, it's fetched from `baseURL` instead. Result
-  links resolve the same way.
-- **Results** come up to 10 at a time as you type, grouped under their page's
-  title. Tabs for the pages with the most matches (up to 10) narrow them to one
-  page and show up to 25. Each result links to its heading on the full page,
-  even when you also build
-  [section pages](https://doc-kit.nodejs.org/generators/section-pages).
-
-[Publishing your docs](https://doc-kit.nodejs.org/publishing) covers hosting,
-compression and caching.
 
 ## Querying it yourself
 

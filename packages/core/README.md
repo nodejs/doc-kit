@@ -20,7 +20,7 @@ Installing the CLI installs this package, and with it the JSON generators.
 This command writes one JSON document per Markdown file to `out/`:
 
 ```sh
-npx doc-kit generate -t json -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t json -i "docs/**/*.md" -o out
 ```
 
 To import `@doc-kit/core` from your own code, add it to your own dependencies
@@ -66,53 +66,18 @@ generator you ask for depends on them:
 | `metadata` | Turns those trees into typed API entries, which most generators read   | [API entries](https://doc-kit.nodejs.org/generators/metadata)      |
 | `ast-js`   | Parses the `.js` files matched by `input`, for `api-links`             | [Parsing JavaScript](https://doc-kit.nodejs.org/generators/ast-js) |
 
-The other generators, and the rest of doc-kit, live in companion packages:
-
-| Package                                                                        | Provides                                                                                                                              |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [`@doc-kit/cli`](https://doc-kit.nodejs.org/packages/cli)                      | The `doc-kit` command, which runs this package                                                                                        |
-| [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react)        | `html` (the website), `section-pages`, `orama-db` (the search index), `sitemap`, `llms-txt`, `llms-txt-full`, and the `jsx-ast` stage |
-| [`@node-core/doc-kit`](https://doc-kit.nodejs.org/packages/node)               | `man-page`, `api-links` and `addon-verify`, for building Node.js itself                                                               |
-| [`@node-core/doc-kit-legacy`](https://doc-kit.nodejs.org/packages/node-legacy) | `legacy-html`, `legacy-html-all`, `legacy-json` and `legacy-json-all`, for Node.js's legacy HTML and JSON formats                     |
-| [`@doc-kit/typedoc`](https://doc-kit.nodejs.org/packages/typedoc)              | A TypeDoc plugin that writes the API of a TypeScript or JSDoc project as doc-kit Markdown                                             |
-
-The [generators overview](https://doc-kit.nodejs.org/generators) describes them
-all.
+The other generators come from companion packages; the
+[generators overview](https://doc-kit.nodejs.org/generators) lists which
+package provides each.
 
 ## Configuration
 
-This package finds the configuration file
-([where it looks](https://doc-kit.nodejs.org/configuration#where-configuration-lives)),
-merges it with the command-line options and the defaults, and hands each
-generator its options. The file's top level takes:
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  target: ['json', 'json-all'],
-  global: {
-    input: ['docs/**/*.md'],
-    output: 'out',
-  },
-  // A generator's own options override the global ones for it
-  'json-all': { minify: true },
-};
-```
-
-- `target` {string|string[]} The generators to run: built-in names, paths, or
-  import specifiers.
-- `global` {Object} The options every generator reads, such as `input`,
-  `output`, `project` and `repository`. See
-  [Configuration](https://doc-kit.nodejs.org/configuration) for all of them.
-- `threads` {number} The most worker threads to use. **Default:** the number of
-  CPUs, at most `4` (`1` on riscv64).
-- `chunkSize` {number} How many items each worker task processes.
-  **Default:** `10`.
-- `extends` {string|string[]} Presets to build on: modules whose default export
-  is a configuration. Paths resolve from the configuration file. The file's own
-  options override its presets', and a later preset overrides an earlier one.
-
-Each generator's own options go in a section named after it, such as `json` or
-`html`. A generator takes whatever its section leaves out from `global`.
+This package finds the configuration file, merges it with the command-line
+options and the defaults, and hands each generator its options.
+[Configuration](https://doc-kit.nodejs.org/configuration) covers
+[targets](https://doc-kit.nodejs.org/configuration#targets),
+[execution options](https://doc-kit.nodejs.org/configuration#execution-options)
+and [extending presets](https://doc-kit.nodejs.org/configuration#extending-presets).
 
 ## Running it from code
 
@@ -152,36 +117,8 @@ results.
 A generator is a module whose default export describes it, passed to the CLI
 by its path (`-t ./my-generator.mjs`).
 [Creating generators](https://doc-kit.nodejs.org/creating-generators) walks
-through writing one, with worker threads, streaming and dependents.
-
-The default export needs:
-
-- `name` {string} The generator's name, which is also the name of its
-  configuration section and what `getConfig()` takes.
-- `generate` {Function} `generate(input, worker)` builds the output from
-  `input`, the result of its `dependsOn` (`undefined` without one). It returns
-  the result, or an async generator yielding arrays of results, which
-  generators reading it receive joined into one array.
-
-It can also have:
-
-- `description` {string} What it makes, in one line.
-- `dependsOn` {string} The generator it reads from: an import specifier such as
-  `@doc-kit/core/metadata`, or a built-in name.
-- `dependent` {string|string[]} Generators to deliver its output through. It is
-  spliced into each one's pipeline, in front of the first generator there that
-  reads the same `dependsOn`, and asking for it runs them.
-- `defaultConfiguration` {Object|Function} The defaults of its configuration
-  section, or a function taking the user's configuration and returning them.
-- `hasParallelProcessor` {boolean} Whether `generate` gets a `worker`, whose
-  `worker.stream(items, extra)` runs `processChunk` on worker threads and yields
-  each chunk's results as it completes. **Default:** `false`.
-- `processChunk` {Function} `processChunk(items, indices, extra)` processes the
-  `items` at `indices` on a worker thread, and returns an array of results.
-  `extra` is copied to the thread, so it must be cloneable.
-- `markdown` {Object} The unified plugins it processes Markdown with, as
-  `remarkPlugins`, `rehypePlugins` and `recmaPlugins` lists, with `'...'` where
-  the configured plugins go.
+through writing one and each key of its default export, with worker threads,
+streaming and dependents.
 
 ## Exports
 
@@ -196,14 +133,6 @@ It can also have:
 | `@doc-kit/core/logger/index.mjs`              | The logger, with `logger.child(name)` for one of your own                                                    |
 | `@doc-kit/core/generators/types`              | The generator types, such as `GeneratorMetadata` and `ParallelWorker`, declared as globals                   |
 
-## Learn more
-
-- [Getting started](https://doc-kit.nodejs.org/getting-started)
-- [Configuration](https://doc-kit.nodejs.org/configuration)
-- [CLI](https://doc-kit.nodejs.org/cli)
-- [Creating generators](https://doc-kit.nodejs.org/creating-generators)
-- [Changelog](https://github.com/nodejs/doc-kit/blob/main/packages/core/CHANGELOG.md)
-
 ## Contributing
 
 This package lives in the [nodejs/doc-kit](https://github.com/nodejs/doc-kit)
@@ -212,17 +141,9 @@ monorepo. Set it up as the
 describes, then, from this directory:
 
 ```sh
-# Run this package's tests, once or on every change
-node --run test
-node --run test:watch
+# Run this package's tests
+pnpm test
 
-# Measure their coverage
-node --run test:coverage
-
-# Update the snapshots after changing an output on purpose
-node --run test:update-snapshots
+# Re-run the tests on every change
+pnpm run test:watch
 ```
-
-From the repository root, `node --run test` runs the tests of every package.
-A change to published behavior needs a changeset: run `node --run changeset`
-at the root.

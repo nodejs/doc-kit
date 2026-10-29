@@ -96,11 +96,6 @@ doc-kit reads an entry's kind from its heading, with no annotation needed:
 | `` ### `kitten.name` ``                      | Property      |
 | `` ### Event: `'purr'` ``                    | Event         |
 
-- Parentheses make a method, and their absence a property. A method needs only
-  a name, as in `` `adopt(name)` ``, but a property needs an owner:
-  `` `kitten.name` `` or `` `kitten[key]` ``.
-- The `Class:`, `Static method:` and `Event:` prefixes mark those kinds, and
-  `new` marks a constructor.
 - The code span must be the whole heading, after any prefix:
   ``### `kitten.pet()` again`` is a plain section.
 - Optional parameters go in square brackets, nested when one only makes sense
@@ -111,7 +106,10 @@ doc-kit reads an entry's kind from its heading, with no annotation needed:
   in plain words, without backticks.
 
 Entries nest by heading level, so put a class's constructor, methods,
-properties and events one level below the class.
+properties and events one level below the class. The specification's
+[entry type classification](./specification.md#43-entry-type-classification)
+and [signature syntax](./specification.md#5-signature-syntax) give the exact
+rules.
 
 ## Parameters, return values and defaults
 
@@ -153,10 +151,9 @@ arguments its listeners receive:
 - `volume` {number} How loud, from 1 to 10.
 ```
 
-doc-kit recognizes a typed list by its first item, which must start with a
-name and a type, a bare type, or one of the prefixes. A list whose first item
-has a name but no type stays a plain list, and plain bullets after the typed
-items stay prose.
+A list whose first item has a name but no type stays a plain list; see
+[Typed Parameter Lists](./specification.md#9-typed-parameter-lists) for how
+doc-kit recognizes one.
 
 On the website, a typed list becomes a table, under the signature for methods
 and constructors. In JSON, each item's name, type, description, default and
@@ -273,16 +270,9 @@ added: v1.0.0
 - `name` {string} The kitten's name.
 ```
 
-| Level | Meaning                                                                   |
-| ----- | ------------------------------------------------------------------------- |
-| 0     | Deprecated: may emit warnings, and compatibility isn't guaranteed.        |
-| 1     | Experimental: outside semantic versioning, and may change in any release. |
-| 2     | Stable: compatibility is a priority.                                      |
-| 3     | Legacy: still covered by semantic versioning, but no longer maintained.   |
-
-Level 1 takes sub-levels that say how close an API is to stable: `1.0` (early
-development), `1.1` (active development) and `1.2` (release candidate). On the
-title, a stability indicator applies to the whole page.
+The specification lists the [levels](./specification.md#72-levels) and
+[sub-levels](./specification.md#73-sub-levels). On the title, a stability
+indicator applies to the whole page.
 
 ## Code samples
 
