@@ -61,13 +61,6 @@ const guideItems = [
   { label: 'Creating generators', link: '/creating-generators' },
 ];
 
-// The home page's animations. They hydrate on the client, so they must be
-// listed in `components` for doc-kit to register their islands.
-const ISLANDS = {
-  HeroFlow: 'components/HeroFlow.jsx',
-  PipelineFlow: 'components/PipelineFlow.jsx',
-};
-
 // The components `www/pages/index.mdx` lays out its sections with: every
 // export of these modules
 const HOME = Object.fromEntries(
@@ -82,37 +75,24 @@ const HOME = Object.fromEntries(
   ])
 );
 
-const componentAliases = {
-  ...Object.fromEntries(
-    Object.entries(ISLANDS).map(([name, file]) => [
-      `#theme/${name}`,
-      join(THEME, file),
-    ])
-  ),
-  ...Object.fromEntries(
-    Object.keys(HOME).map(file => [
-      `#theme/${file.replace(/\.jsx$/, '')}`,
-      join(THEME, file),
-    ])
-  ),
-};
+const componentAliases = Object.fromEntries(
+  Object.keys(HOME).map(file => [
+    `#theme/${file.replace(/\.jsx$/, '')}`,
+    join(THEME, file),
+  ])
+);
 
-const components = {
-  ...Object.fromEntries(
-    Object.keys(ISLANDS).map(name => [name, `#theme/${name}`])
-  ),
-  ...Object.fromEntries(
-    Object.entries(HOME).flatMap(([file, names]) =>
-      names.map(name => [
-        name,
-        {
-          source: `#theme/${file.replace(/\.jsx$/, '')}`,
-          isDefaultExport: false,
-        },
-      ])
-    )
-  ),
-};
+const components = Object.fromEntries(
+  Object.entries(HOME).flatMap(([file, names]) =>
+    names.map(name => [
+      name,
+      {
+        source: `#theme/${file.replace(/\.jsx$/, '')}`,
+        isDefaultExport: false,
+      },
+    ])
+  )
+);
 
 // Build-time facts for the theme, as the `#theme/site` module
 const site = {
