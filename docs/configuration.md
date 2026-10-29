@@ -3,7 +3,7 @@
 A configuration file holds everything `doc-kit generate` needs: the targets
 to build, where your sources are, and options for each generator, including
 the ones no CLI flag covers, such as Markdown plugins and presets. With one in
-place, `npx doc-kit generate` needs no flags at all. This page documents where
+place, `npx @doc-kit/cli generate` needs no flags at all. This page documents where
 doc-kit finds the file, every key it takes, and how it combines with presets
 and flags.
 
@@ -191,28 +191,10 @@ directly or through `NODE_OPTIONS`.
 ## Generator options
 
 Each generator reads its options from the section named after it, which for
-built-in generators is the target name. Every generator's reference page
-lists its options:
-
-| Section                          | Its own options                                                                                                       | Reference                                                                                         |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `html`                           | `title`, `pageURL`, `editURL`, `navigation`, `head`, `stylesheets`, `imports`, `components`, `templatePath`, and more | [Website](./generators/html.md), [Customizing the site](./customization.md)                       |
-| `section-pages`                  | `maxDepth`, `exclude`                                                                                                 | [Section pages](./generators/section-pages.md)                                                    |
-| `sitemap`                        | `indexURL`, `pageURL`                                                                                                 | [Sitemap](./generators/sitemap.md)                                                                |
-| `llms-txt`                       | `templatePath`, `pageURL`                                                                                             | [llms.txt](./generators/llms-txt.md)                                                              |
-| `llms-txt-full`                  | `pageURL`                                                                                                             | [llms-full.txt](./generators/llms-txt-full.md)                                                    |
-| `json`, `json-all`               | `schemaURL`                                                                                                           | [JSON](./generators/json.md), [JSON bundle](./generators/json-all.md)                             |
-| `metadata`                       | `typeMap`                                                                                                             | [API entries](./generators/metadata.md)                                                           |
-| `jsx-ast`                        | `ref`, `generateNotFoundPage`, `showReadingTime`                                                                      | [Page JSX](./generators/jsx-ast.md)                                                               |
-| `man-page`                       | `fileName`, `templatePath`, `cliOptionsHeaderSlug`, `envVarsHeaderSlug`                                               | [Man page](./generators/man-page.md)                                                              |
-| `api-links`                      | `sourceURL`                                                                                                           | [API links](./generators/api-links.md)                                                            |
-| `legacy-html`                    | `templatePath`, `additionalPathsToCopy`, `ref`, `pageURL`, `editURL`                                                  | [Legacy HTML](./generators/legacy-html.md)                                                        |
-| `legacy-html-all`                | `templatePath`                                                                                                        | [Legacy single-page HTML](./generators/legacy-html-all.md)                                        |
-| `legacy-json`, `legacy-json-all` | `sourceURL`                                                                                                           | [Legacy JSON](./generators/legacy-json.md), [Legacy JSON bundle](./generators/legacy-json-all.md) |
-
-`metadata.typeMap`, in the complete example above, is a JSON file mapping type
-names to the URLs documenting them, such as
-`{ "MyThing": "https://example.com/my-thing" }`.
+built-in generators is the target name. Each generator's page, linked from the
+[generators overview](./generators.md), lists its options.
+`metadata.typeMap`, in the complete example above, is the
+[type map](./writing-docs.md#the-type-map).
 
 A section also takes any global option, which then applies to that generator
 alone. Its `markdown` is the exception: it adds to `global.markdown` instead
@@ -256,7 +238,7 @@ export default {
     markdown: {
       rehypePlugins: [
         'rehype-katex',
-        ['./plugins/rehype-callouts.mjs', { theme: 'neutral' }],
+        ['./plugins/rehype-diagrams.mjs', { theme: 'neutral' }],
       ],
     },
   },
@@ -362,18 +344,13 @@ export default {
 
 ```mjs displayName="doc-kit.config.mjs"
 export default {
-  // Build the docs the way nodejs.org does: branding, URL layouts, and
-  // release history included
+  // Build the docs the way nodejs.org does — branding, URL layouts,
+  // and release history included
   extends: '@node-core/doc-kit/config',
 
-  global: {
-    input: ['doc/api/*.md'],
-    output: 'out',
-  },
-
   html: {
-    // Your own values win over the preset's
-    title: '{project} {version} API reference',
+    // Your own values still win over the preset
+    title: '{project} {version} API Reference',
   },
 };
 ```
@@ -408,20 +385,5 @@ says.
 ## CLI flags
 
 Each [`doc-kit generate`](./cli.md#doc-kit-generate) flag sets one
-configuration key, and wins over the file. `--config-file` picks the file
-itself, and has no key.
-
-| Flag                          | Configuration key  |
-| ----------------------------- | ------------------ |
-| `-t, --target <generator...>` | `target`           |
-| `-i, --input <patterns...>`   | `global.input`     |
-| `--ignore <patterns...>`      | `global.ignore`    |
-| `-o, --output <directory>`    | `global.output`    |
-| `-v, --version <semver>`      | `global.version`   |
-| `--git-ref <ref>`             | `global.ref`       |
-| `-c, --changelog <url>`       | `global.changelog` |
-| `--index <url>`               | `global.index`     |
-| `--minify`                    | `global.minify`    |
-| `--type-map <url>`            | `metadata.typeMap` |
-| `-p, --threads <number>`      | `threads`          |
-| `--chunk-size <number>`       | `chunkSize`        |
+configuration key, and wins over the file. The [CLI reference](./cli.md)
+names the key next to each flag.

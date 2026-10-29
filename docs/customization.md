@@ -8,25 +8,15 @@ new page layouts, starting from the site you built in
 
 Most of this goes in the `html` section of your configuration file:
 
-```js displayName="doc-kit.config.mjs"
-import { join } from 'node:path';
-
+```mjs displayName="doc-kit.config.mjs"
 export default {
-  target: ['html', 'orama-db'],
-
+  target: ['html'],
   global: {
-    project: 'Kittens',
-    version: '1.0.0',
-    input: ['docs/**/*.{md,mdx}'],
+    input: ['docs/**/*.md'],
     output: 'out',
   },
-
   html: {
-    title: '{project} docs',
-    stylesheets: [join(import.meta.dirname, 'theme/styles.css')],
-    imports: {
-      '#theme/Logo': join(import.meta.dirname, 'theme/Logo.jsx'),
-    },
+    // ... everything on this page
   },
 };
 ```
@@ -56,11 +46,8 @@ export default {
 };
 ```
 
-Any option of the `html` section, global ones included, works as a
-placeholder, such as `{project}`, or `{version}` for the version number. The
-default is `'{project} {version} Documentation'`, so set `global.version` or
-drop `{version}`: without one, it shows the version of Node.js running
-doc-kit. An empty `title` leaves each page its own title alone.
+The [Website reference](./generators/html.md#configuring) lists its default
+and placeholders.
 
 ## Colors and fonts
 
@@ -171,35 +158,10 @@ can replace, and `#theme/config` holds the
 
 ## The `<head>`
 
-`head` adds tags to every page's `<head>`:
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  html: {
-    head: {
-      meta: [
-        { name: 'description', content: 'Kittens: an API for cats.' },
-        { property: 'og:image', content: 'https://kittens.example/og.png' },
-      ],
-      links: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-      html: ['<script defer src="https://stats.example/script.js"></script>'],
-    },
-
-    // Copies what is in `public/` to the root of the output
-    pathsToCopy: [{ public: '.' }],
-  },
-};
-```
-
-`meta` and `links` take one object of attributes per tag, and `html` takes raw
-markup, added as written. The tags are the same on every page, so link files
-by absolute path or full URL.
-
-Files you link to have to be in the output. `pathsToCopy` copies them there:
-by default the `assets`, `public` and `static` directories of the working
-directory, under the same names. An object maps a source to a destination
-inside the output instead, as `{ public: '.' }` does above to put
-`favicon.svg` at the root. Setting `pathsToCopy` replaces the default list.
+`head` adds tags to every page's `<head>`; see
+[Head tags](./generators/html.md#head-tags). Files you link to have to be in
+the output: [`pathsToCopy`](./configuration.md#global-options) copies them
+there.
 
 ## The page template
 
@@ -215,58 +177,12 @@ variables.
 ## Navigation
 
 Without configuration, the sidebar has one group, `API Documentation`, listing
-every page by its title (alphabetically, with `index` first), and the
-navigation bar has no links. `navigation` replaces either:
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  html: {
-    navigation: {
-      sidebar: [
-        {
-          groupName: 'Guides',
-          items: [
-            { label: 'Getting started', link: '/getting-started' },
-            {
-              label: 'Recipes',
-              link: '/recipes',
-              items: [
-                { label: 'Overview', link: '/recipes' },
-                { label: 'Feeding', link: '/recipes/feeding' },
-              ],
-            },
-          ],
-        },
-        {
-          groupName: 'Reference',
-          items: [{ label: 'The `Kitten` class', link: '/kitten' }],
-        },
-      ],
-      navbar: [
-        { text: 'Guide', link: '/getting-started' },
-        {
-          text: 'GitHub',
-          link: 'https://github.com/example/kittens',
-          target: '_blank',
-        },
-      ],
-      showCrossLinks: true,
-    },
-  },
-};
-```
-
-A sidebar `link` is a page's path without its extension, such as
-`/getting-started`, and works wherever the site is served from. An item with
-nested `items` opens and closes rather than linking anywhere, so list its own
-page as its first nested item, as `Recipes` does. `showCrossLinks` ends each
-page with links to the previous and next top-level items of your `sidebar`.
-The [Website reference](./generators/html.md#navigation) lists every field.
+every page by its title, and the navigation bar has no links. `navigation`
+replaces either; see [Navigation](./generators/html.md#navigation) for an
+example and every field.
 
 The navigation bar also holds the search box, the theme switch, and a link to
-the GitHub repository when `global.repository` is set. The search box appears
-when you build the [search index](./generators/orama-db.md) too; set
-`showSearchBox` to `true` or `false` to decide yourself. The sidebar adds a
+the GitHub repository when `global.repository` is set. The sidebar adds a
 version selector when your configuration has a `changelog`, as
 [Publishing several versions](./publishing.md#publishing-several-versions)
 describes.
@@ -278,116 +194,23 @@ Every part of the page around your content is a component, imported through a
 
 ![The parts of the html generator's page, each an import alias you can swap](./diagrams/theme-slots.svg)
 
-| Alias               | What it renders                                 | Default                                              |
-| ------------------- | ----------------------------------------------- | ---------------------------------------------------- |
-| `#theme/Layout`     | The whole page, around the content              | The parts below, around the content                  |
-| `#theme/Logo`       | The logo, inside the navigation bar's home link | The project's name                                   |
-| `#theme/Navigation` | The navigation bar                              | Links, search box, theme switch, GitHub link         |
-| `#theme/Sidebar`    | The sidebar                                     | Page links and the version selector                  |
-| `#theme/Metabar`    | The column beside the content                   | Table of contents, reading time, view and edit links |
-| `#theme/Footer`     | The bottom of every page                        | Nothing                                              |
-
 Point an alias at your own component in `imports`, and every page uses it. The
-aliases you leave out keep their defaults:
-
-```js displayName="doc-kit.config.mjs"
-import { join } from 'node:path';
-
-export default {
-  html: {
-    imports: {
-      '#theme/Footer': join(import.meta.dirname, 'theme/Footer.jsx'),
-    },
-  },
-};
-```
-
-```jsx displayName="theme/Footer.jsx"
-import { project, repository } from '#theme/config';
-
-export default () => (
-  <footer class="footer">
-    {project} is released under the{' '}
-    <a href={`https://github.com/${repository}/blob/main/LICENSE`}>
-      MIT License
-    </a>
-    .
-  </footer>
-);
-```
-
-Your component receives the props of the one it replaces: the navigation bar,
-the sidebar and the metabar get the page's `metadata`, and the metabar also
-gets `headings` and `readingTime`. The logo and the footer get none.
-
-To build on a default rather than start over, import it from
-`@doc-kit/generator-react/html/ui/components/`: `NavBar.jsx`,
-`SideBar/index.jsx`, `MetaBar/index.jsx` or `Layout/index.jsx`. Import the
-other parts through their aliases, so your overrides still apply.
+[theme slots](./generators/html.md#theme-slots) table lists each alias, its
+default and the props it receives.
 
 ### The theme's data
 
-Components read build-time data from the `#theme/config` module. Import only
-what you need:
-
-```jsx displayName="theme/Footer.jsx"
-import { project, version } from '#theme/config';
-
-export default () => (
-  <footer class="footer">
-    {project} v{version.version}
-  </footer>
-);
-```
-
-`version` is the version being built, and `version.version` its number. The
-module also exports `repository`, `baseURL`, the list of `pages`, and most
-other `html` options; the
-[Website reference](./generators/html.md#theme-config-module) lists them all.
-
-For data of your own, add modules with `virtualImports`. Each key is an import
-specifier, and each value the module's source code:
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  html: {
-    virtualImports: {
-      '#theme/links': 'export const chat = "https://chat.example/kittens";',
-    },
-  },
-};
-```
-
-```jsx displayName="theme/Footer.jsx"
-import { chat } from '#theme/links';
-
-export default () => (
-  <footer class="footer">
-    Questions? <a href={chat}>Ask in the chat</a>.
-  </footer>
-);
-```
+Components read build-time data from the `#theme/config` module, and
+`virtualImports` adds modules of your own; see
+[Theme config module](./generators/html.md#theme-config-module).
 
 ## Custom components and MDX
 
 Markdown pages have no components: their tags are plain HTML. To use
 components in a page, write it in [MDX](./writing-docs.md#mdx-pages), register
-your components in `components`, and use them as tags:
-
-```js displayName="doc-kit.config.mjs"
-import { join } from 'node:path';
-
-export default {
-  html: {
-    components: {
-      Hero: '#theme/Hero',
-    },
-    imports: {
-      '#theme/Hero': join(import.meta.dirname, 'theme/Hero.jsx'),
-    },
-  },
-};
-```
+your components in `components` (see
+[Components in MDX](./generators/html.md#components-in-mdx)), and use them as
+tags:
 
 ```jsx displayName="theme/Hero.jsx"
 export default ({ title, children }) => (
@@ -410,70 +233,20 @@ title: Kittens
 </Hero>
 ```
 
-Each key in `components` is a tag, and its value the module whose default
-export is the component, usually a `#theme/*` alias you define in `imports`.
-For a named export, see
-[Components in MDX](./generators/html.md#components-in-mdx). Each page imports
-only the components it uses, and some come built in and need no registering,
-such as `<DocumentationIndex />`.
+Some components come built in and need no registering, such as
+`<DocumentationIndex />`.
 
 ## Interactive components
 
 Components render to HTML when the site is built, and load no JavaScript. A
 component that has to run in the browser, with state, effects or event
-handlers, has to be an island: doc-kit renders it at build time, then loads it
-in the browser and hydrates it once a condition you choose is met.
-
-Wrap the component with `withIsland`, giving it a name and its conditions:
-
-```jsx displayName="theme/Counter.jsx"
-import withIsland from '@doc-kit/generator-react/html/ui/islands/withIsland.jsx';
-import { useState } from 'preact/hooks';
-
-const Counter = ({ start = 0 }) => {
-  const [count, setCount] = useState(start);
-
-  return (
-    <button type="button" onClick={() => setCount(count + 1)}>
-      Petted {count} times
-    </button>
-  );
-};
-
-export default withIsland(Counter, { name: 'Counter', on: { idle: true } });
-```
-
-Then list it in `components` under that same name, so the browser knows which
-module to load for it. Do this even for an island that only other components
-render, never a page:
-
-```js displayName="doc-kit.config.mjs"
-import { join } from 'node:path';
-
-export default {
-  html: {
-    components: {
-      Counter: '#theme/Counter',
-    },
-    imports: {
-      '#theme/Counter': join(import.meta.dirname, 'theme/Counter.jsx'),
-    },
-  },
-};
-```
-
-```mdx displayName="docs/kitten.mdx"
-<Counter start={3} />
-```
+handlers, has to be an island: wrap it with `withIsland`, and list it in
+`components` under the name you give it, even when only other components
+render it. [Interactive components](./generators/html.md#interactive-components)
+in the Website reference shows how.
 
 An island missing from `components` stays static, and the browser console
 reports `[is-land] no component registered for "Counter"`.
-
-`on` takes [is-land](https://is-land.11ty.dev/)'s loading conditions, without
-their `on:` prefix, such as `{ idle: true }` or `{ visible: true }`. `idle`
-suits most islands, and it's what this site's own islands use. The
-[Website reference](./generators/html.md#interactive-components) lists every
-condition.
 
 With `interaction: true`, the click that hydrates an island reaches it before
 its component has loaded, so the component never handles that click. An island
@@ -482,17 +255,8 @@ that has to handle its first click hydrates on
 blocks do: it starts loading as the pointer or focus arrives, and a click that
 lands before it has loaded is replayed once it has.
 
-Keep in mind that:
-
-- Props are written into the page as JSON, so pass data only: strings,
-  numbers, booleans, arrays and plain objects, not functions.
-- Children are rendered at build time and kept as they are: the island
-  receives them as static HTML, which doesn't become interactive.
-- The island's first render in the browser has to match the HTML built for it.
-  Read browser-only state, such as `localStorage`, in an effect.
-- In browsers with the Navigation API, the site moves between its pages
-  without reloading, and islands are unmounted and hydrated again on every
-  page. Keep state that should outlast a page in module scope.
+The island's first render in the browser has to match the HTML built for it,
+so read browser-only state, such as `localStorage`, in an effect.
 
 ## Page layouts
 
@@ -561,44 +325,8 @@ follow the color scheme. See
 ## The bundler
 
 [Vite](https://vite.dev/) builds the site by default. To pass it plugins or
-options, create its adapter yourself, with the Vite configuration to merge in:
-
-```js displayName="doc-kit.config.mjs"
-import { createViteBundler } from '@doc-kit/generator-react/html/bundlers/vite';
-
-import myVitePlugin from './my-vite-plugin.mjs';
-
-export default {
-  // A bundler adapter needs a single thread, see below
-  threads: 1,
-
-  html: {
-    bundler: createViteBundler({
-      plugins: [myVitePlugin()],
-      define: {
-        'import.meta.env.STATS_ID': JSON.stringify('kittens'),
-      },
-    }),
-  },
-};
-```
-
-> [!WARNING]
-> Worker threads can't receive functions, so a configuration that sets
-> `bundler`, the Vite adapter included, has to build with `threads: 1` (or
-> `--threads 1`). With more threads, the build fails with a `DataCloneError`.
-
-Your plugins run after doc-kit's own and see every module of both builds, but
-not the HTML pages: change those through the [template](#the-page-template).
-The scripts and styles are minified unless you set `build.minify: false`; the
-`minify` option only covers the HTML. A few options, such as the base URL and
-the JSX runtime, are doc-kit's to set; the
-[Vite adapter](./generators/html.md#vite-adapter) reference lists them.
-
-Another bundler, such as webpack or Rspack, plugs in through a small adapter
-of your own, which needs `threads: 1` as well. The
-[Website reference](./generators/html.md#bundler-adapters) describes how to
-write one.
+options, or to build with another bundler, see
+[Bundler adapters](./generators/html.md#bundler-adapters).
 
 ## A complete example
 

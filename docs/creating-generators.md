@@ -42,7 +42,7 @@ Here it runs next to the website (`html`), which comes from
 package beside the CLI:
 
 ```bash
-npx doc-kit generate -t html -t ./experimental.mjs -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t html -t ./experimental.mjs -i "docs/**/*.md" -o out
 ```
 
 It reads the same parse of the docs as `html`, and writes
@@ -59,9 +59,7 @@ The shared stages are documented with the rest of the
 
 Besides `name`, `dependsOn` and `generate`, a generator can declare default
 options, a function to run in worker threads, and a Markdown pipeline. The
-rest of this guide covers them one at a time, and
-[`@doc-kit/core`](./packages/core.md#writing-a-generator) lists every property
-in one place.
+rest of this guide covers them one at a time.
 
 ## Configuration
 
@@ -76,14 +74,27 @@ import { join } from 'node:path';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { writeFile } from '@doc-kit/core/utils/file.mjs';
 
+/**
+ * Lists every experimental API.
+ *
+ * @type {import('./types').Generator}
+ */
 export default {
   name: 'experimental',
+
   description: 'Lists every experimental API',
+
+  // This generator depends on the metadata generator. Dependencies are
+  // declared as import specifiers, so they can live in any package.
   dependsOn: '@doc-kit/core/metadata',
 
   defaultConfiguration: {
-    // The file the list is written to, in the output directory
+    // If your generator supports a custom configuration, define the defaults here
     fileName: 'experimental.md',
+
+    // All generators support options in the GlobalConfiguration object
+    // To override the defaults, they can be specified here
+    ref: 'overriddenRef',
   },
 
   async generate(entries) {
@@ -527,7 +538,7 @@ command line or in the `target` of their configuration file:
 
 ```bash
 npm install --save-dev @doc-kit/cli doc-kit-rss
-npx doc-kit generate -t doc-kit-rss/rss -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t doc-kit-rss/rss -i "docs/**/*.md" -o out
 ```
 
 - List `@doc-kit/core` as a peer dependency, so the generator shares the
@@ -549,9 +560,9 @@ that specifier. The key matches the generator's `name`:
 
 ```mjs displayName="packages/core/src/generators/index.mjs"
 export const publicGenerators = {
-  json: '@doc-kit/core/json',
-  'my-format': '@doc-kit/core/my-format',
-  // ...
+  'json-simple': '@doc-kit/core/json-simple',
+  'my-format': '@doc-kit/core/my-format', // Add this
+  // ... other generators
 };
 ```
 

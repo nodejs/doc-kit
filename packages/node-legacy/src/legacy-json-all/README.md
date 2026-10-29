@@ -7,15 +7,12 @@ into one file. It exists for Node.js and the tools that read that file; for
 your own API in one file, use the
 [JSON bundle](https://doc-kit.nodejs.org/generators/json-all).
 
-**Target:** `legacy-json-all` · **Package:** [`@node-core/doc-kit-legacy`](https://doc-kit.nodejs.org/packages/node-legacy) · **Reads:** [Legacy JSON](https://doc-kit.nodejs.org/generators/legacy-json) · **Writes:** `all.json`
-
 ## Usage
 
 From the root of a Node.js checkout:
 
 ```bash
-npm install --save-dev @doc-kit/cli @node-core/doc-kit-legacy
-npx doc-kit generate -t legacy-json-all -i "doc/api/*.md" -o out \
+npx @doc-kit/cli generate -t legacy-json-all -i "doc/api/*.md" -o out \
   --index doc/api/index.md
 ```
 
@@ -24,20 +21,14 @@ writes its own files to the same directory, such as `out/fs.json`.
 
 ## Configuring
 
-Options go in the `legacy-json-all` section of the
-[configuration file](https://doc-kit.nodejs.org/configuration):
-
 - `sourceURL` {string} The template `legacy-json` built each file's `source`
   from, which the bundle uses to match files to the index. If you change
   `legacy-json.sourceURL`, set the same value here. **Default:**
   `'doc/api/{path}'`.
-- `output` {string} The directory to write `all.json` to. Without one, nothing
-  is written. **Default:** from `global.output` (`--output`).
-- `minify` {boolean} Write the bundle without indentation. **Default:**
-  `false`, from `global.minify` (`--minify`).
-- `index` {string|Array} The path or URL of an `index.md` whose
-  `* [Title](file.md)` links set the order of the files, or the parsed list of
-  `{ section, api }` objects. **Default:** from `global.index` (`--index`).
+
+It also reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options),
+such as `index`, which sets the order of the files.
 
 ## What the bundle holds
 

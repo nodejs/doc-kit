@@ -5,37 +5,19 @@
 **Authored By**: Aviv Keller (<me@aviv.sh>)
 
 This document specifies the Markdown format consumed by
-[`@doc-kit/core`][doc-kit]: the structural, syntactic, and semantic rules that
-documents MUST follow to be correctly parsed. The format is
-[GitHub Flavored Markdown][gfm] (GFM), itself an extension of
-[CommonMark][commonmark], with conventions for API metadata, type annotations,
-stability indicators, and structured parameter lists.
+[`@doc-kit/core`][doc-kit]. It defines the structural, syntactic, and
+semantic rules that documents MUST follow to be correctly parsed. The format
+is a strict superset of [GitHub Flavored Markdown][gfm] (which itself is a
+strict superset of [CommonMark][commonmark]), adding conventions for API
+metadata, type annotations, stability indicators, and structured parameter
+lists.
 
-For a task-oriented introduction to the format, read
-[Writing documentation](./writing-docs.md) first, and come back here for the
-exact rules.
-
-## How to Read This Specification
-
-Sections 1 and 2 define the terms used throughout and what makes a document
-conforming. Sections 3 to 11 each cover one construct: its rules, then an
-example. Requirements are stated with the capitalized key words of
-[§1.1][§1.1]; examples and the text explaining them are informative. Defined
-terms, such as [entry][term-entry], link to their definitions in
-[§1.2][§1.2].
-
-Each construct at a glance:
-
-| Construct            | Looks like                                         | Defined in         |
-| -------------------- | -------------------------------------------------- | ------------------ |
-| Entry heading        | `` ### `fs.readFile(path[, options], callback)` `` | [§4][§4], [§5][§5] |
-| YAML metadata block  | `<!-- YAML`, then YAML lines, then `-->`           | [§6][§6]           |
-| Simple directive     | `<!--introduced_in=v0.10.0-->`                     | [§6.2][§6.2]       |
-| Stability indicator  | `> Stability: 1 - Experimental`                    | [§7][§7]           |
-| Type annotation      | `{string}`, `{Promise<Buffer>}`                    | [§8][§8]           |
-| Typed list item      | `` * `encoding` {string} **Default:** `'utf8'`. `` | [§9][§9]           |
-| Fenced code block    | ` ```js displayName="Reading a file" `             | [§10][§10]         |
-| Reference-style link | ``[`fs.readFile()`][]``                            | [§11][§11]         |
+Because this format is a superset, all constructs valid in [GFM][gfm] remain
+valid here. This specification only defines the **additional** constraints and
+semantics layered on top. Where a [GFM][gfm] construct is given special
+meaning by this specification (e.g., blockquotes as stability indicators,
+unordered lists as typed parameter lists), that special meaning is documented
+in the relevant section.
 
 ---
 
@@ -61,9 +43,9 @@ or one index listing.
 **Entry.** A discrete API element within a [document][term-document]. An
 [entry][term-entry] begins at a [heading][§4] and extends to the next heading
 of equal or lesser depth, or to the end of the file. An entry comprises a
-heading, optional [YAML metadata][§6], an optional
-[stability indicator][§7], an optional [typed parameter list][§9], and an
-optional prose body.
+heading, optional [YAML metadata][§6], optional
+[stability indicator][§7], optional [typed parameter list][§9], and a prose
+body.
 
 **Section.** A contiguous range of [entries][term-entry] sharing a common
 parent [heading][§4].
@@ -98,17 +80,16 @@ to hyperlinks. See [§8][§8].
 ### 2.1. Base Grammar
 
 A conforming [document][term-document] MUST be valid [GitHub Flavored
-Markdown][gfm] (GFM). This specification layers structure and semantics on
-top of [GFM][gfm] in two ways:
+Markdown][gfm] (GFM), which is itself a superset of [CommonMark][commonmark].
+This specification is a strict superset of [GFM][gfm]: all [GFM][gfm]
+constructs are valid, and this specification layers additional structure and
+semantics on top.
 
-- It assigns special meaning to some constructs, such as blockquotes used as
-  [stability indicators][§7] and unordered lists used as
-  [typed parameter lists][§9]. Each special meaning is defined in the relevant
-  section.
-- It restricts others: [Setext headings][§4.1], [indented code
-  blocks][§10.1], and [tab characters][§2.4] MUST NOT be used.
-
-All other [GFM][gfm] constructs are valid and retain their standard behavior.
+Where this specification assigns special meaning to a [GFM][gfm] construct
+(for example, blockquotes used as [stability indicators][§7], or unordered
+lists used as [typed parameter lists][§9]), that special meaning is defined in
+the relevant section. All other [GFM][gfm] constructs retain their standard
+behavior.
 
 ### 2.2. Character Encoding
 
@@ -133,14 +114,13 @@ reproduce literal output.
 
 ### 3.1. Top-Level Ordering
 
-The top-level elements of a [document][term-document] SHOULD appear in the
-following order. Items marked OPTIONAL MAY be omitted entirely.
+A conforming [document][term-document] MUST contain elements in the following
+order. Items marked OPTIONAL MAY be omitted entirely.
 
-1. **Title heading** (OPTIONAL, RECOMMENDED) - An
-   [ATX heading][cm-atx-heading] at depth 1.
+1. **Title heading** (OPTIONAL, RECOMMENDED) - An [ATX heading][cm-atx-heading] at depth 1.
 2. **[Simple directives][§6.2]** (OPTIONAL) - Zero or more
    [HTML comment][cm-html-comment] directives providing
-   [document][term-document]-level metadata. These SHOULD immediately follow
+   [document][term-document]-level metadata. These MUST immediately follow
    the title heading.
 3. **Module-level [stability indicator][§7]** (OPTIONAL) - A stability
    blockquote applying to the [document][term-document] as a whole.
@@ -149,9 +129,8 @@ following order. Items marked OPTIONAL MAY be omitted entirely.
    REPEATABLE) - One or more [headings][§4] at depth 2 or greater, each
    introducing an [entry][term-entry]. Each entry follows the sub-ordering
    in [§3.2][§3.2].
-6. **[Link reference definitions][§11.6]** (OPTIONAL) - These SHOULD be
-   collected at the end of the file, after all [entry][term-entry]
-   [sections][term-section].
+6. **[Link reference definitions][§11.6]** (OPTIONAL) - Collected at the end
+   of the file, after all [entry][term-entry] [sections][term-section].
 
 ```markdown
 # Command-line API
@@ -169,8 +148,8 @@ debugging, multiple ways to execute scripts, and other helpful runtime options.
 Within each API [entry][term-entry], elements MUST appear in this order:
 
 1. **[Heading][§4]** (REQUIRED) - An [ATX heading][cm-atx-heading].
-2. **[YAML metadata block][§6]** (OPTIONAL) - This SHOULD immediately follow
-   the heading ([§6.7][§6.7]).
+2. **[YAML metadata block][§6]** (OPTIONAL) - Immediately following the
+   heading, with no intervening content.
 3. **[Stability indicator][§7]** (OPTIONAL) - A stability blockquote.
 4. **[Typed parameter list][§9]** (OPTIONAL) - An unordered list describing
    parameters, return value, type, or extends clause.
@@ -218,28 +197,22 @@ its text against the patterns below, evaluated in the order given. The first
 match wins. All pattern matching is performed on the plain text of the heading
 after stripping the ATX prefix.
 
-Each type has a name, given in its subsection, which the
-[`type` field][§6.3.5] of a YAML metadata block can use to override the
-classification.
-
 #### 4.3.1. Method
 
-Type name: `method`. The heading text is a backtick-wrapped call: a function
-name, optionally reached through a dotted or bracketed receiver, followed by
-parentheses. The parentheses distinguish methods from [properties][§4.3.6].
+The heading text is a backtick-wrapped expression containing a dotted or
+bracketed receiver, a member accessor, and parentheses. The parentheses
+distinguish methods from [properties][§4.3.6].
 
 ```markdown
 ### `fs.readFile(path[, options], callback)`
 ### `buf.write(string[, offset[, length]][, encoding])`
 ### `request[Symbol.asyncIterator]()`
-### `require(id)`
 ```
 
 #### 4.3.2. Event
 
-Type name: `event`. The heading text begins with the literal prefix `Event:`,
-a space, and a backtick-wrapped event name, which SHOULD be single-quoted
-([§4.5.2][§4.5.2]).
+The heading text begins with the literal prefix `Event:` followed by optional
+whitespace and a backtick-wrapped, single-quoted event name.
 
 ```markdown
 ### Event: `'close'`
@@ -248,8 +221,8 @@ a space, and a backtick-wrapped event name, which SHOULD be single-quoted
 
 #### 4.3.3. Class
 
-Type name: `class`. The heading text begins with the literal prefix `Class:`,
-a space, and a backtick-wrapped class identifier. The class name SHOULD begin
+The heading text begins with the literal prefix `Class:` followed by optional
+whitespace and a backtick-wrapped class identifier. The class name SHOULD begin
 with an uppercase ASCII letter.
 
 ```markdown
@@ -259,9 +232,9 @@ with an uppercase ASCII letter.
 
 #### 4.3.4. Constructor
 
-Type name: `ctor`. The heading text is a backtick-wrapped expression beginning
-with the keyword `new`, followed by whitespace, then an uppercase-initial class
-identifier and parenthesized [parameters][§5].
+The heading text is a backtick-wrapped expression beginning with the keyword
+`new`, followed by whitespace, then an uppercase-initial class identifier and
+parenthesized [parameters][§5].
 
 ```markdown
 ### `new Agent([options])`
@@ -270,8 +243,8 @@ identifier and parenthesized [parameters][§5].
 
 #### 4.3.5. Static Method
 
-Type name: `classMethod`. The heading text begins with the literal prefix
-`Static method:`, a space, and a backtick-wrapped qualified method call (with
+The heading text begins with the literal prefix `Static method:` followed by
+optional whitespace and a backtick-wrapped qualified method call (with
 parentheses).
 
 ```markdown
@@ -281,9 +254,9 @@ parentheses).
 
 #### 4.3.6. Property
 
-Type name: `property`. The heading text is a backtick-wrapped dotted or
-bracketed property access that does not contain parentheses. The absence of
-parentheses distinguishes properties from [methods][§4.3.1].
+The heading text is a backtick-wrapped dotted or bracketed property access
+that does not contain parentheses. The absence of parentheses distinguishes
+properties from [methods][§4.3.1].
 
 ```markdown
 ### `buf.length`
@@ -293,12 +266,8 @@ parentheses distinguishes properties from [methods][§4.3.1].
 
 #### 4.3.7. Default Classification
 
-If no pattern matches, the [entry][term-entry] has no type and is a
+If no pattern matches, the [entry][term-entry] is classified as a
 miscellaneous [section][term-section].
-
-```markdown
-## Synopsis
-```
 
 ### 4.4. Document Type and Heading Interpretation
 
@@ -312,8 +281,7 @@ all headings in the file. This context can be overridden at the
 
 When `type` is `module` (or when no `type` directive is present, as `module`
 is the default), classified [entries][term-entry] are treated as **exports of
-the module** identified by the document's filename or
-[`name` simple directive][§6.2.6].
+the module** identified by the document's filename or [`module` simple directive][§6.2.5].
 
 A single module document MAY describe exports from more than one related
 module (e.g., `fs` and `fs/promises`). The module boundary does not affect
@@ -396,12 +364,7 @@ or in `misc`-type documents that contain isolated module exports.
 
 Programmatic identifiers (method names, property names, class names, event
 names, flag names) MUST be wrapped in backtick code spans. Prose
-[section][term-section] headings MUST NOT use backticks.
-
-```markdown
-### `buf.length`
-## Synopsis
-```
+[section][term-section] headings (e.g., `## Synopsis`) MUST NOT use backticks.
 
 #### 4.5.2. Event Name Quoting
 
@@ -476,8 +439,8 @@ documented in the [typed parameter list][§9].
 ### 6.1. Block Syntax
 
 [YAML metadata][term-yaml-block] is embedded in [HTML comments][cm-html-comment].
-The opening delimiter is `<!-- YAML`, with one space before `YAML`, and the
-closing delimiter is `-->`. The content between these delimiters MUST
+The opening delimiter is `<!-- YAML` (with at least one space before `YAML`)
+and the closing delimiter is `-->`. The content between these delimiters MUST
 be valid [YAML 1.2][yaml-1.2].
 
 ```markdown
@@ -497,9 +460,9 @@ object for that heading.
 uses a compact `key=value` syntax inside [HTML comments][cm-html-comment].
 Each directive has the form `<!--key=value-->`.
 
-Document-level directives (such as `introduced_in` and `type`) SHOULD appear
-immediately after the depth-1 heading. Section-level directives (see
-[§6.2.5][§6.2.5]) SHOULD appear immediately after the heading they annotate.
+Document-level directives (i.e. `introduced_in`) SHOULD appear immediately
+after the depth-1 heading. Section-level directives (see [§6.2.5][§6.2.5])
+SHOULD appear immediately after the heading they annotate.
 
 ```markdown
 # File System
@@ -517,15 +480,11 @@ Each [directive][term-simple-directive] occupies exactly one
 
 A [version string][§6.4] indicating when the module was introduced.
 
-- **Example:** `<!--introduced_in=v0.10.0-->`
-
 #### 6.2.2. `type`
 
 The [document][term-document] classification. Recognized values are `module`,
 `misc`, and `global`. Implementations MAY define additional values. If no
 `type` directive is present, the default is `module`.
-
-- **Example:** `<!--type=misc-->`
 
 See [§4.4][§4.4] for how document type influences heading interpretation.
 
@@ -533,14 +492,10 @@ See [§4.4][§4.4] for how document type influences heading interpretation.
 
 A relative file path to the implementation source. Rendered as a link.
 
-- **Example:** `<!--source_link=lib/fs.js-->`
-
 #### 6.2.4. `llm_description`
 
 A plain-text description optimized for consumption by Large Language Models,
 used in preference to extracted prose where available.
-
-- **Example:** `<!--llm_description=Reads and writes files on disk.-->`
 
 #### 6.2.5. `module`
 
@@ -555,14 +510,6 @@ See [§4.4.4][§4.4.4] for full semantics.
 
 <!--module=node:fs/promises-->
 ```
-
-#### 6.2.6. `name`
-
-The identifier of the [entry][term-entry] the directive annotates, used
-instead of the name derived from its heading text. After the depth-1 heading,
-it names the module the [document][term-document] describes.
-
-- **Example:** `<!--name=fs-->`
 
 ### 6.3. YAML Metadata Fields
 
@@ -634,13 +581,9 @@ in [§4.4.5][§4.4.5].
 Relative path to the implementation source file. Identical semantics to the
 [simple directive][§6.2.3] of the same name.
 
-- **Example:** `source_link: lib/fs.js`
-
 #### 6.3.7. `llm_description`
 
 Identical semantics to the [simple directive][§6.2.4] of the same name.
-
-- **Example:** `llm_description: Reads a whole file into memory.`
 
 ### 6.4. Version Strings
 
@@ -711,20 +654,20 @@ begins with `Stability: ` followed by a numeric level, a dash separator
 
 Four [stability][term-stability] levels are defined.
 
-#### 7.2.1. Level 0: Deprecated
+#### 7.2.1. Level 0 - Deprecated
 
 The feature may emit warnings. Backward compatibility is not guaranteed.
 
-#### 7.2.2. Level 1: Experimental
+#### 7.2.2. Level 1 - Experimental
 
 Not subject to [semantic versioning][semver] rules. Non-backward-compatible
 changes or removal may occur in any future release.
 
-#### 7.2.3. Level 2: Stable
+#### 7.2.3. Level 2 - Stable
 
 Compatibility with the ecosystem is a high priority.
 
-#### 7.2.4. Level 3: Legacy
+#### 7.2.4. Level 3 - Legacy
 
 Still covered by [semantic versioning][semver] guarantees, but no longer
 actively maintained. Other alternatives are available.
@@ -735,19 +678,15 @@ actively maintained. Other alternatives are available.
 experimental phase. This specification only defines semantics for decimal
 sub-levels of level 1.
 
-```markdown
-> Stability: 1.1 - Active development
-```
-
-#### 7.3.1. Level 1.0: Early Development
+#### 7.3.1. 1.0 - Early Development
 
 Unfinished and subject to substantial change.
 
-#### 7.3.2. Level 1.1: Active Development
+#### 7.3.2. 1.1 - Active Development
 
 Nearing minimum viability.
 
-#### 7.3.3. Level 1.2: Release Candidate
+#### 7.3.3. 1.2 - Release Candidate
 
 Expected to become stable.
 
@@ -772,8 +711,9 @@ The description MAY contain inline Markdown such as links and code spans:
 
 A [stability indicator][term-stability] MUST appear after the
 [YAML metadata block][§6] (if present) and before the
-[typed parameter list][§9] and prose body. An [entry][term-entry] SHOULD have
-at most one [stability indicator][term-stability]:
+[typed parameter list][§9] and prose body. A [document][term-document] SHOULD
+have at most one [stability indicator][term-stability] per
+[entry][term-entry]:
 
 ```markdown
 ### `myModule.myMethod()`
@@ -802,13 +742,6 @@ type expression — anything valid on the right-hand side of a TypeScript
 Annotations appear both in [typed parameter lists][§9] (as part of item
 structure) and in prose text (as inline references); both forms are parsed
 and rendered identically.
-
-```markdown
-* `data` {string|Buffer} The data to write.
-* Returns: {Promise<void>}
-
-The callback receives an {Error} or `null`.
-```
 
 ### 8.2. Parsing
 
@@ -839,15 +772,14 @@ Each name resolves through the following tiers; the first match wins:
 1. The configurable type map provided to the toolchain, which associates
    names with documentation URLs. An example type map is available for
    viewing [here][nodejs-typemap].
-2. JavaScript primitives and language types, matched case-insensitively:
-   `string`, `number`, `boolean`, `bigint`, `symbol`, `null`, `undefined`,
-   `integer`, `any`, `void`, `this`, `Iterable`, and `AsyncIterable`.
-3. JavaScript built-in objects and Web platform APIs documented on MDN,
-   matched case-insensitively, such as `Array`, `Promise`, and `AbortSignal`.
-4. Dotted-name heuristic: a name made of dotted identifiers links to the
-   [document][term-document] of the module named before the first `.`, at
-   the anchor of the name's own heading. For example, `vm.Module` links to
-   the `vm` document's `Class: vm.Module` heading.
+2. JavaScript primitives and built-in (TC39) globals, matched
+   case-insensitively: `string`, `number`, `boolean`, `bigint`, `symbol`,
+   `null`, `undefined`, `integer`, `Array`, `Object`, `Function`, `Promise`,
+   and others.
+3. Web platform APIs documented on MDN, matched case-insensitively.
+4. Dotted-name heuristic: names containing `.` are split on the first `.` to
+   derive a module name and member identifier, producing a cross-document
+   link of the form `<module>.md#<identifier>`.
 
 A name that no tier resolves stays plain — this is not an error.
 
@@ -894,7 +826,7 @@ The components, in order, are:
 3. **[Type annotation][§8]** - A single `{...}` TypeScript type expression
    (a union belongs inside it, e.g. `{string|Buffer}`). OPTIONAL.
 4. **Description** - Free-form prose. OPTIONAL.
-5. **[Default value][§9.5]** - The exact pattern `` **Default:** `value` ``.
+5. **[Default value][§9.5]** - The exact pattern `**Default:** \`value\``.
    OPTIONAL.
 
 ### 9.3. Special Prefixes
@@ -1027,13 +959,10 @@ External links MUST use full URLs including the protocol:
 
 ### 11.4. System-Call Auto-Linking
 
-References to system calls in the format `name(section)`, such as `open(2)`,
-are automatically converted by conforming implementations to links to the
-matching manual page, such as the one on man7.org for `open(2)`.
-
-```markdown
-Opens the file with open(2).
-```
+References to system calls in the format `name(section)`
+(e.g., `open(2)` links to https://man7.org/linux/man-pages/man2/open.2.html)
+are automatically converted to links to the appropriate manual page
+documentation by conforming implementations.
 
 ### 11.5. Type Auto-Linking
 
@@ -1075,6 +1004,12 @@ of the [document][term-document], after all content
 [cm-info-string]: https://spec.commonmark.org/0.31.2/#info-string
 [cm-html-comment]: https://spec.commonmark.org/0.31.2/#html-blocks
 [cm-link-ref-def]: https://spec.commonmark.org/0.31.2/#link-reference-definitions
+[cm-emphasis]: https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
+
+<!-- GFM spec sections -->
+
+[gfm-tables]: https://github.github.com/gfm/#tables-extension-
+[gfm-strikethrough]: https://github.github.com/gfm/#strikethrough-extension-
 
 <!-- Internal term definitions -->
 
@@ -1089,12 +1024,8 @@ of the [document][term-document], after all content
 
 <!-- Internal section cross-references -->
 
-[§1.1]: #11-requirement-level-keywords
-[§1.2]: #12-definitions
-[§2.4]: #24-whitespace
 [§3.2]: #32-entry-ordering
 [§4]: #4-headings
-[§4.1]: #41-style
 [§4.3]: #43-entry-type-classification
 [§4.3.1]: #431-method
 [§4.3.3]: #433-class
@@ -1103,7 +1034,6 @@ of the [document][term-document], after all content
 [§4.4]: #44-document-type-and-heading-interpretation
 [§4.4.4]: #444-module-context-override
 [§4.4.5]: #445-per-entry-override
-[§4.5.2]: #452-event-name-quoting
 [§5]: #5-signature-syntax
 [§6]: #6-yaml-comment-blocks
 [§6.2]: #62-simple-directives
@@ -1111,12 +1041,10 @@ of the [document][term-document], after all content
 [§6.2.3]: #623-source_link
 [§6.2.4]: #624-llm_description
 [§6.2.5]: #625-module
-[§6.2.6]: #626-name
 [§6.3.5]: #635-type-override
 [§6.4]: #64-version-strings
-[§6.7]: #67-placement
 [§7]: #7-stability-indicators
-[§7.2.2]: #722-level-1-experimental
+[§7.2.2]: #722-level-1--experimental
 [§7.3]: #73-sub-levels
 [§8]: #8-type-annotations
 [§8.1]: #81-syntax
@@ -1130,6 +1058,5 @@ of the [document][term-document], after all content
 [§9.3.3]: #933-type
 [§9.5]: #95-default-values
 [§10]: #10-code-blocks
-[§10.1]: #101-fence-style
 [§11]: #11-links-and-cross-references
 [§11.6]: #116-link-reference-definitions

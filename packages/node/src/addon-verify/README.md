@@ -5,15 +5,12 @@ document, such as Node.js's `doc/api/addons.md`, and writes each one to its own
 folder with a `binding.gyp`, so a test suite can compile and run the examples
 your docs show.
 
-**Target:** `addon-verify` · **Package:** [`@node-core/doc-kit`](https://doc-kit.nodejs.org/packages/node) · **Reads:** [API entries](https://doc-kit.nodejs.org/generators/metadata) · **Writes:** a folder per example, such as `02_function_arguments/`
-
 ## Usage
 
 From the root of a Node.js checkout:
 
 ```bash
-npm install --save-dev @doc-kit/cli @node-core/doc-kit
-npx doc-kit generate -t addon-verify -i doc/api/addons.md -o test/addons
+npx @doc-kit/cli generate -t addon-verify -i doc/api/addons.md -o test/addons
 ```
 
 This writes one folder per example to `test/addons/`. Building and running
@@ -21,11 +18,8 @@ them is up to your test suite.
 
 ## Configuring
 
-`addon-verify` has no options of its own. It reads this global option, which
-you can also set in an `addon-verify` section to apply to it alone:
-
-- `output` {string} The directory to write the example folders to. Without
-  one, nothing is written. **Default:** from `global.output` (`--output`).
+`addon-verify` has no options of its own. It writes to `output`, a
+[global option](https://doc-kit.nodejs.org/configuration#global-options).
 
 ## Marking up an example
 
@@ -107,14 +101,6 @@ const addon = require(`./build/${common.buildType}/addon`);
 
 console.log('This should be eight:', addon.add(3, 5));
 ```
-
-> [!WARNING]
-> The generator also changes the indentation and escapes of `test.js`. It
-> removes the smallest indentation it finds, up to four spaces, from every
-> indented line, so nested code shifts left and the added lines can end up
-> indented. Escape sequences turn into the characters they stand for: a `\n`
-> inside a quoted string becomes a real line break, which is a syntax error.
-> Check the written `test.js` when your example has nested blocks or escapes.
 
 Next to the files, the generator writes a `binding.gyp`, on a single line,
 with one target named `addon` that lists every file of the example as a

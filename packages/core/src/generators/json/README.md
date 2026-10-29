@@ -12,14 +12,10 @@ To load every document from one file, add the
 (`json-simple`) is a different format: a dump of the API entries behind every
 output, for debugging the pipeline.
 
-**Target:** `json` · **Package:** [`@doc-kit/core`](https://doc-kit.nodejs.org/packages/core) · **Reads:** [API entries](https://doc-kit.nodejs.org/generators/metadata) · **Writes:** one `.json` file per source file
-
 ## Usage
 
-`@doc-kit/core` comes with the CLI, so there's nothing else to install:
-
 ```bash
-npx doc-kit generate -t json -i "doc/api/**/*.md" -o out
+npx @doc-kit/cli generate -t json -i "doc/api/*.md" -o out
 ```
 
 The documents keep the input's directory layout, from where the glob starts:
@@ -28,42 +24,16 @@ The documents keep the input's directory layout, from where the glob starts:
 
 ## Configuring
 
-Options go in the `json` section of the
-[configuration file](https://doc-kit.nodejs.org/configuration):
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  global: {
-    repository: 'nodejs/node',
-    ref: 'main',
-  },
-  json: {
-    minify: true,
-  },
-};
-```
-
-- `output` {string} The directory to write the documents to. Without one,
-  nothing is written, and the documents only go to the generators that read
-  them, such as the
-  [JSON bundle](https://doc-kit.nodejs.org/generators/json-all).
-  **Default:** from `global.output` (`--output`).
-- `minify` {boolean} Write the documents without indentation.
-  **Default:** `false`, from `global.minify` (`--minify`).
-- `repository` {string} The GitHub repository, as `owner/name`, that
-  `sourceLink.url` points into. Without one, `sourceLink.url` is `null`.
-  **Default:** from `global.repository`.
-- `ref` {string} The Git ref `sourceLink.url` points at. **Default:**
-  `'HEAD'`, from `global.ref` (`--git-ref`).
 - `schemaURL` {string} The URL every document carries in `$schema`.
-  `{schemaVersion}` is the schema's version, and other placeholders, such as
-  `{repository}`, take configuration values. **Default:**
+  `{schemaVersion}` is the schema's version (see
+  [templates](https://doc-kit.nodejs.org/configuration#generator-options) for
+  the others). **Default:**
   `'https://doc-kit.nodejs.org/schemas/api-doc/{schemaVersion}.json'`.
-- `markdown` {Object} [Markdown plugins](https://doc-kit.nodejs.org/configuration#markdown-plugins)
-  for this generator, added after the ones in `global.markdown`.
-  - `remarkPlugins` {Array} Plugins for writing descriptions back to Markdown.
-    Only what they add to the serializer applies, such as a handler for a node
-    type: their transforms don't run, since the sources were already parsed.
+
+It also reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options)
+`output`, `minify`, and `repository` and `ref`, which `sourceLink.url` points
+into. Without a `repository`, `sourceLink.url` is `null`.
 
 ## The document
 
@@ -78,7 +48,7 @@ export default {
   "introducedIn": "v0.10.0",
   "sourceLink": {
     "path": "lib/fs.js",
-    "url": "https://github.com/nodejs/node/blob/main/lib/fs.js"
+    "url": "https://github.com/nodejs/node/blob/HEAD/lib/fs.js"
   },
   "stability": { "index": "2", "description": "Stable" },
   "added": [],
@@ -178,11 +148,9 @@ A parameter has a `name`, without `...`, a `type`, a `description`, and:
 
 A type has `text`, the annotation as a TypeScript type on one line, with `|`
 between union members, and `links`, the names in it that resolved to
-documentation, with their offsets in `text`. Names resolve through the
-[type map](https://doc-kit.nodejs.org/generators/metadata#type-links), then the
-built-in ones; a dotted name no map has, such as `fs.Stats`, links to its
-module's page (`fs.html#class-fsstats`). A type the source doesn't document is
-`null`, never guessed.
+documentation, with their offsets in `text` (see
+[Types that link themselves](https://doc-kit.nodejs.org/writing-docs#types-that-link-themselves)).
+A type the source doesn't document is `null`, never guessed.
 
 For example, this method:
 

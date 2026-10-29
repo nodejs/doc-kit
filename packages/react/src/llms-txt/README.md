@@ -9,24 +9,13 @@ To hand models the Markdown of every page in one file as well, add
 [llms-full.txt](https://doc-kit.nodejs.org/generators/llms-txt-full)
 (`llms-txt-full`).
 
-**Target:** `llms-txt` · **Package:** [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react) · **Reads:** [API entries](https://doc-kit.nodejs.org/generators/metadata) · **Writes:** `llms.txt`
-
 ## Usage
 
 The links in `llms.txt` are absolute URLs, so set `baseURL` to where your docs
-are published. There is no flag for it, so set it in your configuration file:
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  global: {
-    baseURL: 'https://example.com',
-  },
-};
-```
+are published. There is no flag for it, so set it in your configuration file.
 
 ```bash
-npm install --save-dev @doc-kit/cli @doc-kit/generator-react
-npx doc-kit generate -t llms-txt -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t llms-txt -i "docs/**/*.md" -o out
 ```
 
 For a project named `my-lib` with `docs/index.md` and `docs/guide/usage.md`,
@@ -44,37 +33,18 @@ Below are the sections of the API documentation. Look out especially towards the
 - [My library](https://example.com/index.md): A small library for working with strings.
 ```
 
-> [!WARNING]
-> Without a `baseURL`, the links keep a literal `{baseURL}` (for example
-> `{baseURL}/guide/usage.md`), and nothing warns you about it.
-
 ## Configuring
-
-Options go in the `llms-txt` section of the
-[configuration file](https://doc-kit.nodejs.org/configuration):
-
-```js displayName="doc-kit.config.mjs"
-import { join } from 'node:path';
-
-export default {
-  'llms-txt': {
-    templatePath: join(import.meta.dirname, 'llms-template.txt'),
-    pageURL: '{baseURL}/docs{path}.md',
-  },
-};
-```
 
 - `templatePath` {string} The text file `llms.txt` starts with (see
   [The template](#the-template)). A relative path resolves against the
   directory you run doc-kit from. **Default:** the bundled `template.txt`.
 - `pageURL` {string} URL template for each page's link. `{path}` is the page's
-  path, without its extension and starting with a slash. **Default:**
-  `'{baseURL}{path}.md'`.
-- `output` {string} The directory to write `llms.txt` to. Without one, nothing
-  is written. **Default:** from `global.output` (`--output`).
+  path, without its extension and starting with a slash; see
+  [templates](https://doc-kit.nodejs.org/configuration#generator-options).
+  **Default:** `'{baseURL}{path}.md'`.
 
-Like every generator section, it can also override a global option, such as
-`baseURL` or `project`, for this generator alone.
+It also reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options).
 
 ## What it lists
 
@@ -125,21 +95,8 @@ your project's name, then a `>` summary, then `##` sections of links. A
 template of your own can describe your project better and add links of its own
 above the generated list.
 
-Placeholders take the value of that option from the generator's configuration,
-which includes every global option:
-
-| Placeholder    | Value                                                                                               |
-| -------------- | --------------------------------------------------------------------------------------------------- |
-| `{project}`    | `project`: the `name` in your `package.json`, unless you set it                                     |
-| `{version}`    | `version` (`--version`): the Node.js version running doc-kit, unless you set your project's version |
-| `{repository}` | `repository`, as `owner/name`                                                                       |
-| `{baseURL}`    | `baseURL`                                                                                           |
-| `{ref}`        | `ref` (`--git-ref`): `HEAD` unless you set it                                                       |
-
-A placeholder without a value is left as written. To use a fallback instead,
-write `{name|fallback}`, where the fallback is a single word (letters, digits
-and underscores). The same placeholders work in `pageURL`, along with
-`{path}`.
+Placeholders such as `{project}` take configuration values; see
+[templates](https://doc-kit.nodejs.org/configuration#generator-options).
 
 ## Serving pages as Markdown
 

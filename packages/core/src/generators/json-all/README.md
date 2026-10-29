@@ -4,49 +4,29 @@ The `json-all` generator writes every document of the
 [`json` generator](https://doc-kit.nodejs.org/generators/json) into a single
 `all.json`, for tools that would rather load your whole API from one file.
 
-**Target:** `json-all` · **Package:** [`@doc-kit/core`](https://doc-kit.nodejs.org/packages/core) · **Reads:** [JSON](https://doc-kit.nodejs.org/generators/json) · **Writes:** `all.json`
-
 ## Usage
 
-`@doc-kit/core` comes with the CLI, so there's nothing else to install:
-
 ```bash
-npx doc-kit generate -t json-all -i "docs/**/*.md" -o out
+npx @doc-kit/cli generate -t json-all -i "doc/api/*.md" -o out --index doc/api/index.md
 ```
 
 This writes `out/all.json`. `json` runs first without being listed, and writes
-its own files to the same directory, such as `out/getting-started.json`. To
-leave those out, see [Writing only the bundle](#writing-only-the-bundle).
+its own files to the same directory. To leave those out, see
+[Writing only the bundle](#writing-only-the-bundle).
 
 ## Configuring
 
-Options go in the `json-all` section of the
-[configuration file](https://doc-kit.nodejs.org/configuration):
-
-```js displayName="doc-kit.config.mjs"
-export default {
-  'json-all': {
-    minify: true,
-  },
-};
-```
-
-- `output` {string} The directory to write `all.json` to. Without one,
-  nothing is written. **Default:** from `global.output` (`--output`).
-- `minify` {boolean} Write the bundle on one line, without indentation.
-  **Default:** `false`, from `global.minify` (`--minify`).
-- `index` {string|Array} The path or URL of an `index.md` whose links set the
-  order of the documents, or the parsed list of `{ section, api }` objects.
-  See [Document order](#document-order). **Default:** from `global.index`
-  (`--index`).
 - `schemaURL` {string} URL template for the bundle's `$schema`.
-  `{schemaVersion}` is the schema's version, and other placeholders, such as
-  `{project}`, take configuration values. The documents inside keep the
+  `{schemaVersion}` is the schema's version. The documents inside keep the
   `$schema` from `json.schemaURL`. **Default:**
   `'https://doc-kit.nodejs.org/schemas/api-doc-all/{schemaVersion}.json'`.
 
-The documents themselves come from `json`, so the options that shape them,
-such as `repository` and `ref`, go in the `json` section or in `global` (see
+It also reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options)
+`output`, `minify` and `index`, which sets the
+[document order](#document-order). The documents themselves come from `json`,
+so the options that shape them, such as `repository` and `ref`, go in the
+`json` section or in `global` (see
 [JSON](https://doc-kit.nodejs.org/generators/json#configuring)).
 
 ## What the bundle holds
@@ -92,15 +72,9 @@ the `json` schema of the same version.
 
 ## Document order
 
-Without an index, the documents are sorted by `id`. To choose the order, pass
-an `index.md` with `--index`:
-
-```bash
-npx doc-kit generate -t json-all -i "docs/**/*.md" -o out --index docs/index.md
-```
-
-The documents its links point to come first, in the order of the links, and
-the rest follow by `id`:
+Without an index, the documents are sorted by `id`. With one, the documents
+its links point to come first, in the order of the links, and the rest follow
+by `id`:
 
 ```text displayName="docs/index.md"
 # My library
@@ -109,14 +83,8 @@ the rest follow by `id`:
 * [Configuration](configuration.md)
 ```
 
-- Only list items written with an asterisk, `* [Title](file.md)`, count.
-  `- [Title](file.md)` is skipped.
 - A link places the document whose `id` is the link's target without `.md`:
   `getting-started.md` matches the document of `docs/getting-started.md`.
-- A file in a subdirectory, such as `docs/guide/intro.md`, has the `id`
-  `guide-intro`. A link to `guide/intro.md` doesn't match it, so it's ordered
-  with the rest.
-- Links to files that aren't in your input are ignored.
 - `index.md` is a document too when your input matches it, ordered with the
   rest. Leave it out with `--ignore docs/index.md`.
 

@@ -93,52 +93,6 @@ for the full API.
 either side of the command name (`doc-kit --log-level debug my-command` or
 `doc-kit my-command --log-level debug`). Don't add it to your command.
 
-## Running generators from a command
-
-A command that builds docs can follow what `generate` does:
-
-```js displayName="packages/cli/bin/commands/my-command.mjs"
-import createGenerator from '@doc-kit/core';
-import {
-  assertRunnableOptions,
-  setConfig,
-} from '@doc-kit/core/utils/configuration/index.mjs';
-import { Command, Option } from 'commander';
-
-import { errorWrap } from '../utils.mjs';
-
-const { runGenerators } = createGenerator();
-
-export default new Command('my-command')
-  .description('Builds the docs, then does something useful')
-  .addOption(new Option('--config-file <path>', 'Config file'))
-  .addOption(
-    new Option('-i, --input <patterns...>', 'Input file patterns (glob)')
-  )
-  .addOption(new Option('-t, --target <generator...>', 'Target generator(s)'))
-  .action(
-    errorWrap(async opts => {
-      const config = await setConfig(opts);
-      assertRunnableOptions(config);
-
-      await runGenerators(config);
-    })
-  );
-```
-
-`setConfig` loads the
-[configuration file](../configuration.md#where-configuration-lives)
-(`opts.configFile`, or the first one it finds), merges in the command-line
-options, and fills in the generators' defaults. `assertRunnableOptions` then
-throws when no `target` or `input` is set.
-
-`setConfig` reads options by the names `generate` gives them (`configFile`,
-`input`, `target`, `output`, `gitRef`, and so on), so declare the flags your
-command needs with the same names. A flag you don't declare can't be passed,
-and its value comes only from the configuration file. To turn a new option
-into configuration, map it in `createConfigFromCLIOptions`
-(`packages/core/src/utils/configuration/index.mjs`).
-
 ## Before you open a pull request
 
 - **Try it** from the repository root with
@@ -152,8 +106,8 @@ into configuration, map it in `createConfigFromCLIOptions`
 - **Document it** with a section on the [CLI page](../cli.md) (`docs/cli.md`),
   using the same option-list format as the existing commands, and in
   `packages/cli/README.md` if it changes how people use the package. If it
-  adds a flag that sets configuration, also add the flag to the
-  [CLI flags](../configuration.md#cli-flags) table.
+  adds a flag that sets configuration, name the key it sets, as the
+  `generate` options do.
 - **Add a changeset** with `node --run changeset`, since `@doc-kit/cli` is
   published. See
   [Adding a changeset](https://github.com/nodejs/doc-kit/blob/main/CONTRIBUTING.md#adding-a-changeset).

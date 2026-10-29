@@ -5,8 +5,6 @@ The `api-links` generator reads your JavaScript sources and writes
 line on GitHub that defines it. It's built for the Node.js `lib/` folder, and
 works for any CommonJS codebase laid out the same way.
 
-**Target:** `api-links` · **Package:** [`@node-core/doc-kit`](https://doc-kit.nodejs.org/packages/node) · **Reads:** [Parsing JavaScript](https://doc-kit.nodejs.org/generators/ast-js) · **Writes:** `apilinks.json`
-
 > [!NOTE]
 > The other doc-kit generators don't read `apilinks.json`, so load it from your
 > own tooling. To link a page of the
@@ -29,44 +27,32 @@ export default {
 ```
 
 ```bash
-npm install --save-dev @doc-kit/cli @node-core/doc-kit
-npx doc-kit generate -t api-links -i "lib/*.js" -o out
+npx @doc-kit/cli generate -t api-links -i "lib/*.js" -o out
 ```
 
-This writes `out/apilinks.json`. Links point at `HEAD`; pass `--git-ref` to
-link to a tag or commit, such as `--git-ref v24.0.0`. To build the Node.js
-docs, extend the
+This writes `out/apilinks.json`. To build the Node.js docs, extend the
 [Node.js preset](https://doc-kit.nodejs.org/packages/node#the-nodejs-preset)
 instead, which sets `nodejs/node`.
 
-> [!IMPORTANT]
-> Without a `repository`, every link keeps the literal `{repository}`
-> placeholder, and nothing warns you about it.
+The JavaScript is parsed by the
+[Parsing JavaScript](https://doc-kit.nodejs.org/generators/ast-js) stage, which
+explains which files it reads and how to keep them apart from your Markdown.
+Links use the file's name without its directories, so match the files of a
+single folder, as `lib/*.js` does.
 
 ## Configuring
 
-Options go in the `api-links` section of the configuration file:
+- `sourceURL` {string} URL template for the file each link points into.
+  `{fileName}` is the source file's name, such as `fs.js`, without its
+  directories; the other placeholders take configuration values (see
+  [templates](https://doc-kit.nodejs.org/configuration#generator-options)).
+  Each link is the filled-in template followed by `#L` and a line number.
+  **Default:** `'https://github.com/{repository}/blob/{ref}/lib/{fileName}'`.
 
-- `sourceURL` {string} URL template for the file each link points into. See
-  [Source URLs](#source-urls). **Default:**
-  `'https://github.com/{repository}/blob/{ref}/lib/{fileName}'`.
-- `repository` {string} The GitHub repository, as `owner/name`.
-  **Default:** from `global.repository`.
-- `ref` {string} The Git branch, tag or commit the links point to.
-  **Default:** `'HEAD'`, from `global.ref` (`--git-ref`).
-- `output` {string} The directory to write `apilinks.json` to. Without one,
-  nothing is written. **Default:** from `global.output` (`--output`).
-- `minify` {boolean} Write the JSON on a single line instead of indented.
-  **Default:** `false`, from `global.minify` (`--minify`).
-
-### Source URLs
-
-In `sourceURL`, `{fileName}` is the source file's name, such as `fs.js`,
-without its directories. Other placeholders take configuration values, global
-options included, such as `{repository}`, `{ref}` and `{version}`, and
-`{name|fallback}` uses `fallback` when the option has no value. `{version}` has
-no leading `v` (`24.0.0`), so write `v{version}` to point at a release tag.
-Each link is the filled-in template followed by `#L` and a line number.
+It also reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options)
+`output`, `minify`, and `repository` and `ref`, which the default `sourceURL`
+points into.
 
 The default assumes the files live in `lib/` at the root of a GitHub
 repository. For sources in `src/` on GitLab:
@@ -78,25 +64,6 @@ export default {
   },
 };
 ```
-
-## Input
-
-The [Parsing JavaScript](https://doc-kit.nodejs.org/generators/ast-js) stage
-reads the files `input` matches and parses them with Acorn:
-
-- Only files ending in `.js` are read. Other matches, `.cjs` and `.mjs`
-  included, are skipped.
-- Files are parsed as CommonJS scripts. A file that uses `import` or `export`
-  stops the run with a syntax error.
-- Links use the file's name without its directories, so match the files of a
-  single folder, as `lib/*.js` does. With `lib/**/*.js`,
-  `lib/internal/util.js` would link to `lib/util.js`, and files with the same
-  name would overwrite each other's keys.
-
-When the same run builds the website or other Markdown targets, give the
-JavaScript to `ast-js` through its own `input`, and keep `global.input` for
-your docs (see
-[Parsing JavaScript](https://doc-kit.nodejs.org/generators/ast-js#configuring)).
 
 ## Output
 

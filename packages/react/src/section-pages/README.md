@@ -4,13 +4,10 @@ The `section-pages` generator adds a page for each section of every module,
 next to the full module page, so readers can open a single class or method on
 its own. Use it when your modules are long reference pages.
 
-**Target:** `section-pages` · **Package:** [`@doc-kit/generator-react`](https://doc-kit.nodejs.org/packages/react) · **Reads:** [API entries](https://doc-kit.nodejs.org/generators/metadata) · **Writes:** `<module>/<section>.html`, through `html`
-
 ## Usage
 
 ```bash
-npm install --save-dev @doc-kit/cli @doc-kit/generator-react
-npx doc-kit generate -t html -t section-pages -i "doc/api/*.md" -o out
+npx @doc-kit/cli generate -t section-pages -i "doc/api/*.md" -o out
 ```
 
 Every module keeps its full page (`fs.html`) and gets one page per section in
@@ -28,17 +25,15 @@ section pages. What the run writes depends on the targets you pass with
 > [!IMPORTANT]
 > The [sitemap](https://doc-kit.nodejs.org/generators/sitemap) lists absolute
 > URLs, so set `baseURL` in your configuration file whenever the run includes
-> it. Without it, every URL keeps a literal `{baseURL}` placeholder.
+> it.
 
 ## Configuring
 
-Options go in the `section-pages` section of the
-[configuration file](https://doc-kit.nodejs.org/configuration):
-
 ```mjs displayName="doc-kit.config.mjs"
 export default {
+  target: ['section-pages'],
   'section-pages': {
-    // Also start pages at ### classes, methods, events and globals
+    // Also split at `###` headings that document an API entry
     maxDepth: 3,
     exclude: ['deprecations'],
   },
@@ -56,13 +51,13 @@ With this configuration, Node.js's `fs.md` comes out as:
 
 ```text
 out/
-├── fs.html                   the full module page, same content
+├── fs.html                  the complete module page, exactly as before
 └── fs/
-    ├── promises-api.html     ## Promises API
-    ├── FileHandle.html       ### Class: FileHandle, with all of its members
+    ├── promises-api.html    ## Promises API
+    ├── FileHandle.html      ### Class: FileHandle, with all of its members
     ├── fsPromises.readFile.html
-    ├── callback-api.html     ## Callback API
-    ├── readFile.html         ### fs.readFile(path[, options], callback)
+    ├── callback-api.html    ## Callback API
+    ├── readFile.html        ### fs.readFile(path[, options], callback)
     └── ...
 ```
 

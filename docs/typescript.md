@@ -11,7 +11,7 @@ hand-written guides.
 > `@doc-kit/typedoc` is experimental: its output and options can still change.
 
 It takes two commands: `npx typedoc` writes the reference into `docs/api/`,
-then `npx doc-kit generate` builds everything in `docs/`.
+then `npx @doc-kit/cli generate` builds everything in `docs/`.
 
 ## Install
 
@@ -19,9 +19,9 @@ then `npx doc-kit generate` builds everything in `docs/`.
 npm install --save-dev typedoc@0.28 @doc-kit/typedoc @doc-kit/cli @doc-kit/generator-react
 ```
 
-`typedoc` and `@doc-kit/typedoc` write the reference; the plugin is built for
-TypeDoc 0.28. `@doc-kit/cli` and `@doc-kit/generator-react` build the site, as
-in [Getting started](./getting-started.md).
+`typedoc` and `@doc-kit/typedoc` write the reference, and `@doc-kit/cli` and
+`@doc-kit/generator-react` build the site, as in
+[Getting started](./getting-started.md).
 
 ## Configure TypeDoc
 
@@ -39,17 +39,11 @@ export default {
 };
 ```
 
-- `plugin: [load]` passes the plugin itself, not its package name. TypeDoc
-  imports plugins named by a string from its own installation, where package
-  managers such as pnpm hide your project's dependencies, so passing `load`
-  works with any package manager.
-- `docKit` sets where the reference goes. With it set, TypeDoc skips its own
-  HTML output.
-- `basePath` makes the source links relative to your repository's root, so
-  they match your files on GitHub.
-
-Everything else, such as entry points, the `tsconfig` and which exports to
-include, is configured with TypeDoc's own options.
+The [`@doc-kit/typedoc` reference](./packages/typedoc.md#usage) explains why
+the plugin is passed as `load`, and its [Output](./packages/typedoc.md#output)
+section why `basePath` is your repository's root. Everything else, such as
+entry points, the `tsconfig` and which exports to include, is configured with
+TypeDoc's own options.
 
 ## Generate the reference
 
@@ -70,22 +64,8 @@ docs/api/
 └── type-map.json
 ```
 
-- A page per exported class, interface, enum, type alias, function and
-  variable, in `classes/`, `interfaces/`, `enums/`, `types/`, `functions/`
-  and `variables/`. Namespaces, and modules when you have several entry
-  points, get a page in `modules/`.
-- `type-map.json` maps each type name to its page, so doc-kit can link type
-  annotations to it.
-- `pages.json` lists the pages, for your site's navigation.
-
-There's no page for the project itself: that one is yours to write, for
-example as `docs/index.md`.
-
-> [!TIP]
-> The plugin writes into `docs/api/` without emptying it first. Delete the
-> folder before generating when you rename or remove exports, so their old
-> pages don't stay behind. Since it's generated, you can also leave it out of
-> version control.
+The [`@doc-kit/typedoc` reference](./packages/typedoc.md#output) describes
+each file.
 
 ## From doc comments to Markdown
 
@@ -200,10 +180,9 @@ here `docs/`:
 }
 ```
 
-These paths have no extension, so type links need a host that serves
-`/api/interfaces/Kitten` from `Kitten.html`, as GitHub Pages, Netlify and
-Cloudflare do, and Vercel with `cleanUrls`. See
-[Page URLs](./publishing.md#page-urls).
+These paths have no extension; see
+[The type map](./packages/typedoc.md#the-type-map) for what that asks of your
+host.
 
 If the reference sits deeper, such as in `docs/reference/api/`, set the
 plugin's `docKitBasePath` option to `'reference/api'` so the paths still
