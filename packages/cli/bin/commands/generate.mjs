@@ -27,50 +27,43 @@ const { runGenerators } = createGenerator();
  * @property {string} typeMap
  */
 
-export default new Command('generate')
-  .description('Generate API docs')
-  .addOption(new Option('--config-file <path>', 'Config file'))
+/**
+ * The `generate` options, also shared with the `preview` command, which
+ * builds on demand when any of them is passed
+ */
+export const generateOptions = [
+  new Option('--config-file <path>', 'Config file'),
+  new Option('-i, --input <patterns...>', 'Input file patterns (glob)'),
+  new Option(
+    '-t, --target <generator...>',
+    'Target generator(s): a built-in name ' +
+      `(${Object.keys(publicGenerators).join(', ')}) ` +
+      'or an import specifier for a custom generator'
+  ),
+  new Option('--ignore <patterns...>', 'Ignore file patterns (glob)'),
+  new Option('-o, --output <directory>', 'The output directory'),
+  new Option('-p, --threads <number>', 'Number of threads to use (minimum: 1)'),
+  new Option(
+    '--chunk-size <number>',
+    'Number of items to process per worker thread (minimum: 1)'
+  ),
+  new Option('-v, --version <semver>', 'Target Node.js version'),
+  new Option('-c, --changelog <url>', 'Changelog URL or path'),
+  new Option('--git-ref <ref>', 'Git ref'),
+  new Option('--index <url>', 'index.md URL or path'),
+  new Option('--minify', 'Minify?'),
+  new Option('--type-map <url>', 'Type map URL or path'),
+];
 
-  // Options that need to be converted into a configuration
-  .addOption(
-    new Option('-i, --input <patterns...>', 'Input file patterns (glob)')
-  )
-  .addOption(
-    new Option(
-      '-t, --target <generator...>',
-      'Target generator(s): a built-in name ' +
-        `(${Object.keys(publicGenerators).join(', ')}) ` +
-        'or an import specifier for a custom generator'
-    )
-  )
-  .addOption(
-    new Option('--ignore <patterns...>', 'Ignore file patterns (glob)')
-  )
-  .addOption(new Option('-o, --output <directory>', 'The output directory'))
-  .addOption(
-    new Option(
-      '-p, --threads <number>',
-      'Number of threads to use (minimum: 1)'
-    )
-  )
-  .addOption(
-    new Option(
-      '--chunk-size <number>',
-      'Number of items to process per worker thread (minimum: 1)'
-    )
-  )
-  .addOption(new Option('-v, --version <semver>', 'Target Node.js version'))
-  .addOption(new Option('-c, --changelog <url>', 'Changelog URL or path'))
-  .addOption(new Option('--git-ref <ref>', 'Git ref'))
-  .addOption(new Option('--index <url>', 'index.md URL or path'))
-  .addOption(new Option('--minify', 'Minify?'))
-  .addOption(new Option('--type-map <url>', 'Type map URL or path'))
+const generate = new Command('generate').description('Generate API docs');
 
-  .action(
-    errorWrap(async opts => {
-      const config = await setConfig(opts);
-      assertRunnableOptions(config);
+generateOptions.forEach(option => generate.addOption(option));
 
-      await runGenerators(config);
-    })
-  );
+export default generate.action(
+  errorWrap(async opts => {
+    const config = await setConfig(opts);
+    assertRunnableOptions(config);
+
+    await runGenerators(config);
+  })
+);
