@@ -1,42 +1,24 @@
-import { repository } from '#theme/config';
+import { navigation, repository } from '#theme/config';
 import { version } from '#theme/site';
 
 import { Wordmark } from './components/Brand.jsx';
 
+const group = name =>
+  navigation.sidebar.find(({ groupName }) => groupName === name).items;
+
+// The sidebar's guides and reference, then where to find the project
 const COLUMNS = [
-  {
-    title: 'Learn',
-    links: [
-      { label: 'Why doc-kit', href: '/introduction' },
-      { label: 'Getting started', href: '/getting-started' },
-      { label: 'Writing documentation', href: '/writing-docs' },
-      { label: 'Documenting TypeScript', href: '/typescript' },
-      { label: 'Customizing the site', href: '/customization' },
-      { label: 'Publishing your docs', href: '/publishing' },
-      { label: 'Creating generators', href: '/creating-generators' },
-    ],
-  },
-  {
-    title: 'Reference',
-    links: [
-      { label: 'CLI', href: '/cli' },
-      { label: 'Configuration', href: '/configuration' },
-      { label: 'Generators', href: '/generators' },
-      { label: 'Specification', href: '/specification' },
-    ],
-  },
+  { title: 'Learn', links: [...group('Introduction'), ...group('Guides')] },
+  { title: 'Reference', links: group('Reference') },
   {
     title: 'Community',
     links: [
-      { label: 'GitHub', href: `https://github.com/${repository}` },
-      { label: 'Issues', href: `https://github.com/${repository}/issues` },
-      {
-        label: '#nodejs-website on Slack',
-        href: 'https://openjs-foundation.slack.com/archives/CVAMEJ4UV',
-      },
+      { label: 'GitHub', link: `https://github.com/${repository}` },
+      { label: 'Issues', link: `https://github.com/${repository}/issues` },
+      { label: '#nodejs-doc-kit on Slack', link: 'http://slack.openjsf.org/' },
       {
         label: 'Contributing',
-        href: `https://github.com/${repository}/blob/main/CONTRIBUTING.md`,
+        link: `https://github.com/${repository}/blob/main/CONTRIBUTING.md`,
       },
     ],
   },
@@ -65,9 +47,9 @@ export default () => (
         <nav class="dk-footer__column" aria-label={title} key={title}>
           <p class="dk-footer__title">{title}</p>
           <ul>
-            {links.map(({ label, href }) => (
-              <li key={href}>
-                <a href={href}>{label}</a>
+            {links.map(({ label, link }) => (
+              <li key={link}>
+                <a href={link}>{label}</a>
               </li>
             ))}
           </ul>
