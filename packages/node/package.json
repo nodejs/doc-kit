@@ -31,7 +31,6 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "tinyglobby": "^0.2.17",
     "unist-builder": "^4.0.0"
   }
 }

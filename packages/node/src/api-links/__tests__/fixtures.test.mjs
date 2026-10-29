@@ -6,13 +6,13 @@ import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import createWorkerPool from '@doc-kit/core/threading/index.mjs';
 import createParallelWorker from '@doc-kit/core/threading/parallel.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
-import { globSync } from 'tinyglobby';
+import { findFiles } from '@doc-kit/core/utils/glob.mjs';
 
 import { generate as apiLinksGenerate } from '../generate.mjs';
 
 const relativePath = relative(process.cwd(), import.meta.dirname);
 
-const sourceFiles = globSync('*.js', {
+const sourceFiles = findFiles('*.js', {
   cwd: new URL(import.meta.resolve('./fixtures')),
 });
 

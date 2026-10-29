@@ -4,9 +4,9 @@ import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
 import { parse } from 'acorn';
-import { globSync } from 'tinyglobby';
 
 import getConfig from '#utils/configuration/index.mjs';
+import { findFiles } from '#utils/glob.mjs';
 
 /**
  * Process a chunk of JavaScript files in a worker thread.
@@ -44,7 +44,7 @@ export async function processChunk(inputSlice, itemIndices) {
 export async function* generate(_, worker) {
   const config = getConfig('ast-js');
 
-  const files = globSync(config.input, { ignore: config.ignore }).filter(
+  const files = findFiles(config.input, { ignore: config.ignore }).filter(
     p => extname(p) === '.js'
   );
 
