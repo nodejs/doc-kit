@@ -16,13 +16,21 @@ import { UNIST } from '#utils/queries/index.mjs';
 export async function generate(input) {
   const config = getConfig('json-simple');
 
-  input.forEach(node =>
-    remove(node.content, [UNIST.isStabilityNode, UNIST.isHeading])
-  );
+  const output = input.map(entry => {
+    const copy = { ...entry, content: structuredClone(entry.content) };
+
+    remove(copy.content, [UNIST.isStabilityNode, UNIST.isHeading]);
+
+    return copy;
+  });
 
   if (config.output) {
-    await writeJSON(join(config.output, 'api-docs.json'), input, config.minify);
+    await writeJSON(
+      join(config.output, 'api-docs.json'),
+      output,
+      config.minify
+    );
   }
 
-  return input;
+  return output;
 }
