@@ -198,7 +198,7 @@ const Bench = ({ benchmark }) => {
       </ul>
 
       <p class="dk-caption">
-        Median of {benchmark.runsEach} clean builds on an {benchmark.machine}{' '}
+        Median of {benchmark.runCount} clean builds on an {benchmark.machine}{' '}
         and <span class="dk-nowrap">doc-kit</span>{' '}
         <code>{benchmark.commit}</code>.{' '}
         <a href="/introduction#performance">How we measured</a>
