@@ -1,19 +1,16 @@
 ---
-title: doc-kit
+title: The docs toolkit for APIs
 layout: home
-# Sections come from `www/theme/home/sections.jsx`, which reads their numbers
-# from `www/theme/data.mjs`. The outputs are excerpts, with `…` marking what's
-# cut. Notes go here, as MDX comments would reach llms-full.txt and the JSON.
 ---
 
 <Hero
-  badge="Building the next Node.js API docs"
+  badge="Building the next generation of Node.js API docs"
   badgeLink="https://beta.docs.nodejs.org/"
   title="The docs toolkit"
   accent="for APIs."
 >
 
-doc-kit reads your API from Markdown, MDX, TypeScript and JSDoc, and keeps its signatures, typed parameters, stability and history as data. From there it builds a fast, searchable site, JSON, LLMs.txt and anything else a generator can write.
+doc-kit reads your API docs from Markdown and MDX, and keeps their signatures, typed parameters, stability and history as data. From there it builds a fast, searchable site, JSON, LLMs.txt and anything else a generator can write.
 
 <Actions>
   <Button href="/getting-started" primary>
@@ -21,22 +18,6 @@ doc-kit reads your API from Markdown, MDX, TypeScript and JSDoc, and keeps its s
   </Button>
   <Button href="/introduction">Why doc-kit?</Button>
 </Actions>
-
-```bash displayName="npm"
-npm i -D @doc-kit/cli @doc-kit/generator-react
-```
-
-```bash displayName="pnpm"
-pnpm add -D @doc-kit/cli @doc-kit/generator-react
-```
-
-```bash displayName="yarn"
-yarn add -D @doc-kit/cli @doc-kit/generator-react
-```
-
-```bash displayName="bun"
-bun add -d @doc-kit/cli @doc-kit/generator-react
-```
 
 </Hero>
 
@@ -143,9 +124,7 @@ export async function adopt(name, options = {}) {
 }
 ```
 
-<CodeTabs languages="html|json|json|md" displayNames="Site|JSON|Search|LLMs.txt">
-
-<SitePreview />
+<CodeTabs languages="json|json|md" displayNames="JSON|Search index|LLMs.txt">
 
 ```json
 {
@@ -190,10 +169,6 @@ export async function adopt(name, options = {}) {
 }
 ```
 
-<SearchPreview>
-
-Its entry in the search index:
-
 ```json
 {
   "title": "adopt",
@@ -202,8 +177,6 @@ Its entry in the search index:
   "siteSection": "Kittens"
 }
 ```
-
-</SearchPreview>
 
 ```md
 # Kittens Documentation
@@ -297,8 +270,8 @@ The `kittens` module adopts, feeds, and pets kittens.
 The site and its search index, then a local preview.
 
 ```bash
-npx doc-kit generate -t html -t orama-db -i "docs/*.md" -o out
-npx serve out
+npx @doc-kit/cli generate -t html -t orama-db -i "docs/*.md" -o out
+npx @doc-kit/cli preview
 ```
 
 </Step>
