@@ -1,17 +1,13 @@
 // The facts the home page states. Keep them true: refresh the benchmarks with
-// `node --run benchmark` from `www/`, and the showcase as sites adopt (or
-// leave) doc-kit.
+// `node scripts/benchmark.mjs`, and the showcase as sites adopt (or leave)
+// doc-kit.
 
 import benchmarks from './benchmarks.json' with { type: 'json' };
-
-const count = number => number.toLocaleString('en');
-
-const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven'];
 
 const { site, node } = benchmarks;
 
 const shared = {
-  runsEach: WORDS[benchmarks.runs] ?? benchmarks.runs,
+  runCount: benchmarks.runs,
   machine: benchmarks.machine,
   commit: benchmarks.commit,
 };
@@ -23,7 +19,7 @@ const shared = {
 export const BENCHMARK = {
   ...shared,
   title: `The Node.js ${node.version} API docs, start to finish`,
-  subtitle: `${node.files} files · ${count(node.words)} words`,
+  subtitle: `${node.files} files`,
   pages: node.results['section-pages'].pages,
   // `-t <generator>` on its own, then every one of them in a single run
   runs: [
@@ -63,7 +59,7 @@ export const BENCHMARK = {
 export const SITE_BENCHMARK = {
   ...shared,
   title: 'This site, start to finish',
-  subtitle: `${site.pages} pages · ${count(site.words)} words`,
+  subtitle: `${site.pages} pages`,
   pages: site.pages,
   documents: site.results.json.files,
   runs: [
@@ -105,5 +101,6 @@ export const SHOWCASE = [
 // Monthly requests to the Node.js API docs, as presented at NodeConf EU 2026
 export const NODE_DOCS_REQUESTS = '5B';
 
-// Built-in generators, but for the ones kept for Node.js's classic layouts
-export const GENERATOR_COUNT = 12;
+// Built-in generators, but for the ones kept for Node.js's classic layouts,
+// counted at build time
+export { generators as GENERATOR_COUNT } from '#theme/site';
