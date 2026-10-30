@@ -22,11 +22,8 @@ import {
 import { resolveMarkdown } from '#utils/markdown/plugins.mjs';
 import { deepMerge } from '#utils/misc.mjs';
 
-import {
-  DEFAULT_CHUNK_SIZE,
-  DEFAULT_MAX_THREADS,
-  DEFAULT_OUTPUT_DIRECTORY,
-} from './constants.mjs';
+import { DEFAULT_MAX_THREADS } from '../../threading/constants.mjs';
+import { DEFAULT_CHUNK_SIZE, DEFAULT_OUTPUT_DIRECTORY } from './constants.mjs';
 
 const configExplorer = cosmiconfig('doc-kit');
 

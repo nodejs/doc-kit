@@ -108,4 +108,15 @@ describe('jsx-ast generate', () => {
       ['index', 'fs']
     );
   });
+
+  it('does not change its input on the main thread', async () => {
+    await setConfig({ target: ['jsx-ast'] });
+
+    const fs = createEntry('fs', 'File system');
+    const before = structuredClone(fs);
+
+    await processChunk([{ head: fs, entries: [fs] }], [0]);
+
+    assert.deepEqual(fs, before);
+  });
 });

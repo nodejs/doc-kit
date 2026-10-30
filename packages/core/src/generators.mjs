@@ -87,8 +87,10 @@ const createGenerator = () => {
           ? createParallelWorker(specifier, generator, pool, configuration)
           : Promise.resolve(null);
 
-        const result = await generate(dependencyInput, await worker);
-
+        // Returned rather than awaited, so this function doesn't hold on to the
+        // input while the generator runs, and the generator can let it go
+        return generate(dependencyInput, await worker);
+      })().then(result => {
         // For streaming generators, "Completed" is logged when the cache
         // finishes collecting, not here when the generator returns
         if (!isAsyncIterable(result)) {
@@ -96,7 +98,7 @@ const createGenerator = () => {
         }
 
         return result;
-      })()
+      })
     );
   };
 
