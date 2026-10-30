@@ -77,12 +77,13 @@ export default function createParallelWorker(
   const { name, workerConfigOmit } = generator;
 
   // Main-thread-only options may contain functions that cannot be cloned.
-  const workerConfiguration = workerConfigOmit?.length
-    ? {
-        ...configuration,
-        [name]: omitKeys(configuration[name], workerConfigOmit),
-      }
-    : configuration;
+  const workerConfiguration = { ...configuration };
+  if (configuration[name]) {
+    workerConfiguration[name] = omitKeys(
+      configuration[name],
+      workerConfigOmit
+    );
+  }
 
   return {
     /**
