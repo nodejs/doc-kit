@@ -70,6 +70,9 @@ declare global {
 
     hasParallelProcessor?: boolean;
 
+    /** Configuration keys excluded from worker-thread messages. */
+    workerConfigOmit?: string[];
+
     /**
      * The unified plugins this generator processes Markdown with, listed as
      * in the `markdown` option, with paths relative to its module. Each list

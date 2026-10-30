@@ -1,6 +1,7 @@
 'use strict';
 
 import logger from '#logger/index.mjs';
+import { omitKeys } from '#utils/misc.mjs';
 
 const parallelLogger = logger.child('parallel');
 
@@ -73,7 +74,15 @@ export default function createParallelWorker(
 ) {
   const { threads, chunkSize } = configuration;
 
-  const { name } = generator;
+  const { name, workerConfigOmit } = generator;
+
+  // Main-thread-only options may contain functions that cannot be cloned.
+  const workerConfiguration = workerConfigOmit?.length
+    ? {
+        ...configuration,
+        [name]: omitKeys(configuration[name], workerConfigOmit),
+      }
+    : configuration;
 
   return {
     /**
@@ -110,7 +119,14 @@ export default function createParallelWorker(
       // unhandled rejection while earlier chunks are still running.
       const tasks = chunks.map(indices => {
         const task = pool.run(
-          createTask(items, indices, extra, configuration, specifier, name)
+          createTask(
+            items,
+            indices,
+            extra,
+            workerConfiguration,
+            specifier,
+            name
+          )
         );
 
         return task.then(
