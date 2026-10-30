@@ -1,10 +1,6 @@
-import { createRequire, registerHooks } from 'node:module';
+import { registerHooks } from 'node:module';
 
-const viteRequire = createRequire(import.meta.resolve('vite'));
-
-try {
-  viteRequire('lightningcss');
-} catch {
+if (process.arch === 'ppc64' || process.arch === 's390x') {
   const url = import.meta.resolve('lightningcss-wasm');
 
   registerHooks({
