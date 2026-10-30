@@ -1,0 +1,70 @@
+{
+  "machine": "AMD Ryzen 9 8945HX with Node.js 24.18.0",
+  "commit": "12a5473",
+  "runs": 5,
+  "site": {
+    "pages": 40,
+    "results": {
+      "llms-txt": {
+        "seconds": 0.51,
+        "files": 1,
+        "pages": 0
+      },
+      "orama-db": {
+        "seconds": 0.55,
+        "files": 1,
+        "pages": 0
+      },
+      "json": {
+        "seconds": 0.56,
+        "files": 40,
+        "pages": 0
+      },
+      "html": {
+        "seconds": 2.85,
+        "files": 171,
+        "pages": 42,
+        "clientKilobytes": 10
+      },
+      "all": {
+        "seconds": 2.9,
+        "files": 213,
+        "pages": 42,
+        "clientKilobytes": 10
+      }
+    }
+  },
+  "node": {
+    "version": "v26.12.1",
+    "files": 71,
+    "results": {
+      "llms-txt": {
+        "seconds": 2.22,
+        "files": 1,
+        "pages": 0
+      },
+      "orama-db": {
+        "seconds": 2.55,
+        "files": 1,
+        "pages": 0
+      },
+      "json": {
+        "seconds": 2.57,
+        "files": 71,
+        "pages": 0
+      },
+      "section-pages": {
+        "seconds": 9.69,
+        "files": 864,
+        "pages": 794,
+        "clientKilobytes": 10
+      },
+      "all": {
+        "seconds": 10.09,
+        "files": 937,
+        "pages": 794,
+        "clientKilobytes": 10
+      }
+    }
+  }
+}

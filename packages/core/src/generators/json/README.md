@@ -1,35 +1,45 @@
-# `json` Generator
+# JSON
 
-The `json` generator writes one JSON document per source file. Each document
-is a tree of the file's headings, in document order, with the metadata,
-signature or type, Markdown body, and code examples of every one of them.
+The `json` generator writes each source file as a JSON document: a tree of
+its headings, each with its metadata, signature or type, Markdown and code
+examples, in a format a published JSON schema describes. Use it when a program
+needs your API as data, such as an editor integration, a linter or a site of
+your own.
 
-The output is described by a JSON schema, published at the URL every document
-carries in `$schema`, and shipped with the package as
-`@doc-kit/core/generators/json/schema.json`.
+To load every document from one file, add the
+[JSON bundle](https://doc-kit.nodejs.org/generators/json-all) (`json-all`).
+[Debug JSON](https://doc-kit.nodejs.org/generators/json-simple)
+(`json-simple`) is a different format: a dump of the API entries behind every
+output, for debugging the pipeline.
 
-```sh
+## Usage
+
+```bash
 npx @doc-kit/cli generate -t json -i "doc/api/*.md" -o out
 ```
 
-Files keep the input's directory layout: `doc/api/some/fs.md` becomes `out/some/fs.json`.
+The documents keep the input's directory layout, from where the glob starts:
+`doc/api/fs.md` becomes `out/fs.json`, and `doc/api/guides/streams.md` becomes
+`out/guides/streams.json`.
 
 ## Configuring
 
-- `output` {string} The directory to write the documents to.
-- `minify` {boolean} Whether to minify the output. Inherited from `global`.
-  **Default:** `false`.
-- `repository` {string} The `owner/name` repository source links resolve
-  against. Inherited from `global`; without one, `sourceLink.url` is `null`.
-- `schemaURL` {string} Where the schema is published. `{schemaVersion}` is
-  filled in. **Default:**
+- `schemaURL` {string} The URL every document carries in `$schema`.
+  `{schemaVersion}` is the schema's version (see
+  [templates](https://doc-kit.nodejs.org/configuration#generator-options) for
+  the others). **Default:**
   `'https://doc-kit.nodejs.org/schemas/api-doc/{schemaVersion}.json'`.
+
+It also reads the
+[global options](https://doc-kit.nodejs.org/configuration#global-options)
+`output`, `minify`, and `repository` and `ref`, which `sourceLink.url` points
+into. Without a `repository`, `sourceLink.url` is `null`.
 
 ## The document
 
-```json
+```json displayName="out/fs.json"
 {
-  "$schema": "https://doc-kit.nodejs.org/schemas/api-doc/1.0.0.json",
+  "$schema": "https://doc-kit.nodejs.org/schemas/api-doc/1.0.1.json",
   "id": "fs",
   "path": "/fs",
   "type": "module",
@@ -53,99 +63,193 @@ Files keep the input's directory layout: `doc/api/some/fs.md` becomes `out/some/
 }
 ```
 
-- `id` is the file's path, slugged; `path` is that path without extension.
-  Cross-document links in Markdown target `<path>.html`.
-- `type` is the file's `type=` directive: `module` (the default), `misc`, or
-  `global`. `module` is the module's name, from the `name=` directive.
-- `introducedIn` and `sourceLink` are the `introduced_in=` and `source_link=`
-  directives.
-- Everything from `title` on is what every heading carries, described below.
-- `children` are the file's headings, nested by depth.
+A document stands for a source file and its title heading. Besides the
+[fields every entry has](#fields-every-entry-has), it carries these, most from
+the file's [page metadata](https://doc-kit.nodejs.org/writing-docs#page-metadata):
 
-## Every entry
+| Field          | Type             | Holds                                                                                                                      |
+| -------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `$schema`      | `string`         | The URL of the schema the document conforms to, from `schemaURL`. Its last path segment is the schema version.             |
+| `id`           | `string`         | The file's path in the input tree, slugged: `fs`, `guides-streams`.                                                        |
+| `path`         | `string`         | The file's path in the input tree, without extension: `/fs`.                                                               |
+| `type`         | `string`         | The file's `type=` directive: `module` (the default), `misc` or `global`.                                                  |
+| `module`       | `string \| null` | The `name=` directive. Without one, the `id` of a `module` document, and `null` for the others.                            |
+| `introducedIn` | `string \| null` | The `introduced_in=` directive.                                                                                            |
+| `sourceLink`   | `object \| null` | The `source_link=` directive: `path`, as authored, and `url`, the file on GitHub at `ref` (`null` without a `repository`). |
+| `children`     | `Node[]`         | The file's other headings, as [nodes](#nodes) nested by depth, in document order.                                          |
+
+### Fields every entry has
 
 The document and every node carry:
 
-- `title` The heading text as authored, inline Markdown included.
-- `stability` The stability index, or `null`: `{ index, description }`,
-  where `index` is the text as authored (`"1.1"`) and `description` the
-  Markdown after it.
-- `added`, `deprecated`, `removed` Arrays of version strings, as authored.
-- `napiVersion` An array of numbers.
-- `changes` The change history: `{ versions, prUrl, commit, description }`.
-- `description` The body as Markdown: everything under the heading except
-  its metadata, its stability index, and the typed list a signature or type
-  was taken from. Links are rewritten as they are for HTML output.
-- `summary` A plain-text paragraph: the `llm_description` when there is one,
-  else the first paragraph.
-- `examples` The fenced code blocks of the body, `{ language, displayName, code }`.
-  They stay in the description too.
+| Field                            | Type             | Holds                                                                                                                                                                                                                                                                           |
+| -------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`                          | `string`         | The heading text as authored, inline Markdown included.                                                                                                                                                                                                                         |
+| `stability`                      | `object \| null` | The stability index: `index`, as authored (`"1.1"`), and `description`, the Markdown after it.                                                                                                                                                                                  |
+| `added`, `deprecated`, `removed` | `string[]`       | Versions, as authored.                                                                                                                                                                                                                                                          |
+| `napiVersion`                    | `number[]`       | The Node-API versions the entry is available in.                                                                                                                                                                                                                                |
+| `changes`                        | `object[]`       | The change history, one record per change: `versions`, `prUrl`, `commit` and `description`.                                                                                                                                                                                     |
+| `description`                    | `string`         | The body as Markdown (MDX, from MDX sources): everything under the heading except its metadata, its stability index and the typed list a signature or type was taken from. Reference links are inlined, and links to `.md` files point to the `.html` pages, as on the website. |
+| `summary`                        | `string`         | A one-paragraph summary: the `llm_description` when there is one, else the first paragraph on one line, with links reduced to their text.                                                                                                                                       |
+| `examples`                       | `object[]`       | The fenced code blocks of the body, as `language`, `displayName` and `code`. They stay in `description` too.                                                                                                                                                                    |
 
-Every key is always present. What is missing is `null` or an empty array.
+Every field is always present: what a source doesn't declare is `null`, an
+empty string or an empty array.
 
 ## Nodes
 
 A node is a heading below the title. Its `kind` says what the heading
-documents, and decides which further properties it has:
+documents
+([how headings are classified](https://doc-kit.nodejs.org/writing-docs#how-headings-are-classified))
+and decides which further fields the node has:
 
-| `kind`         | Heading                                        | Further properties           |
-| -------------- | ---------------------------------------------- | ---------------------------- |
-| `section`      | Anything else: prose, `DEP0005: …`, `--flag`   | none                         |
-| `class`        | `` Class: `net.Server` ``                      | `extends` (`Type` or `null`) |
-| `constructor`  | `` `new Agent([options])` ``                   | `signature`                  |
-| `method`       | `` `fs.readFile(path[, options], callback)` `` | `signature`                  |
-| `staticMethod` | `` Static method: `Buffer.from(string)` ``     | `signature`                  |
-| `property`     | `` `buf.length` ``                             | `type`, `default`            |
-| `event`        | `` Event: `'close'` ``                         | `parameters`                 |
+| `kind`         | Heading                                        | Further fields    |
+| -------------- | ---------------------------------------------- | ----------------- |
+| `section`      | Anything else: prose, `DEP0005: …`, `--flag`   | none              |
+| `class`        | `` Class: `net.Server` ``                      | `extends`         |
+| `constructor`  | `` `new Agent([options])` ``                   | `signature`       |
+| `method`       | `` `fs.readFile(path[, options], callback)` `` | `signature`       |
+| `staticMethod` | `` Static method: `Buffer.from(string)` ``     | `signature`       |
+| `property`     | `` `buf.length` ``                             | `type`, `default` |
+| `event`        | `` Event: `'close'` ``                         | `parameters`      |
 
-Every node also has:
+Every node also carries:
 
-- `id` The heading's slug, and its anchor in HTML output.
-- `name` The bare identifier: `readFile`, `Server`, `close`. A section's
-  plain heading text. A `name=` directive overrides it.
-- `scope` `module`, or `global` for entries typed `global`.
-- `overloadOf` When several sibling headings document one callable, the `id`
-  of the first on the second and later ones; otherwise `null`.
-- `children` The headings nested under it.
+| Field        | Type             | Holds                                                                                                                             |
+| ------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `id`         | `string`         | The heading's slug, unique within the document. It's the heading's anchor on the website.                                         |
+| `name`       | `string`         | The bare identifier: `readFile`, `Server`, `close`. A section's heading text. A `name=` directive under the heading overrides it. |
+| `scope`      | `string`         | `global` for headings typed `global` and in `global` documents, `module` otherwise.                                               |
+| `overloadOf` | `string \| null` | On the second and later of consecutive sibling headings documenting the same callable, the `id` of the first.                     |
+| `children`   | `Node[]`         | The headings nested under this one.                                                                                               |
 
 ## Signatures and types
 
+The further fields come from the heading and the
+[typed list](https://doc-kit.nodejs.org/writing-docs#parameters-return-values-and-defaults)
+under it:
+
+| Field        | On                                       | Holds                                                                                                                                                                |
+| ------------ | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `signature`  | constructors, methods and static methods | `parameters`, every parameter the heading declares, in order, and `returns`, the `Returns:` item or `null`. A parameter the list doesn't describe has a `null` type. |
+| `extends`    | classes                                  | The type of the `Extends:` item, else the `extends` in the heading (`` Class: `Foo extends Bar` ``), else `null`.                                                    |
+| `type`       | properties                               | The type of the `Type:` item. Its description goes first in the node's `description`.                                                                                |
+| `default`    | properties                               | The default of the `Type:` item.                                                                                                                                     |
+| `parameters` | events                                   | The arguments the listeners receive.                                                                                                                                 |
+
+A parameter has a `name`, without `...`, a `type`, a `description`, and:
+
+- `default`: the value as authored, without its code span, or `null`.
+- `optional`: `true` when the parameter is bracketed in the heading or has a
+  default.
+- `rest`: `true` when it's declared as `...args`.
+- `properties`: its nested items, such as the properties of an options object
+  or the arguments of a callback, each a parameter too.
+
+A type has `text`, the annotation as a TypeScript type on one line, with `|`
+between union members, and `links`, the names in it that resolved to
+documentation, with their offsets in `text` (see
+[Types that link themselves](https://doc-kit.nodejs.org/writing-docs#types-that-link-themselves)).
+A type the source doesn't document is `null`, never guessed.
+
+For example, this method:
+
+```markdown displayName="doc/api/fs.md"
+## `fsPromises.readFile(path[, options])`
+
+- `path` {string|URL} The file to read.
+- `options` {Object}
+  - `encoding` {string|null} **Default:** `null`.
+- Returns: {Promise} Fulfills with the contents of the file.
+
+Reads the entire contents of a file.
+```
+
+has `Reads the entire contents of a file.` as its `description`, and this
+`signature` (each type's `links` shortened to `[]`):
+
 ```json
-"signature": {
+{
   "parameters": [
     {
+      "name": "path",
+      "type": { "text": "string | URL", "links": [] },
+      "description": "The file to read.",
+      "default": null,
+      "optional": false,
+      "rest": false,
+      "properties": []
+    },
+    {
       "name": "options",
-      "type": { "text": "Object | string", "links": [{ "name": "Object", "href": "https://developer.mozilla.org/…", "start": 0, "end": 6 }] },
+      "type": { "text": "Object", "links": [] },
       "description": "",
       "default": null,
       "optional": true,
       "rest": false,
       "properties": [
-        { "name": "encoding", "type": { "text": "string | null", "links": [] }, "description": "", "default": "null", "optional": true, "rest": false, "properties": [] }
+        {
+          "name": "encoding",
+          "type": { "text": "string | null", "links": [] },
+          "description": "",
+          "default": "null",
+          "optional": true,
+          "rest": false,
+          "properties": []
+        }
       ]
     }
   ],
-  "returns": { "type": { "text": "Promise", "links": [] }, "description": "Fulfills upon success." }
+  "returns": {
+    "type": { "text": "Promise", "links": [] },
+    "description": "Fulfills with the contents of the file."
+  }
 }
 ```
 
-- A signature's `parameters` are the ones the heading declares,
-  described by the typed list under it. `optional` is set for parameters
-  bracketed in the heading or documented with a default; `rest` for
-  `...args`. `properties` are the nested list items: the properties of an
-  options object, or the arguments of a callback.
-- `returns` is the `Returns:` item, or `null`.
-- A `Type` is the annotation's TypeScript text, normalised to one line with
-  `|` between union members, plus the names in it that resolved to
-  documentation, with their character offsets. A type that was not
-  documented is `null`, never guessed.
-- An event's `parameters` are the arguments its listeners receive.
+Each `links` array lists its type's names with where they point and their
+offsets, such as
+`{ "name": "URL", "href": "https://developer.mozilla.org/docs/Web/API/URL", "start": 9, "end": 12 }`
+for `URL` in `string | URL`.
 
-## The schema
+## Using the schema
 
-`schema.json` is the source of truth. After changing it, bump its `$id` and
-`SCHEMA_VERSION` in `constants.mjs` together, and regenerate the types:
+Every document's `$schema` points to the version of the schema it conforms to,
+such as `https://doc-kit.nodejs.org/schemas/api-doc/1.0.1.json`. The schema
+also ships in `@doc-kit/core` as `@doc-kit/core/generators/json/schema.json`,
+with TypeScript types generated from it:
 
-```sh
-node scripts/generate-json-types.mjs
+```ts displayName="list-methods.ts"
+import { readFile } from 'node:fs/promises';
+
+import type {
+  Document,
+  Node,
+} from '@doc-kit/core/generators/json/generated/schema';
+
+const fs: Document = JSON.parse(await readFile('out/fs.json', 'utf-8'));
+
+const listMethods = (nodes: Array<Node>): void => {
+  for (const node of nodes) {
+    if (node.kind === 'method') {
+      console.log(
+        node.name,
+        node.signature.parameters.map(p => p.name)
+      );
+    }
+
+    listMethods(node.children);
+  }
+};
+
+listMethods(fs.children);
 ```
+
+### Changing the schema
+
+For doc-kit contributors: `schema.json` is the source of truth for the format.
+When you change it, bump the version in its `$id`, in `SCHEMA_VERSION` in
+`constants.mjs`, and in the `$id` of the JSON bundle's schema and its
+reference to this one, all together. Then regenerate the types with
+`node scripts/generate-json-types.mjs`. The tests fail while the versions
+disagree or the committed types are stale.

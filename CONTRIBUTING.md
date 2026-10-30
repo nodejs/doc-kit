@@ -85,10 +85,12 @@ published package lives under `packages/`:
 - `packages/typedoc`: [`@doc-kit/typedoc`](packages/typedoc) — the TypeDoc plugin writing API references as doc-kit Markdown
 
 Everything else at the root supports the repo rather than shipping to npm:
-`docs/` (every authored documentation page, from the landing page to the
-reference docs), `www/` (the documentation site build: its configuration and
-gitignored build artifacts), `scripts/` (build and comparison helpers), and
-`e2e/` (Playwright tests).
+`docs/` (the authored guides and reference docs, plus the illustrations in
+`docs/diagrams/`), `www/` (the documentation site: its configuration, its theme
+in `www/theme/`, site-only pages such as the home page in `www/pages/`, public
+files in `www/public/`, and the gitignored build artifacts in `www/content/`
+and `www/out/`), `scripts/` (build and comparison helpers), and `e2e/`
+(Playwright tests).
 
 Contributor-facing deep dives — [creating CLI
 commands](docs/contributing/commands.md) and [creating

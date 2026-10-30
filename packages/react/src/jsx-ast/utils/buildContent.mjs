@@ -173,7 +173,7 @@ export const createHeadingElement = (content, changeElement) => {
   let headingContent = extractHeadingContent(content);
 
   // Build heading with anchor link
-  const headingWrapper = createElement('div', [
+  const headingWrapper = createElement('div', { className: ['heading'] }, [
     createElement(
       `h${content.depth}`,
       { id: slug },

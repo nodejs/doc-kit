@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${title}</title>
+    <meta property="og:title" content="${title}" />
+    <meta property="og:type" content="website" />
+    ${canonical && `<link rel="canonical" href="${canonical}" />`}
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0d121c"
+      media="(prefers-color-scheme: dark)"
+    />
+
+    <!-- The site's text is set in Inter, so of the fonts doc-kit preloads,
+         only its monospace one is kept -->
+    <link
+      rel="preload"
+      href="${root}fonts/inter-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    ${preloads.split('\n').filter(line => line.includes('plex-mono')).join('\n')}
+    <style>
+      @font-face {
+        font-family: 'Inter Variable';
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url('${root}fonts/inter-latin-wght-normal.woff2')
+          format('woff2-variations');
+      }
+
+      @font-face {
+        font-family: 'Inter Variable';
+        font-style: italic;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url('${root}fonts/inter-latin-wght-italic.woff2')
+          format('woff2-variations');
+      }
+    </style>
+
+    ${assets} ${head}
+
+    <!-- Apply theme before paint to avoid Flash of Unstyled Content -->
+    <script>
+      ${themeScript}
+    </script>
+    <script type="speculationrules">
+      ${speculationRules}
+    </script>
+  </head>
+
+  <body>
+    <div id="root">${dehydrated}</div>
+  </body>
+</html>
