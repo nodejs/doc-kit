@@ -79,10 +79,7 @@ export default function createParallelWorker(
   // Main-thread-only options may contain functions that cannot be cloned.
   const workerConfiguration = { ...configuration };
   if (configuration[name]) {
-    workerConfiguration[name] = omitKeys(
-      configuration[name],
-      workerConfigOmit
-    );
+    workerConfiguration[name] = omitKeys(configuration[name], workerConfigOmit);
   }
 
   return {
