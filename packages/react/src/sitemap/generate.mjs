@@ -30,7 +30,7 @@ export async function generate(entries) {
   const lastmod = new Date().toISOString().split('T')[0];
 
   const apiPages = entries
-    .filter(entry => entry.heading.depth === 1)
+    .filter(entry => entry.heading.depth === 1 && entry.api !== 'index')
     .map(entry => createPageSitemapEntry(entry, config, lastmod));
 
   const loc = populate(config.indexURL, config);
