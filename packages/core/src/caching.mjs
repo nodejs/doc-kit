@@ -216,6 +216,30 @@ export const createCache = () => {
     },
 
     /**
+     * Runs a generator to its end, keeping none of its result, which counts as
+     * one of its reads.
+     *
+     * @param {string} name - Cache key (resolved generator specifier) to drain
+     * @returns {Promise<void>}
+     */
+    drain: async name => {
+      const result = await results[name];
+
+      if (!isAsyncIterable(result)) {
+        release(name);
+
+        return;
+      }
+
+      const { ended } = replayOf(name, result);
+
+      // Once nothing else reads it, its chunks go as they're recorded
+      release(name);
+
+      await ended;
+    },
+
+    /**
      * Gives a reader of a generator's result as it is produced: chunk by chunk
      * if it streams, or as a single chunk once it resolves. As with `consume`,
      * the result is awaited and its recording started right away, so the
