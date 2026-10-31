@@ -1,5 +1,13 @@
 # @node-core/doc-kit
 
+## 2.0.7
+
+### Patch Changes
+
+- [#1186](https://github.com/nodejs/doc-kit/pull/1186) [`5598f92`](https://github.com/nodejs/doc-kit/commit/5598f92b8744da867638fce81d17d3a4e4d8f24e) Thanks [@btea](https://github.com/btea)! - Fix template value replacement treating `$` sequences (such as `$$` in Makefile snippets) as special replacement patterns, which corrupted the rendered output.
+- Updated dependencies [[`e49eb52`](https://github.com/nodejs/doc-kit/commit/e49eb52472dfc2707a5966ee25c4dc7201360850), [`b8d7b77`](https://github.com/nodejs/doc-kit/commit/b8d7b7725f0dbe085d9f32af60fddd7459555af9), [`92efbbe`](https://github.com/nodejs/doc-kit/commit/92efbbeb727a38b178c9ccb63a3a4f9cfbc110a4), [`9e21017`](https://github.com/nodejs/doc-kit/commit/9e21017d9597e3f8b5a18a41f3db8e5de216213a), [`854a944`](https://github.com/nodejs/doc-kit/commit/854a944699b3a996cb3a8544deaec3fe916fd449), [`0321911`](https://github.com/nodejs/doc-kit/commit/03219116c78e7f4a721b4e39bc71ba54cb6f0ba8)]:
+  - @doc-kit/core@1.3.1
+
 ## 2.0.6
 
 ### Patch Changes
