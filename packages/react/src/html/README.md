@@ -215,9 +215,12 @@ generator's `constants.mjs`), so that the page and the library share one Preact.
 `buildClient` receives `{ entry, virtualImports, config }`. The client `entry`
 is a single program shared by every page. It must be bundled into
 `config.output` and the call must return
-`{ scripts, preloads, stylesheets, fonts }`: paths relative to the output root
-of the module scripts to load, the chunks they statically import (rendered as
-`modulepreload` hints), the stylesheets, and optionally the fonts to preload.
+`{ scripts, preloads, stylesheets, fonts, emitted }`: paths relative to the
+output root of the module scripts to load, the chunks they statically import
+(rendered as `modulepreload` hints), the stylesheets, optionally the fonts to
+preload, and optionally every file the build wrote, for an incremental build
+to remove the ones a later build does not write again (without it, only the
+files every page loads are tracked).
 The generator renders those into every page, resolved against the page's
 location. Name every file after its content (a hash), so hosts can cache them
 indefinitely (see [Publishing](../../../docs/publishing.md#cache-the-assets)).
@@ -517,6 +520,23 @@ Since the template supports arbitrary JS expressions, you can use conditionals a
 The populated page is the final HTML: it is minified when `minify` is set and
 written as is. Put `${assets}` in the `<head>`, or the page loads no script and
 no stylesheet.
+
+## Incremental builds
+
+With [`experimentalIncremental`](../../../../docs/configuration.md#execution-options)
+on, a page is rendered again only when its key changed. The key is the page
+itself: its JSX, metadata, table of contents and reading time. `all.html` is
+keyed on the module pages it is made of.
+
+Every key also carries what every page depends on: the built component
+library, hashed by its bytes (it bundles every component and the
+`#theme/config` module, so a change to a component, a dependency or the page
+set changes it), the client assets, the template, and the `html`
+configuration minus its paths and functions.
+
+The files the client build wrote are recorded too, so a later build removes
+the ones it no longer emits; see `emitted` under
+[bundler adapters](#bundler-adapters).
 
 ## Client-side navigation
 

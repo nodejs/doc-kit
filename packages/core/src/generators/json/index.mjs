@@ -1,6 +1,6 @@
 'use strict';
 
-import { SCHEMA_URL } from './constants.mjs';
+import { SCHEMA_URL, SCHEMA_VERSION } from './constants.mjs';
 import { generate, processChunk } from './generate.mjs';
 
 /**
@@ -21,6 +21,8 @@ export default {
   },
 
   hasParallelProcessor: true,
+
+  incremental: { salt: [SCHEMA_VERSION] },
 
   markdown: {
     remarkPlugins: [
