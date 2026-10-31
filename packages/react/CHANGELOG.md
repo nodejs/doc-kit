@@ -1,5 +1,11 @@
 # @doc-kit/generator-react
 
+## 0.5.2
+
+### Patch Changes
+
+- [#1209](https://github.com/nodejs/doc-kit/pull/1209) [`68f559f`](https://github.com/nodejs/doc-kit/commit/68f559f0cba47cdd8af7675420263bcd80dba369) Thanks [@avivkeller](https://github.com/avivkeller)! - Fall back to PostCSS, rather than Lightning CSS's wasm build, on platforms without native Lightning CSS bindings
+
 ## 0.5.1
 
 ### Patch Changes
