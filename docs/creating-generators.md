@@ -581,7 +581,9 @@ returning the plugin, instead of a default export. The Shiki plugin does, and
 returns the highlighter of a generator's Shiki plugin, to highlight code as its
 pipeline does. It registers Shiki's bundled languages as code in them is
 highlighted, so before using its `shiki` instance directly, pass the language
-through its `resolveLanguage`.
+through its `resolveLanguage`, and highlight with the language it returns,
+which may not be the one the code names (`mjs` gives `typescript`, and an
+unknown language `text`).
 
 ## File Output
 

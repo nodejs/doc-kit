@@ -219,12 +219,20 @@ bundles. To configure it, list it with options in
 dependencies, so your configuration file can resolve it):
 
 - `langs` {Array} More languages: grammars, or modules default-exporting them.
-- `langAlias` {Object} Aliases of languages, such as `{ conf: 'ini' }`.
+- `langAlias` {Object} Aliases of languages, such as `{ conf: 'ini' }`. An
+  alias leads to the language it names, or on to the one that language is an
+  alias of. By default, JavaScript (`javascript`, `js`, `mjs`, `cjs`) is
+  highlighted with TypeScript's grammar, and C++ (`cpp`, `c++`) with C's:
+  every grammar takes its own memory on each thread, and those highlight that
+  code too. Aliases take precedence over these defaults:
+  `{ cpp: 'cpp', 'c++': 'cpp' }` highlights C++ with its own grammar, and a
+  grammar in `langs` for one of these languages needs an alias to it.
 - `themes` {Object} The `light` and `dark` themes: names of themes Shiki
   bundles, modules default-exporting themes, or themes.
 - `transformers` {Array} Modules default-exporting
   [Shiki transformers](https://shiki.style/guide/transformers), or lists of
-  them.
+  them. They see the language code is highlighted as (`options.lang`), such as
+  `typescript` for `mjs`.
 
 These modules are paths relative to the working directory, or URLs, such as
 the ones `import.meta.resolve()` gives:
