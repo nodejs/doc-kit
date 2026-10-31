@@ -301,10 +301,15 @@ export default {
 
 The generator owns the fields required to coordinate its builds: config-file
 loading, app type and base, virtual inputs, Preact compatibility aliases and
-automatic JSX runtime, the Lightning CSS transformer, output/write mode, SSR
-format and output, and SSR dependency bundling. Values supplied for those
-fields are replaced after configuration is merged. User plugins are registered
-after the generator's virtual-module plugin; other Vite options are preserved.
+automatic JSX runtime, the CSS transformer, output/write mode, SSR format and
+output, and SSR dependency bundling. Values supplied for those fields are
+replaced after configuration is merged. User plugins are registered after the
+generator's virtual-module plugin; other Vite options are preserved.
+
+CSS is transformed and minified by Lightning CSS. On platforms without its
+native bindings, such as ppc64 and s390x, Vite's PostCSS pipeline transforms
+the CSS instead and the output is not minified; `css.lightningcss` options have
+no effect there.
 
 Vite builds the client entry as a module, not the pages as HTML entries, so
 plugins see and can transform every module of the client and server builds but
