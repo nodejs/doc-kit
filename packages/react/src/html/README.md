@@ -13,8 +13,13 @@ library once and the client assets once, as soon as every page's metadata is
 known, and the worker pool imports, renders, templates, minifies and writes
 the pages one at a time as they are compiled, so memory scales with the largest
 page rather than with the site. With one thread, each step waits for the one
-before it to finish. `all.html` is assembled from the module pages' compiled
-content rather than built again from scratch.
+before it to finish.
+
+A page can be made of other pages' content: an input item with `parts`, the
+`api`s of the pages it is made of, which come before it in the input, and its
+`headings`. Its program imports theirs, so they are not built again, and it is
+rendered first, as it takes the longest. Node.js's `html-all` generator
+(`@node-core/doc-kit`) adds `all.html` this way.
 
 ## Configuring
 
@@ -50,10 +55,6 @@ content rather than built again from scratch.
   JSX-in-MDX. See [`components`](#components). **Default:** `{}`.
 - `navigation` {Object} Sidebar groups and navigation bar items. See
   [`navigation`](#navigation). **Default:** `{}`.
-- `generateAllPage` {boolean} When `true`, writes `all.html`: every module
-  page's content on one page, in sidebar order, assembled from the module pages
-  rather than built again. Chunk pages and the index are left out.
-  **Default:** `true`.
 - `bundler` {WebBundler} Adapter that bundles the component library and the
   client assets, and compiles page programs. See
   [Bundler adapters](#bundler-adapters). **Default:** `createViteBundler()`.
@@ -482,7 +483,7 @@ export default ({ metadata }) => (
 - `headings` {Array} Pre-computed table of contents heading entries.
 - `readingTime` {string|undefined} Estimated reading time (e.g. `'5 min read'`).
   Only present when the `jsx-ast` generator's `showReadingTime` option is
-  enabled. `all.html` has none.
+  enabled. A page made of others has none.
 - `children` {ComponentChildren} Processed page content.
 
 The `Layout` component receives the props above. Custom Layout components can use

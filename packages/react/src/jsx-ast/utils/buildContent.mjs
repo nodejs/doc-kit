@@ -330,8 +330,8 @@ export const processEntry = entry => {
  *
  * The layout itself (`<Layout>`) is not part of the content. The `html`
  * generator wraps each page in it, which lets a page be assembled from other
- * pages' content — `all.html` is the module pages concatenated — without
- * building those modules a second time.
+ * pages' content, such as Node.js's `all.html`, without building those pages a
+ * second time.
  *
  * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries - API documentation metadata entries
  */

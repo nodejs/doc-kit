@@ -57,9 +57,8 @@ export async function processChunk(slicedInput, itemIndices) {
  * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
-  // `all.html` is not built here: it is the module pages concatenated, so the
-  // `html` generator assembles it from their content instead of building
-  // every module a second time.
+  // Pages made of other pages' content are not built here: the `html`
+  // generator assembles them from that content.
   const synthetic = getConfig('jsx-ast').generateNotFoundPage
     ? [buildNotFoundPage()]
     : [];

@@ -114,7 +114,7 @@ export default () => {
    * metadata, table of contents and reading time reach it as those props at
    * render time — only code.
    *
-   * A composed page (`all.html`) has no content of its own: it imports the
+   * A composed page has no content of its own: it imports the
    * `content` of the pages it is made of, so their JSX is never rebuilt. Each
    * part's elements are only created as it is rendered, so they can go once
    * it is: an element rendering a single element doesn't hold on to it, as
