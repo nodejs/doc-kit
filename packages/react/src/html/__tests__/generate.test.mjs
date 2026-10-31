@@ -278,6 +278,37 @@ describe('web generate', () => {
     assert.doesNotMatch(html, /View As/);
   });
 
+  it('numbers the ids of all.html across its parts', async context => {
+    const { config, output } = await createTestConfiguration(context);
+    config.html.generateAllPage = true;
+
+    // Each module has code tabs, whose elements take ids
+    const entries = ['zlib', 'fs'].map(api => {
+      const entry = createEntry(api, api);
+
+      entry.content.children.push(
+        { type: 'code', lang: 'mjs', value: `import ${api};` },
+        { type: 'code', lang: 'cjs', value: `require('${api}');` }
+      );
+
+      return entry;
+    });
+
+    const contents = await Promise.all(
+      entries.map(entry => buildContent([entry], entry))
+    );
+
+    await generate(contents.map(toPage));
+
+    const html = await readFile(join(output, 'all.html'), 'utf8');
+    const ids = [...html.matchAll(/ id="([^"]*P0-\d+[^"]*)"/g)].map(
+      ([, id]) => id
+    );
+
+    assert.ok(ids.length >= 4);
+    assert.equal(new Set(ids).size, ids.length);
+  });
+
   it('renders chunk pages with navigation back to their module', async context => {
     const { config, output } = await createTestConfiguration(context, [
       'section-pages',
