@@ -1,5 +1,16 @@
 # @doc-kit/cli
 
+## 1.1.0
+
+### Minor Changes
+
+- [#1082](https://github.com/nodejs/doc-kit/pull/1082) [`9e21017`](https://github.com/nodejs/doc-kit/commit/9e21017d9597e3f8b5a18a41f3db8e5de216213a) Thanks [@btea](https://github.com/btea)! - Add a `doc-kit preview` command that serves the generated docs locally, building first when any `generate` option is passed. The default output directory (`./out`) is now defined in the shared configuration, so `generate` also writes there when no `--output` is given.
+
+### Patch Changes
+
+- Updated dependencies [[`e49eb52`](https://github.com/nodejs/doc-kit/commit/e49eb52472dfc2707a5966ee25c4dc7201360850), [`b8d7b77`](https://github.com/nodejs/doc-kit/commit/b8d7b7725f0dbe085d9f32af60fddd7459555af9), [`92efbbe`](https://github.com/nodejs/doc-kit/commit/92efbbeb727a38b178c9ccb63a3a4f9cfbc110a4), [`9e21017`](https://github.com/nodejs/doc-kit/commit/9e21017d9597e3f8b5a18a41f3db8e5de216213a), [`854a944`](https://github.com/nodejs/doc-kit/commit/854a944699b3a996cb3a8544deaec3fe916fd449), [`0321911`](https://github.com/nodejs/doc-kit/commit/03219116c78e7f4a721b4e39bc71ba54cb6f0ba8)]:
+  - @doc-kit/core@1.3.1
+
 ## 1.0.5
 
 ### Patch Changes

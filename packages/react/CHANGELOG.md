@@ -1,5 +1,21 @@
 # @doc-kit/generator-react
 
+## 0.5.1
+
+### Patch Changes
+
+- [#1186](https://github.com/nodejs/doc-kit/pull/1186) [`5598f92`](https://github.com/nodejs/doc-kit/commit/5598f92b8744da867638fce81d17d3a4e4d8f24e) Thanks [@btea](https://github.com/btea)! - Fix template value replacement treating `$` sequences (such as `$$` in Makefile snippets) as special replacement patterns, which corrupted the rendered output.
+
+- [#1179](https://github.com/nodejs/doc-kit/pull/1179) [`b8d7b77`](https://github.com/nodejs/doc-kit/commit/b8d7b7725f0dbe085d9f32af60fddd7459555af9) Thanks [@ovflowd](https://github.com/ovflowd)! - Builds use less memory, most of all with few threads: each worker's young generation is limited to 96MB, a single thread processes one chunk at a time and lets go of the pages' code before rendering them, and Vite's native bundler gets as many threads as doc-kit and returns the memory it frees. On the Node.js API docs, `--threads 1` now builds with Node.js's `--max-old-space-size=512`, and no longer crashes when `legacy-html` is built alongside other targets.
+
+- [#1190](https://github.com/nodejs/doc-kit/pull/1190) [`060be4c`](https://github.com/nodejs/doc-kit/commit/060be4c012c06a8f97cb0b3e8223214bb82b7fdf) Thanks [@dbisina](https://github.com/dbisina)! - `orama-db.json` is now identical between builds of the same docs: documents get a stable `href` id instead of a time-based one, and are sorted by `href`.
+
+- [#1178](https://github.com/nodejs/doc-kit/pull/1178) [`0321911`](https://github.com/nodejs/doc-kit/commit/03219116c78e7f4a721b4e39bc71ba54cb6f0ba8) Thanks [@ovflowd](https://github.com/ovflowd)! - Install fewer packages: `@doc-kit/core` updates `cosmiconfig` to v10 (TypeScript config files now load through Node's type stripping) and no longer installs `dedent`, and `@doc-kit/generator-react` estimates reading time with `Intl.Segmenter` instead of the `reading-time` package and updates `@node-core/ui-components` to 1.8.1, which no longer installs `@vcarl/remark-headings`.
+
+- [#1196](https://github.com/nodejs/doc-kit/pull/1196) [`c9a2cdb`](https://github.com/nodejs/doc-kit/commit/c9a2cdb15cb2c8fab0eafa705c8aa7a4a2a828fc) Thanks [@avivkeller](https://github.com/avivkeller)! - Fall back on platforms without native Rolldown or Lightning CSS bindings
+- Updated dependencies [[`e49eb52`](https://github.com/nodejs/doc-kit/commit/e49eb52472dfc2707a5966ee25c4dc7201360850), [`b8d7b77`](https://github.com/nodejs/doc-kit/commit/b8d7b7725f0dbe085d9f32af60fddd7459555af9), [`92efbbe`](https://github.com/nodejs/doc-kit/commit/92efbbeb727a38b178c9ccb63a3a4f9cfbc110a4), [`9e21017`](https://github.com/nodejs/doc-kit/commit/9e21017d9597e3f8b5a18a41f3db8e5de216213a), [`854a944`](https://github.com/nodejs/doc-kit/commit/854a944699b3a996cb3a8544deaec3fe916fd449), [`0321911`](https://github.com/nodejs/doc-kit/commit/03219116c78e7f4a721b4e39bc71ba54cb6f0ba8)]:
+  - @doc-kit/core@1.3.1
+
 ## 0.5.0
 
 ### Minor Changes
