@@ -1,5 +1,11 @@
 # @doc-kit/cli
 
+## 1.1.1
+
+### Patch Changes
+
+- [#1207](https://github.com/nodejs/doc-kit/pull/1207) [`7cc63ea`](https://github.com/nodejs/doc-kit/commit/7cc63eada24f1e95dcf33846b9983c2fe4118db6) Thanks [@avivkeller](https://github.com/avivkeller)! - Include the `src` directory in the published package so the CLI binary can resolve its sources.
+
 ## 1.1.0
 
 ### Minor Changes
