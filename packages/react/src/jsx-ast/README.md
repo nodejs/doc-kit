@@ -22,6 +22,18 @@ the content — the `html` generator wraps each page in `<Layout>`, and assemble
 `all.html` from the module pages' content (see its `generateAllPage` option)
 rather than building every module a second time here.
 
+Pages are emitted as they are built, in the order their entries arrived, the
+synthetic pages last. Once every page has arrived, it also emits
+`{ manifest }`, every page's head in that same order, so that the `html`
+generator can build what needs the whole site while pages are still being
+built.
+
+To list the pages as the site does, leave out the `{ manifest }` item and sort
+the pages by their head with `headingSortFn`, from
+`@doc-kit/generator-react/jsx-ast/utils/getSortedHeadNodes`, as
+`pages.toSorted((a, b) => headingSortFn(a.data, b.data))`, keeping the
+synthetic pages (`data.synthetic`) last.
+
 ## Index page
 
 `index.html` is generated when an `index` document is part of the input, and

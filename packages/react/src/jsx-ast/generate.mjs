@@ -1,10 +1,13 @@
 import { isMainThread } from 'node:worker_threads';
 
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
+import {
+  groupNodesByModule,
+  groupWholeModules,
+  merge,
+} from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
-import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
 
 /**
@@ -43,25 +46,67 @@ export async function processChunk(slicedInput, itemIndices) {
 /**
  * Generates per-page JSX code from API metadata.
  *
+ * Each page starts building once all of its module's entries have arrived, and
+ * is emitted once built, in the order the pages arrived, the synthetic pages
+ * last: the `html` generator puts them in the order the site lists them.
+ *
+ * Once every page has arrived, without waiting for the pages still being
+ * built, it also emits `{ manifest }`: every page's head, in that same order,
+ * so that `html` can prepare what needs the whole site in the meantime.
+ *
  * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
-  // Create sliced input: each item contains head + its module's entries
-  // This avoids sending all 4700+ entries to every worker
-  const groupedModules = groupNodesByModule(input);
-  const descriptors = getSortedHeadNodes(input).map(head => ({
-    head,
-    entries: groupedModules.get(head.api),
-  }));
-
   // `all.html` is not built here: it is the module pages concatenated, so the
   // `html` generator assembles it from their content instead of building
   // every module a second time.
-  if (getConfig('jsx-ast').generateNotFoundPage) {
-    descriptors.push(buildNotFoundPage());
+  const synthetic = getConfig('jsx-ast').generateNotFoundPage
+    ? [buildNotFoundPage()]
+    : [];
+
+  const manifest = Promise.withResolvers();
+
+  /**
+   * Describes each arriving page by its head and its module's entries, so a
+   * worker gets only what its page needs, not all 4700+ entries. Once every
+   * page has arrived, it resolves the manifest and describes the synthetic
+   * pages.
+   *
+   * @returns {AsyncGenerator<Array<{ head: object, entries: Array<object> }>>}
+   */
+  async function* describe() {
+    const heads = [];
+
+    // A page needs all of its module's entries
+    for await (const entries of groupWholeModules(input)) {
+      const groupedModules = groupNodesByModule(entries);
+      const descriptors = entries
+        .filter(node => node.heading.depth === 1)
+        .map(head => ({ head, entries: groupedModules.get(head.api) }));
+
+      heads.push(...descriptors.map(({ head }) => head));
+
+      yield descriptors;
+    }
+
+    manifest.resolve([...heads, ...synthetic.map(({ head }) => head)]);
+
+    if (synthetic.length > 0) {
+      yield synthetic;
+    }
   }
 
-  for await (const chunkResult of worker.stream(descriptors)) {
-    yield chunkResult;
+  /**
+   * Gives the manifest, once every page has arrived.
+   *
+   * @returns {AsyncGenerator<Array<{ manifest: Array<object> }>>}
+   */
+  async function* announce() {
+    const heads = await manifest.promise;
+
+    yield [{ manifest: heads }];
   }
+
+  // The manifest goes out as soon as it's ready, not after the next pages
+  yield* merge(worker.stream(describe()), announce());
 }

@@ -22,3 +22,10 @@ export const WORKER_HEAP_SIZE = 512;
  * over half of a worker's heap. Node.js's `--max-semi-space-size` replaces it.
  */
 export const WORKER_GEN_SIZE = 96;
+
+/**
+ * How many chunks of one generator can be started, running or queued, per
+ * thread at a time: enough to keep every thread busy while more are submitted,
+ * few enough that generators running at once share the pool.
+ */
+export const CHUNKS_PER_THREAD = 3;

@@ -3,8 +3,10 @@ import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
+import { setTimeout } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
 
+import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
@@ -12,10 +14,37 @@ import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
-import { generate as chunk } from '../../section-pages/generate.mjs';
+import { generate as sectionPages } from '../../section-pages/generate.mjs';
 import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { FONTS } from '../constants.mjs';
-import { generate } from '../generate.mjs';
+import { generate as generatePages } from '../generate.mjs';
+import { processChunk } from '../utils/render.mjs';
+
+/**
+ * Yields the given items as one batch, as a dependency streaming them does.
+ *
+ * @param {Array<object>} items
+ */
+async function* streamInOneBatch(items) {
+  yield items;
+}
+
+/**
+ * Runs the generator over the given pages, streamed in as one batch, as
+ * `jsx-ast` yields them.
+ *
+ * @param {Array<object>} pages
+ */
+const generate = pages => generatePages(streamInOneBatch(pages));
+
+/**
+ * Runs `section-pages` over the given entries, streamed in as one batch, and
+ * collects its pages.
+ *
+ * @param {Array<object>} entries
+ */
+const chunk = entries =>
+  collectAsyncGenerator(sectionPages(streamInOneBatch(entries)));
 
 // Pages are rendered with the pipeline of `jsx-ast`
 await loadMarkdownPlugins(
@@ -80,6 +109,101 @@ const createTestConfiguration = async (context, target = ['html']) => {
   config.html.generateAllPage = false;
 
   return { config, output };
+};
+
+/**
+ * A page as `jsx-ast` emits it, its content a plain paragraph.
+ *
+ * @param {string} api
+ * @param {string} text
+ */
+const createPage = (api, text) => ({
+  data: createEntry(api, text),
+  headings: [{ depth: 1, value: text, slug: api }],
+  readingTime: undefined,
+  content: `<><p>${text} body</p></>`,
+});
+
+/**
+ * A stand-in for the component library: the JSX runtime, and a renderer that
+ * writes the elements out as plain markup.
+ */
+const STAND_IN_LIBRARY = [
+  'export const h = (type, props, ...children) => ({ type, props: { ...props, children } });',
+  'export const Fragment = ({ children }) => children;',
+  'export const Layout = ({ children }) => children;',
+  'const render = node =>',
+  '  Array.isArray(node) ? node.map(render).join("")',
+  '  : typeof node?.type === "function" ? render(node.type(node.props))',
+  '  : typeof node?.type === "string" ? `<${node.type}>${render(node.props.children)}</${node.type}>`',
+  '  : String(node ?? "");',
+  'export const renderToStringAsync = async node => render(node);',
+].join('\n');
+
+/**
+ * A stand-in bundler: it builds the stand-in library, compiles the pages
+ * with the real compiler, and has no client assets. It records each program
+ * it compiles, by file name, and each bundle it builds.
+ *
+ * @param {Array<string>} calls
+ * @param {{ bundled?: PromiseWithResolvers<void>, slow?: boolean }} [options]
+ *   `bundled` is resolved once both bundles are built; `slow` makes the
+ *   library take a while, as a real one does, so that a generator that didn't
+ *   wait for it would remove its directory while it is being built.
+ */
+const createStandInBundler = (calls, { bundled, slow = false } = {}) => ({
+  async buildServer({ outDir }) {
+    calls.push('server');
+
+    if (slow) {
+      await setTimeout(50);
+    }
+
+    const library = join(outDir, 'library.mjs');
+
+    await writeFile(library, STAND_IN_LIBRARY);
+
+    return pathToFileURL(library).href;
+  },
+
+  compile(code, fileName) {
+    calls.push(fileName);
+
+    return compile(code, fileName);
+  },
+
+  async buildClient() {
+    calls.push('client');
+    bundled?.resolve();
+
+    return { scripts: [], preloads: [], stylesheets: [] };
+  },
+});
+
+/**
+ * The temporary directories the generator builds the site in.
+ */
+const listBuildDirectories = async () => {
+  const names = await readdir(tmpdir());
+
+  return names.filter(name => name.startsWith('doc-kit-html-'));
+};
+
+/**
+ * Every page written to the output directory, by file name.
+ *
+ * @param {string} output
+ */
+const readPages = async output => {
+  const names = await readdir(output, { recursive: true });
+  const pages = names.filter(name => name.endsWith('.html')).sort();
+  const contents = await Promise.all(
+    pages.map(name => readFile(join(output, name), 'utf8'))
+  );
+
+  return Object.fromEntries(
+    pages.map((name, index) => [name, contents[index]])
+  );
 };
 
 describe('web generate', () => {
@@ -380,6 +504,217 @@ describe('web generate', () => {
       html,
       /<link rel="stylesheet" crossorigin href="\.\/custom\/index\.css" \/>/
     );
-    assert.deepStrictEqual(calls, ['server', 'client', 'compile']);
+    // The page is compiled as it arrives, before the library is built
+    assert.deepStrictEqual(calls, ['compile', 'server', 'client']);
+  });
+
+  describe('with the manifest', () => {
+    const zlib = createPage('zlib', 'Zlib');
+    const fs = createPage('fs', 'File system');
+    const index = createPage('index', 'Index');
+    const manifest = [zlib, fs, index].map(({ data }) => data);
+
+    it(
+      'bundles once the manifest arrives, and compiles all.html once its parts are',
+      // The input waits for the bundles, so bundles that wait for the whole
+      // input would never be built
+      { timeout: 10_000 },
+      async context => {
+        const { config, output } = await createTestConfiguration(context);
+        const calls = [];
+        const bundled = Promise.withResolvers();
+
+        config.threads = 2;
+        config.html.generateAllPage = true;
+        config.html.bundler = createStandInBundler(calls, { bundled });
+
+        async function* input() {
+          yield [zlib];
+          yield [{ manifest }];
+
+          // The bundles are built without waiting for the pages still to come
+          await bundled.promise;
+
+          yield [fs];
+          yield [index];
+        }
+
+        await generatePages(input());
+
+        // all.html is compiled once, as soon as its last part has been
+        assert.deepStrictEqual(calls, [
+          'zlib.jsx',
+          'server',
+          'client',
+          'fs.jsx',
+          'all.jsx',
+          'index.jsx',
+        ]);
+
+        const html = await readFile(join(output, 'all.html'), 'utf8');
+
+        // In sidebar order, the index left out
+        assert.match(html, /File system body[\s\S]*Zlib body/);
+        assert.doesNotMatch(html, /Index body/);
+      }
+    );
+
+    it('builds the same site from its whole input, as it gets it with one thread', async context => {
+      /**
+       * Builds the site from the given input and reads its pages.
+       *
+       * @param {number} threads
+       * @param {Array<object> | AsyncIterable<Array<object>>} input
+       */
+      const build = async (threads, input) => {
+        const { config, output } = await createTestConfiguration(context);
+
+        config.threads = threads;
+        config.html.generateAllPage = true;
+        config.html.bundler = createStandInBundler([]);
+
+        await generatePages(input);
+
+        return readPages(output);
+      };
+
+      async function* batches() {
+        yield [zlib];
+        yield [{ manifest }];
+        yield [fs];
+        yield [index];
+      }
+
+      const streamed = await build(2, batches());
+      const whole = await build(1, [zlib, fs, { manifest }, index]);
+
+      assert.deepStrictEqual(Object.keys(whole), [
+        'all.html',
+        'fs.html',
+        'index.html',
+        'zlib.html',
+      ]);
+      assert.deepStrictEqual(whole, streamed);
+    });
+
+    it(
+      'rejects when its input fails before the manifest, leaving no temporary files',
+      { timeout: 10_000 },
+      async context => {
+        const { config, output } = await createTestConfiguration(context);
+        const before = await listBuildDirectories();
+
+        config.threads = 2;
+        config.html.bundler = createStandInBundler([]);
+
+        async function* input() {
+          yield [zlib];
+
+          throw new Error('jsx-ast failed');
+        }
+
+        await assert.rejects(generatePages(input()), /jsx-ast failed/);
+
+        const after = await listBuildDirectories();
+        const pages = await readPages(output);
+
+        assert.deepStrictEqual(
+          after.filter(name => !before.includes(name)),
+          []
+        );
+        assert.deepStrictEqual(pages, {});
+      }
+    );
+
+    it(
+      'writes no page once its input has failed after the manifest, and leaves no temporary files',
+      { timeout: 10_000 },
+      async context => {
+        const { config, output } = await createTestConfiguration(context);
+        const before = await listBuildDirectories();
+        const calls = [];
+
+        config.threads = 2;
+        // Still bundling when the input fails
+        config.html.bundler = createStandInBundler(calls, { slow: true });
+
+        async function* input() {
+          yield [zlib];
+          yield [{ manifest }];
+
+          throw new Error('jsx-ast failed');
+        }
+
+        await assert.rejects(generatePages(input()), /jsx-ast failed/);
+
+        const after = await listBuildDirectories();
+        const pages = await readPages(output);
+
+        // It waited for the bundles before removing the directory they are
+        // written to
+        assert.deepStrictEqual(calls, ['zlib.jsx', 'server', 'client']);
+        assert.deepStrictEqual(
+          after.filter(name => !before.includes(name)),
+          []
+        );
+        assert.deepStrictEqual(pages, {});
+      }
+    );
+
+    it(
+      'writes none of the pages still waiting for a worker once its input has failed',
+      // The worker waits for the input to fail
+      { timeout: 10_000 },
+      async context => {
+        const { config, output } = await createTestConfiguration(context);
+        const rendering = Promise.withResolvers();
+        const failed = Promise.withResolvers();
+
+        config.threads = 2;
+        config.html.bundler = createStandInBundler([]);
+
+        // Renders on this thread, a batch at a time, as the generator does
+        // without a pool, but the first only once the input has failed
+        const worker = {
+          async *stream(batches, extra) {
+            for await (const tasks of batches) {
+              rendering.resolve();
+
+              await failed.promise;
+
+              const written = await processChunk(
+                tasks,
+                [...tasks.keys()],
+                extra
+              );
+
+              yield written;
+            }
+          },
+        };
+
+        async function* input() {
+          yield [zlib];
+          yield [{ manifest }];
+
+          // While the zlib page is being rendered, so this one waits for it
+          await rendering.promise;
+
+          yield [fs];
+
+          // The failure reaches the generator within this turn of the event
+          // loop
+          setImmediate(failed.resolve);
+
+          throw new Error('jsx-ast failed');
+        }
+
+        await assert.rejects(generatePages(input(), worker), /jsx-ast failed/);
+
+        const pages = await readPages(output);
+
+        assert.deepStrictEqual(Object.keys(pages), ['zlib.html']);
+      }
+    );
   });
 });

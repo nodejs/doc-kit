@@ -1,0 +1,6 @@
+---
+'@doc-kit/core': minor
+'@doc-kit/generator-react': minor
+---
+
+Generators can start on their dependency's first chunk instead of waiting for all of it: with `streamsInput: true`, a generator receives its dependency's output as an async iterable of chunks (with one thread, still whole), and `worker.stream` accepts one. `worker.stream` now keeps only a few chunks per thread in flight, started in the order they were submitted, so generators running at once share the worker pool. `metadata`, `section-pages`, `jsx-ast` and `html` now stream their input, so with more than one thread, parsing, metadata, page building and rendering overlap: `html` bundles as soon as every page's metadata is known, and renders pages as they are built. Streaming leaves the generated files unchanged, but `jsx-ast` now yields pages in the order their entries arrive, not the order the site lists them, and, once every page has arrived, a `{ manifest }` item listing their heads in that order. To list the pages as the site does, skip the `{ manifest }` item and sort them with `headingSortFn`, now exported from `@doc-kit/generator-react/jsx-ast/utils/getSortedHeadNodes`, as `pages.toSorted((a, b) => headingSortFn(a.data, b.data))`, keeping the synthetic pages (`data.synthetic`) last. Bundler adapters' `compile` can now be called before and while `buildServer` and `buildClient` run.

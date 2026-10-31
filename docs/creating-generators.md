@@ -330,8 +330,63 @@ export async function* generate(input, worker) {
 ### Benefits of Streaming
 
 - **Reduced memory usage** - Process data in chunks
-- **Earlier downstream starts** - Next generator can begin before this one finishes
+- **Earlier downstream starts** - A generator that streams its input (see below)
+  begins on the first chunk, before this one finishes
 - **Better parallelism** - Multiple generators can work simultaneously
+
+### Streaming Input
+
+By default, a generator receives its dependency's output once it is complete,
+collected into one array. With `streamsInput: true`, it receives it as it is
+produced instead: `input` is an async iterable of the dependency's chunks, and
+if the dependency streams its results too, the generator starts as soon as the
+dependency does.
+
+```mjs displayName="index.mjs"
+import { generate, processChunk } from './generate.mjs';
+
+export default {
+  name: 'per-chunk-generator',
+
+  description: 'Processes each chunk of metadata as it arrives',
+
+  dependsOn: '@doc-kit/core/metadata',
+
+  hasParallelProcessor: true,
+
+  streamsInput: true,
+
+  generate,
+  processChunk,
+};
+```
+
+`worker.stream` takes the chunks as they arrive, starting each one's work while
+the next ones are still being produced:
+
+```mjs displayName="generate.mjs"
+export async function* generate(input, worker) {
+  for await (const chunkResult of worker.stream(input, {})) {
+    yield chunkResult;
+  }
+}
+```
+
+- A dependency that does not stream arrives as a single chunk, once it is
+  complete.
+- With one thread, nothing would run alongside, so the input arrives whole, as
+  it does without `streamsInput`: accept both, as `worker.stream` does.
+- With more than one thread, `input` can be iterated only once, and passing it
+  to `worker.stream` iterates it. If you need it twice, collect it into an
+  array first.
+- The chunks are the dependency's own, in the order it yields them. `metadata`'s
+  hold whole files, but chunks need not hold whole modules: a generator that
+  needs all of a module's entries at once should regroup them with
+  `groupWholeModules` from `@doc-kit/core/utils/generators.mjs`.
+- Work that needs the whole input, such as sorting or writing one file, has to
+  wait for the last chunk.
+- Other generators reading the same dependency are not affected: each gets
+  every chunk, from the first.
 
 ### Non-Streaming Generators
 
