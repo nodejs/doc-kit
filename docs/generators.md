@@ -48,6 +48,7 @@ Outputs consumed by the Node.js project's own build and release processes.
 | [`man-page`](./generators/man-page.md)         | The `node.1` manual page.                           |
 | [`api-links`](./generators/api-links.md)       | A map of API symbols to their source locations.     |
 | [`addon-verify`](./generators/addon-verify.md) | Extracted addon code samples, arranged for testing. |
+| [`html-all`](./generators/html-all.md)         | `all.html`, every module page on one page.          |
 
 ## Pipeline stages
 

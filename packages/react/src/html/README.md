@@ -6,12 +6,20 @@ assets, written to `output`. Vite is the default bundler adapter, but projects
 can supply an adapter for webpack or another bundler. The generator is
 output-only and does not return an in-memory copy of its HTML or CSS.
 
-The site is built in pieces that are each as small as they can be. The bundler
-builds the component library once and the client assets once. Each page's
-program is then compiled — JSX to a plain module — and the worker pool imports,
-renders, templates, minifies and writes the pages one at a time, so memory
-scales with the largest page rather than with the site. `all.html` is assembled
-from the module pages' compiled content rather than built again from scratch.
+The site is built in pieces that are each as small as they can be, each as
+soon as what it needs is there. Each page's program is compiled — JSX to a
+plain module — as `jsx-ast` builds the page. The bundler builds the component
+library once and the client assets once, as soon as every page's metadata is
+known, and the worker pool imports, renders, templates, minifies and writes
+the pages one at a time as they are compiled, so memory scales with the largest
+page rather than with the site. With one thread, each step waits for the one
+before it to finish.
+
+A page can be made of other pages' content: an input item with `parts`, the
+`api`s of the pages it is made of, which come before it in the input, and its
+`headings`. Its program imports theirs, so they are not built again, and it is
+rendered first, as it takes the longest. Node.js's `html-all` generator
+(`@node-core/doc-kit`) adds `all.html` this way.
 
 ## Configuring
 
@@ -47,10 +55,6 @@ from the module pages' compiled content rather than built again from scratch.
   JSX-in-MDX. See [`components`](#components). **Default:** `{}`.
 - `navigation` {Object} Sidebar groups and navigation bar items. See
   [`navigation`](#navigation). **Default:** `{}`.
-- `generateAllPage` {boolean} When `true`, writes `all.html`: every module
-  page's content on one page, in sidebar order, assembled from the module pages
-  rather than built again. Chunk pages and the index are left out.
-  **Default:** `true`.
 - `bundler` {WebBundler} Adapter that bundles the component library and the
   client assets, and compiles page programs. See
   [Bundler adapters](#bundler-adapters). **Default:** `createViteBundler()`.
@@ -201,16 +205,21 @@ for a particular build system.
 `buildServer` receives `{ entry, virtualImports, outDir, config }`. The `entry`
 is the component library's source: re-exports of every component a page may
 render, Preact's `h` and `Fragment`, and `renderToStringAsync`. It must be
-bundled into one self-contained module written under `outDir` (a temporary
-directory the generator removes afterwards), since the page programs import it
-from wherever they are compiled to.
+bundled into one self-contained module written under `outDir` (an empty
+temporary directory the generator removes afterwards), since the page programs
+import it from wherever they are compiled to.
 
 `compile(code, fileName)` receives one page program: a module that imports the
 library and exports the page's `content` and a default function rendering the
-page from its layout props, written in JSX. It must return plain JavaScript. The JSX must compile with the classic
-runtime to calls of the `_jsx` and `_Fragment` bindings the program imports
-(these names are exported as `JSX_PRAGMA` and `JSX_PRAGMA_FRAG` from the
-generator's `constants.mjs`), so that the page and the library share one Preact.
+page from its layout props, written in JSX. It must return plain JavaScript.
+Pages are compiled as they are built, so `compile` can be called before
+`buildServer`, and while `buildServer` or `buildClient` still runs: it must
+leave the program's imports as they are, since the library they point to may
+not exist yet, and must not depend on the builds. The JSX must compile with the
+classic runtime to calls of the `_jsx` and `_Fragment` bindings the program
+imports (these names are exported as `JSX_PRAGMA` and `JSX_PRAGMA_FRAG` from
+the generator's `constants.mjs`), so that the page and the library share one
+Preact.
 
 `buildClient` receives `{ entry, virtualImports, config }`. The client `entry`
 is a single program shared by every page. It must be bundled into
@@ -479,7 +488,7 @@ export default ({ metadata }) => (
 - `headings` {Array} Pre-computed table of contents heading entries.
 - `readingTime` {string|undefined} Estimated reading time (e.g. `'5 min read'`).
   Only present when the `jsx-ast` generator's `showReadingTime` option is
-  enabled. `all.html` has none.
+  enabled. A page made of others has none.
 - `children` {ComponentChildren} Processed page content.
 
 The `Layout` component receives the props above. Custom Layout components can use

@@ -28,6 +28,7 @@ const PUBLIC_GENERATORS = [
   'legacy-json-all',
   'man-page',
   'api-links',
+  'html-all',
   'addon-verify',
 ];
 

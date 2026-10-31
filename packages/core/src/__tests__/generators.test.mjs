@@ -16,6 +16,9 @@ const streamOf = chunk =>
     yield chunk;
   })();
 
+// Lets `gated-source` wait for its streaming reader
+const gate = { opened: Promise.withResolvers(), openedBy: undefined };
+
 // Synthetic generators keyed by specifier (any string works as a specifier)
 const syntheticGenerators = {
   // Root streaming generator (no dependency)
@@ -97,6 +100,81 @@ const syntheticGenerators = {
     generate: async input => {
       record('gen-d-all');
       return { all: input };
+    },
+  },
+  // A source that only yields its second chunk once its streaming reader has
+  // received the first, or after a second, recording which happened first
+  'gated-source': {
+    name: 'gated-source',
+    hasParallelProcessor: true,
+    generate: async () => {
+      record('gated-source');
+
+      return (async function* () {
+        yield [1];
+
+        let timer;
+
+        const timeout = new Promise(resolve => {
+          timer = setTimeout(resolve, 1000, 'timeout');
+        });
+
+        gate.openedBy = await Promise.race([gate.opened.promise, timeout]);
+
+        clearTimeout(timer);
+
+        yield [2];
+      })();
+    },
+  },
+  'stream-reader': {
+    name: 'stream-reader',
+    dependsOn: 'gated-source',
+    streamsInput: true,
+    async *generate(input) {
+      record('stream-reader');
+
+      for await (const chunk of input) {
+        gate.opened.resolve('reader');
+
+        yield [{ streamed: chunk }];
+      }
+    },
+  },
+  // A source that fails before yielding anything, read only by a generator
+  // that streams its input and starts reading it a turn of the event loop
+  // later, once a failure left unhandled would have been reported
+  'failing-source': {
+    name: 'failing-source',
+    hasParallelProcessor: true,
+    generate: async () => {
+      throw new Error('source failed');
+    },
+  },
+  'slow-reader': {
+    name: 'slow-reader',
+    dependsOn: 'failing-source',
+    streamsInput: true,
+    async *generate(input) {
+      await new Promise(resolve => setImmediate(resolve));
+
+      for await (const chunk of input) {
+        yield chunk;
+      }
+    },
+  },
+  'shape-reader': {
+    name: 'shape-reader',
+    dependsOn: 'metadata',
+    streamsInput: true,
+    generate: async input => ({ array: Array.isArray(input) }),
+  },
+  'collect-reader': {
+    name: 'collect-reader',
+    dependsOn: 'gated-source',
+    generate: async input => {
+      record('collect-reader');
+      return { collected: input };
     },
   },
 };
@@ -244,5 +322,82 @@ describe('createGenerator orchestration', () => {
       { name: 'metadata', markdown: undefined, ran: ['ast'] },
       { name: 'gen-a', markdown, ran: ['ast', 'metadata'] },
     ]);
+  });
+
+  it('streams a dependency to a generator that streams its input', async () => {
+    const { runGenerators } = createGenerator();
+
+    const results = await runGenerators({
+      target: ['stream-reader', 'collect-reader'],
+      threads: 2,
+    });
+
+    // The reader got the first chunk while the source was still running
+    assert.equal(gate.openedBy, 'reader');
+    assert.equal(runs['gated-source'], 1);
+
+    assert.deepStrictEqual(results, [
+      [{ streamed: [1] }, { streamed: [2] }],
+      { collected: [1, 2] },
+    ]);
+  });
+
+  it('rejects with the failure of a dependency read as a stream', async () => {
+    const { runGenerators } = createGenerator();
+    const unhandled = [];
+    const onUnhandled = error => unhandled.push(error);
+
+    process.on('unhandledRejection', onUnhandled);
+
+    try {
+      await assert.rejects(
+        runGenerators({ target: ['slow-reader'], threads: 2 }),
+        /source failed/
+      );
+
+      // A rejection left unhandled is reported once the microtasks have run
+      await new Promise(resolve => setImmediate(resolve));
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+
+    assert.deepStrictEqual(unhandled, []);
+  });
+
+  it('gives a generator that streams its input the whole input with one thread', async () => {
+    const one = await createGenerator().runGenerators({
+      target: ['shape-reader'],
+      threads: 1,
+    });
+    const two = await createGenerator().runGenerators({
+      target: ['shape-reader'],
+      threads: 2,
+    });
+
+    assert.deepStrictEqual(one, [{ array: true }]);
+    assert.deepStrictEqual(two, [{ array: false }]);
+  });
+
+  it('runs every generator but keeps no results with results: false', async () => {
+    const { runGenerators } = createGenerator();
+
+    const results = await runGenerators(
+      { target: ['gen-c', 'gen-c-all'], threads: 1 },
+      { results: false }
+    );
+
+    assert.equal(results, undefined);
+    assert.equal(runs['gen-c'], 1);
+    assert.equal(runs['gen-c-all'], 1);
+  });
+
+  it('rejects with a failure with results: false', async () => {
+    await assert.rejects(
+      createGenerator().runGenerators(
+        { target: ['slow-reader'], threads: 2 },
+        { results: false }
+      ),
+      /source failed/
+    );
   });
 });

@@ -1,3 +1,4 @@
+import type { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 import type { GlobalConfiguration } from '@doc-kit/core/utils/configuration/types';
 import type NavBar from '@node-core/ui-components/Containers/NavBar';
 import type SideBar from '@node-core/ui-components/Containers/Sidebar';
@@ -31,8 +32,8 @@ export type HeadConfig = {
 
 export type ResolvedWebConfiguration = Configuration & GlobalConfiguration;
 
-// A page assembled from other pages' content (`all.html`): `parts` lists the
-// `api`s whose compiled programs it imports, in order.
+// A page assembled from other pages' content: `parts` lists the `api`s whose
+// compiled programs it imports, in order. They come before it in the input.
 export type ComposedPage = Omit<PageCode, 'content' | 'readingTime'> & {
   parts: Array<string>;
 };
@@ -114,14 +115,16 @@ export type Configuration = {
     navbar?: ComponentProps<typeof NavBar>['navItems'];
     showCrossLinks?: boolean;
   };
-  // Whether to write `all.html`, every module page's content on one page.
-  generateAllPage: boolean;
   // Optional bundler adapter. When omitted, the Vite adapter is loaded lazily.
   bundler?: WebBundler;
 };
 
 export type Generator = GeneratorMetadata<
   Configuration,
-  Generate<Array<PageCode>, Promise<void>>,
+  Generate<
+    | Array<PageCode | { manifest: Array<MetadataEntry> }>
+    | AsyncIterable<Array<PageCode | { manifest: Array<MetadataEntry> }>>,
+    Promise<void>
+  >,
   ProcessChunk<PageTask, string, { template: string; assets: ClientAssets }>
 >;

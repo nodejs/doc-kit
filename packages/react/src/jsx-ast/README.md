@@ -19,8 +19,20 @@ Each page is emitted as `{ data, headings, readingTime, content }`: the page's
 head entry, its table of contents, the optional reading time, and the processed
 content serialized to JSX code as one fragment. The page layout is not part of
 the content — the `html` generator wraps each page in `<Layout>`, and assembles
-`all.html` from the module pages' content (see its `generateAllPage` option)
-rather than building every module a second time here.
+pages made of other pages' content, such as Node.js's `all.html`, rather than
+building them a second time here.
+
+Pages are emitted as they are built, in the order their entries arrived, the
+synthetic pages last. Once every page has arrived, it also emits
+`{ manifest }`, every page's head in that same order, so that the `html`
+generator can build what needs the whole site while pages are still being
+built.
+
+To list the pages as the site does, leave out the `{ manifest }` item and sort
+the pages by their head with `headingSortFn`, from
+`@doc-kit/generator-react/jsx-ast/utils/getSortedHeadNodes`, as
+`pages.toSorted((a, b) => headingSortFn(a.data, b.data))`, keeping the
+synthetic pages (`data.synthetic`) last.
 
 ## Index page
 

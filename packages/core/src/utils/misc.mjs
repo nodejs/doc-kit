@@ -70,3 +70,29 @@ export const deepMerge = (...objects) => {
     return result;
   }, {});
 };
+
+/**
+ * Creates a signal: waiting on it resolves the next time it is notified.
+ *
+ * @returns {{ wait: () => Promise<void>, notify: () => void }}
+ */
+export const createSignal = () => {
+  let next = Promise.withResolvers();
+
+  return {
+    /**
+     * Waits for the next notification.
+     *
+     * @returns {Promise<void>}
+     */
+    wait: () => next.promise,
+
+    /**
+     * Wakes what waits.
+     */
+    notify: () => {
+      next.resolve();
+      next = Promise.withResolvers();
+    },
+  };
+};

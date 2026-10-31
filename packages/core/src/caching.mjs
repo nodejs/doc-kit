@@ -2,6 +2,7 @@
 
 import logger from './logger/index.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
+import { createReplay } from './utils/replay.mjs';
 
 const cachingLogger = logger.child('caching');
 
@@ -37,23 +38,40 @@ export const collectAsyncGenerator = async generator => {
 };
 
 /**
+ * Gives a value as the single chunk of an async generator.
+ *
+ * @template T
+ * @param {T} value
+ * @returns {AsyncGenerator<T>}
+ */
+async function* once(value) {
+  yield value;
+}
+
+/**
  * Creates the cache that backs the generator pipeline. It is the single owner
  * of every piece of caching the orchestrator needs.
  *
  * Generator caching: each generator's pending result, so a generator and its
  * dependencies are only ever scheduled once.
  *
- * Stream caching: collecting an async generator's chunks into a single array
- * exactly once, shared by every consumer.
+ * Stream caching: running an async generator exactly once, recording its
+ * chunks for every consumer: those that collect it share a single array, and
+ * those that stream it read each chunk as soon as it is yielded.
  *
  * Dependency caching & eviction: tracking how many consumers still need each
- * result and dropping it once the last one has read it, so intermediate results
- * can be garbage collected while later generators keep running.
+ * result and dropping it once the last one has asked for it, and a streamed
+ * result's chunks once every reader has read them, so intermediate results can
+ * be garbage collected while later generators keep running.
  */
 export const createCache = () => {
   /** @type {{ [key: string]: Promise<unknown> | AsyncGenerator }} */
   const results = {};
 
+  // The replays of the results that stream, and those of them collected into
+  // one array, shared by the consumers that collect them
+  /** @type {Map<string, ReturnType<typeof createReplay>>} */
+  const replays = new Map();
   /** @type {Map<string, Promise<unknown[]>>} */
   const collections = new Map();
 
@@ -66,27 +84,40 @@ export const createCache = () => {
   const remaining = {};
 
   /**
-   * Collects an async generator's chunks, ensuring a single collection is
-   * shared across all consumers of the same key.
+   * Gets the replay of a streamed result, starting it the first time a
+   * consumer reads the result, so every consumer shares its one run.
    *
-   * @param {string} key - Cache key (resolved generator specifier)
-   * @param {AsyncGenerator<unknown[]>} generator - Generator to collect
-   * @returns {Promise<unknown[]>} Promise resolving to the collected items
+   * @param {string} name - Cache key (resolved generator specifier)
+   * @param {AsyncGenerator<unknown[]>} generator - The result
+   * @returns {ReturnType<typeof createReplay>}
    */
-  const collect = (key, generator) => {
-    const hasKey = collections.has(key);
+  const replayOf = (name, generator) => {
+    if (!replays.has(name)) {
+      cachingLogger.debug(`Starting to record "${name}"`);
 
-    if (!hasKey) {
-      collections.set(key, collectAsyncGenerator(generator));
+      replays.set(name, createReplay(generator));
     }
 
-    cachingLogger.debug(
-      hasKey
-        ? `Using cached collection for "${key}"`
-        : `Starting collection for "${key}"`
-    );
+    return replays.get(name);
+  };
 
-    return collections.get(key);
+  /**
+   * Counts a read of a result, and evicts it once every expected consumer has
+   * read it.
+   *
+   * @param {string} name - Cache key (resolved generator specifier)
+   */
+  const release = name => {
+    if (name in remaining && --remaining[name] <= 0) {
+      delete results[name];
+
+      // Every reader has started, so what they all read can go
+      replays.get(name)?.forget();
+      replays.delete(name);
+      collections.delete(name);
+
+      cachingLogger.debug(`Evicted "${name}" after final consumer`);
+    }
   };
 
   return {
@@ -165,19 +196,92 @@ export const createCache = () => {
     consume: async name => {
       const result = await results[name];
 
-      const value = isAsyncIterable(result)
-        ? await collect(name, result)
-        : result;
+      let value = result;
 
-      // Evict once the last consumer has retrieved the result
-      if (name in remaining && --remaining[name] <= 0) {
-        delete results[name];
-        collections.delete(name);
+      if (isAsyncIterable(result)) {
+        // Consumers that collect it share one array, read like a stream
+        if (!collections.has(name)) {
+          collections.set(
+            name,
+            collectAsyncGenerator(replayOf(name, result).read())
+          );
+        }
 
-        cachingLogger.debug(`Evicted "${name}" after final consumer`);
+        value = await collections.get(name);
       }
 
+      release(name);
+
       return value;
+    },
+
+    /**
+     * Runs a generator to its end, keeping none of its result, which counts as
+     * one of its reads.
+     *
+     * @param {string} name - Cache key (resolved generator specifier) to drain
+     * @returns {Promise<void>}
+     */
+    drain: async name => {
+      const result = await results[name];
+
+      if (!isAsyncIterable(result)) {
+        release(name);
+
+        return;
+      }
+
+      const { ended } = replayOf(name, result);
+
+      // Once nothing else reads it, its chunks go as they're recorded
+      release(name);
+
+      await ended;
+    },
+
+    /**
+     * Gives a reader of a generator's result as it is produced: chunk by chunk
+     * if it streams, or as a single chunk once it resolves. As with `consume`,
+     * the result is awaited and its recording started right away, so the
+     * generator runs and its failure is handled before the reader starts
+     * reading, and this counts as one of its reads.
+     *
+     * @param {string} name - Cache key (resolved generator specifier) to stream
+     * @returns {Promise<AsyncIterable<unknown[]>>}
+     */
+    stream: async name => {
+      const result = await results[name];
+
+      let reader;
+
+      if (isAsyncIterable(result)) {
+        reader = replayOf(name, result).read();
+      } else {
+        // A result that doesn't stream is read as a single chunk
+        reader = once(result);
+      }
+
+      release(name);
+
+      let read = false;
+
+      // Read once: what every reader has read is let go
+      return {
+        /**
+         * Reads every chunk, from the first, once.
+         *
+         * @returns {AsyncGenerator<unknown[]>}
+         */
+        [Symbol.asyncIterator]: () => {
+          if (read) {
+            throw new Error(`The output of "${name}" can only be read once`);
+          }
+
+          read = true;
+
+          return reader;
+        },
+      };
     },
   };
 };

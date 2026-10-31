@@ -155,5 +155,17 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
     return SKIP;
   });
 
+  // Nothing after this reads where a node came from: letting it go saves
+  // memory, and copying it to and from the worker threads
+  for (const { content, heading, stability } of metadataCollection) {
+    for (const root of [content, heading, stability]) {
+      if (root) {
+        visit(root, node => {
+          delete node.position;
+        });
+      }
+    }
+  }
+
   return metadataCollection;
 };
