@@ -149,6 +149,13 @@ function transformToMyFormat(entries, version) {
 }
 ```
 
+`generate` is called with the input, a worker for
+[parallel processing](#parallel-processing-with-workers), and the generator
+context (`GeneratorContext`): what the orchestrator provides besides the
+input. Its one property so far is `incremental`, the generator's section of
+the manifest of an [incremental build](#incremental-builds); when the build
+is not incremental, its methods are all no-ops.
+
 ### Step 5: Make the Generator Loadable
 
 Generators are loaded dynamically by import specifier. Anything that resolves
@@ -566,6 +573,57 @@ export async function generate(input, worker) {
   return result;
 }
 ```
+
+### Incremental builds
+
+An incremental build makes again only the items whose output the previous
+build did not make from the same key, and keeps the manifest of what every
+item produced at `<output>/.doc-kit/manifest.json`. The `incremental`
+property of the [generator context](#step-4-implement-the-generator-logic) is
+the generator's section of it:
+
+```mjs displayName="generate.mjs"
+import { writeFile } from '@doc-kit/core/utils/file.mjs';
+
+export async function generate(input, worker, { incremental }) {
+  // `stale` are the items to make again; the rest keep their files. `files`
+  // names what an item makes, be it one file or many.
+  const { stale } = incremental.partition(input, {
+    files: item => `${item.api}.myformat`,
+  });
+
+  for (const item of stale) {
+    await writeFile(join(config.output, `${item.api}.myformat`), render(item));
+  }
+
+  // Removes the previous build's files this one did not record
+  await incremental.prune();
+}
+```
+
+An item's key is its JSON, hashed with the generator's configuration, so a
+configuration change makes everything again. The generator's metadata can
+refine that under `incremental`:
+
+- `key(item)` is what an item's output is made from instead: a string, bytes,
+  or an array of them.
+- `omit` lists the configuration keys that do not shape the output, such as
+  paths and functions. `input`, `output`, `ignore` and `pathsToCopy` are
+  always left out.
+- `salt` lists further parts of every key, such as a format version.
+
+`partition(items, { key, files })` takes a key function in place of the
+declared one, and `salt(compute)` adds parts computed at run time, such as
+the hash of a built component library; `compute` only runs in an incremental
+build, and before any key is derived. Files that belong to no item, such as
+assets, or whose names are only known once made, are recorded by hand:
+`record(item, ...files)`, with a label in place of the item for the former.
+
+Without `experimentalIncremental` (or an `output`) every item is stale and
+nothing is recorded, so the generator needs no branches of its own. Whether
+or not a generator uses its section, writing through core's `writeFile` (or
+`writeJSON`) leaves a file alone during an incremental build when it already
+holds the same bytes.
 
 ### Copying Assets
 

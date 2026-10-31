@@ -41,8 +41,14 @@ declare global {
    */
   export type Generate<I, O> = (
     input: I,
-    worker: ParallelWorker
+    worker: ParallelWorker,
+    context: GeneratorContext
   ) => O extends AsyncGenerator ? O : Promise<O>;
+
+  // What the orchestrator passes to `generate` as its third argument
+  export type GeneratorContext = {
+    incremental: import('../incremental/types').IncrementalSection;
+  };
 
   /**
    * Type for the optional processChunk function of a generator
@@ -69,6 +75,11 @@ declare global {
     description: string;
 
     hasParallelProcessor?: boolean;
+
+    /**
+     * What an incremental build needs to know about this generator's outputs
+     */
+    incremental?: import('../incremental/types').IncrementalOptions;
 
     /**
      * The unified plugins this generator processes Markdown with, listed as

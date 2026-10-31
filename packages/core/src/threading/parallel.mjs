@@ -52,6 +52,7 @@ const createTask = (
     // Only pass the needed configuration to this generator
     configuration: {
       [generatorName]: configuration[generatorName],
+      experimentalIncremental: configuration.experimentalIncremental,
     },
   };
 };

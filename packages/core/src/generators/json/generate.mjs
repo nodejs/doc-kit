@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import getConfig from '#utils/configuration/index.mjs';
 import { GITHUB_BLOB_URL, populate } from '#utils/configuration/templates.mjs';
-import { withExt, writeJSON } from '#utils/file.mjs';
+import { readJSON, withExt, writeJSON } from '#utils/file.mjs';
 import { groupNodesByModule } from '#utils/generators.mjs';
 
 import { buildDocument } from './utils/document.mjs';
@@ -28,7 +28,7 @@ export async function processChunk(slicedInput, itemIndices, dependencies) {
  *
  * @type {import('./types').Generator['generate']}
  */
-export async function* generate(input, worker) {
+export async function* generate(input, worker, { incremental }) {
   const config = getConfig('json');
 
   /** @type {import('./types').Dependencies} */
@@ -47,7 +47,18 @@ export async function* generate(input, worker) {
     entries: nodes,
   }));
 
-  for await (const chunk of worker.stream(modules, dependencies)) {
+  const { fresh, stale } = incremental.partition(modules, {
+    /**
+     *
+     */
+    files: ({ head }) => withExt(head.path, 'json'),
+  });
+
+  for (const { head } of fresh) {
+    yield [await readJSON(join(config.output, withExt(head.path, 'json')))];
+  }
+
+  for await (const chunk of worker.stream(stale, dependencies)) {
     if (config.output) {
       await Promise.all(
         chunk.map(document =>
@@ -62,4 +73,6 @@ export async function* generate(input, worker) {
 
     yield chunk;
   }
+
+  await incremental.prune();
 }

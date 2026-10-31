@@ -137,6 +137,9 @@ Top-level, alongside `target` and `global`:
   CPU count. Each worker's heap is limited to 512MB; to raise the limit, run
   Node.js with `--max-old-space-size` (directly or through `NODE_OPTIONS`).
 - `chunkSize` {number} Items processed per worker thread. **Default:** `10`.
+- `experimentalIncremental` {boolean} Build against the existing output
+  instead of from scratch. **Default:** `false`. **Experimental:** the option
+  and the manifest format are subject to change.
 
 ## Generator options
 
@@ -262,17 +265,18 @@ precedence):
 
 CLI options map to configuration properties:
 
-| CLI Option             | Config Property    | Example                   |
-| ---------------------- | ------------------ | ------------------------- |
-| `--input <path>`       | `global.input`     | `--input src/`            |
-| `--output <path>`      | `global.output`    | `--output dist/`          |
-| `--ignore <pattern>`   | `global.ignore[]`  | `--ignore test/`          |
-| `--minify`             | `global.minify`    | `--minify`                |
-| `--git-ref <ref>`      | `global.ref`       | `--git-ref v20.0.0`       |
-| `--version <version>`  | `global.version`   | `--version 20.0.0`        |
-| `--changelog <url>`    | `global.changelog` | `--changelog https://...` |
-| `--index <url>`        | `global.index`     | `--index file://...`      |
-| `--type-map <map>`     | `metadata.typeMap` | `--type-map file://...`   |
-| `--target <generator>` | `target`           | `--target json`           |
-| `--threads <n>`        | `threads`          | `--threads 4`             |
-| `--chunk-size <n>`     | `chunkSize`        | `--chunk-size 10`         |
+| CLI Option                   | Config Property           | Example                      |
+| ---------------------------- | ------------------------- | ---------------------------- |
+| `--input <path>`             | `global.input`            | `--input src/`               |
+| `--output <path>`            | `global.output`           | `--output dist/`             |
+| `--ignore <pattern>`         | `global.ignore[]`         | `--ignore test/`             |
+| `--minify`                   | `global.minify`           | `--minify`                   |
+| `--git-ref <ref>`            | `global.ref`              | `--git-ref v20.0.0`          |
+| `--version <version>`        | `global.version`          | `--version 20.0.0`           |
+| `--changelog <url>`          | `global.changelog`        | `--changelog https://...`    |
+| `--index <url>`              | `global.index`            | `--index file://...`         |
+| `--type-map <map>`           | `metadata.typeMap`        | `--type-map file://...`      |
+| `--target <generator>`       | `target`                  | `--target json`              |
+| `--threads <n>`              | `threads`                 | `--threads 4`                |
+| `--chunk-size <n>`           | `chunkSize`               | `--chunk-size 10`            |
+| `--experimental-incremental` | `experimentalIncremental` | `--experimental-incremental` |

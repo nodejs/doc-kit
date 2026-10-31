@@ -1,11 +1,25 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import {
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
+import { setTimeout } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
 
 import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
+import {
+  createIncrementalStore,
+  DISABLED_SECTION,
+} from '@doc-kit/core/incremental/index.mjs';
+import { loadManifest } from '@doc-kit/core/incremental/manifest.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
@@ -16,11 +30,29 @@ import { generate as chunk } from '../../section-pages/generate.mjs';
 import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { FONTS } from '../constants.mjs';
 import { generate } from '../generate.mjs';
+import html from '../index.mjs';
+import { pageFileName } from '../utils/processing.mjs';
+import { processChunk } from '../utils/render.mjs';
 
 // Pages are rendered with the pipeline of `jsx-ast`
 await loadMarkdownPlugins(
   await loadGenerator(import.meta.resolve('../../jsx-ast/index.mjs'))
 );
+
+/**
+ * Generates the site on this thread, as the orchestrator does without the
+ * incremental option.
+ */
+const generateSite = pages =>
+  generate(pages, undefined, { incremental: DISABLED_SECTION });
+
+/**
+ * Builds the pages of module entries, one page per module.
+ */
+const buildPages = async entries =>
+  Promise.all(entries.map(entry => buildContent([entry], entry))).then(
+    contents => contents.map(toPage)
+  );
 
 /**
  * Converts a page's JSX AST into the `{ data, headings, readingTime, content }`
@@ -94,7 +126,7 @@ describe('web generate', () => {
       buildContent(notFoundPage.entries, notFoundPage.head),
     ]);
 
-    await generate(contents.map(toPage));
+    await generateSite(contents.map(toPage));
 
     const [fsHTML, notFoundHTML] = await Promise.all([
       readFile(join(output, 'api/fs.html'), 'utf8'),
@@ -137,11 +169,7 @@ describe('web generate', () => {
       createEntry('index', 'Index'),
     ];
 
-    await generate(
-      await Promise.all(
-        entries.map(entry => buildContent([entry], entry))
-      ).then(contents => contents.map(toPage))
-    );
+    await generateSite(await buildPages(entries));
 
     const html = await readFile(join(output, 'all.html'), 'utf8');
 
@@ -201,7 +229,7 @@ describe('web generate', () => {
       [...pages.values()].map(group => buildContent(group, group[0]))
     );
 
-    await generate(contents.map(toPage));
+    await generateSite(contents.map(toPage));
 
     const [fsHTML, readFileHTML] = await Promise.all([
       readFile(join(output, 'fs.html'), 'utf8'),
@@ -247,7 +275,7 @@ describe('web generate', () => {
     };
 
     const fs = createEntry('fs', 'File system');
-    await generate([toPage(await buildContent([fs], fs))]);
+    await generateSite([toPage(await buildContent([fs], fs))]);
     const html = await readFile(join(output, 'fs.html'), 'utf8');
 
     assert.match(html, /Custom project docs/);
@@ -265,7 +293,7 @@ describe('web generate', () => {
 
     const notFoundPage = buildNotFoundPage();
     const content = await buildContent(notFoundPage.entries, notFoundPage.head);
-    await generate([toPage(content)]);
+    await generateSite([toPage(content)]);
     const html = await readFile(join(output, '404.html'), 'utf8');
 
     assert.match(html, /src="https:\/\/example\.com\/docs\/assets\//);
@@ -288,7 +316,7 @@ describe('web generate', () => {
     });
 
     const fs = createEntry('fs', 'File system');
-    await generate([toPage(await buildContent([fs], fs))]);
+    await generateSite([toPage(await buildContent([fs], fs))]);
 
     const assets = await readdir(join(output, 'assets'));
     const client = assets.find(file => /^client-.*\.js$/.test(file));
@@ -361,7 +389,7 @@ describe('web generate', () => {
     };
 
     const fs = createEntry('fs', 'File system');
-    await generate([toPage(await buildContent([fs], fs))]);
+    await generateSite([toPage(await buildContent([fs], fs))]);
     const html = await readFile(join(output, 'fs.html'), 'utf8');
 
     assert.match(html, /<article data-custom-ssr>fs:1<\/article>/);
@@ -381,5 +409,220 @@ describe('web generate', () => {
       /<link rel="stylesheet" crossorigin href="\.\/custom\/index\.css" \/>/
     );
     assert.deepStrictEqual(calls, ['server', 'client', 'compile']);
+  });
+
+  describe('incremental', () => {
+    /**
+     * Runs an incremental build of the pages into the output, through a
+     * worker that renders on this thread and notes which pages it rendered.
+     *
+     * @returns {Promise<{ rendered: Array<string>, manifest: import('@doc-kit/core/incremental/types').Manifest }>}
+     */
+    const build = async (pages, output) => {
+      const rendered = [];
+
+      const worker = {
+        async *stream(tasks, extra) {
+          rendered.push(...tasks.map(task => pageFileName(task.data)));
+
+          yield await processChunk(tasks, [...tasks.keys()], extra);
+        },
+      };
+
+      const store = createIncrementalStore({ enabled: true });
+      const incremental = await store.section(html, { output });
+
+      await generate(pages, worker, { incremental });
+      await store.save();
+
+      // Let the clock move, so an unchanged mtime means no write happened
+      await setTimeout(20);
+
+      return { rendered, manifest: (await loadManifest(output)).manifest };
+    };
+
+    /**
+     * The modification times of the given files, by file.
+     */
+    const mtimes = async (output, files) =>
+      Object.fromEntries(
+        await Promise.all(
+          files.map(async file => [
+            file,
+            (await stat(join(output, file))).mtimeMs,
+          ])
+        )
+      );
+
+    it('renders nothing the second time and leaves every file alone', async context => {
+      const { config, output } = await createTestConfiguration(context);
+      config.html.generateAllPage = true;
+
+      const pages = await buildPages([
+        createEntry('fs', 'File system'),
+        createEntry('zlib', 'Zlib'),
+      ]);
+
+      const first = await build(pages, output);
+
+      assert.deepEqual(first.rendered.toSorted(), [
+        'all.html',
+        'fs.html',
+        'zlib.html',
+      ]);
+
+      const files = Object.values(
+        first.manifest.generators.html.outputs
+      ).flat();
+      const pageFiles = files.filter(file => !file.startsWith('assets/'));
+      const before = await mtimes(output, pageFiles);
+
+      const second = await build(pages, output);
+
+      // The client is bundled again (into the same files); the pages are not
+      assert.deepEqual(second.rendered, []);
+      assert.deepEqual(await mtimes(output, pageFiles), before);
+
+      // Building the same library twice gives the same bytes: the salt holds
+      assert.deepEqual(second.manifest, first.manifest);
+
+      // The pages and the client's files are all recorded
+      assert.ok(files.includes('fs.html'));
+      assert.ok(files.some(file => file.startsWith('assets/')));
+    });
+
+    it('renders an edited page again, and all.html with it, but nothing else', async context => {
+      const { config, output } = await createTestConfiguration(context);
+      config.html.generateAllPage = true;
+
+      const fs = createEntry('fs', 'File system');
+      const zlib = createEntry('zlib', 'Zlib');
+
+      await build(await buildPages([fs, zlib]), output);
+      const before = await mtimes(output, ['fs.html', 'zlib.html', 'all.html']);
+
+      // A change after the first paragraph: the description every page's
+      // documentation index shows stays the same, so the library does too
+      zlib.content.children.push({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'More about zlib' }],
+      });
+
+      const { rendered } = await build(await buildPages([fs, zlib]), output);
+      const after = await mtimes(output, ['fs.html', 'zlib.html', 'all.html']);
+
+      assert.deepEqual(rendered, ['all.html', 'zlib.html']);
+      assert.equal(after['fs.html'], before['fs.html']);
+      assert.notEqual(after['zlib.html'], before['zlib.html']);
+      assert.notEqual(after['all.html'], before['all.html']);
+      assert.match(
+        await readFile(join(output, 'all.html'), 'utf8'),
+        /More about zlib/
+      );
+    });
+
+    it('renders every page again when the page set changes', async context => {
+      const { config, output } = await createTestConfiguration(context);
+      config.html.generateAllPage = false;
+
+      const fs = createEntry('fs', 'File system');
+      const zlib = createEntry('zlib', 'Zlib');
+
+      await build(await buildPages([fs, zlib]), output);
+
+      // A new module is on every page's sidebar
+      const { rendered } = await build(
+        await buildPages([fs, zlib, createEntry('net', 'Net')]),
+        output
+      );
+
+      assert.deepEqual(rendered.toSorted(), [
+        'fs.html',
+        'net.html',
+        'zlib.html',
+      ]);
+    });
+
+    it('removes the pages of a dropped module, and nothing else', async context => {
+      const { config, output } = await createTestConfiguration(context, [
+        'section-pages',
+      ]);
+      config.html.generateAllPage = false;
+      config['section-pages'].maxDepth = 2;
+
+      const fs = [
+        createEntry('fs', 'File system'),
+        createEntry('fs', '`fs.readFile()`', {
+          depth: 2,
+          slug: 'fsreadfile',
+          type: 'method',
+          name: 'readFile',
+        }),
+        createEntry('fs', '`fs.watch()`', {
+          depth: 2,
+          slug: 'fswatch',
+          type: 'method',
+          name: 'watch',
+        }),
+      ];
+      const zlib = createEntry('zlib', 'Zlib');
+
+      const toPages = async entries => {
+        const groups = Map.groupBy(await chunk(entries), entry => entry.api);
+
+        return Promise.all(
+          [...groups.values()].map(group => buildContent(group, group[0]))
+        ).then(contents => contents.map(toPage));
+      };
+
+      await build(await toPages([...fs, zlib]), output);
+
+      assert.ok(existsSync(join(output, 'fs/readFile.html')));
+      await writeFile(join(output, 'mine.txt'), 'not doc-kit’s');
+
+      const { rendered, manifest } = await build(await toPages([zlib]), output);
+
+      // The sidebar lost a module, so the remaining page is rendered again
+      assert.deepEqual(rendered, ['zlib.html']);
+      assert.equal(existsSync(join(output, 'fs.html')), false);
+      assert.equal(existsSync(join(output, 'fs')), false);
+      assert.ok(existsSync(join(output, 'zlib.html')));
+      assert.ok(existsSync(join(output, 'mine.txt')));
+      assert.deepEqual(
+        Object.values(manifest.generators.html.outputs)
+          .flat()
+          .filter(file => !file.startsWith('assets/')),
+        ['zlib.html']
+      );
+    });
+
+    it('removes the client files a previous build wrote and this one did not', async context => {
+      const { config, output } = await createTestConfiguration(context);
+      config.html.generateAllPage = false;
+
+      const pages = await buildPages([createEntry('fs', 'File system')]);
+
+      await build(pages, output);
+
+      const stylesheets = async () =>
+        (await readdir(join(output, 'assets'))).filter(file =>
+          file.endsWith('.css')
+        );
+
+      const [before] = await stylesheets();
+
+      const stylesheet = join(output, '..', `doc-kit-test-${Date.now()}.css`);
+      context.after(() => rm(stylesheet, { force: true }));
+      await writeFile(stylesheet, '.extra { color: red }');
+      config.html.stylesheets = [stylesheet];
+
+      const { rendered } = await build(pages, output);
+
+      // The assets changed, so the page did, and the old stylesheet is gone
+      assert.deepEqual(rendered, ['fs.html']);
+      const after = await stylesheets();
+      assert.equal(after.length, 1);
+      assert.notEqual(after[0], before);
+    });
   });
 });

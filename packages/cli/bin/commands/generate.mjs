@@ -25,6 +25,7 @@ const { runGenerators } = createGenerator();
  * @property {string} index
  * @property {boolean} minify
  * @property {string} typeMap
+ * @property {boolean} experimentalIncremental
  */
 
 /**
@@ -53,6 +54,10 @@ export const generateOptions = [
   new Option('--index <url>', 'index.md URL or path'),
   new Option('--minify', 'Minify?'),
   new Option('--type-map <url>', 'Type map URL or path'),
+  new Option(
+    '--experimental-incremental',
+    'Rebuild only what changed against the existing output (experimental)'
+  ),
 ];
 
 const generate = new Command('generate').description('Generate API docs');
