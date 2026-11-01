@@ -7,9 +7,6 @@ export const DOC_API_SLUGS_REPLACEMENTS = [
   { from: /node.js/i, to: 'nodejs' }, // Replace Node.js
   { from: /&/, to: '-and-' }, // Replace &
   { from: /[/,:;\\ ]/g, to: '-' }, // Replace /,:;\. and whitespace
-  { from: /^-(?!-|$)/g, to: '' }, // Remove a single leading hyphen
-  { from: /(?<!^-*)-+$/g, to: '' }, // Remove any trailing hyphens
-  { from: /^(?!-)(?!-+$).*?(--+)/g, to: '-' }, // Replace multiple hyphens
 ];
 
 // Matches Node.js deprecation headings such as "DEP0001: Description".
