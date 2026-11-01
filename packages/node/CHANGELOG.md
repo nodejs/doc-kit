@@ -1,5 +1,11 @@
 # @node-core/doc-kit
 
+## 2.0.8
+
+### Patch Changes
+
+- [#1202](https://github.com/nodejs/doc-kit/pull/1202) [`ccd02e8`](https://github.com/nodejs/doc-kit/commit/ccd02e860cf0ed6e695f431d7cb99cccd596ed9e) Thanks [@kgeminicdev](https://github.com/kgeminicdev)! - The man page no longer drops the last environment variable when that section ends the input.
+
 ## 2.0.7
 
 ### Patch Changes
