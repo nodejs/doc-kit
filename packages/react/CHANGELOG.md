@@ -1,5 +1,11 @@
 # @doc-kit/generator-react
 
+## 0.5.3
+
+### Patch Changes
+
+- [#1203](https://github.com/nodejs/doc-kit/pull/1203) [`0e999db`](https://github.com/nodejs/doc-kit/commit/0e999dbe11d7993a74086df5d1152416f3a94508) Thanks [@helmipradita](https://github.com/helmipradita)! - Skip the `index` entry when building page URLs in the `sitemap` generator so the index page is only listed once under `indexURL`.
+
 ## 0.5.2
 
 ### Patch Changes
