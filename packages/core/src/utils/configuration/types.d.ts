@@ -16,6 +16,9 @@ export type Configuration = {
 
   // Number of items to process per worker thread
   chunkSize: number;
+
+  // Enable incremental building?
+  experimentalIncremental: boolean;
 } & {
   [K in keyof AllGenerators]: GlobalConfiguration &
     AllGenerators[K]['defaultConfiguration'];
