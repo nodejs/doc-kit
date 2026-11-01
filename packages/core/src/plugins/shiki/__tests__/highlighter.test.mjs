@@ -93,18 +93,95 @@ describe('createHighlighter', () => {
     const loaded = () => highlighter.shiki.getLoadedLanguages();
 
     assert.ok(!loaded().includes('python'));
-    assert.ok(!loaded().includes('javascript'));
+    assert.ok(!loaded().includes('rust'));
 
     // By its name, an alias of its own, or one of the options
-    assert.equal(highlighter.resolveLanguage('py'), 'py');
-    assert.equal(highlighter.resolveLanguage('mjs'), 'mjs');
+    assert.equal(highlighter.resolveLanguage('py'), 'python');
+    assert.equal(highlighter.resolveLanguage('rs'), 'rs');
 
     assert.ok(loaded().includes('python'));
-    assert.ok(loaded().includes('javascript'));
-    assert.ok(loaded().includes('cjs'));
+    assert.ok(loaded().includes('rust'));
 
     assert.equal(highlighter.resolveLanguage(undefined), 'text');
     assert.equal(highlighter.resolveLanguage('plaintext'), 'plaintext');
+  });
+
+  it('highlights JavaScript as TypeScript, and C++ as C', async () => {
+    const highlighter = await createHighlighter();
+    const loaded = () => highlighter.shiki.getLoadedLanguages();
+
+    for (const language of ['javascript', 'JS', 'mjs', 'cjs']) {
+      assert.equal(highlighter.resolveLanguage(language), 'typescript');
+    }
+
+    assert.equal(highlighter.resolveLanguage('cpp'), 'c');
+    assert.equal(highlighter.resolveLanguage('c++'), 'c');
+    assert.ok(!loaded().includes('cpp'));
+
+    // Even once a grammar that has them as its own aliases is registered
+    assert.equal(highlighter.resolveLanguage('coffee'), 'coffee');
+    assert.ok(loaded().includes('javascript'));
+    assert.equal(highlighter.resolveLanguage('js'), 'typescript');
+
+    // Not the names every object inherits
+    assert.equal(highlighter.resolveLanguage('constructor'), 'text');
+  });
+
+  it('takes aliases over the default ones', async () => {
+    const highlighter = await createHighlighter({
+      langAlias: { cpp: 'cpp', js: 'javascript' },
+    });
+
+    assert.equal(highlighter.resolveLanguage('cpp'), 'cpp');
+    assert.equal(highlighter.resolveLanguage('js'), 'javascript');
+    assert.equal(highlighter.resolveLanguage('mjs'), 'typescript');
+    assert.ok(highlighter.shiki.getLoadedLanguages().includes('cpp'));
+  });
+
+  it('follows configured aliases, and finds languages named in any case', async () => {
+    const highlighter = await createHighlighter({
+      langs: [{ ...grammar, name: 'OxcConf', scopeName: 'source.oxcconf2' }],
+      langAlias: {
+        a: 'b',
+        b: 'python',
+        loop: 'pool',
+        pool: 'loop',
+        oc: 'OxcConf',
+        conf: 'INI',
+      },
+    });
+
+    assert.equal(highlighter.resolveLanguage('a'), 'python');
+    assert.equal(highlighter.resolveLanguage('loop'), 'text');
+    assert.equal(highlighter.resolveLanguage('Python'), 'python');
+    assert.equal(highlighter.resolveLanguage('oc'), 'OxcConf');
+    assert.equal(highlighter.resolveLanguage('conf'), 'ini');
+    assert.equal(
+      highlighter.highlightToHtml('[section]', 'conf'),
+      highlighter.highlightToHtml('[section]', 'ini')
+    );
+  });
+
+  it('highlights with a language of `langs` an alias leads to', async () => {
+    const highlighter = await createHighlighter({
+      langs: [
+        {
+          ...grammar,
+          name: 'javascript',
+          aliases: ['js'],
+          scopeName: 'source.oxc-js',
+        },
+      ],
+      langAlias: { js: 'javascript' },
+    });
+
+    assert.equal(highlighter.resolveLanguage('js'), 'javascript');
+    assert.match(
+      highlighter.highlightToHtml('minify on', 'js'),
+      /--shiki-dark/
+    );
+    assert.ok(!highlighter.shiki.getLoadedLanguages().includes('typescript'));
+    assert.equal(highlighter.resolveLanguage('mjs'), 'typescript');
   });
 
   it('lists the bundled languages without registering them', async () => {

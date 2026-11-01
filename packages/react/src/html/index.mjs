@@ -13,11 +13,13 @@ import { processChunk } from './utils/render.mjs';
  * - Client-side JavaScript with code splitting
  * - Bundled CSS styles
  *
- * The configured bundler builds the component library and the client assets
- * once each; the pages are then compiled, rendered, templated, minified and
- * written one at a time by the worker pool, so memory scales with the largest
- * page rather than with the site. `all.html` is assembled from the module
- * pages' compiled content instead of being built again from scratch.
+ * Each page is compiled as `jsx-ast` builds it. Once every page's metadata is
+ * known, the configured bundler builds the component library and the client
+ * assets once each, and the worker pool renders, templates, minifies and writes
+ * the pages one at a time as they are compiled, so memory scales with the
+ * largest page rather than with the site. A page made of other pages' content,
+ * such as Node.js's `all.html` (see its `html-all` generator), is assembled from
+ * their compiled content instead of being built again.
  *
  * This terminal generator writes to the output directory and does not return
  * an in-memory copy.
@@ -30,6 +32,8 @@ export default {
   description: 'Generates HTML/CSS/JS bundles from JSX AST entries',
 
   dependsOn: '@doc-kit/generator-react/jsx-ast',
+
+  streamsInput: true,
 
   /**
    * @param {import('@doc-kit/core/utils/configuration/types').Configuration} config
@@ -81,10 +85,6 @@ export default {
       // default layout.
       showCrossLinks: false,
     },
-
-    // Whether to write `all.html`: every module page's content on one page,
-    // assembled from the module pages rather than built again.
-    generateAllPage: true,
 
     // When omitted, the Vite adapter is loaded lazily during generation.
     bundler: undefined,

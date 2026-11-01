@@ -26,6 +26,8 @@ export default {
 
   hasParallelProcessor: true,
 
+  streamsInput: true,
+
   markdown: {
     // The configured remark plugins run before the alerts, so they can make
     // alerts too

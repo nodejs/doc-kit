@@ -13,6 +13,7 @@
     "./addon-verify": "./src/addon-verify/index.mjs",
     "./api-links": "./src/api-links/index.mjs",
     "./config": "./src/config/index.mjs",
+    "./html-all": "./src/html-all/index.mjs",
     "./man-page": "./src/man-page/index.mjs",
     "./package.json": "./package.json"
   },
@@ -26,6 +27,7 @@
   ],
   "dependencies": {
     "@doc-kit/core": "workspace:*",
+    "@doc-kit/generator-react": "workspace:*",
     "dedent": "^1.7.2",
     "estree-util-visit": "^2.0.0",
     "unist-util-visit": "^5.2.0"

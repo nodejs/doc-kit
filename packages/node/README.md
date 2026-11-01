@@ -20,6 +20,7 @@ npm install --save-dev @doc-kit/core @node-core/doc-kit
 | `man-page`     | The `node.1` manual page, from the CLI options documented in `cli.md`.                    |
 | `api-links`    | A mapping of API symbols to their source locations, powering source links on nodejs.org.  |
 | `addon-verify` | Extracted C++ addon code samples from `addons.md`, arranged for compilation by the tests. |
+| `html-all`     | `all.html`, every module page's content on one page, rendered by the `html` generator.    |
 
 ## Usage
 

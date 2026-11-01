@@ -28,17 +28,20 @@ const createGenerator = () => {
   let pool;
 
   /**
-   * Gets the collected input from a dependency generator.
+   * Gets the input from a dependency generator: collected, or its chunks as the
+   * dependency yields them.
    *
    * @param {string | undefined} dependsOn - Resolved dependency specifier
+   * @param {boolean} [streamed] - Whether to give its chunks as they are yielded
+   * rather than collected
    * @returns {Promise<unknown>}
    */
-  const getDependencyInput = async dependsOn => {
+  const getDependencyInput = async (dependsOn, streamed) => {
     if (!dependsOn) {
       return undefined;
     }
 
-    return cache.consume(dependsOn);
+    return streamed ? cache.stream(dependsOn) : cache.consume(dependsOn);
   };
 
   /**
@@ -57,7 +60,7 @@ const createGenerator = () => {
     }
 
     const generator = generators.get(specifier);
-    const { name, generate, hasParallelProcessor } = generator;
+    const { name, generate, hasParallelProcessor, streamsInput } = generator;
 
     const dependsOn = inputOf.get(specifier);
 
@@ -75,7 +78,12 @@ const createGenerator = () => {
     cache.store(
       specifier,
       (async () => {
-        const dependencyInput = await getDependencyInput(dependsOn);
+        // With one thread nothing runs alongside, so streaming would only keep
+        // every stage's data alive at once: each stage takes its input whole
+        const dependencyInput = await getDependencyInput(
+          dependsOn,
+          streamsInput && configuration.threads > 1
+        );
 
         generatorsLogger.debug(`Starting "${name}"`);
 
@@ -91,8 +99,8 @@ const createGenerator = () => {
         // input while the generator runs, and the generator can let it go
         return generate(dependencyInput, await worker);
       })().then(result => {
-        // For streaming generators, "Completed" is logged when the cache
-        // finishes collecting, not here when the generator returns
+        // For streaming generators, the cache logs each chunk as it records
+        // it, not here when the generator returns
         if (!isAsyncIterable(result)) {
           generatorsLogger.debug(`Completed "${name}"`);
         }
@@ -106,9 +114,13 @@ const createGenerator = () => {
    * Runs all requested generators with their dependencies.
    *
    * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
-   * @returns {Promise<unknown[]>} Results of all requested generators
+   * @param {{ results?: boolean }} [options] - With `results: false`, none of
+   * the requested generators' results is kept, so each can be let go as soon
+   * as it is produced
+   * @returns {Promise<unknown[] | undefined>} Results of all requested
+   * generators, or `undefined` with `results: false`
    */
-  const runGenerators = async configuration => {
+  const runGenerators = async (configuration, { results = true } = {}) => {
     const { target, threads } = configuration;
 
     // Resolve shorthand names and load the full dependency closure up front,
@@ -141,15 +153,14 @@ const createGenerator = () => {
       scheduleGenerator(specifier, generators, inputOf, configuration);
     }
 
-    // Start all collections in parallel (don't await sequentially). Consuming
-    // through the shared path lets the final read also trigger eviction.
-    const results = await Promise.all(
-      targets.map(specifier => cache.consume(specifier))
-    );
+    // Start all reads in parallel (don't await sequentially). Reading through
+    // the shared path lets the final read also trigger eviction.
+    const read = results ? cache.consume : cache.drain;
+    const collected = await Promise.all(targets.map(read));
 
     await pool.destroy();
 
-    return results;
+    return results ? collected : undefined;
   };
 
   return { runGenerators };

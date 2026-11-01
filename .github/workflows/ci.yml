@@ -77,7 +77,7 @@ jobs:
           path: node
 
       - name: Build Node.js API docs
-        run: node packages/cli/bin/cli.mjs generate -t web -i "./node/doc/api/assert.md" -o out --config-file ./e2e/doc-kit.config.mjs
+        run: node packages/cli/bin/cli.mjs generate -t web -t html-all -i "./node/doc/api/assert.md" -o out --config-file ./e2e/doc-kit.config.mjs
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
