@@ -263,11 +263,11 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1
       preact:
-        specifier: ^10.29.7
-        version: 10.29.8(preact-render-to-string@6.7.0)
+        specifier: ^11.0.2
+        version: 11.0.2(preact-render-to-string@6.8.1)
       preact-render-to-string:
-        specifier: ^6.7.0
-        version: 6.7.0(preact@10.29.8)
+        specifier: ^6.8.1
+        version: 6.8.1(preact@11.0.2)
       recma-jsx:
         specifier: ^1.0.1
         version: 1.0.1(acorn@8.19.0)
@@ -2879,15 +2879,15 @@ packages:
     resolution: {integrity: sha512-YUbWYCgErwnMAVkjUnYa+KlMBzGpHwiIt/DE7f0G33AuX2LH9UcTk6KgWxd3zRU+pN3u/C+Xl3EnMLM4Hea7Sg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  preact-render-to-string@6.7.0:
-    resolution: {integrity: sha512-Z4WR8fmLMRpdYqJ9i7vrlXSsSrxVJydwrkEXHapexfARbWfGb7vGcnvNQnIzN0cXciMVOlz/XLoiMCi9gUsy9Q==}
+  preact-render-to-string@6.8.1:
+    resolution: {integrity: sha512-EIaLVlarET55f737gG/g1bK1UfjAgT3Z7Ch1Z7UX4/TwHh1O7EI5sCtwhVP+cs0n37SyV2HjZCSRtrpMm4Bujw==}
     peerDependencies:
       preact: '>=10 || >= 11.0.0-0'
 
-  preact@10.29.8:
-    resolution: {integrity: sha512-ej2aVZ+vZ8WO7tvlQWRM9N63A0KzF9q4mWJfDUHgYaIofWY9hu74QdnQrjoPMmZi2/nZ5gN0bJCQF49xQqx09Q==}
+  preact@11.0.2:
+    resolution: {integrity: sha512-ofG+Lqznbt13JKDjdWPLTo5ONBqcNgidqnLRzJBG6PZjzGXOLRd5y9r448+HUofTyDbgKWVrPhHP0IgcxEZslQ==}
     peerDependencies:
-      preact-render-to-string: '>=5'
+      preact-render-to-string: '>=6.7.0'
     peerDependenciesMeta:
       preact-render-to-string:
         optional: true
@@ -6132,13 +6132,13 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
-  preact-render-to-string@6.7.0(preact@10.29.8):
+  preact-render-to-string@6.8.1(preact@11.0.2):
     dependencies:
-      preact: 10.29.8(preact-render-to-string@6.7.0)
+      preact: 11.0.2(preact-render-to-string@6.8.1)
 
-  preact@10.29.8(preact-render-to-string@6.7.0):
+  preact@11.0.2(preact-render-to-string@6.8.1):
     optionalDependencies:
-      preact-render-to-string: 6.7.0(preact@10.29.8)
+      preact-render-to-string: 6.8.1(preact@11.0.2)
 
   prelude-ls@1.2.1: {}
 
