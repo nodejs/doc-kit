@@ -21,7 +21,7 @@ convention). Two things to know about the result:
 
 - **Search requires its index.** If your site uses search, generate the
   index alongside the pages by targeting both generators — `target: ['html',
-'orama-db']`, so the search box has data to query.
+  'orama-db']`, so the search box has data to query.
 
 ## Cache the assets
 

@@ -273,6 +273,7 @@ directly and pass Vite's `UserConfig` to it:
 ```js
 // doc-kit.config.mjs
 import { createViteBundler } from '@doc-kit/generator-react/html/bundlers/vite';
+
 import myVitePlugin from './my-vite-plugin.mjs';
 
 export default {
@@ -434,7 +435,7 @@ import { project, repository, editURL } from '#theme/config';
 - `chunks` {Object} Per-module section pages produced by the
   [`section-pages`](./section-pages.md) generator, keyed by the module's path: each
   `{ label, items }`, where `items` is the module's section tree — `{ label,
-path, items? }` entries nested by heading depth, in document order. Empty
+  path, items? }` entries nested by heading depth, in document order. Empty
   unless `section-pages` ran.
 - `navigation` {Object} Mirrors the configured `navigation` (consumed by the
   built-in `SideBar` and `NavBar`).
