@@ -84,8 +84,8 @@ importers:
         specifier: ^1.5.1
         version: 1.5.1(supports-color@10.2.2)
       '@swc/html-wasm':
-        specifier: ^1.16.2
-        version: 1.16.2
+        specifier: ^1.16.20
+        version: 1.16.20
       '@swc/wasm':
         specifier: ^1.15.46
         version: 1.15.47
@@ -1819,8 +1819,8 @@ packages:
   '@speed-highlight/core@1.2.24':
     resolution: {integrity: sha512-qeW2e1l78afw8VhRPfPQ1Gjj+KU5XFQ/OFV5ti6eTa9bruO7mJyZtA4vw0ofqmA3tKCkROE9xLk3VZoeRc98nw==}
 
-  '@swc/html-wasm@1.16.2':
-    resolution: {integrity: sha512-sMOfqcr1r4h+SgDxEzXd/bEV17zxWM8FwIjWDJm4vbooK3YISFFvk9m8Na+KUYJ+hNwUBPNM2zN0uXFJGf/hRQ==}
+  '@swc/html-wasm@1.16.20':
+    resolution: {integrity: sha512-AIk+SI0TAel2a9+O7E30Y47lh7TDWOQ9ns1PyXp8IrgwKKlQbiG1LO3TKXpjzgQsuD3T/TfOA+Td1kGxrDaebw==}
 
   '@swc/wasm@1.15.47':
     resolution: {integrity: sha512-AdcxrBWz13mPnXxzxr5Lkxkgknwi0fAaArdehpYENB/iIds+WEWVcof3FJKfYAPP7TOeCsaSTKFTSsP3/YX7iw==}
@@ -4654,7 +4654,7 @@ snapshots:
 
   '@speed-highlight/core@1.2.24': {}
 
-  '@swc/html-wasm@1.16.2': {}
+  '@swc/html-wasm@1.16.20': {}
 
   '@swc/wasm@1.15.47': {}
 

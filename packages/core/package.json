@@ -53,7 +53,7 @@
   ],
   "dependencies": {
     "@node-core/rehype-shiki": "^1.5.1",
-    "@swc/html-wasm": "^1.16.2",
+    "@swc/html-wasm": "^1.16.20",
     "@swc/wasm": "^1.15.46",
     "acorn": "^8.17.0",
     "cosmiconfig": "^10.0.1",
