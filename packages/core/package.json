@@ -55,7 +55,7 @@
     "@node-core/rehype-shiki": "^1.5.1",
     "@swc/html-wasm": "^1.16.2",
     "@swc/wasm": "^1.15.46",
-    "acorn": "^8.17.0",
+    "acorn": "^8.19.0",
     "cosmiconfig": "^10.0.1",
     "github-slugger": "^2.0.0",
     "mdast-util-slice-markdown": "^2.0.1",
