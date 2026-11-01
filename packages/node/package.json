@@ -28,7 +28,7 @@
     "@doc-kit/core": "workspace:*",
     "dedent": "^1.7.2",
     "estree-util-visit": "^2.0.0",
-    "unist-util-visit": "^5.1.0"
+    "unist-util-visit": "^5.2.0"
   },
   "devDependencies": {
     "unist-builder": "^4.0.0"
