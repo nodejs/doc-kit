@@ -46,13 +46,18 @@ describe('slug', () => {
     });
   });
 
-  describe('leading hyphen removal', () => {
-    it('removes a single leading hyphen', () => {
-      assert.strictEqual(slug('-foo', identity), 'foo');
+  describe('hyphens', () => {
+    it('preserves leading hyphens', () => {
+      assert.strictEqual(slug('-foo', identity), '-foo');
+      assert.strictEqual(slug('--permission', identity), '--permission');
     });
 
-    it('preserves multiple leading hyphens', () => {
-      assert.strictEqual(slug('--permission', identity), '--permission');
+    it('preserves trailing hyphens', () => {
+      assert.strictEqual(slug('foo--', identity), 'foo--');
+    });
+
+    it('preserves consecutive hyphens', () => {
+      assert.strictEqual(slug('foo--bar', identity), 'foo--bar');
     });
 
     it('preserves an all-hyphen string', () => {
@@ -60,27 +65,17 @@ describe('slug', () => {
     });
   });
 
-  describe('trailing hyphen removal', () => {
-    it('removes a single trailing hyphen', () => {
-      assert.strictEqual(slug('foo-', identity), 'foo');
-    });
-
-    it('removes multiple trailing hyphens', () => {
-      assert.strictEqual(slug('foo--', identity), 'foo');
-    });
-  });
-
-  describe('consecutive hyphen replacement', () => {
-    it('replaces from start of string up to and including double-hyphen with a single hyphen', () => {
-      assert.strictEqual(slug('foo--bar', identity), '-bar');
-    });
-
-    it('does not fire on an all-hyphen string', () => {
-      assert.strictEqual(slug('---', identity), '---');
-    });
-
-    it('does not collapse leading double hyphen flags', () => {
-      assert.strictEqual(slug('--allow-fs-read', identity), '--allow-fs-read');
+  describe('legacy Node.js anchors', () => {
+    it('matches the anchors of the old doc tooling', () => {
+      assert.strictEqual(slug('`-c`, `--check`'), '-c---check');
+      assert.strictEqual(
+        slug('DEP0147: `fs.rmdir(path, { recursive: true })`'),
+        'dep0147-fsrmdirpath--recursive-true-'
+      );
+      assert.strictEqual(
+        slug('Stability & Deprecation'),
+        'stability--deprecation'
+      );
     });
   });
 
