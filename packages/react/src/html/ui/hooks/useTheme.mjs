@@ -34,6 +34,7 @@ export const useTheme = () => {
   useEffect(() => {
     const stored = localStorage.getItem('theme');
     if (stored === 'light' || stored === 'dark') {
+      // eslint-disable-next-line react-x/set-state-in-effect -- deliberate post-hydration state sync
       setPref(stored);
     }
   }, []);
