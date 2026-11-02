@@ -17,9 +17,11 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      codeql:
-        patterns:
-          - 'github/codeql-action/*'
+      # Fallback group for all minor/patch updates
+      actions:
+        update-types:
+          - patch
+          - minor
     open-pull-requests-limit: 10
 
   - package-ecosystem: npm
@@ -81,4 +83,15 @@ updates:
         patterns:
           - 'preact'
           - 'preact-*'
-    open-pull-requests-limit: 10
+      # Fallback groups for all other minor/patch updates
+      production:
+        dependency-type: production
+        update-types:
+          - patch
+          - minor
+      development:
+        dependency-type: development
+        update-types:
+          - patch
+          - minor
+    open-pull-requests-limit: 20

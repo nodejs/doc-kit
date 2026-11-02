@@ -282,6 +282,7 @@ directly and pass Vite's `UserConfig` to it:
 ```js
 // doc-kit.config.mjs
 import { createViteBundler } from '@doc-kit/generator-react/html/bundlers/vite';
+
 import myVitePlugin from './my-vite-plugin.mjs';
 
 export default {
@@ -310,10 +311,15 @@ export default {
 
 The generator owns the fields required to coordinate its builds: config-file
 loading, app type and base, virtual inputs, Preact compatibility aliases and
-automatic JSX runtime, the Lightning CSS transformer, output/write mode, SSR
-format and output, and SSR dependency bundling. Values supplied for those
-fields are replaced after configuration is merged. User plugins are registered
-after the generator's virtual-module plugin; other Vite options are preserved.
+automatic JSX runtime, the CSS transformer, output/write mode, SSR format and
+output, and SSR dependency bundling. Values supplied for those fields are
+replaced after configuration is merged. User plugins are registered after the
+generator's virtual-module plugin; other Vite options are preserved.
+
+CSS is transformed and minified by Lightning CSS. On platforms without its
+native bindings, such as ppc64 and s390x, Vite's PostCSS pipeline transforms
+the CSS instead and the output is not minified; `css.lightningcss` options have
+no effect there.
 
 Vite builds the client entry as a module, not the pages as HTML entries, so
 plugins see and can transform every module of the client and server builds but
@@ -438,7 +444,7 @@ import { project, repository, editURL } from '#theme/config';
 - `chunks` {Object} Per-module section pages produced by the
   [`section-pages`](./section-pages.md) generator, keyed by the module's path: each
   `{ label, items }`, where `items` is the module's section tree — `{ label,
-path, items? }` entries nested by heading depth, in document order. Empty
+  path, items? }` entries nested by heading depth, in document order. Empty
   unless `section-pages` ran.
 - `navigation` {Object} Mirrors the configured `navigation` (consumed by the
   built-in `SideBar` and `NavBar`).

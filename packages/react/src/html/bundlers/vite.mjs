@@ -137,6 +137,9 @@ export const createViteConfig = ({
   const root = resolve(vite.root ?? process.cwd());
   const conditions = server ? defaultServerConditions : defaultClientConditions;
 
+  // Lightning CSS publishes no native bindings for these platforms
+  const lightningcss = process.arch !== 'ppc64' && process.arch !== 's390x';
+
   return {
     ...vite,
 
@@ -193,14 +196,20 @@ export const createViteConfig = ({
     },
 
     // CSS imports, modules, URLs, splitting, and minification are all Vite
-    // responsibilities. Native Lightning CSS options remain configurable.
+    // responsibilities. Lightning CSS transforms the CSS, with its options
+    // configurable, on platforms that have its native bindings; elsewhere
+    // Vite's PostCSS pipeline transforms it instead.
     css: {
       ...vite.css,
-      transformer: 'lightningcss',
+      transformer: lightningcss ? 'lightningcss' : 'postcss',
     },
 
     build: {
       ...vite.build,
+
+      // Vite's only CSS minifier is Lightning CSS itself, so without its
+      // bindings the CSS is left as PostCSS produced it.
+      ...(lightningcss ? {} : { cssMinify: false }),
 
       // Both builds are complete Vite outputs. The server library goes to a
       // private directory; the client writes into the final site.

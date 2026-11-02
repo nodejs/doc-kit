@@ -1,7 +1,7 @@
 {
   "name": "@node-core/doc-kit",
   "type": "module",
-  "version": "2.0.6",
+  "version": "2.0.8",
   "description": "Node.js-specific generators for @doc-kit/core: api-links, addon-verify, and man-page",
   "repository": {
     "type": "git",
@@ -30,7 +30,7 @@
     "@doc-kit/generator-react": "workspace:*",
     "dedent": "^1.7.2",
     "estree-util-visit": "^2.0.0",
-    "unist-util-visit": "^5.1.0"
+    "unist-util-visit": "^5.2.0"
   },
   "devDependencies": {
     "unist-builder": "^4.0.0"

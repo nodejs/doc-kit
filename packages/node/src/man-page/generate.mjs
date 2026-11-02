@@ -43,10 +43,14 @@ export async function generate(input) {
     ({ heading }) => heading.data.slug === config.envVarsHeaderSlug
   );
 
-  // The first header that is <3 in depth after environmentStart
-  const environmentEnd = input.findIndex(
+  // The first header that is <3 in depth after environmentStart,
+  // or the end of the input when the section is the last one
+  const nextSectionStart = input.findIndex(
     ({ heading }, index) => heading.depth < 3 && index > environmentStart
   );
+
+  const environmentEnd =
+    nextSectionStart === -1 ? input.length : nextSectionStart;
 
   const output = {
     // Extract the CLI options.

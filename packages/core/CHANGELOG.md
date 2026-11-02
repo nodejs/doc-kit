@@ -1,5 +1,21 @@
 # @doc-kit/core
 
+## 1.3.1
+
+### Patch Changes
+
+- [#1187](https://github.com/nodejs/doc-kit/pull/1187) [`e49eb52`](https://github.com/nodejs/doc-kit/commit/e49eb52472dfc2707a5966ee25c4dc7201360850) Thanks [@dxnnystyles](https://github.com/dxnnystyles)! - Keep json-simple output generation from mutating shared metadata entries.
+
+- [#1179](https://github.com/nodejs/doc-kit/pull/1179) [`b8d7b77`](https://github.com/nodejs/doc-kit/commit/b8d7b7725f0dbe085d9f32af60fddd7459555af9) Thanks [@ovflowd](https://github.com/ovflowd)! - Builds use less memory, most of all with few threads: each worker's young generation is limited to 96MB, a single thread processes one chunk at a time and lets go of the pages' code before rendering them, and Vite's native bundler gets as many threads as doc-kit and returns the memory it frees. On the Node.js API docs, `--threads 1` now builds with Node.js's `--max-old-space-size=512`, and no longer crashes when `legacy-html` is built alongside other targets.
+
+- [#1180](https://github.com/nodejs/doc-kit/pull/1180) [`92efbbe`](https://github.com/nodejs/doc-kit/commit/92efbbeb727a38b178c9ccb63a3a4f9cfbc110a4) Thanks [@ovflowd](https://github.com/ovflowd)! - Find input files with Node.js's `fs.globSync` instead of `tinyglobby` and `glob-parent`.
+
+- [#1082](https://github.com/nodejs/doc-kit/pull/1082) [`9e21017`](https://github.com/nodejs/doc-kit/commit/9e21017d9597e3f8b5a18a41f3db8e5de216213a) Thanks [@btea](https://github.com/btea)! - Add a `doc-kit preview` command that serves the generated docs locally, building first when any `generate` option is passed. The default output directory (`./out`) is now defined in the shared configuration, so `generate` also writes there when no `--output` is given.
+
+- [#1193](https://github.com/nodejs/doc-kit/pull/1193) [`854a944`](https://github.com/nodejs/doc-kit/commit/854a944699b3a996cb3a8544deaec3fe916fd449) Thanks [@OKAN-SOFTWARE](https://github.com/OKAN-SOFTWARE)! - Keep worker results and discovered source files in deterministic order so repeated documentation builds produce stable output.
+
+- [#1178](https://github.com/nodejs/doc-kit/pull/1178) [`0321911`](https://github.com/nodejs/doc-kit/commit/03219116c78e7f4a721b4e39bc71ba54cb6f0ba8) Thanks [@ovflowd](https://github.com/ovflowd)! - Install fewer packages: `@doc-kit/core` updates `cosmiconfig` to v10 (TypeScript config files now load through Node's type stripping) and no longer installs `dedent`, and `@doc-kit/generator-react` estimates reading time with `Intl.Segmenter` instead of the `reading-time` package and updates `@node-core/ui-components` to 1.8.1, which no longer installs `@vcarl/remark-headings`.
+
 ## 1.3.0
 
 ### Minor Changes

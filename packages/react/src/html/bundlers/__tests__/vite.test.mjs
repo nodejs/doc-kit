@@ -108,6 +108,21 @@ describe('Vite configuration', () => {
     );
   });
 
+  it('transforms CSS with Lightning CSS where its bindings are native', () => {
+    const config = createViteConfig({
+      sources: new Map(),
+      input: {},
+      server: false,
+      outDir: output,
+      config: getConfig('html'),
+      vite: { css: { lightningcss: { targets: {} } } },
+    });
+
+    assert.strictEqual(config.css.transformer, 'lightningcss');
+    assert.deepStrictEqual(config.css.lightningcss, { targets: {} });
+    assert.strictEqual(config.build.cssMinify, undefined);
+  });
+
   it('keeps the server library self-contained', () => {
     const vite = {
       ssr: {
