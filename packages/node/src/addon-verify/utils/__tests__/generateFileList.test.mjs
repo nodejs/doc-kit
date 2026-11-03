@@ -26,7 +26,9 @@ describe('generateFileList', () => {
   it('should preserve original code indentation in test.js', () => {
     const originalCode =
       "const addon = require('./build/Release/addon');\n\nfunction test() {\n  if (true) {\n    return 42;\n  }\n}";
-    const result = generateFileList([{ name: 'test.js', content: originalCode }]);
+    const result = generateFileList([
+      { name: 'test.js', content: originalCode },
+    ]);
     const testFile = result.find(file => file.name === 'test.js');
 
     assert(testFile.content.includes('  if (true) {\n    return 42;\n  }'));
