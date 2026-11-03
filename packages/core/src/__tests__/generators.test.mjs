@@ -347,4 +347,27 @@ describe('createGenerator orchestration', () => {
     assert.deepStrictEqual(one, [{ array: true }]);
     assert.deepStrictEqual(two, [{ array: false }]);
   });
+
+  it('runs every generator but keeps no results with results: false', async () => {
+    const { runGenerators } = createGenerator();
+
+    const results = await runGenerators(
+      { target: ['gen-c', 'gen-c-all'], threads: 1 },
+      { results: false }
+    );
+
+    assert.equal(results, undefined);
+    assert.equal(runs['gen-c'], 1);
+    assert.equal(runs['gen-c-all'], 1);
+  });
+
+  it('rejects with a failure with results: false', async () => {
+    await assert.rejects(
+      createGenerator().runGenerators(
+        { target: ['failing-reader'], threads: 2 },
+        { results: false }
+      ),
+      /source failed/
+    );
+  });
 });

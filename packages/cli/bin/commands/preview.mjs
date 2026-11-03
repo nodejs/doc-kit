@@ -62,7 +62,7 @@ export default preview.action(
       const config = await setConfig(opts);
       assertRunnableOptions(config);
 
-      await runGenerators(config);
+      await runGenerators(config, { results: false });
 
       // With the default coming from the configuration, this is always set
       output = config.global.output;
