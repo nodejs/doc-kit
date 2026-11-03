@@ -11,6 +11,9 @@ export type Generator = GeneratorMetadata<
     generateNotFoundPage: boolean;
     showReadingTime: boolean;
   },
-  Generate<Array<MetadataEntry>, AsyncGenerator<PageCode>>,
+  Generate<
+    Array<MetadataEntry> | AsyncIterable<Array<MetadataEntry>>,
+    AsyncGenerator<Array<PageCode | { manifest: Array<MetadataEntry> }>>
+  >,
   ProcessChunk<{ head: MetadataEntry; entries: Array<MetadataEntry> }, PageCode>
 >;
