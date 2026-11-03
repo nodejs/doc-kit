@@ -29,6 +29,8 @@ export default {
 
   dependsOn: '@doc-kit/core/metadata',
 
+  streamsInput: true,
+
   dependent: [
     '@doc-kit/generator-react/html',
     '@doc-kit/generator-react/sitemap',

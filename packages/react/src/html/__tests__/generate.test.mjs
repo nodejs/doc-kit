@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
+import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
@@ -12,10 +13,28 @@ import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
-import { generate as chunk } from '../../section-pages/generate.mjs';
+import { generate as sectionPages } from '../../section-pages/generate.mjs';
 import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { FONTS } from '../constants.mjs';
 import { generate } from '../generate.mjs';
+
+/**
+ * Yields the given entries as one batch, as a dependency streaming them does.
+ *
+ * @param {Array<object>} entries
+ */
+async function* streamInOneBatch(entries) {
+  yield entries;
+}
+
+/**
+ * Runs `section-pages` over the given entries, streamed in as one batch, and
+ * collects its pages.
+ *
+ * @param {Array<object>} entries
+ */
+const chunk = entries =>
+  collectAsyncGenerator(sectionPages(streamInOneBatch(entries)));
 
 // Pages are rendered with the pipeline of `jsx-ast`
 await loadMarkdownPlugins(

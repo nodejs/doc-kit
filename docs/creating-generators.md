@@ -342,8 +342,10 @@ export default {
 ```
 
 - A dependency that doesn't stream arrives as a single chunk.
-- With one thread, `input` is still the collected array, so accept both.
+- With one thread, `input` is collected first and arrives as its only chunk.
 - `input` can be iterated only once.
+- `metadata`'s chunks hold whole files, and a file is one module, so a chunk
+  holds all the entries of each module in it.
 
 ## Declaring a dependent
 
