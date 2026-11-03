@@ -13,7 +13,6 @@ import { toBatches } from '@doc-kit/core/utils/generators.mjs';
 
 import { headingSortFn } from '../jsx-ast/utils/getSortedHeadNodes.mjs';
 import { resolveBundler } from './bundlers/index.mjs';
-import { buildAllPage, createAllPageHead, isModulePage } from './utils/all.mjs';
 import { copyStaticAssets } from './utils/copying.mjs';
 import createProgramBuilder, { moduleFileName } from './utils/generate.mjs';
 import { createPageWriter } from './utils/render.mjs';
@@ -28,8 +27,9 @@ const htmlLogger = logger.child('html');
  * page's program is compiled to a plain module as it arrives, the component
  * library and the client assets are bundled once every page's metadata is
  * known, and the worker pool renders the pages as they are compiled, one in
- * memory per worker. `all.html` imports the module pages' content, so it is
- * compiled once they all are. With one thread, the input arrives whole.
+ * memory per worker. A page made of other pages' content (with `parts`, which
+ * come before it) imports their compiled programs, and is rendered first. With
+ * one thread, the input arrives whole.
  *
  * @type {import('./types').Generator['generate']}
  */
@@ -138,7 +138,6 @@ const buildSite = async (input, options) => {
     const datas = [
       ...heads.filter(data => !data.synthetic).toSorted(headingSortFn),
       ...heads.filter(data => data.synthetic),
-      ...(config.generateAllPage ? [createAllPageHead()] : []),
     ];
 
     // An empty directory of its own: the compiled pages are already in `outDir`
@@ -191,23 +190,6 @@ const buildSite = async (input, options) => {
 
   const compiled = [];
 
-  let allWritten = !config.generateAllPage;
-
-  // The module pages `all.html` is made of that aren't compiled yet
-  let missingParts;
-
-  /**
-   * Compiles `all.html`, which imports the module pages' compiled programs,
-   * and has the worker pool render it first, as it takes by far the longest.
-   */
-  const writeAllPage = async () => {
-    const allTask = await compile(buildAllPage(compiled));
-
-    rendering.prepend([allTask]);
-
-    allWritten = true;
-  };
-
   // With one thread, pages are rendered on this thread once all are compiled,
   // so the manifest is kept until then
   let manifest;
@@ -232,31 +214,23 @@ const buildSite = async (input, options) => {
             manifest = item.manifest;
           }
 
-          missingParts = new Set(
-            item.manifest.filter(isModulePage).map(({ api }) => api)
-          );
-
-          for (const { data } of compiled) {
-            missingParts.delete(data.api);
-          }
-
           continue;
         }
 
         const task = await compile(item);
 
         compiled.push(task);
-        tasks.push(task);
 
-        missingParts?.delete(task.data.api);
+        // A page made of others' content takes by far the longest to render
+        if ('parts' in item) {
+          rendering.prepend([task]);
+        } else {
+          tasks.push(task);
+        }
       }
 
       if (tasks.length > 0) {
         rendering.push(tasks);
-      }
-
-      if (!allWritten && missingParts?.size === 0) {
-        await writeAllPage();
       }
     }
   };
@@ -273,10 +247,6 @@ const buildSite = async (input, options) => {
       startWriting(manifest ?? compiled.map(({ data }) => data));
 
       manifest = undefined;
-    }
-
-    if (!allWritten) {
-      await writeAllPage();
     }
 
     htmlLogger.debug(`Compiled ${compiled.length} page programs`);
