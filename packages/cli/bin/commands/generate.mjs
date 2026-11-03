@@ -64,6 +64,6 @@ export default generate.action(
     const config = await setConfig(opts);
     assertRunnableOptions(config);
 
-    await runGenerators(config);
+    await runGenerators(config, { results: false });
   })
 );
