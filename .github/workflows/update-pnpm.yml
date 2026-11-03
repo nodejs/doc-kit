@@ -12,6 +12,7 @@ permissions:
 jobs:
   pnpm-update:
     runs-on: ubuntu-latest
+    if: github.repository == 'nodejs/doc-kit'
 
     steps:
       - name: Harden Runner
