@@ -174,9 +174,6 @@ importers:
       '@doc-kit/core':
         specifier: workspace:*
         version: link:../core
-      dedent:
-        specifier: ^1.7.2
-        version: 1.7.2
       estree-util-visit:
         specifier: ^2.0.0
         version: 2.0.0
