@@ -1,5 +1,3 @@
-import dedent from 'dedent';
-
 /**
  * Updates JavaScript files with correct require paths for the build tree.
  *
@@ -7,13 +5,12 @@ import dedent from 'dedent';
  * @returns {string}
  */
 const updateJsRequirePaths = content => {
-  return dedent`
-    'use strict';
-    const common = require('../../common');
-    ${content.replace(
-      "'./build/Release/addon'",
-      '`./build/${common.buildType}/addon`'
-    )}`;
+  const updatedContent = content.replace(
+    "'./build/Release/addon'",
+    '`./build/${common.buildType}/addon`'
+  );
+
+  return `'use strict';\nconst common = require('../../common');\n${updatedContent}`;
 };
 
 /**
