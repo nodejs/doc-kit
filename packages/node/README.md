@@ -31,6 +31,7 @@ npm install --save-dev @doc-kit/generator-react
 | [`man-page`](https://doc-kit.nodejs.org/generators/man-page)         | `doc/api/cli.md`    | `node.1`, the `node` man page in mdoc format, with the options and environment variables that `cli.md` documents     |
 | [`api-links`](https://doc-kit.nodejs.org/generators/api-links)       | `lib/*.js`          | `apilinks.json`, which maps each API (such as `buffer.Buffer`) to the line on GitHub that defines it                 |
 | [`addon-verify`](https://doc-kit.nodejs.org/generators/addon-verify) | `doc/api/addons.md` | A folder per addon example (such as `02_function_arguments/`), with its C++ and JavaScript files and a `binding.gyp` |
+| [`html-all`](https://doc-kit.nodejs.org/generators/html-all)         | `doc/api/*.md`      | `all.html`, every module page's content on one page, which the `html` generator renders                              |
 
 ## Usage
 
