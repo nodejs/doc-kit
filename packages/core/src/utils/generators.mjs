@@ -2,6 +2,7 @@
 
 import { coerce, major } from 'semver';
 
+import { isAsyncIterable } from './misc.mjs';
 import { transformNodeToString } from './unist.mjs';
 
 /**
@@ -40,6 +41,22 @@ export const getEntryDescription = entry => {
  */
 export const groupNodesByModule = nodes => {
   return Map.groupBy(nodes, node => node.api);
+};
+
+/**
+ * Gives a generator's input as batches: as they arrive if it streams, or as a
+ * single batch if it arrives whole, as it does with one thread.
+ *
+ * @template T
+ * @param {Array<T> | AsyncIterable<Array<T>>} input
+ * @returns {Array<Array<T>> | AsyncIterable<Array<T>>}
+ */
+export const toBatches = input => {
+  if (isAsyncIterable(input)) {
+    return input;
+  }
+
+  return [input];
 };
 
 /**

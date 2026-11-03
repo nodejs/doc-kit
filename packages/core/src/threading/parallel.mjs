@@ -1,6 +1,10 @@
 'use strict';
 
 import logger from '#logger/index.mjs';
+import { toBatches } from '#utils/generators.mjs';
+import { createSignal, isAsyncIterable } from '#utils/misc.mjs';
+
+import { CHUNKS_PER_THREAD } from './constants.mjs';
 
 const parallelLogger = logger.child('parallel');
 
@@ -71,7 +75,8 @@ export default function createParallelWorker(
   pool,
   configuration
 ) {
-  const { threads, chunkSize } = configuration;
+  const { threads: defaultThreads = 1, chunkSize } = configuration;
+  const threads = Math.max(Number(defaultThreads), 1);
 
   const { name } = generator;
 
@@ -79,54 +84,171 @@ export default function createParallelWorker(
     /**
      * Processes items in parallel, yielding results in submission order.
      *
+     * The items can also arrive in batches, as a dependency streams them: each
+     * batch's chunks start as soon as it arrives, while earlier ones still run.
+     *
      * @template T
-     * @param {T[]} items - Items to process
+     * @param {T[] | AsyncIterable<T[]>} items - Items to process
      * @param {object} extra - Extra options
      * @yields {R[]} Chunk results in input order
      */
     async *stream(items, extra) {
-      if (items.length === 0) {
+      const streamed = isAsyncIterable(items);
+
+      if (!streamed && items.length === 0) {
         return;
       }
 
-      const chunks = createChunks(items.length, chunkSize);
+      const batches = toBatches(items);
 
-      parallelLogger.debug(
-        `Distributing ${items.length} items across ${chunks.length} chunks`,
-        { generator: name, chunks: chunks.length, chunkSize, threads }
-      );
+      /**
+       * Splits a batch into chunks.
+       *
+       * @param {T[]} batch - Items to split
+       * @returns {number[][]} Each chunk's indices into the batch
+       */
+      const distribute = batch => {
+        const chunks = createChunks(batch.length, chunkSize);
+
+        parallelLogger.debug(
+          `Distributing ${batch.length} items across ${chunks.length} chunks`,
+          { generator: name, chunks: chunks.length, chunkSize, threads }
+        );
+
+        return chunks;
+      };
 
       // On this thread, one chunk at a time, so their work isn't all held at once
-      if (threads <= 1 || items.length <= 2) {
-        for (const indices of chunks) {
-          yield await generator.processChunk(items, indices, extra);
+      if (threads <= 1 || (!streamed && items.length <= 2)) {
+        for await (const batch of batches) {
+          for (const indices of distribute(batch)) {
+            const result = await generator.processChunk(batch, indices, extra);
+
+            yield result;
+          }
         }
 
         return;
       }
 
-      // Start every chunk immediately, but emit results in submission order.
-      // Handle errors as each task settles so a later failure cannot become an
-      // unhandled rejection while earlier chunks are still running.
-      const tasks = chunks.map(indices => {
-        const task = pool.run(
-          createTask(items, indices, extra, configuration, specifier, name)
-        );
+      // Read every batch as it arrives, but start only a few chunks per thread
+      // at a time, so that generators running at once share the pool instead
+      // of one's chunks waiting behind all of another's. Emit results in
+      // submission order. Handle errors as each task settles so a later failure
+      // cannot become an unhandled rejection while earlier chunks are still
+      // running.
+      const tasks = [];
+      const waiting = [];
+      const limit = threads * CHUNKS_PER_THREAD;
 
-        return task.then(
-          result => ({ result }),
-          error => ({ error })
-        );
-      });
+      let running = 0;
+      let started = 0;
+      let doneReading = false;
 
-      for (const [index, task] of tasks.entries()) {
-        const outcome = await task;
+      // Notified as chunks start, and once every batch is read
+      const changed = createSignal();
+
+      /**
+       * Settles a chunk's task, making room for the next one.
+       *
+       * @param {{ result: unknown } | { error: unknown }} outcome - The task's
+       * result or error
+       * @returns {{ result: unknown } | { error: unknown }} The same outcome
+       */
+      const settle = outcome => {
+        running--;
+        start();
+
+        return outcome;
+      };
+
+      /**
+       * Starts the waiting chunks there is room for.
+       */
+      const start = () => {
+        while (running < limit && started < waiting.length) {
+          const { batch, indices } = waiting[started];
+
+          // A started chunk no longer needs to hold its batch here
+          waiting[started++] = undefined;
+          running++;
+
+          const task = pool.run(
+            createTask(batch, indices, extra, configuration, specifier, name)
+          );
+
+          tasks.push(
+            task.then(
+              result => settle({ result }),
+              error => settle({ error })
+            )
+          );
+        }
+
+        changed.notify();
+      };
+
+      /**
+       * Queues every chunk of a batch, and starts those there is room for.
+       *
+       * @param {T[]} batch - Items to queue
+       */
+      const add = batch => {
+        for (const indices of distribute(batch)) {
+          waiting.push({ batch, indices });
+        }
+
+        start();
+      };
+
+      /**
+       * Queues every batch as it arrives: an array's at once, so its first
+       * chunks start right away.
+       */
+      const readBatches = async () => {
+        try {
+          if (!streamed) {
+            add(items);
+
+            return;
+          }
+
+          for await (const batch of items) {
+            add(batch);
+          }
+        } finally {
+          doneReading = true;
+          changed.notify();
+        }
+      };
+
+      const reading = readBatches();
+
+      // A failure reading the batches is thrown below, once every chunk
+      // submitted before it has been emitted
+      reading.catch(() => {});
+
+      for (let index = 0; ; index++) {
+        while (index >= tasks.length) {
+          if (doneReading && started === waiting.length) {
+            await reading;
+
+            return;
+          }
+
+          await changed.wait();
+        }
+
+        const outcome = await tasks[index];
+
+        // Emitted chunks are the consumer's to keep or let go
+        tasks[index] = undefined;
 
         if ('error' in outcome) {
           throw outcome.error;
         }
 
-        parallelLogger.debug(`Chunk ${index + 1}/${chunks.length} completed`, {
+        parallelLogger.debug(`Chunk ${index + 1}/${waiting.length} completed`, {
           generator: name,
         });
 

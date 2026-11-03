@@ -7,6 +7,7 @@ import {
   getVersionFromSemVer,
   coerceSemVer,
   getCompatibleVersions,
+  toBatches,
 } from '../generators.mjs';
 
 describe('getEntryDescription', () => {
@@ -136,5 +137,18 @@ describe('getCompatibleVersions', () => {
 
     const result = getCompatibleVersions('14.0.0', releases);
     assert.equal(result.length, 2);
+  });
+});
+
+describe('toBatches', () => {
+  it('gives an array as a single batch, and batches as they are', async () => {
+    async function* batches() {
+      yield [1];
+    }
+
+    const streamed = batches();
+
+    assert.deepEqual(toBatches([1, 2]), [[1, 2]]);
+    assert.equal(toBatches(streamed), streamed);
   });
 });

@@ -32,6 +32,10 @@ export default function createWorkerPool(threads) {
       maxYoungGenerationSizeMb: WORKER_GEN_SIZE,
     },
     recordTiming: false,
+    // A task taken from the queue that no worker can run yet goes back to the
+    // front, not the back, so tasks start in the order they were submitted
+    // and results, yielded in that order, are not held up
+    stricterFIFO: true,
     workerData: { logLevel: logger.getLogLevel() },
   });
 }
