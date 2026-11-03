@@ -20,6 +20,29 @@ import { FONTS } from '../constants.mjs';
 import { generate as generatePages } from '../generate.mjs';
 import { processChunk } from '../utils/render.mjs';
 
+/**
+ * A page made of the given pages' content, in that order, as Node.js's
+ * `html-all` generator gives `all.html`.
+ *
+ * @param {Array<{ data: { api: string }, headings: Array<object> }>} pages
+ */
+const createAllPage = pages => ({
+  data: {
+    api: 'all',
+    path: '/all',
+    basename: 'all',
+    synthetic: true,
+    heading: {
+      type: 'heading',
+      depth: 1,
+      children: [{ type: 'text', value: 'All' }],
+      data: { name: 'All', text: 'All', slug: 'all' },
+    },
+  },
+  headings: pages.flatMap(({ headings }) => headings),
+  parts: pages.map(({ data }) => data.api),
+});
+
 // With one thread, the pages arrive as one batch
 const generate = pages => generatePages([pages]);
 
@@ -81,9 +104,6 @@ const createTestConfiguration = async (context, target = ['html']) => {
       html: {},
     },
   });
-
-  // The pages under test are the module pages themselves
-  config.html.generateAllPage = false;
 
   return { config, output };
 };
@@ -187,9 +207,8 @@ describe('web generate', () => {
     }
   });
 
-  it('assembles all.html from the module pages, in sidebar order', async context => {
-    const { config, output } = await createTestConfiguration(context);
-    config.html.generateAllPage = true;
+  it('assembles a page made of other pages from their content', async context => {
+    const { output } = await createTestConfiguration(context);
 
     const entries = [
       createEntry('zlib', 'Zlib'),
@@ -197,21 +216,55 @@ describe('web generate', () => {
       createEntry('index', 'Index'),
     ];
 
-    await generate(
-      await Promise.all(
-        entries.map(entry => buildContent([entry], entry))
-      ).then(contents => contents.map(toPage))
+    const contents = await Promise.all(
+      entries.map(entry => buildContent([entry], entry))
     );
+
+    const [zlib, fs, index] = contents.map(toPage);
+
+    await generate([zlib, fs, index, createAllPage([fs, zlib])]);
 
     const html = await readFile(join(output, 'all.html'), 'utf8');
 
     assert.match(html, /<title>All \|/);
-    // Both modules' content, file system first, the index left out
+    // Its parts' content, in its order, and nothing else
     assert.match(html, /File system body[\s\S]*Zlib body/);
     assert.doesNotMatch(html, /Index body/);
     // Their tables of contents, concatenated
     assert.match(html, /href="#fs"[\s\S]*href="#zlib"/);
     assert.doesNotMatch(html, /View As/);
+  });
+
+  it('numbers the ids of a page made of others across its parts', async context => {
+    const { output } = await createTestConfiguration(context);
+
+    // Each module has code tabs, whose elements take ids
+    const entries = ['zlib', 'fs'].map(api => {
+      const entry = createEntry(api, api);
+
+      entry.content.children.push(
+        { type: 'code', lang: 'mjs', value: `import ${api};` },
+        { type: 'code', lang: 'cjs', value: `require('${api}');` }
+      );
+
+      return entry;
+    });
+
+    const contents = await Promise.all(
+      entries.map(entry => buildContent([entry], entry))
+    );
+
+    const pages = contents.map(toPage);
+
+    await generate([...pages, createAllPage(pages)]);
+
+    const html = await readFile(join(output, 'all.html'), 'utf8');
+    const ids = [...html.matchAll(/ id="([^"]*P0-\d+[^"]*)"/g)].map(
+      ([, id]) => id
+    );
+
+    assert.ok(ids.length >= 4);
+    assert.equal(new Set(ids).size, ids.length);
   });
 
   it('renders chunk pages with navigation back to their module', async context => {
@@ -450,6 +503,7 @@ describe('web generate', () => {
     let zlib;
     let fs;
     let index;
+    let all;
     let manifest;
 
     before(async () => {
@@ -458,11 +512,12 @@ describe('web generate', () => {
       zlib = await createPage('zlib', 'Zlib');
       fs = await createPage('fs', 'File system');
       index = await createPage('index', 'Index');
-      manifest = [zlib, fs, index].map(({ data }) => data);
+      all = createAllPage([fs, zlib]);
+      manifest = [zlib, fs, index, all].map(({ data }) => data);
     });
 
     it(
-      'bundles once the manifest arrives, and compiles all.html once its parts are',
+      'bundles once the manifest arrives, and compiles each page as it arrives',
       // The input waits for the bundles
       { timeout: 10_000 },
       async context => {
@@ -471,7 +526,6 @@ describe('web generate', () => {
         const bundled = Promise.withResolvers();
 
         config.threads = 2;
-        config.html.generateAllPage = true;
         config.html.bundler = createRecordingBundler(calls, { bundled });
 
         async function* input() {
@@ -480,7 +534,7 @@ describe('web generate', () => {
 
           await bundled.promise;
 
-          yield [fs];
+          yield [fs, all];
           yield [index];
         }
 
@@ -502,7 +556,6 @@ describe('web generate', () => {
         const { config, output } = await createTestConfiguration(context);
 
         config.threads = threads;
-        config.html.generateAllPage = true;
         config.html.bundler = createRecordingBundler([]);
 
         await generatePages(input);
@@ -513,12 +566,12 @@ describe('web generate', () => {
       async function* batches() {
         yield [zlib];
         yield [{ manifest }];
-        yield [fs];
+        yield [fs, all];
         yield [index];
       }
 
       const streamed = await build(2, batches());
-      const whole = await build(1, [[zlib, fs, { manifest }, index]]);
+      const whole = await build(1, [[zlib, fs, all, { manifest }, index]]);
 
       assert.deepStrictEqual(Object.keys(whole), [
         'all.html',
