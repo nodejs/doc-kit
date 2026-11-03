@@ -118,7 +118,7 @@ export default () => {
    * `content` of the pages it is made of, so their JSX is never rebuilt.
    *
    * @param {import('../types').Page} page
-   * @param {string} libraryURL - Where the built component library was written.
+   * @param {string} libraryURL - The `file:` URL the page imports the component library from.
    * @returns {string} The program, as JSX.
    */
   const buildPageProgram = (page, libraryURL) => {
