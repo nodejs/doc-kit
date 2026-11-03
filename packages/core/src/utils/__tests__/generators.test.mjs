@@ -4,9 +4,11 @@ import { describe, it } from 'node:test';
 import {
   getEntryDescription,
   groupNodesByModule,
+  groupWholeModules,
   getVersionFromSemVer,
   coerceSemVer,
   getCompatibleVersions,
+  toBatches,
 } from '../generators.mjs';
 
 describe('getEntryDescription', () => {
@@ -86,6 +88,97 @@ describe('groupNodesByModule', () => {
   });
 });
 
+describe('groupWholeModules', () => {
+  /**
+   * Collects the batches regrouped from the given input, each entry as its
+   * module and number.
+   *
+   * @param {Array<{ api: string }> | AsyncIterable<Array<{ api: string }>>} input
+   * @returns {Promise<string[][]>}
+   */
+  const collect = async input => {
+    const output = [];
+
+    for await (const batch of groupWholeModules(input)) {
+      output.push(batch.map(({ api, n }) => `${api}${n}`));
+    }
+
+    return output;
+  };
+
+  /**
+   * Regroups the given batches, streamed in, and collects the batches it
+   * yields.
+   *
+   * @param {Array<Array<{ api: string }>>} batches
+   * @returns {Promise<string[][]>}
+   */
+  const regroup = batches => {
+    async function* input() {
+      yield* batches;
+    }
+
+    return collect(input());
+  };
+
+  /**
+   * An entry of a module, told apart from the module's others by its number.
+   *
+   * @param {string} api
+   * @param {number} n
+   * @returns {{ api: string, n: number }}
+   */
+  const entry = (api, n) => ({ api, n });
+
+  it('passes the entries on in the same order, each batch ending once its last module is whole', async () => {
+    const output = await regroup([
+      [entry('a', 1), entry('a', 2), entry('b', 1)],
+      [entry('c', 1)],
+    ]);
+
+    assert.deepEqual(output, [['a1', 'a2'], ['b1'], ['c1']]);
+  });
+
+  it('holds back a module that continues in the next batch', async () => {
+    const output = await regroup([
+      [entry('a', 1), entry('b', 1)],
+      [entry('b', 2), entry('b', 3)],
+      [entry('b', 4), entry('c', 1)],
+    ]);
+
+    assert.deepEqual(output, [['a1'], ['b1', 'b2', 'b3', 'b4'], ['c1']]);
+  });
+
+  it('skips empty batches', async () => {
+    const output = await regroup([[], [entry('a', 1)], []]);
+
+    assert.deepEqual(output, [['a1']]);
+  });
+
+  it('takes entries given as one array as a single batch', async () => {
+    const output = await collect([entry('a', 1), entry('a', 2), entry('b', 1)]);
+
+    assert.deepEqual(output, [['a1', 'a2'], ['b1']]);
+  });
+
+  it('rejects a module whose entries arrive apart', async () => {
+    await assert.rejects(
+      regroup([
+        [entry('a', 1), entry('b', 1)],
+        [entry('c', 1), entry('a', 2)],
+      ]),
+      /"a" arrived apart/
+    );
+  });
+
+  it('rejects a module whose entries arrive apart in one batch too', async () => {
+    await assert.rejects(
+      regroup([[entry('a', 1), entry('b', 1), entry('a', 2)]]),
+      /"a" arrived apart/
+    );
+  });
+});
+
 describe('getVersionFromSemVer', () => {
   it('returns major.x for minor 0', () => {
     const version = { major: 18, minor: 0, patch: 0 };
@@ -136,5 +229,18 @@ describe('getCompatibleVersions', () => {
 
     const result = getCompatibleVersions('14.0.0', releases);
     assert.equal(result.length, 2);
+  });
+});
+
+describe('toBatches', () => {
+  it('gives an array as a single batch, and batches as they are', async () => {
+    async function* batches() {
+      yield [1];
+    }
+
+    const streamed = batches();
+
+    assert.deepEqual(toBatches([1, 2]), [[1, 2]]);
+    assert.equal(toBatches(streamed), streamed);
   });
 });

@@ -16,6 +16,8 @@ export default {
 
   hasParallelProcessor: true,
 
+  streamsInput: true,
+
   markdown: {
     remarkPlugins: [
       'remark-parse',

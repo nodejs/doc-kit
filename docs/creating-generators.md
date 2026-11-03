@@ -359,6 +359,9 @@ export default {
 - A dependency that does not stream arrives as a single chunk.
 - With one thread, `input` is still the collected array, so accept both.
 - `input` can be iterated only once.
+- `metadata`'s chunks hold whole files, but chunks need not hold whole modules:
+  to get all of a module's entries at once, regroup them with
+  `groupWholeModules` from `@doc-kit/core/utils/generators.mjs`.
 
 ### Non-Streaming Generators
 
