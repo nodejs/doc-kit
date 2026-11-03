@@ -12,6 +12,8 @@ import { importFromURL } from '#utils/loaders.mjs';
 import { getMarkdownPlugins } from '#utils/markdown/plugins.mjs';
 import { lazy } from '#utils/misc.mjs';
 
+import { DEFAULT_ALIASES, FALLBACK_LANGUAGE } from './constants.mjs';
+
 const require = createRequire(import.meta.url);
 
 /**
@@ -25,7 +27,7 @@ const require = createRequire(import.meta.url);
  *
  * @typedef {Object} SyntaxHighlighter
  * @property {import('shiki').HighlighterCore} shiki - The Shiki instance
- * @property {(languageId?: string) => string} resolveLanguage - Resolves a language, falling back to plain text for unknown ones
+ * @property {(languageId?: string) => string} resolveLanguage - Resolves the language code is highlighted as, falling back to plain text for unknown ones
  * @property {(code: string, lang: string, meta?: Record<string, unknown>) => string} highlightToHtml - Highlights code, returning the inner HTML of its `<code>` element
  * @property {(code: string, lang: string, meta?: Record<string, unknown>) => ReturnType<import('shiki').HighlighterCore['codeToHast']>} highlightToHast - Highlights code, returning a HAST tree
  * @property {Array<Language>} langs - The languages it highlights
@@ -63,9 +65,6 @@ let engine;
 
 // The highlighters of the options given, by their JSON
 const highlighters = new Map();
-
-// What code in an unknown language is highlighted as
-const FALLBACK_LANGUAGE = 'text';
 
 // The languages Shiki bundles. Registering a grammar takes time and memory,
 // and slows down every highlight after it, so each one is only imported and
@@ -220,9 +219,11 @@ const importHighlighter = async ({
     engine: regexEngine,
     // The bundled languages are registered as code uses them
     langs: withEmbeddedLanguages(importedLangs),
-    // A copy, as Shiki adds the aliases of the languages it registers to it
-    langAlias: { ...langAlias },
   };
+
+  // Resolved here, as Shiki replaces an alias with a grammar's own as it
+  // registers
+  const aliases = new Map(Object.entries(langAlias));
 
   // Without themes of its own, the highlighter has a default light and dark one
   if (themes) {
@@ -256,8 +257,9 @@ const importHighlighter = async ({
   });
 
   /**
-   * Resolves a language, falling back to plain text for unknown ones. A
-   * bundled language is registered the first time it's resolved.
+   * Resolves the language code is highlighted as, through the aliases, falling
+   * back to plain text for unknown ones. A bundled language is registered the
+   * first time it's resolved.
    *
    * @param {string} [languageId]
    * @returns {string}
@@ -267,12 +269,31 @@ const importHighlighter = async ({
       return FALLBACK_LANGUAGE;
     }
 
-    const instance = load().shiki;
-    const name = instance.resolveLangAlias(languageId.toLowerCase());
+    const followed = new Set();
 
-    if (isSpecialLang(name) || instance.getLoadedLanguages().includes(name)) {
-      return languageId;
+    let language = languageId;
+
+    // Each configured alias once, so circular ones end
+    while (aliases.has(language.toLowerCase()) && !followed.has(language)) {
+      followed.add(language);
+      language = aliases.get(language.toLowerCase());
     }
+
+    if (followed.size === 0) {
+      language = DEFAULT_ALIASES.get(language.toLowerCase()) ?? language;
+    }
+
+    const instance = load().shiki;
+    const loaded = instance.getLoadedLanguages();
+
+    // Shiki has bundled languages' names and aliases in lowercase
+    for (const name of [language, language.toLowerCase()]) {
+      if (isSpecialLang(name) || loaded.includes(name)) {
+        return name;
+      }
+    }
+
+    const name = language.toLowerCase();
 
     if (!BUNDLED_NAMES.has(name)) {
       return FALLBACK_LANGUAGE;
@@ -280,7 +301,7 @@ const importHighlighter = async ({
 
     instance.loadLanguageSync(importBundledLanguage(name));
 
-    return languageId;
+    return name;
   };
 
   /**
