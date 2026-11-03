@@ -13,11 +13,12 @@ import { processChunk } from './utils/render.mjs';
  * - Client-side JavaScript with code splitting
  * - Bundled CSS styles
  *
- * The configured bundler builds the component library and the client assets
- * once each; the pages are then compiled, rendered, templated, minified and
- * written one at a time by the worker pool, so memory scales with the largest
- * page rather than with the site. `all.html` is assembled from the module
- * pages' compiled content instead of being built again from scratch.
+ * Each page is compiled as `jsx-ast` builds it. Once every page's metadata is
+ * known, the configured bundler builds the component library and the client
+ * assets once each, and the worker pool renders, templates, minifies and writes
+ * the pages one at a time as they are compiled, so memory scales with the
+ * largest page rather than with the site. `all.html` is assembled from the
+ * module pages' compiled content instead of being built again from scratch.
  *
  * This terminal generator writes to the output directory and does not return
  * an in-memory copy.
@@ -30,6 +31,8 @@ export default {
   description: 'Generates HTML/CSS/JS bundles from JSX AST entries',
 
   dependsOn: '@doc-kit/generator-react/jsx-ast',
+
+  streamsInput: true,
 
   /**
    * @param {import('@doc-kit/core/utils/configuration/types').Configuration} config
