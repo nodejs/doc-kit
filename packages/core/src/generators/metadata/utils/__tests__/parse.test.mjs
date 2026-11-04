@@ -367,6 +367,8 @@ describe('parseApiDoc', () => {
 
       assert.strictEqual(entry.content.children.length, 3);
       assert.deepStrictEqual(positioned, []);
+      assert.ok(!('position' in entry.heading));
+      assert.ok(entry.stability && !('position' in entry.stability));
     });
   });
 });
