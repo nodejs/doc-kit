@@ -50,9 +50,10 @@ export async function processChunk(slicedInput, itemIndices) {
  * is emitted once built, in the order the pages arrived, the synthetic pages
  * last: the `html` generator puts them in the order the site lists them.
  *
- * Once every page has arrived, without waiting for the pages still being
- * built, it also emits `{ manifest }`: every page's head, in that same order,
- * so that `html` can prepare what needs the whole site in the meantime.
+ * Once every page has arrived, which `worker.stream` reads as it has room for
+ * their chunks, it also emits `{ manifest }`, without waiting for the pages
+ * still being built: every page's head, in that same order, so that `html` can
+ * prepare what needs the whole site in the meantime.
  *
  * @type {import('./types').Generator['generate']}
  */
