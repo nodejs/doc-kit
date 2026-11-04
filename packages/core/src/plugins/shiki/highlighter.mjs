@@ -222,8 +222,10 @@ const importHighlighter = async ({
   };
 
   // Resolved here, as Shiki replaces an alias with a grammar's own as it
-  // registers
-  const aliases = new Map(Object.entries(langAlias));
+  // registers. Keyed in lowercase, as they're matched in any case
+  const aliases = new Map(
+    Object.entries(langAlias).map(([from, to]) => [from.toLowerCase(), to])
+  );
 
   // Without themes of its own, the highlighter has a default light and dark one
   if (themes) {

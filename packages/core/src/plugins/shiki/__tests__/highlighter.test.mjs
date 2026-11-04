@@ -92,6 +92,8 @@ describe('createHighlighter', () => {
     });
     const loaded = () => highlighter.shiki.getLoadedLanguages();
 
+    // Rust stands for any bundled language nothing aliases: JavaScript's
+    // aliases now lead to TypeScript
     assert.ok(!loaded().includes('python'));
     assert.ok(!loaded().includes('rust'));
 
@@ -148,6 +150,7 @@ describe('createHighlighter', () => {
         pool: 'loop',
         oc: 'OxcConf',
         conf: 'INI',
+        MyConf: 'ini',
       },
     });
 
@@ -156,6 +159,8 @@ describe('createHighlighter', () => {
     assert.equal(highlighter.resolveLanguage('Python'), 'python');
     assert.equal(highlighter.resolveLanguage('oc'), 'OxcConf');
     assert.equal(highlighter.resolveLanguage('conf'), 'ini');
+    assert.equal(highlighter.resolveLanguage('myconf'), 'ini');
+    assert.equal(highlighter.resolveLanguage('MYCONF'), 'ini');
     assert.equal(
       highlighter.highlightToHtml('[section]', 'conf'),
       highlighter.highlightToHtml('[section]', 'ini')
