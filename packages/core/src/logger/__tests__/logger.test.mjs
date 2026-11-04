@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import { LogLevel } from '../constants.mjs';
@@ -30,16 +30,13 @@ describe('createLogger', () => {
 
       strictEqual(transport.mock.callCount(), 1);
 
-      const call = transport.mock.calls[0];
-      deepStrictEqual(call.arguments, [
-        {
-          level: LogLevel.debug,
-          message: 'Hello, World!',
-          metadata,
-          module: undefined,
-          timestamp: 0,
-        },
-      ]);
+      t.assert.nthCalledWith(transport, 1, {
+        level: LogLevel.debug,
+        message: 'Hello, World!',
+        metadata,
+        module: undefined,
+        timestamp: 0,
+      });
     });
 
     it('should filter DEBUG messages when logger level is set to INFO or higher', t => {
@@ -69,16 +66,13 @@ describe('createLogger', () => {
 
         strictEqual(transport.mock.callCount(), 1);
 
-        const call = transport.mock.calls[0];
-        deepStrictEqual(call.arguments, [
-          {
-            level: LogLevel.info,
-            message: 'Hello, World!',
-            metadata,
-            module: undefined,
-            timestamp: 0,
-          },
-        ]);
+        t.assert.nthCalledWith(transport, 1, {
+          level: LogLevel.info,
+          message: 'Hello, World!',
+          metadata,
+          module: undefined,
+          timestamp: 0,
+        });
       });
     });
 
@@ -108,16 +102,13 @@ describe('createLogger', () => {
 
         strictEqual(transport.mock.callCount(), 1);
 
-        const call = transport.mock.calls[0];
-        deepStrictEqual(call.arguments, [
-          {
-            level: LogLevel.warn,
-            message: 'Hello, World!',
-            metadata,
-            module: undefined,
-            timestamp: 0,
-          },
-        ]);
+        t.assert.nthCalledWith(transport, 1, {
+          level: LogLevel.warn,
+          message: 'Hello, World!',
+          metadata,
+          module: undefined,
+          timestamp: 0,
+        });
       });
     });
 
@@ -148,16 +139,13 @@ describe('createLogger', () => {
 
           strictEqual(transport.mock.callCount(), 1);
 
-          const call = transport.mock.calls[0];
-          deepStrictEqual(call.arguments, [
-            {
-              level: LogLevel.error,
-              message: 'Hello, World!',
-              metadata,
-              module: undefined,
-              timestamp: 0,
-            },
-          ]);
+          t.assert.nthCalledWith(transport, 1, {
+            level: LogLevel.error,
+            message: 'Hello, World!',
+            metadata,
+            module: undefined,
+            timestamp: 0,
+          });
         }
       );
     });
@@ -208,18 +196,15 @@ describe('createLogger', () => {
 
     strictEqual(transport.mock.callCount(), 1);
 
-    const call = transport.mock.calls[0];
-    deepStrictEqual(call.arguments, [
-      {
-        level: LogLevel.error,
-        message: 'Hello, World!',
-        metadata: {
-          stack: error.stack,
-        },
-        module: undefined,
-        timestamp: 0,
+    t.assert.nthCalledWith(transport, 1, {
+      level: LogLevel.error,
+      message: 'Hello, World!',
+      metadata: {
+        stack: error.stack,
       },
-    ]);
+      module: undefined,
+      timestamp: 0,
+    });
   });
 
   describe('setLogLevel', () => {
