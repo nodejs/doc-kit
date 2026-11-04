@@ -1,8 +1,7 @@
 'use strict';
 
 import logger from '#logger/index.mjs';
-import { toBatches } from '#utils/generators.mjs';
-import { createSignal, isAsyncIterable } from '#utils/misc.mjs';
+import { isAsyncIterable } from '#utils/misc.mjs';
 
 import { CHUNKS_PER_THREAD } from './constants.mjs';
 
@@ -99,7 +98,7 @@ export default function createParallelWorker(
         return;
       }
 
-      const batches = toBatches(items);
+      const batches = streamed ? items : [items];
 
       /**
        * Splits a batch into chunks.
@@ -138,39 +137,32 @@ export default function createParallelWorker(
       // cannot become an unhandled rejection while earlier chunks are still
       // running.
       const tasks = [];
-      const waiting = [];
       const limit = threads * CHUNKS_PER_THREAD;
 
       let running = 0;
-      let started = 0;
       let doneReading = false;
 
-      // Notified as chunks start, and once every batch is read
-      const changed = createSignal();
+      // Resolved when a running chunk settles, while the reader waits for room
+      let room;
+
+      // Resolved when a chunk starts or the reading ends, while the consumer
+      // waits for one
+      let added;
 
       /**
-       * Settles a chunk's task, making room for the next one.
+       * Starts a batch's chunks, waiting for room whenever the limit is
+       * reached: an array's first chunks start right away.
        *
-       * @param {{ result: unknown } | { error: unknown }} outcome - The task's
-       * result or error
-       * @returns {{ result: unknown } | { error: unknown }} The same outcome
+       * @param {T[]} batch - Items to start
        */
-      const settle = outcome => {
-        running--;
-        start();
+      const enqueue = async batch => {
+        for (const indices of distribute(batch)) {
+          while (running >= limit) {
+            room = Promise.withResolvers();
 
-        return outcome;
-      };
+            await room.promise;
+          }
 
-      /**
-       * Starts the waiting chunks there is room for.
-       */
-      const start = () => {
-        while (running < limit && started < waiting.length) {
-          const { batch, indices } = waiting[started];
-
-          // A started chunk no longer needs to hold its batch here
-          waiting[started++] = undefined;
           running++;
 
           const task = pool.run(
@@ -178,47 +170,38 @@ export default function createParallelWorker(
           );
 
           tasks.push(
-            task.then(
-              result => settle({ result }),
-              error => settle({ error })
-            )
+            task
+              .then(
+                result => ({ result }),
+                error => ({ error })
+              )
+              .finally(() => {
+                running--;
+                room?.resolve();
+              })
           );
-        }
 
-        changed.notify();
+          added?.resolve();
+        }
       };
 
       /**
-       * Queues every chunk of a batch, and starts those there is room for.
-       *
-       * @param {T[]} batch - Items to queue
-       */
-      const add = batch => {
-        for (const indices of distribute(batch)) {
-          waiting.push({ batch, indices });
-        }
-
-        start();
-      };
-
-      /**
-       * Queues every batch as it arrives: an array's at once, so its first
-       * chunks start right away.
+       * Starts every batch's chunks as it arrives.
        */
       const readBatches = async () => {
         try {
           if (!streamed) {
-            add(items);
+            await enqueue(items);
 
             return;
           }
 
           for await (const batch of items) {
-            add(batch);
+            await enqueue(batch);
           }
         } finally {
           doneReading = true;
-          changed.notify();
+          added?.resolve();
         }
       };
 
@@ -230,13 +213,15 @@ export default function createParallelWorker(
 
       for (let index = 0; ; index++) {
         while (index >= tasks.length) {
-          if (doneReading && started === waiting.length) {
+          if (doneReading) {
             await reading;
 
             return;
           }
 
-          await changed.wait();
+          added = Promise.withResolvers();
+
+          await added.promise;
         }
 
         const outcome = await tasks[index];
@@ -248,7 +233,7 @@ export default function createParallelWorker(
           throw outcome.error;
         }
 
-        parallelLogger.debug(`Chunk ${index + 1}/${waiting.length} completed`, {
+        parallelLogger.debug(`Chunk ${index + 1}/${tasks.length} completed`, {
           generator: name,
         });
 
