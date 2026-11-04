@@ -83,8 +83,9 @@ export default function createParallelWorker(
     /**
      * Processes items in parallel, yielding results in submission order.
      *
-     * The items can also arrive in batches, as a dependency streams them: each
-     * batch's chunks start as soon as it arrives, while earlier ones still run.
+     * The items can also arrive in batches, as a dependency streams them: a
+     * batch's chunks start while earlier ones still run, and the next batch is
+     * read once there is room for its chunks.
      *
      * @template T
      * @param {T[] | AsyncIterable<T[]>} items - Items to process
@@ -100,6 +101,9 @@ export default function createParallelWorker(
 
       const batches = streamed ? items : [items];
 
+      // The chunks the batches read so far were split into
+      let distributed = 0;
+
       /**
        * Splits a batch into chunks.
        *
@@ -108,6 +112,8 @@ export default function createParallelWorker(
        */
       const distribute = batch => {
         const chunks = createChunks(batch.length, chunkSize);
+
+        distributed += chunks.length;
 
         parallelLogger.debug(
           `Distributing ${batch.length} items across ${chunks.length} chunks`,
@@ -130,9 +136,9 @@ export default function createParallelWorker(
         return;
       }
 
-      // Read every batch as it arrives, but start only a few chunks per thread
-      // at a time, so that generators running at once share the pool instead
-      // of one's chunks waiting behind all of another's. Emit results in
+      // Start only a few chunks per thread at a time, reading the next batch
+      // once there is room, so that generators running at once share the pool
+      // instead of one's chunks waiting behind all of another's. Emit results in
       // submission order. Handle errors as each task settles so a later failure
       // cannot become an unhandled rejection while earlier chunks are still
       // running.
@@ -186,7 +192,8 @@ export default function createParallelWorker(
       };
 
       /**
-       * Starts every batch's chunks as it arrives.
+       * Starts every batch's chunks, reading the next batch once there is room
+       * for them.
        */
       const readBatches = async () => {
         try {
@@ -233,7 +240,7 @@ export default function createParallelWorker(
           throw outcome.error;
         }
 
-        parallelLogger.debug(`Chunk ${index + 1}/${tasks.length} completed`, {
+        parallelLogger.debug(`Chunk ${index + 1}/${distributed} completed`, {
           generator: name,
         });
 
