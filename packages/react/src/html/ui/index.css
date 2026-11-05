@@ -196,9 +196,12 @@ main {
     border-radius: calc(var(--spacing, 0.25rem) * 1);
 
     .type-link {
-      /* Links keep their token color; underline marks the affordance */
-      color: inherit;
       text-decoration: underline dotted;
+
+      span {
+        /* Linked types use the link color in both themes. */
+        color: inherit !important;
+      }
 
       &:hover {
         text-decoration: underline;
