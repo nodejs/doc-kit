@@ -199,7 +199,7 @@ main {
       text-decoration: underline dotted;
 
       span {
-        /* Linked types use the link color in both themes. */
+        /* Override Shiki's inline light color and rehype-shiki's !important dark color. */
         color: inherit !important;
       }
 
