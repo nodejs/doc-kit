@@ -1,7 +1,8 @@
-import { readFile, rm, rmdir } from 'node:fs/promises';
+import { rm, rmdir } from 'node:fs/promises';
 import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { readJSON } from '@doc-kit/core/utils/file.mjs';
 import {
   build as viteBuild,
   defaultClientConditions,
@@ -396,7 +397,7 @@ export const buildClient = async ({
 
   const outDir = resolve(config.output);
 
-  await viteBuild(
+  const result = await viteBuild(
     createViteConfig({
       sources,
       input: { [CLIENT_NAME]: CLIENT_ENTRY_ID },
@@ -416,11 +417,15 @@ export const buildClient = async ({
     typeof configuredManifest === 'string' ? configuredManifest : MANIFEST_NAME
   );
 
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const manifest = await readJSON(manifestPath);
+
+  let emitted = result.output.map(({ fileName }) => fileName);
 
   if (!configuredManifest) {
     await rm(manifestPath);
     await rmdir(dirname(manifestPath)).catch(() => {});
+
+    emitted = emitted.filter(file => file !== MANIFEST_NAME);
   }
 
   const entries = Object.values(manifest);
@@ -443,6 +448,7 @@ export const buildClient = async ({
     preloads: collectImports(manifest, chunk),
     stylesheets: [...new Set(stylesheets)],
     fonts,
+    emitted,
   };
 };
 

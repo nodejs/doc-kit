@@ -1,10 +1,10 @@
 'use strict';
 
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import logger from '@doc-kit/core/logger/index.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { writeFile } from '@doc-kit/core/utils/file.mjs';
 import { omitKeys } from '@doc-kit/core/utils/misc.mjs';
 
 import { pageFileName, populatePage } from './processing.mjs';
@@ -25,7 +25,7 @@ const renderLogger = logger.child('html');
  *
  * @param {Array<import('../types').PageTask>} tasks
  * @param {Array<number>} indices - The tasks to process
- * @param {{ template: string, assets: import('../types').ClientAssets }} extra
+ * @param {import('../types').RenderOptions} extra
  * @returns {Promise<Array<string>>} The written file names
  */
 export const processChunk = async (tasks, indices, { template, assets }) => {
@@ -64,7 +64,6 @@ export const processChunk = async (tasks, indices, { template, assets }) => {
     const fileName = pageFileName(data);
     const path = join(config.output, fileName);
 
-    await mkdir(dirname(path), { recursive: true });
     await writeFile(path, html);
 
     written.push(fileName);
@@ -80,7 +79,7 @@ export const processChunk = async (tasks, indices, { template, assets }) => {
  * calling thread instead.
  *
  * @param {ParallelWorker} [worker]
- * @returns {(tasks: Array<import('../types').PageTask>, extra: { template: string, assets: import('../types').ClientAssets }) => Promise<void>}
+ * @returns {(tasks: Array<import('../types').PageTask>, extra: import('../types').RenderOptions) => Promise<void>}
  */
 export const createPageWriter = worker => async (tasks, extra) => {
   const chunks = worker

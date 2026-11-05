@@ -209,6 +209,7 @@ describe('config.mjs', () => {
         target: 'json',
         threads: 4,
         chunkSize: 5,
+        experimentalIncremental: true,
       };
 
       const config = createConfigFromCLIOptions(options);
@@ -228,6 +229,7 @@ describe('config.mjs', () => {
         target: 'json',
         threads: 4,
         chunkSize: 5,
+        experimentalIncremental: true,
       });
     });
 
