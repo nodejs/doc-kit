@@ -203,6 +203,51 @@ describe('createParallelWorker', () => {
     deepStrictEqual(await result, [0, 1, 2, 3, 4]);
   });
 
+  it('does not clone main-thread-only HTML bundler functions', async () => {
+    const htmlGenerator = await loadGenerator('html');
+    const transferred = [];
+    const pool = {
+      run(task) {
+        const copy = structuredClone(task);
+        transferred.push(copy);
+        return Promise.resolve(copy.input);
+      },
+    };
+
+    const bundler = {
+      buildServer: async () => 'file:///library.mjs',
+      buildClient: async () => ({}),
+      compile: async code => code,
+    };
+
+    const configuration = {
+      threads: 2,
+      chunkSize: 1,
+      html: {
+        title: 'Worker regression test',
+        bundler,
+      },
+    };
+
+    const worker = createParallelWorker(
+      'html',
+      htmlGenerator,
+      pool,
+      configuration
+    );
+
+    const results = await collectStream(worker.stream([1, 2, 3], {}));
+
+    deepStrictEqual(results, [1, 2, 3]);
+    strictEqual(transferred.length, 3);
+    for (const task of transferred) {
+      deepStrictEqual(task.configuration.html, {
+        title: 'Worker regression test',
+      });
+    }
+    strictEqual(configuration.html.bundler, bundler);
+  });
+
   it('propagates a later worker failure without an unhandled rejection', async () => {
     const tasks = [];
     const pool = {
