@@ -3,7 +3,9 @@ import { h, hydrate, render } from 'preact';
 
 import { ISLAND_NAME_ATTRIBUTE } from '../constants.mjs';
 import loaders from './loaders.mjs';
-import { holdPresses } from './presses.mjs';
+import { holdPresses, trackPresses } from './presses.mjs';
+
+trackPresses(document);
 
 /**
  * The islands hydrated so far. Exported so the router can save their scroll
