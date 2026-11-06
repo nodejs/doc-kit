@@ -274,11 +274,13 @@ const importHighlighter = async ({
     const followed = new Set();
 
     let language = languageId;
+    let key = language.toLowerCase();
 
     // Each configured alias once, so circular ones end
-    while (aliases.has(language.toLowerCase()) && !followed.has(language)) {
-      followed.add(language);
-      language = aliases.get(language.toLowerCase());
+    while (aliases.has(key) && !followed.has(key)) {
+      followed.add(key);
+      language = aliases.get(key);
+      key = language.toLowerCase();
     }
 
     if (followed.size === 0) {

@@ -148,6 +148,8 @@ describe('createHighlighter', () => {
         b: 'python',
         loop: 'pool',
         pool: 'loop',
+        Up: 'DOWN',
+        down: 'up',
         oc: 'OxcConf',
         conf: 'INI',
         MyConf: 'ini',
@@ -156,6 +158,7 @@ describe('createHighlighter', () => {
 
     assert.equal(highlighter.resolveLanguage('a'), 'python');
     assert.equal(highlighter.resolveLanguage('loop'), 'text');
+    assert.equal(highlighter.resolveLanguage('UP'), 'text');
     assert.equal(highlighter.resolveLanguage('Python'), 'python');
     assert.equal(highlighter.resolveLanguage('oc'), 'OxcConf');
     assert.equal(highlighter.resolveLanguage('conf'), 'ini');
