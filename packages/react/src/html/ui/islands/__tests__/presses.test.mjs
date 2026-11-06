@@ -2,13 +2,16 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { PRESS_EVENTS } from '../../constants.mjs';
-import { holdPresses } from '../presses.mjs';
+import { holdPresses, trackPresses } from '../presses.mjs';
 
 /**
  * A press event, with what a replay copies from it.
  */
 class Press {
   defaultPrevented = false;
+
+  // `NONE`: not being dispatched
+  eventPhase = 0;
 
   /**
    * @param {string} type
@@ -55,11 +58,28 @@ const createIsland = () => {
         listeners.delete(type);
       }
     },
+    contains: node => node.closest() === island,
     press: event => listeners.get(event.type)?.(event),
     listening: () => [...listeners.keys()],
   };
 
   return island;
+};
+
+/**
+ * A document that dispatches presses to the listeners `trackPresses` adds.
+ */
+const createRoot = () => {
+  const listeners = [];
+
+  return {
+    addEventListener: (type, listener, options) =>
+      listeners.push({ type, listener, options }),
+    capture: event =>
+      listeners
+        .filter(({ type, options }) => type === event.type && options.capture)
+        .forEach(({ listener }) => listener(event)),
+  };
 };
 
 describe('holdPresses', () => {
@@ -153,6 +173,53 @@ describe('holdPresses', () => {
       button.dispatched.map(({ type }) => type),
       ['click']
     );
+  });
+
+  it('holds the press that started loading the island', async () => {
+    const root = createRoot();
+    const island = createIsland();
+    const button = createElement(island);
+    // A keyboard click: Enter or Space on a button sends no pointer events
+    const click = new Press('click', { target: button });
+
+    trackPresses(root);
+    root.capture(click);
+
+    // is-land starts loading while the click is still bubbling
+    click.eventPhase = 3;
+    const release = holdPresses(island);
+    click.eventPhase = 0;
+
+    assert.equal(click.defaultPrevented, true);
+
+    island.setReady();
+    release();
+    await island.ready;
+
+    assert.deepEqual(
+      button.dispatched.map(({ type }) => type),
+      ['click']
+    );
+  });
+
+  it('ignores a press that was dispatched before loading started', async () => {
+    const root = createRoot();
+    const island = createIsland();
+    const button = createElement(island);
+    const click = new Press('click', { target: button });
+
+    trackPresses(root);
+    root.capture(click);
+
+    const release = holdPresses(island);
+
+    assert.equal(click.defaultPrevented, false);
+
+    island.setReady();
+    release();
+    await island.ready;
+
+    assert.deepEqual(button.dispatched, []);
   });
 
   it('drops presses on elements removed from the page', async () => {
