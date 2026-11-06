@@ -2,6 +2,7 @@ import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import { loadGenerator } from '../../generators/loader.mjs';
+import { CHUNKS_PER_THREAD } from '../constants.mjs';
 import createWorkerPool from '../index.mjs';
 import createParallelWorker from '../parallel.mjs';
 
@@ -40,6 +41,43 @@ async function collectChunks(generator) {
   }
 
   return chunks;
+}
+
+/**
+ * Streams 3x as many one-item chunks as two threads may hold in flight and
+ * checks the in-flight count peaks at exactly the limit, with results in order.
+ *
+ * @param {(items: number[]) => number[] | AsyncIterable<number[]>} toInput
+ * @returns {Promise<void>}
+ */
+async function checkChunksPerThread(toInput) {
+  const limit = 2 * CHUNKS_PER_THREAD;
+  const items = Array.from({ length: limit * 3 }, (_, index) => index);
+
+  let running = 0;
+  let mostRunning = 0;
+
+  const pool = {
+    run: async task => {
+      running++;
+      mostRunning = Math.max(mostRunning, running);
+
+      await new Promise(resolve => setImmediate(resolve));
+
+      running--;
+
+      return task.input;
+    },
+  };
+  const worker = createParallelWorker('ast-js', astJsGenerator, pool, {
+    threads: 2,
+    chunkSize: 1,
+  });
+
+  const results = await collectStream(worker.stream(toInput(items), {}));
+
+  strictEqual(mostRunning, limit);
+  deepStrictEqual(results, items);
 }
 
 describe('createParallelWorker', () => {
@@ -230,6 +268,12 @@ describe('createParallelWorker', () => {
     await rejects(result, /chunk failed/);
   });
 
+  it(
+    'should start a few chunks per thread at a time, and the next as each settles',
+    { timeout: 10_000 },
+    () => checkChunksPerThread(items => items)
+  );
+
   it('should process one chunk at a time, in order, with a single thread', async () => {
     let running = 0;
     let mostRunning = 0;
@@ -256,5 +300,163 @@ describe('createParallelWorker', () => {
 
     strictEqual(mostRunning, 1);
     deepStrictEqual(chunks, [[1, 2], [3, 4], [5]]);
+  });
+
+  describe('with streamed batches', () => {
+    it(
+      'starts a batch before the next one arrives',
+      { timeout: 10_000 },
+      async () => {
+        const started = [];
+        const pool = {
+          run: async task => {
+            started.push(task.input);
+
+            return task.input;
+          },
+        };
+        const worker = createParallelWorker('ast-js', astJsGenerator, pool, {
+          threads: 2,
+          chunkSize: 2,
+        });
+        const gate = Promise.withResolvers();
+
+        async function* batches() {
+          yield [1, 2, 3];
+          await gate.promise;
+          yield [4];
+        }
+
+        const reader = worker.stream(batches(), {});
+        const first = await reader.next();
+
+        deepStrictEqual(first.value, [1, 2]);
+        deepStrictEqual(started, [[1, 2], [3]]);
+
+        gate.resolve();
+
+        const rest = await collectChunks(reader);
+
+        deepStrictEqual(rest, [[3], [4]]);
+      }
+    );
+
+    it(
+      'yields in submission order across batches',
+      { timeout: 10_000 },
+      async () => {
+        const resolvers = [];
+        const pool = {
+          run: task =>
+            new Promise(resolve => {
+              resolvers.push(() => resolve(task.input));
+            }),
+        };
+        const worker = createParallelWorker('ast-js', astJsGenerator, pool, {
+          threads: 2,
+          chunkSize: 1,
+        });
+
+        async function* batches() {
+          yield [0, 1];
+          yield [2];
+        }
+
+        const result = collectStream(worker.stream(batches(), {}));
+
+        while (resolvers.length < 3) {
+          await new Promise(resolve => setImmediate(resolve));
+        }
+
+        for (const resolve of resolvers.toReversed()) {
+          resolve();
+        }
+
+        const results = await result;
+
+        deepStrictEqual(results, [0, 1, 2]);
+      }
+    );
+
+    it('throws a failure reading the batches after the chunks before it', async () => {
+      const pool = { run: async task => task.input };
+      const worker = createParallelWorker('ast-js', astJsGenerator, pool, {
+        threads: 2,
+        chunkSize: 1,
+      });
+
+      async function* batches() {
+        yield [1, 2];
+        throw new Error('source failed');
+      }
+
+      const chunks = [];
+
+      await rejects(async () => {
+        for await (const chunk of worker.stream(batches(), {})) {
+          chunks.push(chunk);
+        }
+      }, /source failed/);
+
+      deepStrictEqual(chunks, [[1], [2]]);
+    });
+
+    it(
+      'starts a few chunks per thread at a time, across batches',
+      { timeout: 10_000 },
+      () =>
+        checkChunksPerThread(async function* (items) {
+          for (let index = 0; index < items.length; index += 5) {
+            yield items.slice(index, index + 5);
+          }
+        })
+    );
+
+    it('runs each batch on this thread as it arrives with a single thread', async () => {
+      const events = [];
+      const generator = {
+        name: 'sequential',
+        async processChunk(items, indices) {
+          events.push(`chunk ${indices.map(index => items[index])}`);
+
+          return indices.map(index => items[index]);
+        },
+      };
+      const worker = createParallelWorker('sequential', generator, null, {
+        threads: 1,
+        chunkSize: 2,
+      });
+
+      async function* batches() {
+        events.push('batch 1');
+        yield [1, 2, 3];
+        events.push('batch 2');
+        yield [4];
+      }
+
+      const chunks = await collectChunks(worker.stream(batches(), {}));
+
+      deepStrictEqual(chunks, [[1, 2], [3], [4]]);
+      deepStrictEqual(events, [
+        'batch 1',
+        'chunk 1,2',
+        'chunk 3',
+        'batch 2',
+        'chunk 4',
+      ]);
+    });
+
+    it('yields nothing for no batches', async () => {
+      const worker = createParallelWorker('ast-js', astJsGenerator, null, {
+        threads: 2,
+        chunkSize: 1,
+      });
+
+      async function* batches() {}
+
+      const chunks = await collectChunks(worker.stream(batches(), {}));
+
+      deepStrictEqual(chunks, []);
+    });
   });
 });
