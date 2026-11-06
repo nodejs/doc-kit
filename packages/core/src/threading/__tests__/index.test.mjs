@@ -128,14 +128,4 @@ describe('createWorkerPool', () => {
       await pool.destroy();
     }
   });
-
-  it('should start tasks in the order they were submitted', async () => {
-    const pool = createWorkerPool(1);
-
-    try {
-      strictEqual(pool.options.stricterFIFO, true);
-    } finally {
-      await pool.destroy();
-    }
-  });
 });

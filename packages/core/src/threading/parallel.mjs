@@ -74,8 +74,7 @@ export default function createParallelWorker(
   pool,
   configuration
 ) {
-  const { threads: defaultThreads = 1, chunkSize } = configuration;
-  const threads = Math.max(Number(defaultThreads), 1);
+  const { threads, chunkSize } = configuration;
 
   const { name } = generator;
 
@@ -83,9 +82,9 @@ export default function createParallelWorker(
     /**
      * Processes items in parallel, yielding results in submission order.
      *
-     * The items can also arrive in batches, as a dependency streams them: a
-     * batch's chunks start while earlier ones still run, and the next batch is
-     * read once there is room for its chunks.
+     * Items can also arrive as an async iterable of batches: a batch's chunks
+     * start while earlier ones still run, and the next batch is read once
+     * there is room for its chunks.
      *
      * @template T
      * @param {T[] | AsyncIterable<T[]>} items - Items to process
@@ -101,14 +100,14 @@ export default function createParallelWorker(
 
       const batches = streamed ? items : [items];
 
-      // The chunks the batches read so far were split into
+      // Total chunks across the batches read so far, for logging
       let distributed = 0;
 
       /**
-       * Splits a batch into chunks.
+       * Splits a batch into chunks of indices.
        *
-       * @param {T[]} batch - Items to split
-       * @returns {number[][]} Each chunk's indices into the batch
+       * @param {T[]} batch
+       * @returns {number[][]}
        */
       const distribute = batch => {
         const chunks = createChunks(batch.length, chunkSize);
@@ -127,39 +126,33 @@ export default function createParallelWorker(
       if (threads <= 1 || (!streamed && items.length <= 2)) {
         for await (const batch of batches) {
           for (const indices of distribute(batch)) {
-            const result = await generator.processChunk(batch, indices, extra);
-
-            yield result;
+            yield await generator.processChunk(batch, indices, extra);
           }
         }
 
         return;
       }
 
-      // Start only a few chunks per thread at a time, reading the next batch
-      // once there is room, so that generators running at once share the pool
-      // instead of one's chunks waiting behind all of another's. Emit results in
-      // submission order. Handle errors as each task settles so a later failure
-      // cannot become an unhandled rejection while earlier chunks are still
-      // running.
+      // Keep only a few chunks per thread in flight so generators running at
+      // once share the pool, and emit results in submission order. Errors are
+      // captured as each task settles so a later failure can't become an
+      // unhandled rejection while earlier chunks are still running.
       const tasks = [];
       const limit = threads * CHUNKS_PER_THREAD;
 
       let running = 0;
       let doneReading = false;
 
-      // Resolved when a running chunk settles, while the reader waits for room
+      // Resolved when a chunk settles (the reader waits on it for room)
       let room;
 
-      // Resolved when a chunk starts or the reading ends, while the consumer
-      // waits for one
+      // Resolved when a chunk starts or reading ends (the consumer waits on it)
       let added;
 
       /**
-       * Starts a batch's chunks, waiting for room whenever the limit is
-       * reached: an array's first chunks start right away.
+       * Starts a batch's chunks, waiting for room whenever the limit is hit.
        *
-       * @param {T[]} batch - Items to start
+       * @param {T[]} batch
        */
       const enqueue = async batch => {
         for (const indices of distribute(batch)) {
@@ -192,15 +185,13 @@ export default function createParallelWorker(
       };
 
       /**
-       * Starts every batch's chunks, reading the next batch once there is room
-       * for them.
+       * Reads every batch and starts its chunks.
        */
       const readBatches = async () => {
         try {
+          // An array's first chunks start synchronously
           if (!streamed) {
-            await enqueue(items);
-
-            return;
+            return await enqueue(items);
           }
 
           for await (const batch of items) {
@@ -214,8 +205,7 @@ export default function createParallelWorker(
 
       const reading = readBatches();
 
-      // A failure reading the batches is thrown below, once every chunk
-      // submitted before it has been emitted
+      // A read failure is rethrown below, after every chunk before it is emitted
       reading.catch(() => {});
 
       for (let index = 0; ; index++) {
@@ -233,7 +223,7 @@ export default function createParallelWorker(
 
         const outcome = await tasks[index];
 
-        // Emitted chunks are the consumer's to keep or let go
+        // Drop our reference so emitted results can be collected
         tasks[index] = undefined;
 
         if ('error' in outcome) {

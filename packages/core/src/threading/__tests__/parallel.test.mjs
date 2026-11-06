@@ -44,11 +44,8 @@ async function collectChunks(generator) {
 }
 
 /**
- * Streams three times as many one-item chunks as two threads can run at once,
- * through a pool whose tasks each take a turn of the event loop, and checks
- * that it runs as many at once as there is room for, never more, and still
- * yields the results in submission order. A stream that didn't refill the pool
- * would never end, so its tests need a timeout.
+ * Streams 3x as many one-item chunks as two threads may hold in flight and
+ * checks the in-flight count peaks at exactly the limit, with results in order.
  *
  * @param {(items: number[]) => number[] | AsyncIterable<number[]>} toInput
  * @returns {Promise<void>}
@@ -308,8 +305,6 @@ describe('createParallelWorker', () => {
   describe('with streamed batches', () => {
     it(
       'starts a batch before the next one arrives',
-      // The second batch only arrives once the first result is read, so a
-      // stream that waited for it would never give one
       { timeout: 10_000 },
       async () => {
         const started = [];
@@ -335,7 +330,6 @@ describe('createParallelWorker', () => {
         const reader = worker.stream(batches(), {});
         const first = await reader.next();
 
-        // The second batch hasn't arrived, but the first one's chunks ran
         deepStrictEqual(first.value, [1, 2]);
         deepStrictEqual(started, [[1, 2], [3]]);
 
@@ -349,8 +343,6 @@ describe('createParallelWorker', () => {
 
     it(
       'yields in submission order across batches',
-      // The test waits for every chunk to start, so it would wait forever on a
-      // stream that held one back
       { timeout: 10_000 },
       async () => {
         const resolvers = [];
