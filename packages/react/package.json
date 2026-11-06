@@ -15,6 +15,7 @@
     "./html/ui/*": "./src/html/ui/*",
     "./html/bundlers/vite": "./src/html/bundlers/vite.mjs",
     "./jsx-ast": "./src/jsx-ast/index.mjs",
+    "./jsx-ast/utils/getSortedHeadNodes": "./src/jsx-ast/utils/getSortedHeadNodes.mjs",
     "./llms-txt": "./src/llms-txt/index.mjs",
     "./llms-txt-full": "./src/llms-txt-full/index.mjs",
     "./orama-db": "./src/orama-db/index.mjs",
