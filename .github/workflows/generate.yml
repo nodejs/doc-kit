@@ -53,7 +53,8 @@ jobs:
         run: |
           # `174604400` refers to `generate.yml`'s workflow ID, available at https://api.github.com/repos/nodejs/doc-kit/actions/workflows/generate.yml
           # The `databaseId` is a given runs run ID (Ref: https://docs.github.com/en/enterprise-cloud@latest/graphql/reference/objects#workflowrun)
-          ID=$(gh run list --repo $GITHUB_REPOSITORY -c $BASE_SHA -w 174604400 -L 1 --json databaseId --jq ".[].databaseId")
+          # Only `push` runs upload the `commit` artifact: a PR stacked on another PR's branch can find that PR's `pull_request` run for its base
+          ID=$(gh run list --repo $GITHUB_REPOSITORY -c $BASE_SHA -w 174604400 -e push -L 1 --json databaseId --jq ".[].databaseId")
           echo "run_id=$ID" >> $GITHUB_OUTPUT
 
       - name: Download metadata artifact
