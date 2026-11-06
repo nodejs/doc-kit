@@ -460,8 +460,8 @@ const html = highlighter.highlightToHtml('const answer = 42;', 'js');
 its `generators/types` module brings in:
 
 ```ts displayName="types.d.ts"
-import type {} from '@doc-kit/core/generators/types';
 import type { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
+import type {} from '@doc-kit/core/generators/types';
 import type { GlobalConfiguration } from '@doc-kit/core/utils/configuration/types';
 
 export type Configuration = {

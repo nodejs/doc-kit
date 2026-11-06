@@ -252,13 +252,13 @@ Netlify installs your dependencies, runs the build `command` and publishes the
 
 ```toml displayName="netlify.toml"
 [build]
-  command = "npx @doc-kit/cli generate"
-  publish = "out"
+command = "npx @doc-kit/cli generate"
+publish = "out"
 
 [[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+for = "/assets/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
 ```
 
 ### Vercel
