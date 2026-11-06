@@ -379,7 +379,10 @@ export async function* generate(input, worker) {
 - With more than one thread, `input` can be iterated only once, and passing it
   to `worker.stream` iterates it. If you need it twice, collect it into an
   array first.
-- The chunks are the dependency's own, in the order it yields them.
+- The chunks are the dependency's own, in the order it yields them. `metadata`'s
+  hold whole files, but chunks need not hold whole modules: a generator that
+  needs all of a module's entries at once should regroup them with
+  `groupWholeModules` from `@doc-kit/core/utils/generators.mjs`.
 - Work that needs the whole input, such as sorting or writing one file, has to
   wait for the last chunk.
 - Other generators reading the same dependency are not affected: each gets
