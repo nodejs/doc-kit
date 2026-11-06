@@ -1,5 +1,11 @@
 # @doc-kit/core
 
+## 1.3.2
+
+### Patch Changes
+
+- [#1232](https://github.com/nodejs/doc-kit/pull/1232) [`e1cbd76`](https://github.com/nodejs/doc-kit/commit/e1cbd769869bab49ef2a8c59986d4fcdfb806815) Thanks [@ovflowd](https://github.com/ovflowd)! - Keep leading, trailing and repeated hyphens in heading slugs, so anchors match the old Node.js doc tooling again (`#-c---check` instead of `#-check`).
+
 ## 1.3.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @doc-kit/typedoc
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`e1cbd76`](https://github.com/nodejs/doc-kit/commit/e1cbd769869bab49ef2a8c59986d4fcdfb806815)]:
+  - @doc-kit/core@1.3.2
+
 ## 0.1.1
 
 ### Patch Changes
