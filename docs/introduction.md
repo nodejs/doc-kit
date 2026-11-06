@@ -59,28 +59,28 @@ Building this site, 40 pages, with its own
 
 | Targets                     | Output                                | Time   |
 | --------------------------- | ------------------------------------- | ------ |
-| `llms-txt`                  | `llms.txt`                            | 0.51 s |
-| `orama-db`                  | The search index                      | 0.55 s |
-| `json`                      | 40 JSON documents                     | 0.56 s |
-| `html`                      | The site: 40 pages, bundled with Vite | 2.85 s |
-| The configuration's targets | All of it, 213 files                  | 2.90 s |
+| `llms-txt`                  | `llms.txt`                            | 0.44 s |
+| `orama-db`                  | The search index                      | 0.49 s |
+| `json`                      | 40 JSON documents                     | 0.51 s |
+| `html`                      | The site: 40 pages, bundled with Vite | 2.37 s |
+| The configuration's targets | All of it, 212 files                  | 2.44 s |
 
 Most of the website's time is Vite bundling its scripts and styles once, a
 cost that doesn't grow with the number of pages. The Node.js v26.12.1 API docs
 show how the rest scales, with 71 files, built with the
 configuration of [the Node.js preview site](https://beta.docs.nodejs.org/):
 
-| Targets                                         | Output               | Time   |
-| ----------------------------------------------- | -------------------- | ------ |
-| `llms-txt`                                      | `llms.txt`           | 2.2 s  |
-| `orama-db`                                      | The search index     | 2.6 s  |
-| `json`                                          | 71 JSON documents    | 2.6 s  |
-| `section-pages`                                 | The site: 794 pages  | 9.7 s  |
-| `section-pages`, `json`, `llms-txt`, `orama-db` | All of it, 937 files | 10.1 s |
+| Targets                                         | Output               | Time  |
+| ----------------------------------------------- | -------------------- | ----- |
+| `llms-txt`                                      | `llms.txt`           | 1.9 s |
+| `orama-db`                                      | The search index     | 2.2 s |
+| `json`                                          | 71 JSON documents    | 2.3 s |
+| `section-pages`                                 | The site: 794 pages  | 8.6 s |
+| `section-pages`, `json`, `llms-txt`, `orama-db` | All of it, 935 files | 9.1 s |
 
 Each time is the median of five clean builds on an AMD Ryzen 9 8945HX
-(32 threads, 4 used by doc-kit) with Node.js 24.18 and doc-kit
-`12a5473`. To measure them on your machine, run this from a doc-kit
+(32 threads, 4 used by doc-kit) with Node.js 26.13 and doc-kit
+`3e9e6b5`. To measure them on your machine, run this from a doc-kit
 checkout with its dependencies installed. It checks out the Node.js docs
 once, builds both sites, and writes the results to
 `www/theme/benchmarks.json`, which the home page reads:
