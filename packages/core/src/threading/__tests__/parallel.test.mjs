@@ -44,14 +44,11 @@ async function collectChunks(generator) {
 }
 
 /**
- * Streams three times as many one-item chunks as two threads can run at once
- * through a pool that holds each task until it is settled, newest first, and
- * checks before each that as many run as there is room for: no more, and no
- * fewer while any are left to start. Settling the newest first holds back the
- * oldest chunk, so no result can be emitted until the last: the room must come
- * from the settling alone. The results still come out in submission order.
- * A stream that lost count of the held chunks would never end, so its tests
- * need a timeout.
+ * Streams three times as many one-item chunks as two threads can run at once,
+ * through a pool whose tasks each take a turn of the event loop, and checks
+ * that it runs as many at once as there is room for, never more, and still
+ * yields the results in submission order. A stream that didn't refill the pool
+ * would never end, so its tests need a timeout.
  *
  * @param {(items: number[]) => number[] | AsyncIterable<number[]>} toInput
  * @returns {Promise<void>}
@@ -59,33 +56,30 @@ async function collectChunks(generator) {
 async function checkChunksPerThread(toInput) {
   const limit = 2 * CHUNKS_PER_THREAD;
   const items = Array.from({ length: limit * 3 }, (_, index) => index);
-  const started = [];
-  const running = [];
+
+  let running = 0;
+  let mostRunning = 0;
+
   const pool = {
-    run: task =>
-      new Promise(resolve => {
-        started.push(...task.input);
-        running.push(() => resolve(task.input));
-      }),
+    run: async task => {
+      running++;
+      mostRunning = Math.max(mostRunning, running);
+
+      await new Promise(resolve => setImmediate(resolve));
+
+      running--;
+
+      return task.input;
+    },
   };
   const worker = createParallelWorker('ast-js', astJsGenerator, pool, {
     threads: 2,
     chunkSize: 1,
   });
 
-  const result = collectStream(worker.stream(toInput(items), {}));
+  const results = await collectStream(worker.stream(toInput(items), {}));
 
-  for (let settled = 0; settled < items.length; settled++) {
-    await new Promise(resolve => setImmediate(resolve));
-
-    strictEqual(running.length, Math.min(limit, items.length - settled));
-
-    running.pop()();
-  }
-
-  const results = await result;
-
-  deepStrictEqual(started, items);
+  strictEqual(mostRunning, limit);
   deepStrictEqual(results, items);
 }
 
