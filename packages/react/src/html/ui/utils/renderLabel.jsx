@@ -5,10 +5,15 @@
  * a case where'd have extremely complex markdown
  * within a sidebar like this)
  *
- * @param {string} label - Raw heading text.
+ * @param {string | undefined} label - Raw heading text. Search hits have no
+ * label for documents without a leading paragraph.
  * @returns {import('preact').ComponentChildren}
  */
 export const renderLabel = label => {
+  if (!label) {
+    return label;
+  }
+
   const segments = label.split('`');
 
   if (segments.length === 1) {
