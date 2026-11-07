@@ -6,6 +6,17 @@
     <title>${title}</title>
     <meta property="og:title" content="${title}" />
     <meta property="og:type" content="website" />
+    ${canonical && `<link rel="canonical" href="${canonical}" />`}
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0d121c"
+      media="(prefers-color-scheme: dark)"
+    />
 
     ${preloads}
 

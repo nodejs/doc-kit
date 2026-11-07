@@ -37,3 +37,16 @@ export const ISLAND_NAME_ATTRIBUTE = 'data-island-name';
  * animating again with every page.
  */
 export const NAVIGATED_ATTRIBUTE = 'data-navigated';
+
+/**
+ * The events of a click or a tap, or of a touch the browser cancels to scroll,
+ * that an island hydrating on interaction holds until it is ready.
+ */
+export const PRESS_EVENTS = [
+  'pointerdown',
+  'mousedown',
+  'pointerup',
+  'mouseup',
+  'click',
+  'pointercancel',
+];

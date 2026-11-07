@@ -3,6 +3,9 @@ import { h, hydrate, render } from 'preact';
 
 import { ISLAND_NAME_ATTRIBUTE } from '../constants.mjs';
 import loaders from './loaders.mjs';
+import { holdPresses, trackPresses } from './presses.mjs';
+
+trackPresses(document);
 
 /**
  * The islands hydrated so far. Exported so the router can save their scroll
@@ -87,6 +90,10 @@ Island.addInitType('preact', async island => {
     props.children = slots.map(slot => h(Slot, { html: slot.innerHTML }));
   }
 
+  const replayPresses = island.hasAttribute('on:interaction')
+    ? holdPresses(island)
+    : undefined;
+
   try {
     if (!loaded.has(name)) {
       const { default: component } = await loader();
@@ -105,5 +112,7 @@ Island.addInitType('preact', async island => {
     // is-land awaits this callback, so a rejection would leave the island
     // silently stuck: never marked ready, and never reported anywhere.
     console.error(`[is-land] "${name}" failed to hydrate`, error);
+  } finally {
+    replayPresses?.();
   }
 });

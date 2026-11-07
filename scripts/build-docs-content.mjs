@@ -4,6 +4,7 @@
 // site — from sources that live elsewhere in the repo:
 //
 //   docs/*.md                   the authored pages, guides, and reference docs
+//   www/pages/*.mdx             the site's own pages, such as the home page
 //   docs/contributing/*.md      repo-contributor docs, kept under `contributing/`
 //   packages/*/README.md        package READMEs, written to `packages/<dir>.md`
 //   packages/*/src/{,generators/}*/README.md
@@ -22,7 +23,7 @@ const ROOT = join(import.meta.dirname, '..');
 const CONTENT = join(ROOT, 'www', 'content');
 
 const SOURCES = [
-  { pattern: 'docs/*.md', rename: basename },
+  { pattern: '{docs,www/pages}/*.{md,mdx}', rename: basename },
   {
     pattern: 'docs/contributing/*.md',
     rename: file => `contributing/${basename(file)}`,
