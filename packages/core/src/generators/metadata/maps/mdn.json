@@ -579,6 +579,7 @@
   "paymentrequestupdateevent": "https://developer.mozilla.org/docs/Web/API/PaymentRequestUpdateEvent",
   "paymentresponse": "https://developer.mozilla.org/docs/Web/API/PaymentResponse",
   "performance": "https://developer.mozilla.org/docs/Web/API/Window/performance",
+  "performancecontainertiming": "https://developer.mozilla.org/docs/Web/API/PerformanceContainerTiming",
   "performanceelementtiming": "https://developer.mozilla.org/docs/Web/API/PerformanceElementTiming",
   "performanceentry": "https://developer.mozilla.org/docs/Web/API/PerformanceEntry",
   "performanceeventtiming": "https://developer.mozilla.org/docs/Web/API/PerformanceEventTiming",
