@@ -28,12 +28,10 @@ const createGenerator = () => {
   let pool;
 
   /**
-   * Gets the input from a dependency generator: collected, or its chunks as the
-   * dependency yields them.
+   * Gets the input from a dependency generator, collected or streamed.
    *
    * @param {string | undefined} dependsOn - Resolved dependency specifier
-   * @param {boolean} [streamed] - Whether to give its chunks as they are yielded
-   * rather than collected
+   * @param {boolean} [streamed] - Whether to stream its chunks
    * @returns {Promise<unknown>}
    */
   const getDependencyInput = async (dependsOn, streamed) => {

@@ -14,12 +14,10 @@ declare global {
   export interface ParallelWorker {
     /**
      * Processes items in parallel across worker threads and yields each
-     * chunk's results in submission order, as soon as it and every chunk
-     * before it have completed. Enables downstream processing to begin
-     * while upstream chunks are still being processed.
+     * chunk's results in submission order. Enables downstream processing to
+     * begin while upstream chunks are still being processed.
      *
-     * @param items - Items to process (determines chunk distribution), or
-     * batches of them as a streamed input yields them
+     * @param items - Items to process, or a streamed input's batches of them
      * @param opts - Additional options to pass to workers
      * @yields Each chunk's results, in submission order
      */
@@ -73,15 +71,9 @@ declare global {
     hasParallelProcessor?: boolean;
 
     /**
-     * Receive the dependency's output as it is produced, as an async iterable
-     * of its chunks, instead of collected into one array once it is complete,
-     * so this generator can start on the first chunk while the rest are still
-     * being produced. The async iterable can be iterated only once. A
-     * dependency that doesn't stream arrives as a single chunk, once it is
-     * complete.
-     *
-     * With one thread, the input still arrives collected into one array, as
-     * without `streamsInput`, so accept both.
+     * Receive the dependency's output as an async iterable of its chunks, as
+     * they are produced, instead of one collected array. With one thread, the
+     * input is still a collected array, so accept both.
      */
     streamsInput?: boolean;
 
