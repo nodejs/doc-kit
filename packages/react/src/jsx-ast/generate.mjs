@@ -1,5 +1,6 @@
 import { isMainThread } from 'node:worker_threads';
 
+import { createChannel } from '@doc-kit/core/utils/channel.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import {
   groupNodesByModule,
@@ -50,10 +51,9 @@ export async function processChunk(slicedInput, itemIndices) {
  * is emitted once built, in the order the pages arrived, the synthetic pages
  * last: the `html` generator puts them in the order the site lists them.
  *
- * Once every page has arrived, which `worker.stream` reads as it has room for
- * their chunks, it also emits `{ manifest }`, without waiting for the pages
- * still being built: every page's head, in that same order, so that `html` can
- * prepare what needs the whole site in the meantime.
+ * Once every page has arrived, it also emits `{ manifest }`, without waiting
+ * for the pages still being built: every page's head, in that same order, so
+ * that `html` can prepare what needs the whole site in the meantime.
  *
  * @type {import('./types').Generator['generate']}
  */
@@ -109,6 +109,26 @@ export async function* generate(input, worker) {
     yield [{ manifest: heads }];
   }
 
+  const pages = createChannel();
+
+  /**
+   * Describes every page as it arrives, ahead of `worker.stream`, which only
+   * takes the next batch once there's room for its chunks: the manifest then
+   * resolves once the input ends, not once the last pages are being built.
+   */
+  const readPages = async () => {
+    try {
+      for await (const descriptors of describe()) {
+        pages.push(descriptors);
+      }
+    } finally {
+      pages.end();
+    }
+  };
+
+  // A failure reading the input reaches the output through the manifest
+  readPages().catch(error => manifest.reject(error));
+
   // The manifest goes out as soon as it's ready, not after the next pages
-  yield* merge(worker.stream(describe()), announce());
+  yield* merge(worker.stream(pages), announce());
 }

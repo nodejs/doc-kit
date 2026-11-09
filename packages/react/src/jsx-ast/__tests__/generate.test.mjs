@@ -220,7 +220,7 @@ describe('jsx-ast generate', () => {
         async *stream(batches) {
           const all = [];
 
-          // Like the pool, every batch is taken as it arrives
+          // Every batch is taken as it arrives
           for await (const items of batches) {
             all.push(items);
           }
@@ -258,6 +258,85 @@ describe('jsx-ast generate', () => {
       );
     }
   );
+
+  it(
+    'emits the manifest while worker.stream holds back the next batch',
+    // The pool only takes the next batch once there's room, and the first
+    // page holds it until the manifest has arrived, so a manifest that waited
+    // for the pool to take every batch would never come
+    { timeout: 10_000 },
+    async () => {
+      await setConfig({ target: ['jsx-ast'] });
+
+      const gate = Promise.withResolvers();
+      const worker = {
+        async *stream(batches) {
+          // One batch at a time: the next is only taken once this one's built
+          for await (const items of batches) {
+            if (items.some(({ head }) => head.api === 'fs')) {
+              await gate.promise;
+            }
+
+            yield items.map(({ head }) => ({ data: head }));
+          }
+        },
+      };
+
+      const output = generate(
+        streamOf([
+          [createEntry('fs', 'File system')],
+          [createEntry('zlib', 'Zlib')],
+        ]),
+        worker
+      );
+
+      const { value } = await output.next();
+
+      assert.deepEqual(
+        value[0].manifest.map(({ api }) => api),
+        ['fs', 'zlib', '404']
+      );
+
+      gate.resolve();
+
+      const { pages } = await collect(output);
+
+      assert.deepEqual(
+        pages.map(({ data }) => data.api),
+        ['fs', 'zlib', '404']
+      );
+    }
+  );
+
+  it('rejects with the failure of its input, leaving none unhandled', async () => {
+    await setConfig({ target: ['jsx-ast'] });
+
+    const failure = new Error('input failed');
+    const unhandled = [];
+    const onUnhandled = error => unhandled.push(error);
+
+    async function* failing() {
+      yield [createEntry('fs', 'File system')];
+
+      throw failure;
+    }
+
+    process.on('unhandledRejection', onUnhandled);
+
+    try {
+      await assert.rejects(
+        collect(generate(failing(), createWorker([]))),
+        failure
+      );
+
+      // A rejection left unhandled is reported once the microtasks have run
+      await new Promise(resolve => setImmediate(resolve));
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+
+    assert.deepEqual(unhandled, []);
+  });
 
   it(
     'lets go of the pages it emits before the manifest',
