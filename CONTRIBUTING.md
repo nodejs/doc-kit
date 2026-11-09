@@ -20,6 +20,7 @@ Thank you for your interest in contributing to the `doc-kit` project! We welcome
     - [Best Practices](#best-practices)
     - [Example Test File](#example-test-file)
   - [Running Tests](#running-tests)
+- [Benchmarks](#benchmarks)
 - [Code Quality](#code-quality)
   - [Linting and Formatting](#linting-and-formatting)
   - [Pre-commit Hooks](#pre-commit-hooks)
@@ -332,6 +333,17 @@ node --run test:coverage
 
 # Run specific test file
 node --test packages/core/src/utils/__tests__/parser.test.mjs
+```
+
+## Benchmarks
+
+Generation speed and memory are measured with [CodSpeed](https://codspeed.io)
+(`bench/generate.bench.mjs`), on one thread. The workflow checks `nodejs/node`
+out at `NODE_SHA` into `./node`, and the suite reads that directory. It runs on
+every pull request and reports CPU and memory there.
+
+```bash
+node --run bench
 ```
 
 ## Code Quality

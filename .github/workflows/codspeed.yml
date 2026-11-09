@@ -1,0 +1,55 @@
+name: CodSpeed
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Lets CodSpeed replay a run when it needs a baseline.
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  benchmarks:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      NODE_SHA: 768315cf7165e9ff9b636844b776488e9d1703fc
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Setup environment
+        uses: nodejs/web-team/actions/setup-environment@4c0b18db11a8357664683d70ef1f27af08ecc766
+        with:
+          use-version-file: true
+          pnpm: true
+
+      - name: Checkout Node.js sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: nodejs/node
+          ref: ${{ env.NODE_SHA }}
+          sparse-checkout: |
+            doc
+            lib
+            .
+          path: node
+
+      - name: Run benchmarks
+        uses: CodSpeedHQ/action@af75f77f17a054769abefaa42fe8dc2975469b5f # v5.6.3
+        with:
+          mode: simulation,memory
+          run: node --run bench

@@ -4,7 +4,6 @@ import { join } from 'node:path';
 
 import { BASE, HEAD, TITLE } from '../constants.mjs';
 import { listOutputFiles } from './files.mjs';
-import { comparePerformance } from './performance.mjs';
 
 const [baseFiles, headFiles] = await Promise.all(
   [BASE, HEAD].map(directory => listOutputFiles(directory))
@@ -49,11 +48,6 @@ if (filteredResults.length) {
     `**Output:** ${filteredResults.length} ${filteredResults.length === 1 ? 'file differs' : 'files differ'}`,
     filteredResults.join('\n')
   );
-}
-
-const performance = await comparePerformance();
-if (performance) {
-  sections.push(performance);
 }
 
 if (sections.length) {

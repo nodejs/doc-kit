@@ -3,7 +3,6 @@ import path from 'node:path';
 
 import { BASE, HEAD, TITLE } from '../constants.mjs';
 import { listOutputFiles } from './files.mjs';
-import { comparePerformance } from './performance.mjs';
 
 const UNITS = ['B', 'KB', 'MB', 'GB'];
 
@@ -82,11 +81,6 @@ if (changed.length) {
       '</details>',
     ].join('\n')
   );
-}
-
-const performance = await comparePerformance();
-if (performance) {
-  sections.push(performance);
 }
 
 if (sections.length) {

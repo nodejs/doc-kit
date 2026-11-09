@@ -10,7 +10,6 @@ export const HEAD =
 export const TITLE =
   process.env.TITLE || `## \`${process.env.GENERATOR ?? '...'}\` Generator`;
 
-export const BENCHMARK_FILE = 'benchmark.json';
 export const COMPARISON_FILE = 'comparison.txt';
 
 // MDN Constants
