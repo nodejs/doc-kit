@@ -47,6 +47,12 @@ export type PageTask = Pick<PageCode, 'data' | 'headings' | 'readingTime'> & {
   moduleURL: string;
 };
 
+// What the workers render every page with.
+export type RenderOptions = {
+  template: string;
+  assets: ClientAssets;
+};
+
 // The client assets every page loads, as paths relative to the output root.
 export type ClientAssets = {
   // Module scripts, in load order.
@@ -57,6 +63,9 @@ export type ClientAssets = {
   stylesheets: Array<string>;
   // Fonts to preload, so text does not wait on the stylesheet to request them.
   fonts?: Array<string>;
+  // Every file the build wrote, for an incremental build to prune; without it,
+  // only the files above are tracked.
+  emitted?: Array<string>;
 };
 
 export type ServerBundleOptions = {

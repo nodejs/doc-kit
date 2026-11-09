@@ -34,6 +34,7 @@
   },
   "imports": {
     "#generators/*": "./src/generators/*",
+    "#incremental/*": "./src/incremental/*",
     "#logger/*": "./src/logger/*",
     "#parsers/*": [
       "./src/parsers/*",

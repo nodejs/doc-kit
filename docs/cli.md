@@ -40,6 +40,7 @@ Runs the generators and writes their output. Requires a `target` and an
   links).
 - `-p, --threads <n>` {number} Worker threads to use (minimum 1).
 - `--chunk-size <n>` {number} Items per worker thread (minimum 1).
+- `--experimental-incremental` {boolean} Rebuild against the existing output. **Experimental.**
 
 ## `doc-kit preview`
 

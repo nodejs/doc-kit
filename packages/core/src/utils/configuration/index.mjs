@@ -82,6 +82,7 @@ export const getDefaultConfig = (generators, config) =>
           ? 1
           : Math.min(cpus().length, DEFAULT_MAX_THREADS),
       chunkSize: DEFAULT_CHUNK_SIZE,
+      experimentalIncremental: false,
     })
   );
 
@@ -229,6 +230,7 @@ export const createConfigFromCLIOptions = options => ({
   target: options.target,
   threads: options.threads,
   chunkSize: options.chunkSize,
+  experimentalIncremental: options.experimentalIncremental,
 });
 
 /**

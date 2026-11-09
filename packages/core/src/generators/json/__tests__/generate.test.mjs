@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { basename } from 'node:path';
+import { existsSync } from 'node:fs';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { basename, join } from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -8,11 +10,15 @@ import Ajv from 'ajv';
 
 import { loadGenerator } from '#generators/loader.mjs';
 import { parseApiDoc } from '#generators/metadata/utils/parse.mjs';
+import { createIncrementalStore } from '#incremental/index.mjs';
+import { setConfig } from '#utils/configuration/index.mjs';
 import { findFiles } from '#utils/glob.mjs';
 import { loadMarkdownPlugins } from '#utils/markdown/plugins.mjs';
 import { getProcessor } from '#utils/markdown/processor.mjs';
 import { QUERIES } from '#utils/queries/index.mjs';
 
+import { generate, processChunk } from '../generate.mjs';
+import json from '../index.mjs';
 import schema from '../schema.json' with { type: 'json' };
 import { buildDocument } from '../utils/document.mjs';
 
@@ -41,21 +47,30 @@ const dependencies = {
 const validate = new Ajv({ allErrors: true, strict: true }).compile(schema);
 
 /**
+ * The metadata entries of a fixture, as the `metadata` generator yields them.
+ */
+const parseFixture = async (name, transform = source => source) => {
+  const content = await readFile(new URL(name, fixtures), 'utf-8');
+
+  return parseApiDoc(
+    {
+      path: `/${basename(name, '.md')}`,
+      tree: getProcessor('ast').parse(transform(content)),
+    },
+    typeMap
+  );
+};
+
+/**
  * Runs a fixture through the metadata stage and builds its document.
  */
 const buildFixture = async name => {
-  const content = await readFile(new URL(name, fixtures), 'utf-8');
-
   // The AST stage links the stability prefix; mirror that
-  const source = content.replace(
-    QUERIES.stabilityIndexPrefix,
-    match => `[${match}](documentation.html#stability-index)`
-  );
-
-  const path = `/${basename(name, '.md')}`;
-  const entries = parseApiDoc(
-    { path, tree: getProcessor('ast').parse(source) },
-    typeMap
+  const entries = await parseFixture(name, source =>
+    source.replace(
+      QUERIES.stabilityIndexPrefix,
+      match => `[${match}](documentation.html#stability-index)`
+    )
   );
 
   return buildDocument(entries[0], entries, dependencies);
@@ -282,6 +297,64 @@ describe('json', () => {
         setup.description,
         /^Type: Documentation-only\n\n\* `first` \{string\}/
       );
+    });
+  });
+
+  describe('incremental building', () => {
+    /**
+     * Runs an incremental build of the fixtures into the output, through a
+     * worker that builds on this thread and notes which modules it was given.
+     */
+    const build = async (names, output) => {
+      const built = [];
+
+      const worker = {
+        async *stream(items, dependencies) {
+          built.push(...items.map(({ head }) => head.api));
+
+          yield await processChunk(items, [...items.keys()], dependencies);
+        },
+      };
+
+      const store = createIncrementalStore({ enabled: true });
+      const incremental = await store.section(json, { output });
+      const entries = (
+        await Promise.all(names.map(name => parseFixture(name)))
+      ).flat();
+
+      const documents = [];
+
+      for await (const chunk of generate(entries, worker, { incremental })) {
+        documents.push(...chunk);
+      }
+
+      await store.save();
+
+      return { documents: documents.map(({ id }) => id).toSorted(), built };
+    };
+
+    it('builds only the changed modules, yields every document, and removes those of dropped modules', async context => {
+      const output = await mkdtemp(join(tmpdir(), 'doc-kit-json-'));
+      context.after(() => rm(output, { recursive: true, force: true }));
+
+      await setConfig({ target: ['json'], output });
+
+      const first = await build(['module.md', 'misc.md'], output);
+
+      assert.deepEqual(first, {
+        documents: ['misc', 'module'],
+        built: ['module', 'misc'],
+      });
+
+      // Nothing changed: the documents are read back, not built
+      const second = await build(['module.md', 'misc.md'], output);
+
+      assert.deepEqual(second, { documents: ['misc', 'module'], built: [] });
+
+      const third = await build(['module.md'], output);
+
+      assert.deepEqual(third, { documents: ['module'], built: [] });
+      assert.equal(existsSync(join(output, 'misc.json')), false);
     });
   });
 });
