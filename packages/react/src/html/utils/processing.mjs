@@ -1,6 +1,5 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
-import { getVersionFromSemVer } from '@doc-kit/core/utils/generators.mjs';
 
 import { ROUTER_DATA_ATTRIBUTE } from '../ui/constants.mjs';
 import { THEME_SCRIPT } from '../ui/theme-script.mjs';
@@ -217,14 +216,16 @@ export const populatePage = ({ template, data, dehydrated, assets }) => {
   const root = resolvePageRoot(data);
   const title = data.title ?? data.heading.data.name;
 
-  // Synthetic pages, such as `404.html`, aren't served at a URL of their own
+  // Synthetic pages, such as `404.html`, aren't served at a URL of their own.
+  // `{version}` is the release line (`v26.x`), like the version selector's
+  // labels, and an index page is linked as its directory.
   const canonical =
     config.baseURL && !data.synthetic
-      ? populate(data.path === '/index' ? '{baseURL}/' : config.pageURL, {
+      ? populate(config.pageURL, {
           ...config,
-          version: `v${getVersionFromSemVer(config.version)}`,
+          version: `v${config.version.major}.x`,
           path: data.path,
-        })
+        }).replace(/\/index(\.html)?$/, '/')
       : '';
 
   return populateWithEvaluation(template, {

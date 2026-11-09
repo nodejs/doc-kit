@@ -301,8 +301,9 @@ These variables are in scope:
   client-side instead.
 - `dehydrated` {string} The server-rendered page, for the `<body>`.
 - `canonical` {string} The page's URL, from `pageURL` and `baseURL`, for a
-  `<link rel="canonical">`. It's empty without a `baseURL`, and on `404.html`
-  and `all.html`.
+  `<link rel="canonical">`, with `{version}` set to the release line (`v26.x`).
+  An `index` page links to its directory. It's empty without a `baseURL`, and
+  on `404.html` and `all.html`.
 - `root` {string} The site root, relative to the page (such as `'../'`), or
   absolute with `useAbsoluteURLs`. On `404.html` and `all.html`, which can be
   served from any path, it's `'/'` unless `useAbsoluteURLs` is on. Prefix your
