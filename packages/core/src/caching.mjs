@@ -102,8 +102,7 @@ export const createCache = () => {
   };
 
   /**
-   * Counts a read of a result, and evicts it once every expected consumer has
-   * read it.
+   * Counts a read, evicting the result once every expected consumer has read it.
    *
    * @param {string} name - Cache key (resolved generator specifier)
    */
@@ -233,7 +232,6 @@ export const createCache = () => {
       if (isAsyncIterable(result)) {
         reader = replayOf(name, result).read();
       } else {
-        // A result that doesn't stream is read as a single chunk
         reader = once(result);
       }
 

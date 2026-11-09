@@ -97,8 +97,8 @@ const createGenerator = () => {
         // input while the generator runs, and the generator can let it go
         return generate(dependencyInput, await worker);
       })().then(result => {
-        // For streaming generators, the cache logs each chunk as it records
-        // it, not here when the generator returns
+        // A streaming generator returns before it has produced anything, so
+        // it isn't complete here
         if (!isAsyncIterable(result)) {
           generatorsLogger.debug(`Completed "${name}"`);
         }
