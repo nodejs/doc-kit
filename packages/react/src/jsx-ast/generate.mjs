@@ -3,8 +3,8 @@ import { isMainThread } from 'node:worker_threads';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import {
   groupNodesByModule,
-  groupWholeModules,
   merge,
+  toBatches,
 } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
@@ -78,8 +78,9 @@ export async function* generate(input, worker) {
   async function* describe() {
     const heads = [];
 
-    // A page needs all of its module's entries
-    for await (const entries of groupWholeModules(input)) {
+    // A page needs all of its module's entries, which arrive together, as
+    // `metadata` and `section-pages` give them
+    for await (const entries of toBatches(input)) {
       const groupedModules = groupNodesByModule(entries);
       const descriptors = entries
         .filter(node => node.heading.depth === 1)
