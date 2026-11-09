@@ -60,67 +60,6 @@ export const toBatches = input => {
 };
 
 /**
- * Regroups streamed entries so that each batch holds whole modules: a module
- * whose entries continue in the next batch is held back and passed on with
- * it. A module's entries must arrive together: one that comes back after
- * another module's is an error, wherever the batches end, as its pages would
- * be built without it. Entries given as one array, as a generator that streams
- * its input gets them with one thread, are taken as a single batch.
- *
- * @template {{ api: string }} T
- * @param {Array<T> | AsyncIterable<Array<T>>} batches - The entries, in
- * batches as they are streamed, or in one array
- * @returns {AsyncGenerator<Array<T>>} The same entries, in batches of whole
- * modules
- */
-export async function* groupWholeModules(batches) {
-  // The modules whose entries have all arrived
-  const finished = new Set();
-
-  // The module whose entries are arriving, and those of them held back
-  let current;
-  let held = [];
-
-  for await (const batch of toBatches(batches)) {
-    for (const { api } of batch) {
-      if (api !== current) {
-        if (finished.has(api)) {
-          throw new Error(
-            `The entries of "${api}" arrived apart: a module's entries must ` +
-              'arrive together, in one chunk or in consecutive ones'
-          );
-        }
-
-        if (current !== undefined) {
-          finished.add(current);
-        }
-
-        current = api;
-      }
-    }
-
-    const entries = held.length > 0 ? [...held, ...batch] : batch;
-
-    // The module the batch ends with may continue in the next one
-    let end = entries.length;
-
-    while (end > 0 && entries[end - 1].api === current) {
-      end--;
-    }
-
-    held = entries.slice(end);
-
-    if (end > 0) {
-      yield entries.slice(0, end);
-    }
-  }
-
-  if (held.length > 0) {
-    yield held;
-  }
-}
-
-/**
  * Parses the SemVer string into a Node.js-alike version
  *
  * @param {import('semver').SemVer} version The version to be parsed

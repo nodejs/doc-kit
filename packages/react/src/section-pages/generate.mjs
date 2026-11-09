@@ -3,7 +3,7 @@
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import {
   groupNodesByModule,
-  groupWholeModules,
+  toBatches,
 } from '@doc-kit/core/utils/generators.mjs';
 import { visit } from 'unist-util-visit';
 
@@ -159,8 +159,9 @@ export async function* generate(input) {
 
   const chunkPages = [];
 
-  // A module's chunk pages need all of its entries
-  for await (const entries of groupWholeModules(input)) {
+  // A module's chunk pages need all of its entries, which arrive together:
+  // each of `metadata`'s chunks holds whole files, and a file is one module
+  for await (const entries of toBatches(input)) {
     yield entries;
 
     chunkPages.push(...buildChunkPages(entries, config));

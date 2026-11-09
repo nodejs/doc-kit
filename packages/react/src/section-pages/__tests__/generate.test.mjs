@@ -308,16 +308,16 @@ describe('section-pages generate', () => {
   });
 
   it(
-    'passes whole modules on before the next batch arrives',
-    // The next batch waits for the test, so modules held back until it arrives
-    // would never be passed on
+    'passes each batch on before the next one arrives',
+    // The next batch waits for the test, so a batch held back until it
+    // arrives would never be passed on
     { timeout: 10_000 },
     async () => {
       const gate = Promise.withResolvers();
-      const fs = createModule();
+      const first = [...createModule(), createEntry('tiny', 1, 'Tiny')];
 
       async function* batches() {
-        yield [...fs, createEntry('tiny', 1, 'Tiny')];
+        yield first;
         await gate.promise;
         yield [createEntry('zlib', 1, 'Zlib')];
       }
@@ -325,8 +325,7 @@ describe('section-pages generate', () => {
       const output = generate(batches());
       const { value } = await output.next();
 
-      // `fs` is whole, `tiny` may continue in the next batch
-      assert.deepEqual(value, fs);
+      assert.deepEqual(value, first);
 
       gate.resolve();
 
@@ -334,7 +333,7 @@ describe('section-pages generate', () => {
 
       assert.deepEqual(
         rest.filter(e => !e.chunk).map(e => e.api),
-        ['tiny', 'zlib']
+        ['zlib']
       );
       assert.equal(
         rest.filter(e => e.chunk && e.heading.depth === 1).length,
@@ -342,12 +341,4 @@ describe('section-pages generate', () => {
       );
     }
   );
-
-  it('builds a module split across batches as one', async () => {
-    const whole = await run(createModule());
-    const module = createModule();
-    const split = await run(module.slice(0, 2), module.slice(2));
-
-    assert.deepEqual(split, whole);
-  });
 });
