@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face {
+        font-family: 'Inter Variable';
+        font-weight: 100 900;
+        src: url('%INTER%') format('woff2-variations');
+      }
+      @font-face {
+        font-family: 'Plex Mono';
+        src: url('%PLEX_MONO%') format('woff2');
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: #0d121c;
+        color: #f6f7f9;
+        font-family: 'Inter Variable', sans-serif;
+      }
+      .card {
+        position: relative;
+        box-sizing: border-box;
+        width: 1200px;
+        height: 630px;
+        padding: 88px 96px;
+        background-image: radial-gradient(#2c3437 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+      .card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          70% 90% at 20% 30%,
+          #0d121c 40%,
+          rgb(13 18 28 / 0.4) 100%
+        );
+      }
+      .frame {
+        position: absolute;
+        inset: 40px;
+        border: 1px solid #212a33;
+        border-radius: 4px;
+      }
+      .content {
+        position: relative;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+      }
+      .brand svg {
+        width: 58px;
+        height: 58px;
+      }
+      h1 {
+        margin: 92px 0 0;
+        font-size: 92px;
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        line-height: 1;
+      }
+      h1 span {
+        color: #8592a0;
+      }
+      p {
+        margin: 34px 0 0;
+        color: #b1bcc2;
+        font-family: 'Plex Mono', monospace;
+        font-size: 20px;
+        white-space: nowrap;
+      }
+      .cat {
+        position: absolute;
+        right: 70px;
+        bottom: 48px;
+        width: 360px;
+        height: 360px;
+        opacity: 0.08;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="frame"></div>
+      <svg class="cat" viewBox="0 0 32 32">
+        <path
+          d="M5.2 3.1 11.6 8.6Q16 7.2 20.4 8.6L26.8 3.1Q27.9 2.4 28 3.7L28.5 14.8C29.2 22.6 23.4 29 16 29S2.8 22.6 3.5 14.8L4 3.7Q4.1 2.4 5.2 3.1ZM11 14.2c1.5 1.6 1.5 5.8 0 7.4-1.5-1.6-1.5-5.8 0-7.4Zm10 0c1.5 1.6 1.5 5.8 0 7.4-1.5-1.6-1.5-5.8 0-7.4ZM14.6 22.9Q16 22.5 17.4 22.9Q16.9 24 16 24.5Q15.1 24 14.6 22.9Z"
+          fill="#f6f7f9"
+          fill-rule="evenodd"
+        />
+      </svg>
+      <div class="content">
+        <div class="brand">
+          <svg viewBox="0 0 32 32">
+            <path
+              d="M5.2 3.1 11.6 8.6Q16 7.2 20.4 8.6L26.8 3.1Q27.9 2.4 28 3.7L28.5 14.8C29.2 22.6 23.4 29 16 29S2.8 22.6 3.5 14.8L4 3.7Q4.1 2.4 5.2 3.1ZM11 14.2c1.5 1.6 1.5 5.8 0 7.4-1.5-1.6-1.5-5.8 0-7.4Zm10 0c1.5 1.6 1.5 5.8 0 7.4-1.5-1.6-1.5-5.8 0-7.4ZM14.6 22.9Q16 22.5 17.4 22.9Q16.9 24 16 24.5Q15.1 24 14.6 22.9Z"
+              fill="#f6f7f9"
+              fill-rule="evenodd"
+            />
+          </svg>
+          doc-kit
+        </div>
+        <h1>The docs toolkit<br /><span>for APIs.</span></h1>
+        <p>Markdown · MDX → site · JSON · search · LLMs.txt</p>
+      </div>
+    </div>
+  </body>
+</html>

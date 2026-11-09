@@ -1,73 +1,113 @@
 # Generators
 
-A generator is an output format.
+A generator makes one output from your documentation: the website, the search
+index, JSON, a man page. You pick generators by their target name with
+`--target` (`-t`) on the [CLI](./cli.md), or with `target` in the
+[configuration file](./configuration.md). However many you pick, doc-kit parses
+your sources once and every generator reads that result.
 
 ```bash
 npx @doc-kit/cli generate -t html -t orama-db -t sitemap -i "docs/**/*.md" -o out
 ```
 
-## Built-in generators
+![Generators form a graph through dependsOn; picking html and orama-db runs only them and what they depend on, parsing your sources once](./diagrams/generator-graph.svg)
 
-### Web ([`@doc-kit/generator-react`](./packages/react.md))
+## The website
 
-| Target                                           | Output                                                               |
-| ------------------------------------------------ | -------------------------------------------------------------------- |
-| [`html`](./generators/html.md)                   | The modern documentation site: server-rendered, hydrated, themeable. |
-| [`orama-db`](./generators/orama-db.md)           | The search index behind the `html` site's search box.                |
-| [`llms-txt`](./generators/llms-txt.md)           | An [`llms.txt`](https://llmstxt.org/) index for language models.     |
-| [`llms-txt-full`](./generators/llms-txt-full.md) | Every page's Markdown in one `llms-full.txt`, for language models.   |
-| [`sitemap`](./generators/sitemap.md)             | A `sitemap.xml` for search engines.                                  |
-| [`section-pages`](./generators/section-pages.md) | The `html` site and sitemap, plus one page per section of a module.  |
+From [`@doc-kit/generator-react`](./packages/react.md), which you install next
+to the CLI.
 
-### JSON ([`@doc-kit/core`](./packages/core.md))
+| Generator                                      | Target          | Output                                                                                  |
+| ---------------------------------------------- | --------------- | --------------------------------------------------------------------------------------- |
+| [Website](./generators/html.md)                | `html`          | The site: server-rendered pages with interactive islands, bundled with Vite by default. |
+| [Section pages](./generators/section-pages.md) | `section-pages` | An extra page for each section of every module, added to the website and the sitemap.   |
+| [Search index](./generators/orama-db.md)       | `orama-db`      | `orama-db.json`, the Orama index that the website's search box loads.                   |
+| [Sitemap](./generators/sitemap.md)             | `sitemap`       | `sitemap.xml`, listing the pages for search engines.                                    |
 
-| Target                                       | Output                                                             |
-| -------------------------------------------- | ------------------------------------------------------------------ |
-| [`json`](./generators/json.md)               | One schema-described JSON document per source file.                |
-| [`json-all`](./generators/json-all.md)       | Those documents bundled into a single `all.json`.                  |
-| [`json-simple`](./generators/json-simple.md) | A dump of the parsed metadata entries, for debugging the pipeline. |
+- The search box shows only when the search index is built in the same run.
+  Set [`showSearchBox`](./generators/html.md#configuring) in the `html` section
+  to choose yourself.
+- `section-pages` adds its pages to whichever of `html` and `sitemap` you also
+  ask for. Ask for it on its own and you get both.
 
-### Legacy ([`@node-core/doc-kit-legacy`](./packages/node-legacy.md))
+## For language models
 
-1:1 matches for Node.js's original documentation tooling, for consumers of
-the classic layouts.
+From [`@doc-kit/generator-react`](./packages/react.md).
 
-| Target                                               | Output                              |
-| ---------------------------------------------------- | ----------------------------------- |
-| [`legacy-html`](./generators/legacy-html.md)         | One classic HTML page per document. |
-| [`legacy-html-all`](./generators/legacy-html-all.md) | The single-page `all.html` bundle.  |
-| [`legacy-json`](./generators/legacy-json.md)         | The classic per-document JSON.      |
-| [`legacy-json-all`](./generators/legacy-json-all.md) | The single-file JSON bundle.        |
+| Generator                                      | Target          | Output                                                                  |
+| ---------------------------------------------- | --------------- | ----------------------------------------------------------------------- |
+| [llms.txt](./generators/llms-txt.md)           | `llms-txt`      | An [`llms.txt`](https://llmstxt.org/) index linking to each page.       |
+| [llms-full.txt](./generators/llms-txt-full.md) | `llms-txt-full` | `llms-full.txt`: every page's Markdown in one file, each after its URL. |
 
-### Node.js-specific ([`@node-core/doc-kit`](./packages/node.md))
+## Data
 
-Outputs consumed by the Node.js project's own build and release processes.
+From [`@doc-kit/core`](./packages/core.md), which comes with the CLI.
 
-| Target                                         | Output                                              |
-| ---------------------------------------------- | --------------------------------------------------- |
-| [`man-page`](./generators/man-page.md)         | The `node.1` manual page.                           |
-| [`api-links`](./generators/api-links.md)       | A map of API symbols to their source locations.     |
-| [`addon-verify`](./generators/addon-verify.md) | Extracted addon code samples, arranged for testing. |
+| Generator                                 | Target        | Output                                                                 |
+| ----------------------------------------- | ------------- | ---------------------------------------------------------------------- |
+| [JSON](./generators/json.md)              | `json`        | One JSON document per source file, described by a published schema.    |
+| [JSON bundle](./generators/json-all.md)   | `json-all`    | Every `json` document bundled into one `all.json`.                     |
+| [Debug JSON](./generators/json-simple.md) | `json-simple` | `api-docs.json`, a dump of the API entries for debugging the pipeline. |
+
+## For Node.js
+
+From [`@node-core/doc-kit`](./packages/node.md), which you install next to the
+CLI. These serve the Node.js project's own build, release and tests, and their
+defaults match its layout, so they're mostly useful to Node.js and projects
+shaped like it.
+
+| Generator                                      | Target         | Output                                                                               |
+| ---------------------------------------------- | -------------- | ------------------------------------------------------------------------------------ |
+| [Man page](./generators/man-page.md)           | `man-page`     | A man page in mdoc format (`node.1` by default), from a command-line reference page. |
+| [API links](./generators/api-links.md)         | `api-links`    | `apilinks.json`, mapping each exported API to the line defining it in the sources.   |
+| [Addon examples](./generators/addon-verify.md) | `addon-verify` | The C++ addon examples' code blocks, written out with a `binding.gyp` for the tests. |
+
+## Node.js's legacy formats
+
+From [`@node-core/doc-kit-legacy`](./packages/node-legacy.md), which you
+install next to the CLI. These write the HTML pages and JSON files of the
+Node.js API docs in the formats Node.js's original tooling made, for Node.js
+and the tools that read them. For your own docs, use the website and JSON
+generators above.
+
+| Generator                                                  | Target            | Output                                                                   |
+| ---------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------ |
+| [Legacy HTML](./generators/legacy-html.md)                 | `legacy-html`     | A classic Node.js HTML page per source file, with its `assets/`.         |
+| [Legacy single-page HTML](./generators/legacy-html-all.md) | `legacy-html-all` | `all.html`, every legacy HTML page one after another.                    |
+| [Legacy JSON](./generators/legacy-json.md)                 | `legacy-json`     | A classic Node.js JSON file per source file, with descriptions in HTML.  |
+| [Legacy JSON bundle](./generators/legacy-json-all.md)      | `legacy-json-all` | `all.json`, the sections of every legacy JSON file merged into one file. |
 
 ## Pipeline stages
 
-The targets above are built on a few shared stages, each of which is itself a
-generator.
+The generators above read from a few shared stages, which are generators too. A
+stage runs when a target needs it, once per run however many targets read it,
+and writes no files. You don't ask for stages yourself, but you configure them
+like any other generator: `--type-map`, for example, sets `metadata.typeMap`.
 
-| Stage                                  | Produces                                              |
-| -------------------------------------- | ----------------------------------------------------- |
-| [`ast`](./generators/ast.md)           | Markdown parsed into MDAST, across worker threads.    |
-| [`ast-js`](./generators/ast-js.md)     | JavaScript sources parsed into an AST.                |
-| [`metadata`](./generators/metadata.md) | The flattened API entries every output is built from. |
-| [`jsx-ast`](./generators/jsx-ast.md)   | Those entries as JSX, ready for the web generators.   |
+| Stage                                        | Name       | Produces                                                                            |
+| -------------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
+| [Parsing Markdown](./generators/ast.md)      | `ast`      | The Markdown and MDX files in `input`, parsed into syntax trees in worker threads.  |
+| [Parsing JavaScript](./generators/ast-js.md) | `ast-js`   | The `.js` files in `input`, parsed with Acorn for `api-links`.                      |
+| [API entries](./generators/metadata.md)      | `metadata` | The flat list of API entries, one per heading with its kind, stability and history. |
+| [Page JSX](./generators/jsx-ast.md)          | `jsx-ast`  | Each page as a JSX program, which `html` renders.                                   |
 
-## Custom generators
+`jsx-ast` comes from `@doc-kit/generator-react`; the other stages come from
+`@doc-kit/core`.
 
-A target can also be an import specifier — a package export or a local file
-whose default export is a generator:
+## Options
+
+Each generator reads its options from the configuration section named after
+it. See [Generator options](./configuration.md#generator-options).
+
+## Your own
+
+A target can also be an import specifier: a package export, or the path to a
+local file (starting with `.`, or absolute) whose default export is a generator.
+It runs alongside the built-in ones, and reads its options from the section
+named after its `name`.
 
 ```bash
 npx @doc-kit/cli generate -t @my-scope/my-generator -t ./generators/rss.mjs ...
 ```
 
-To build one, see [Creating generators](./creating-generators.md).
+To write one, see [Creating generators](./creating-generators.md).

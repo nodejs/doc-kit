@@ -1,17 +1,25 @@
-# `jsx-ast` Generator
+# Page JSX
 
-The `jsx-ast` generator converts MDAST (Markdown Abstract Syntax Tree) to JSX AST, transforming API documentation metadata into React-compatible JSX representations.
+The `jsx-ast` stage turns each page's API entries into the JSX that the
+[website](https://doc-kit.nodejs.org/generators/html) renders. It runs whenever
+you build the site, since `html` depends on it. With
+[section pages](https://doc-kit.nodejs.org/generators/section-pages),
+`section-pages` runs between `metadata` and `jsx-ast`, so the section pages are
+built here like any other page.
 
 ## Configuring
 
-- `ref` {string} Git reference/branch for linking to source files.
-  **Default:** `'main'`.
-- `index` {Array} Array of `{ section, api }` objects defining the
-  documentation structure.
-- `generateNotFoundPage` {boolean} When `true`, creates a synthetic JSX AST
-  entry for `404.html`. **Default:** `true`.
-- `showReadingTime` {boolean} When `true`, computes an estimated reading time
-  for each page and displays it in the MetaBar. **Default:** `false`.
+- `ref` {string} The Git ref of the "Source Code" link that an entry with a
+  `source_link` gets under its heading, which points at
+  `https://github.com/<repository>/blob/<ref>/<source_link>`. The default wins
+  over `global.ref`, so `--git-ref` doesn't change it. **Default:** `'main'`.
+- `generateNotFoundPage` {boolean} Whether to build the `404` page.
+  **Default:** `true`.
+- `showReadingTime` {boolean} Whether to estimate each page's reading time,
+  such as `1 min read`, which the site shows in the page's meta bar.
+  **Default:** `false`.
+- `markdown` {Object} Your own plugins for the pages. See
+  [Markdown plugins](https://doc-kit.nodejs.org/configuration#markdown-plugins).
 
 ## Output
 
@@ -27,4 +35,5 @@ rather than building every module a second time here.
 `index.html` is generated when an `index` document is part of the input, and
 is rendered from that document like any other page. An MDX `index` document
 can render the stability overview of every module by using the built-in
-`<DocumentationIndex />` component (see the `html` generator's README).
+`<DocumentationIndex />` component (see
+[MDX pages](https://doc-kit.nodejs.org/writing-docs#mdx-pages)).

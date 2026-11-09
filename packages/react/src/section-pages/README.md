@@ -1,8 +1,53 @@
-# `section-pages` Generator
+# Section pages
 
-The `section-pages` generator splits every documented module into per-section pages.
-It leaves the full module page untouched and adds one extra page for each
-section next to it:
+The `section-pages` generator adds a page for each section of every module,
+next to the full module page, so readers can open a single class or method on
+its own. Use it when your modules are long reference pages.
+
+## Usage
+
+```bash
+npx @doc-kit/cli generate -t section-pages -i "doc/api/*.md" -o out
+```
+
+Every module keeps its full page (`fs.html`) and gets one page per section in
+a directory of its own (`fs/callback-api.html`). The full page keeps its
+content; only its sidebar and previous/next links change to include the
+section pages. What the run writes depends on the targets you pass with
+`section-pages`:
+
+| You request                   | You get                                                |
+| ----------------------------- | ------------------------------------------------------ |
+| `-t section-pages`            | The website and `sitemap.xml`, both with section pages |
+| `-t html -t section-pages`    | The website only                                       |
+| `-t sitemap -t section-pages` | `sitemap.xml` only                                     |
+
+> [!IMPORTANT]
+> The [sitemap](https://doc-kit.nodejs.org/generators/sitemap) lists absolute
+> URLs, so set `baseURL` in your configuration file whenever the run includes
+> it.
+
+## Configuring
+
+```mjs displayName="doc-kit.config.mjs"
+export default {
+  target: ['section-pages'],
+  'section-pages': {
+    // Also split at `###` headings that document an API entry
+    maxDepth: 3,
+    exclude: ['deprecations'],
+  },
+};
+```
+
+- `maxDepth` {number} The deepest heading level that can start a section
+  page: `##` headings can, and so can classes, methods, events and globals
+  from `###` down to this level. Values below `2` split nothing.
+  **Default:** `2`.
+- `exclude` {string[]} Modules never to split, by their `api` name (`fs` for
+  `fs.md`). **Default:** `[]`.
+
+With this configuration, Node.js's `fs.md` comes out as:
 
 ```text
 out/
@@ -16,128 +61,116 @@ out/
     └── ...
 ```
 
-Each chunk page renders like any other page: same layout, sidebar, table of
-contents, and search. On top of that:
+## What gets its own page
 
-- the sidebar nests the current module's sections under its entry (the module
-  itself is repeated as the first item, so the full page stays one click away);
-- previous/next links step through the module and its sections in order;
-- the meta bar links a chunk back to its place on the full page ("Part Of"),
-  and its "View As" and "Edit this page" links point at the module's files;
-- links inside a section keep working: fragment links follow the section they
-  point at to whichever page it landed on, and relative links are re-based.
+Within a module, a new section page starts at:
 
-```bash
-npx @doc-kit/cli generate -t section-pages -i "doc/api/*.md" -o out
-```
+- every `##` heading, and
+- every heading from `###` down to `maxDepth` that is a class, method, event or
+  global (an entry marked `type: global`), such as `### fs.readFile()`.
 
-## How it works
+Everything else stays on the page of the closest heading above it:
 
-`section-pages` does not render anything itself. It consumes the `metadata`
-generator's entries, and for each module appends copies of the entries of every
-section, re-homed under the section's own `api` and `path` (`fs/readFile`).
-It then declares the generators it is delivered through as its
-[`dependent`](../../../../docs/creating-generators.md#declaring-a-dependent)s:
+- prose sub-sections below `##`, such as `#### File descriptors`;
+- constructors, properties and static methods below `##`;
+- at any depth, the members of a class, so a class page lists its whole API
+  (`### Class: fs.Dir` keeps `#### dir.close()`).
 
-- `html`, where it is spliced between `metadata` and `jsx-ast`, so the web
-  generators render the chunk pages as if they had always been there;
-- `sitemap`, where it is spliced in front of the generator itself, so the
-  chunk pages are listed.
+A section only gets a page when it documents an API entry, in its own heading
+or any heading below it. Pure prose (`## Introduction`, `## Notes`) reads best
+in the context of the full page and stays there. A prose heading whose
+sub-sections are API entries (`## Callback API`) still gets a page, so the
+sidebar can nest them under it.
 
-```text
-ast → metadata → section-pages → jsx-ast → html
-               └─────────→ sitemap
-```
-
-Requesting `-t section-pages` on its own therefore produces both. Requested together
-with either of them (`-t html -t section-pages`), it only feeds the ones that run.
-
-Other generators that read `metadata` — `orama-db`, `llms-txt`, and the JSON
-outputs — are deliberately left alone: search results and `llms.txt` keep
-pointing at the full pages, which carry the same anchors, and nothing is
-indexed twice.
-
-## What becomes a chunk
-
-Within a module, a new chunk starts at:
-
-- every depth-2 heading (`## Callback API`, `## Notes`), and
-- every heading up to `maxDepth` that documents an API entry — a method, class,
-  constructor, event, property, static method, or global (`### fs.readFile()`).
-
-Everything else stays in the chunk of the closest heading above it: prose
-sub-sections (`#### File descriptors`), and — regardless of depth — the members
-of a class, so that a class page lists its whole API (`### Class: fs.Dir` keeps
-`#### dir.close()`).
-
-A section only becomes a chunk when it documents an API entry — its own
-heading, or one nested anywhere below it, is a method, class, constructor,
-event, property, or static method. Pure prose (`## Introduction`, `## Notes`,
-the whole of "About this documentation") reads best in the context of the full
-page, and stays there. A prose-headed section whose sub-sections are API
-entries (`## Callback API`) is still a chunk, so that the sidebar can nest them
-under it.
-
-The module's own introduction (everything before the first depth-2 heading) is
-only on the full page. Modules that would yield fewer than two chunks — which
-includes every module that documents no API at all — and modules listed in
-`exclude`, are left alone.
+The module's introduction, everything before the first heading that starts a
+page, is only on the full page. A module isn't split when it would get fewer
+than two section pages (which includes every module that documents no API
+entry), when it's listed in `exclude`, or when it has no `#` heading.
 
 ## File names
 
-A chunk's file name comes from its heading. API names keep their case, with the
-module's own prefix dropped, so `fs.readFile()` becomes `fs/readFile.html` and
-`Class: fs.Dir` becomes `fs/Dir.html`; names in another namespace keep it
-(`fs/fsPromises.readFile.html`). Prose headings are slugged
-(`fs/callback-api.html`). Duplicates within a module are suffixed
-(`close.html`, `close-2.html`), comparing case-insensitively so the output is
-safe on case-insensitive file systems.
+A section page's file name comes from its heading:
 
-Heading anchors are unchanged, so `fs/readFile.html#fsreadfilepath-options-callback`
-and `fs.html#fsreadfilepath-options-callback` point at the same section.
+- API names keep their case and drop the module's own prefix: `fs.readFile()`
+  becomes `fs/readFile.html`, and `Class: fs.Dir` becomes `fs/Dir.html`.
+- Names from another namespace keep it: `fs/fsPromises.readFile.html`.
+- Prose headings, and API names that aren't safe file names, are slugged:
+  `fs/callback-api.html`.
+- A name repeated within a module gets a number (`close.html`,
+  `close-2.html`). The comparison ignores case, so the output is safe on
+  case-insensitive file systems.
 
-## Configuring
+Heading anchors don't change, so
+`fs/readFile.html#fsreadfilepath-options-callback` and
+`fs.html#fsreadfilepath-options-callback` point at the same section.
 
-- `maxDepth` {number} The deepest heading level that may start a chunk.
-  Headings below it always stay with the section above them. **Default:** `2`,
-  which only splits at `##` headings; the tree above is what `3` produces.
-- `exclude` {Array} `api` names of modules that are never split, on top of the
-  modules that document no API entry. **Default:** `[]`.
+## On a section page
 
-```js
-// doc-kit.config.mjs
-export default {
-  target: ['section-pages'],
-  'section-pages': {
-    // Also split at `###` headings that document an API entry
-    maxDepth: 3,
-    exclude: ['deprecations'],
-  },
-};
-```
+A section page renders like any other page, with the same layout, sidebar,
+table of contents and search. The section's heading becomes the page's main
+heading, and its sub-headings move up with it. Also:
 
-## Chunk metadata
+- **Sidebar:** while you view a split module or one of its section pages, the
+  module's entry expands into its sections, nested by heading level, with the
+  module repeated as the first item.
+- **Previous and next:** on a split module and its section pages, the links
+  step through the module page and its section pages in document order,
+  instead of the sidebar order.
+- **Meta bar:** "Part Of" links back to the section's place on the full page.
+  "View As", "Edit this page" and the version picker point at the module's
+  files and pages. "Added In" shows the section's own version, falling back to
+  the module's.
+- **Links:** a fragment link follows its section to whichever page it ended up
+  on (anchors in the module's introduction point at the full page). Relative
+  links, including type links, are re-based so they still resolve from the
+  section page's directory. Absolute URLs don't change.
 
-Every entry of a chunk page carries a `chunk` property describing its origin,
-which the `html` UI uses for its navigation:
+## Data for custom themes
 
-- `api` {string} The `api` of the module the chunk was split from (`fs`).
-- `path` {string} The `path` of the module (`/fs`).
+Every entry on a section page carries a `chunk` property that describes where
+it came from:
+
+- `api` {string} The module's `api` (`fs`).
+- `path` {string} The module's `path` (`/fs`).
 - `slug` {string} The section's anchor on the full page.
-- `index` {number} The chunk's position within the module, in document order.
-- `depth` {number} The original depth of the chunk's heading.
+- `index` {number} The section's position within the module, in document
+  order.
+- `depth` {number} The level of the section's heading on the full page.
 
-The chunk's first entry also gets a `title` — its sidebar label and page
-title (`fs.readFile`). The `html` generator exposes every module's section
-tree through the `chunks` export of
-[`#theme/config`](./html.md#themeconfig-virtual-module), for custom themes.
+The entry's own `api`, `path` and `basename` are the section page's
+(`fs-readFile`, `/fs/readFile`, `readFile`). The first entry also gets a
+`title`, used as the page title and sidebar label (`fs.readFile`).
+
+Theme components receive this as `metadata.chunk`. The `chunks` export of
+[`#theme/config`](https://doc-kit.nodejs.org/generators/html#theme-config-module)
+maps each split module's path to its label and section tree, which the
+built-in sidebar and previous/next links use.
+
+## How it works
+
+`section-pages` doesn't render anything itself. It reads the API entries,
+keeps them all, and appends a copy of each section's entries for every module,
+re-homed under the section page's own `api` and `path`. It names `html` and
+`sitemap` as its
+[dependents](https://doc-kit.nodejs.org/creating-generators#declaring-a-dependent),
+so the pipeline splices it in where each of them reads `metadata`:
+
+- in the `html` pipeline, between `metadata` and
+  [`jsx-ast`](https://doc-kit.nodejs.org/generators/jsx-ast), so the website
+  renders the section pages like any other;
+- directly in front of `sitemap`, so the section pages are listed.
+
+No other generator sees the section pages. The search index, `llms.txt` and
+the JSON outputs read `metadata` directly, so they keep pointing at the full
+pages (which carry the same anchors) and nothing is indexed twice.
 
 ## Trade-offs
 
-- Chunk pages duplicate content that is also on the full page, so the site
-  roughly doubles in page count and the build grows accordingly.
-- No redirects are generated from `fs.html#anchor` to a chunk page: the full
-  page still exists, so existing links keep working, and both pages share
-  their anchors.
-- Chunk pages do not get `.json` or `.md` renderings of their own; their
+- Section pages repeat content that's also on the full page, so the site has
+  more pages and takes longer to build.
+- No redirects are generated from `fs.html#anchor` to a section page. The full
+  page still exists, so existing links keep working.
+- Section pages don't get `.json` or `.md` renderings of their own; their
   "View As" links lead to the module's.
+- Section pages stay out of the sidebar's page list (they only appear nested
+  under the module you're viewing) and out of `all.html`.
