@@ -295,9 +295,9 @@ describe('jsx-ast generate', () => {
 
       const output = generate(input(), worker);
 
-      // Each module's page is built once the next module arrives, and read as
-      // `html` reads it, letting go of it once it has it. The last one read may
-      // still be in a register: the first one must not be held.
+      // Each module's page is built as its batch arrives, and read as `html`
+      // reads it, letting go of it once it has it. The last one read may still
+      // be in a register: the first one must not be held.
       await output.next();
       await output.next();
 
