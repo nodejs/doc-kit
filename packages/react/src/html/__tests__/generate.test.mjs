@@ -18,24 +18,6 @@ import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { FONTS } from '../constants.mjs';
 import { generate } from '../generate.mjs';
 
-/**
- * Yields the given entries as one batch, as a dependency streaming them does.
- *
- * @param {Array<object>} entries
- */
-async function* streamInOneBatch(entries) {
-  yield entries;
-}
-
-/**
- * Runs `section-pages` over the given entries, streamed in as one batch, and
- * collects its pages.
- *
- * @param {Array<object>} entries
- */
-const chunk = entries =>
-  collectAsyncGenerator(sectionPages(streamInOneBatch(entries)));
-
 // Pages are rendered with the pipeline of `jsx-ast`
 await loadMarkdownPlugins(
   await loadGenerator(import.meta.resolve('../../jsx-ast/index.mjs'))
@@ -215,7 +197,10 @@ describe('web generate', () => {
       ],
     });
 
-    const pages = Map.groupBy(await chunk(entries), entry => entry.api);
+    const pages = Map.groupBy(
+      await collectAsyncGenerator(sectionPages(entries)),
+      entry => entry.api
+    );
     const contents = await Promise.all(
       [...pages.values()].map(group => buildContent(group, group[0]))
     );
