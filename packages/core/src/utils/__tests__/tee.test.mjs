@@ -1,63 +1,16 @@
 import { deepStrictEqual, rejects } from 'node:assert';
 import { describe, it } from 'node:test';
-import { setFlagsFromString } from 'node:v8';
-import { runInNewContext } from 'node:vm';
 
+import {
+  collectGarbage,
+  trackReleases,
+} from '../../__tests__/fixtures/garbage-collection.mjs';
 import { createTee } from '../tee.mjs';
 
-setFlagsFromString('--expose-gc');
-
-const gc = runInNewContext('gc');
-
-/**
- * Reads every chunk of an async iterable.
- *
- * @template T
- * @param {AsyncIterable<T[]>} iterable
- * @returns {Promise<T[][]>}
- */
-async function collectChunks(iterable) {
-  const chunks = [];
-
-  for await (const chunk of iterable) {
-    chunks.push(chunk);
-  }
-
-  return chunks;
-}
-
-/**
- * Collects garbage until `done` holds, at most ten times.
- *
- * @param {() => boolean} done
- * @returns {Promise<void>}
- */
-async function collectGarbage(done) {
-  for (let i = 0; i < 10 && !done(); i++) {
-    await new Promise(resolve => setImmediate(resolve));
-    gc();
-  }
-}
-
 describe('createTee', () => {
-  it('should let go of the chunks every reader has read while it still records', async () => {
-    const released = new Set();
-    const registry = new FinalizationRegistry(value => released.add(value));
+  it('should let go of the chunks every reader has read while it still runs', async () => {
+    const { released, chunkOf } = trackReleases();
     const gate = Promise.withResolvers();
-
-    /**
-     * A chunk holding an item that tells when it is let go.
-     *
-     * @param {number} value
-     * @returns {Array<object>}
-     */
-    const chunkOf = value => {
-      const item = {};
-
-      registry.register(item, value);
-
-      return [item];
-    };
 
     async function* gen() {
       for (let value = 0; value < 4; value++) {
@@ -91,7 +44,7 @@ describe('createTee', () => {
     gate.resolve();
 
     for (const reader of readers) {
-      await collectChunks(reader);
+      await Array.fromAsync(reader);
     }
 
     // Once its readers are done, so is the last chunk
@@ -112,12 +65,12 @@ describe('createTee', () => {
 
     const tee = createTee(gen());
 
-    const early = collectChunks(tee.read());
+    const early = Array.fromAsync(tee.read());
 
     await new Promise(resolve => setImmediate(resolve));
     gate.resolve();
 
-    const late = collectChunks(tee.read());
+    const late = Array.fromAsync(tee.read());
 
     const earlyChunks = await early;
     const lateChunks = await late;
@@ -139,7 +92,7 @@ describe('createTee', () => {
     // With no reader left, every chunk goes
     tee.forget();
 
-    await rejects(collectChunks(tee.read()), /Chunk 0 was let go/);
+    await rejects(Array.fromAsync(tee.read()), /Chunk 0 was let go/);
   });
 
   it('should run the generator to its end, and throw its failure to readers', async () => {
