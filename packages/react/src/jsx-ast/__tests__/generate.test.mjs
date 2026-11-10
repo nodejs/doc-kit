@@ -208,62 +208,10 @@ describe('jsx-ast generate', () => {
   });
 
   it(
-    'emits the manifest without waiting for the pages still being built',
-    // The first page is built only once the manifest has arrived, so a
-    // manifest that waited for it would never come
-    { timeout: 10_000 },
-    async () => {
-      await setConfig({ target: ['jsx-ast'] });
-
-      const gate = Promise.withResolvers();
-      const worker = {
-        async *stream(batches) {
-          const all = [];
-
-          // Every batch is taken as it arrives
-          for await (const items of batches) {
-            all.push(items);
-          }
-
-          for (const items of all) {
-            // The first page takes until the test lets it finish
-            if (items.some(({ head }) => head.api === 'fs')) {
-              await gate.promise;
-            }
-
-            yield items.map(({ head }) => ({ data: head }));
-          }
-        },
-      };
-
-      const output = generate(
-        streamOf([[createEntry('fs', 'File system')]]),
-        worker
-      );
-
-      const { value } = await output.next();
-
-      assert.deepEqual(
-        value[0].manifest.map(({ api }) => api),
-        ['fs', '404']
-      );
-
-      gate.resolve();
-
-      const { pages } = await collect(output);
-
-      assert.deepEqual(
-        pages.map(({ data }) => data.api),
-        ['fs', '404']
-      );
-    }
-  );
-
-  it(
     'emits the manifest while worker.stream holds back the next batch',
     // The pool only takes the next batch once there's room, and the first
     // page holds it until the manifest has arrived, so a manifest that waited
-    // for the pool to take every batch would never come
+    // for the pages, or for the pool to take every batch, would never come
     { timeout: 10_000 },
     async () => {
       await setConfig({ target: ['jsx-ast'] });
