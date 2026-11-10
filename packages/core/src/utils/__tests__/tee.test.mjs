@@ -93,6 +93,11 @@ describe('createTee', () => {
     for (const reader of readers) {
       await collectChunks(reader);
     }
+
+    // Once its readers are done, so is the last chunk
+    await collectGarbage(() => released.has(4));
+
+    deepStrictEqual(released.size, 5);
   });
 
   it('should give every reader every chunk, in order', async () => {
@@ -156,5 +161,29 @@ describe('createTee', () => {
     }, /boom/);
 
     deepStrictEqual(chunks, [[1]]);
+  });
+
+  it('should not report a failure as unhandled when nothing reads it', async () => {
+    const unhandled = [];
+    const onUnhandled = error => unhandled.push(error);
+
+    async function* gen() {
+      yield [1];
+
+      throw new Error('boom');
+    }
+
+    process.on('unhandledRejection', onUnhandled);
+
+    try {
+      createTee(gen());
+
+      // A rejection left unhandled is reported once the microtasks have run
+      await new Promise(resolve => setImmediate(resolve));
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+
+    deepStrictEqual(unhandled, []);
   });
 });

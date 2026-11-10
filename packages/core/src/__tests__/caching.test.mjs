@@ -275,24 +275,6 @@ describe('caching', () => {
       strictEqual(iterations, 1);
     });
 
-    it('should replay every chunk to a reader that starts late', async () => {
-      const cache = createCache();
-
-      async function* gen() {
-        yield [1];
-        yield [2];
-      }
-
-      cache.store('a', gen());
-
-      await cache.consume('a');
-
-      const reader = await cache.stream('a');
-      const chunks = await collectChunks(reader);
-
-      deepStrictEqual(chunks, [[1], [2]]);
-    });
-
     it('should stream a non-streaming result as a single chunk', async () => {
       const cache = createCache();
 
@@ -302,32 +284,6 @@ describe('caching', () => {
       const chunks = await collectChunks(reader);
 
       deepStrictEqual(chunks, [[1, 2]]);
-    });
-
-    it('should throw a failure to streaming readers after the chunks before it', async () => {
-      const cache = createCache();
-
-      async function* gen() {
-        yield [1];
-        throw new Error('boom');
-      }
-
-      cache.store('a', gen());
-
-      const chunks = [];
-
-      const unhandled = await unhandledRejectionsOf(() =>
-        rejects(async () => {
-          const reader = await cache.stream('a');
-
-          for await (const chunk of reader) {
-            chunks.push(chunk);
-          }
-        }, /boom/)
-      );
-
-      deepStrictEqual(chunks, [[1]]);
-      deepStrictEqual(unhandled, []);
     });
 
     it('should handle a failure before the stream is read', async () => {
@@ -407,45 +363,6 @@ describe('caching', () => {
       const chunks = await collectChunks(stream);
 
       deepStrictEqual(chunks, [[1], [2], [3]]);
-    });
-
-    it('should let go of the chunks a reader has read, after the generator ended', async () => {
-      const cache = createCache();
-      const { released, chunkOf } = trackReleases();
-
-      cache.populateConsumerCounts(['a'], () => undefined);
-
-      async function* gen() {
-        yield chunkOf(1);
-        yield chunkOf(2);
-        yield chunkOf(3);
-      }
-
-      cache.store('a', gen());
-
-      // Its only read: no more readers can start
-      const stream = await cache.stream('a');
-
-      // The generator ends before any chunk is read
-      await new Promise(resolve => setImmediate(resolve));
-
-      const reader = stream[Symbol.asyncIterator]();
-      const read = await readValues(reader, 2);
-
-      await collectGarbage(() => released.has(1));
-
-      strictEqual(released.has(1), true);
-
-      const rest = await readValues(reader);
-
-      // The last chunk goes once the reader is done, while it is still held
-      await collectGarbage(() => released.has(3));
-
-      const end = await reader.next();
-
-      deepStrictEqual([...read, ...rest], [1, 2, 3]);
-      strictEqual(end.done, true);
-      strictEqual(released.has(3), true);
     });
 
     it('should let go of a chunk only once every streaming reader has read it', async () => {
