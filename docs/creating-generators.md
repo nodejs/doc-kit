@@ -357,7 +357,9 @@ export default {
 ```
 
 - A dependency that does not stream arrives as a single chunk.
-- With one thread, `input` is still the collected array, so accept both.
+- With one thread, `input` is still the collected array, so accept both:
+  `toBatches(input)`, from `@doc-kit/core/utils/generators.mjs`, gives either
+  as batches.
 - `input` can be iterated only once.
 - `metadata`'s chunks hold whole files, and a file is one module, so a chunk
   holds all the entries of each module in it.
