@@ -87,9 +87,4 @@ export async function* generate(input) {
 
     yield pages;
   }
-
-  // Without a manifest, once every page has passed
-  if (!added) {
-    yield [buildAllPage(parts)];
-  }
 }
