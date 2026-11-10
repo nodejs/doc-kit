@@ -15,8 +15,8 @@ the pages one at a time as they are compiled, so memory scales with the largest
 page rather than with the site. With one thread, each step waits for the one
 before it to finish.
 
-A page can be made of other pages' content: an input item with `parts`, the
-`api`s of the pages it is made of, which come before it in the input, and its
+A page can be a composed page: an input item with `parts`, the `api`s of the
+pages whose content it shows, which come before it in the input, and its
 `headings`. Its program imports theirs, so they are not built again, and it is
 rendered first, as it takes the longest. Node.js's `html-all` generator
 (`@node-core/doc-kit`) adds `all.html` this way.
@@ -489,7 +489,7 @@ export default ({ metadata }) => (
 - `headings` {Array} Pre-computed table of contents heading entries.
 - `readingTime` {string|undefined} Estimated reading time (e.g. `'5 min read'`).
   Only present when the `jsx-ast` generator's `showReadingTime` option is
-  enabled. A page made of others has none.
+  enabled. A composed page has none.
 - `children` {ComponentChildren} Processed page content.
 
 The `Layout` component receives the props above. Custom Layout components can use

@@ -27,7 +27,7 @@ const htmlLogger = logger.child('html');
  * page's program is compiled to a plain module as it arrives, the component
  * library and the client assets are bundled once every page's metadata is
  * known, and the worker pool renders the pages as they are compiled, one in
- * memory per worker. A page made of other pages' content (with `parts`, which
+ * memory per worker. A composed page (with `parts`, the pages it shows, which
  * come before it) imports their compiled programs, and is rendered first. With
  * one thread, the input arrives whole.
  *
@@ -221,7 +221,7 @@ const buildSite = async (input, options) => {
 
         compiled.push(task);
 
-        // A page made of others' content takes by far the longest to render
+        // A composed page takes by far the longest to render
         if ('parts' in item) {
           rendering.prepend([task]);
         } else {

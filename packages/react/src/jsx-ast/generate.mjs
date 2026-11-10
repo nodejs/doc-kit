@@ -58,8 +58,8 @@ export async function processChunk(slicedInput, itemIndices) {
  * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
-  // Pages made of other pages' content are not built here: the `html`
-  // generator assembles them from that content.
+  // Composed pages are not built here: the `html` generator assembles them
+  // from their parts' content.
   const synthetic = getConfig('jsx-ast').generateNotFoundPage
     ? [buildNotFoundPage()]
     : [];
