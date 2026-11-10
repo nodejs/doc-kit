@@ -112,14 +112,12 @@ const createGenerator = () => {
    * Runs all requested generators with their dependencies.
    *
    * @param {import('./utils/configuration/types').Configuration} configuration - Runtime options
-   * @param {{ results?: boolean }} [options] - With `results: false`, none of
-   * the requested generators' results is kept, so each can be let go as soon
-   * as it is produced
    * @returns {Promise<unknown[] | undefined>} Results of all requested
-   * generators, or `undefined` with `results: false`
+   * generators, or `undefined` with `discardResults`, which lets each go as
+   * soon as it is produced
    */
-  const runGenerators = async (configuration, { results = true } = {}) => {
-    const { target, threads } = configuration;
+  const runGenerators = async configuration => {
+    const { target, threads, discardResults } = configuration;
 
     // Resolve shorthand names and load the full dependency closure up front,
     // so scheduling below is fully synchronous.
@@ -153,12 +151,12 @@ const createGenerator = () => {
 
     // Start all reads in parallel (don't await sequentially). Reading through
     // the shared path lets the final read also trigger eviction.
-    const read = results ? cache.consume : cache.drain;
+    const read = discardResults ? cache.drain : cache.consume;
     const collected = await Promise.all(targets.map(read));
 
     await pool.destroy();
 
-    return results ? collected : undefined;
+    return discardResults ? undefined : collected;
   };
 
   return { runGenerators };
