@@ -28,8 +28,12 @@ async function* readFrom(node) {
 }
 
 /**
- * Runs an async generator to its end, recording its chunks so that any number
- * of readers can each read all of them, from the first, while it still runs.
+ * Splits an async generator into any number of readers, like
+ * `ReadableStream.prototype.tee()`: an async generator can only be iterated
+ * once, while several generators may read the same dependency.
+ *
+ * It runs the generator to its end, recording its chunks so that each reader
+ * can read all of them, from the first, while it still runs.
  *
  * Once no more readers can start (see `forget`), a chunk every reader has read
  * is let go.
@@ -38,7 +42,7 @@ async function* readFrom(node) {
  * @param {AsyncGenerator<T[]>} generator - Generator to run
  * @returns {{ ended: Promise<void>, read: () => AsyncGenerator<T[]>, forget: () => void }}
  */
-export const createReplay = generator => {
+export const createTee = generator => {
   let tail = Promise.withResolvers();
   let head = tail.promise;
 
@@ -57,7 +61,7 @@ export const createReplay = generator => {
 
       tail.resolve();
     } catch (error) {
-      // Readers get it as they read; a replay with none mustn't report it
+      // Readers get it as they read; a tee with none mustn't report it
       tail.promise.catch(() => {});
       tail.reject(error);
 

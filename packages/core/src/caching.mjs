@@ -2,7 +2,7 @@
 
 import logger from './logger/index.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
-import { createReplay } from './utils/replay.mjs';
+import { createTee } from './utils/tee.mjs';
 
 const cachingLogger = logger.child('caching');
 
@@ -68,10 +68,10 @@ export const createCache = () => {
   /** @type {{ [key: string]: Promise<unknown> | AsyncGenerator }} */
   const results = {};
 
-  // The replays of the results that stream, and those of them collected into
+  // The tees of the results that stream, and those of them collected into
   // one array, shared by the consumers that collect them
-  /** @type {Map<string, ReturnType<typeof createReplay>>} */
-  const replays = new Map();
+  /** @type {Map<string, ReturnType<typeof createTee>>} */
+  const tees = new Map();
   /** @type {Map<string, Promise<unknown[]>>} */
   const collections = new Map();
 
@@ -84,21 +84,21 @@ export const createCache = () => {
   const remaining = {};
 
   /**
-   * Gets the replay of a streamed result, starting it the first time a
+   * Gets the tee of a streamed result, starting it the first time a
    * consumer reads the result, so every consumer shares its one run.
    *
    * @param {string} name - Cache key (resolved generator specifier)
    * @param {AsyncGenerator<unknown[]>} generator - The result
-   * @returns {ReturnType<typeof createReplay>}
+   * @returns {ReturnType<typeof createTee>}
    */
-  const replayOf = (name, generator) => {
-    if (!replays.has(name)) {
+  const teeOf = (name, generator) => {
+    if (!tees.has(name)) {
       cachingLogger.debug(`Starting to record "${name}"`);
 
-      replays.set(name, createReplay(generator));
+      tees.set(name, createTee(generator));
     }
 
-    return replays.get(name);
+    return tees.get(name);
   };
 
   /**
@@ -111,8 +111,8 @@ export const createCache = () => {
       delete results[name];
 
       // Every reader has started, so what they all read can go
-      replays.get(name)?.forget();
-      replays.delete(name);
+      tees.get(name)?.forget();
+      tees.delete(name);
       collections.delete(name);
 
       cachingLogger.debug(`Evicted "${name}" after final consumer`);
@@ -202,7 +202,7 @@ export const createCache = () => {
         if (!collections.has(name)) {
           collections.set(
             name,
-            collectAsyncGenerator(replayOf(name, result).read())
+            collectAsyncGenerator(teeOf(name, result).read())
           );
         }
 
@@ -230,7 +230,7 @@ export const createCache = () => {
       let reader;
 
       if (isAsyncIterable(result)) {
-        reader = replayOf(name, result).read();
+        reader = teeOf(name, result).read();
       } else {
         reader = once(result);
       }

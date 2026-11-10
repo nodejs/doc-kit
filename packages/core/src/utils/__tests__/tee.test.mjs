@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { setFlagsFromString } from 'node:v8';
 import { runInNewContext } from 'node:vm';
 
-import { createReplay } from '../replay.mjs';
+import { createTee } from '../tee.mjs';
 
 setFlagsFromString('--expose-gc');
 
@@ -39,7 +39,7 @@ async function collectGarbage(done) {
   }
 }
 
-describe('createReplay', () => {
+describe('createTee', () => {
   it('should let go of the chunks every reader has read while it still records', async () => {
     const released = new Set();
     const registry = new FinalizationRegistry(value => released.add(value));
@@ -69,10 +69,10 @@ describe('createReplay', () => {
       yield chunkOf(4);
     }
 
-    const replay = createReplay(gen());
-    const readers = [replay.read(), replay.read()];
+    const tee = createTee(gen());
+    const readers = [tee.read(), tee.read()];
 
-    replay.forget();
+    tee.forget();
 
     for (const reader of readers) {
       for (let i = 0; i < 4; i++) {
@@ -105,14 +105,14 @@ describe('createReplay', () => {
       yield [3];
     }
 
-    const replay = createReplay(gen());
+    const tee = createTee(gen());
 
-    const early = collectChunks(replay.read());
+    const early = collectChunks(tee.read());
 
     await new Promise(resolve => setImmediate(resolve));
     gate.resolve();
 
-    const late = collectChunks(replay.read());
+    const late = collectChunks(tee.read());
 
     const earlyChunks = await early;
     const lateChunks = await late;
@@ -127,33 +127,33 @@ describe('createReplay', () => {
       yield [2];
     }
 
-    const replay = createReplay(gen());
+    const tee = createTee(gen());
 
-    await replay.ended;
+    await tee.ended;
 
     // With no reader left, every chunk goes
-    replay.forget();
+    tee.forget();
 
-    await rejects(collectChunks(replay.read()), /Chunk 0 was let go/);
+    await rejects(collectChunks(tee.read()), /Chunk 0 was let go/);
   });
 
   it('should run the generator to its end, and throw its failure to readers', async () => {
     async function* gen() {
       yield [1];
 
-      throw new Error('replayed failure');
+      throw new Error('boom');
     }
 
-    const replay = createReplay(gen());
+    const tee = createTee(gen());
     const chunks = [];
 
-    await rejects(replay.ended, /replayed failure/);
+    await rejects(tee.ended, /boom/);
 
     await rejects(async () => {
-      for await (const chunk of replay.read()) {
+      for await (const chunk of tee.read()) {
         chunks.push(chunk);
       }
-    }, /replayed failure/);
+    }, /boom/);
 
     deepStrictEqual(chunks, [[1]]);
   });
