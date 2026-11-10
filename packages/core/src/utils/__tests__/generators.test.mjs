@@ -141,12 +141,8 @@ describe('getCompatibleVersions', () => {
 });
 
 describe('toBatches', () => {
-  it('gives an array as a single batch, and batches as they are', async () => {
-    async function* batches() {
-      yield [1];
-    }
-
-    const streamed = batches();
+  it('gives an array as a single batch, and batches as they are', () => {
+    const streamed = (async function* () {})();
 
     assert.deepEqual(toBatches([1, 2]), [[1, 2]]);
     assert.equal(toBatches(streamed), streamed);

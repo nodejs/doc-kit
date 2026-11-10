@@ -1,27 +1,12 @@
 import assert from 'node:assert/strict';
 import { before, describe, it } from 'node:test';
 
+import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import getConfig, {
   setConfig,
 } from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { generate } from '../generate.mjs';
-
-/**
- * Collects every entry the generator yields.
- *
- * @param {AsyncIterable<Array<object>>} output
- * @returns {Promise<Array<object>>}
- */
-const collect = async output => {
-  const entries = [];
-
-  for await (const batch of output) {
-    entries.push(...batch);
-  }
-
-  return entries;
-};
 
 /**
  * Runs the generator over the given batches of entries, streamed in as
@@ -30,7 +15,7 @@ const collect = async output => {
  * @param {...Array<object>} batches
  * @returns {Promise<Array<object>>}
  */
-const run = (...batches) => collect(generate(streamOf(batches)));
+const run = (...batches) => collectAsyncGenerator(generate(streamOf(batches)));
 
 /**
  * Yields each batch in turn, as a streamed input.
@@ -282,29 +267,20 @@ describe('section-pages generate', () => {
     }
   });
 
-  it('builds the same output from several batches as from one', async () => {
+  it('builds the same output from several batches as from its whole input', async () => {
     const tiny = [
       createEntry('tiny', 1, 'Tiny'),
       createEntry('tiny', 2, '`tiny.only()`', { name: 'only', type: 'method' }),
     ];
 
-    const whole = await run([...createModule(), ...tiny]);
     const batched = await run(createModule(), tiny);
 
+    // The whole input, as it comes with one thread
+    const whole = await collectAsyncGenerator(
+      generate([...createModule(), ...tiny])
+    );
+
     assert.deepEqual(batched, whole);
-  });
-
-  it('builds the same output from its whole input, as it gets it with one thread', async () => {
-    const input = () => [
-      ...createModule(),
-      createEntry('tiny', 1, 'Tiny'),
-      createEntry('tiny', 2, '`tiny.only()`', { name: 'only', type: 'method' }),
-    ];
-
-    const whole = await collect(generate(input()));
-    const streamed = await run(input());
-
-    assert.deepEqual(whole, streamed);
   });
 
   it(
@@ -329,7 +305,7 @@ describe('section-pages generate', () => {
 
       gate.resolve();
 
-      const rest = await collect(output);
+      const rest = await collectAsyncGenerator(output);
 
       assert.deepEqual(
         rest.filter(e => !e.chunk).map(e => e.api),

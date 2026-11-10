@@ -159,8 +159,9 @@ export async function* generate(input) {
 
   const chunkPages = [];
 
-  // A module's chunk pages need all of its entries, which arrive together:
-  // each of `metadata`'s chunks holds whole files, and a file is one module
+  // A module's chunk pages need all of its entries, which arrive in the same
+  // batch: each batch `metadata` yields holds whole files, and a file is one
+  // module
   for await (const entries of toBatches(input)) {
     yield entries;
 
