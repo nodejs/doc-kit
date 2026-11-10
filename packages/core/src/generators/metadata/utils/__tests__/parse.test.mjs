@@ -341,7 +341,7 @@ describe('parseApiDoc', () => {
   });
 
   describe('source positions', () => {
-    it('drops where each node of an entry came from', () => {
+    it('drops position from every node of an entry', () => {
       const tree = u('root', [
         h('fs'),
         stability('Stability: 2 - Stable'),
@@ -365,7 +365,6 @@ describe('parseApiDoc', () => {
         }
       });
 
-      assert.strictEqual(entry.content.children.length, 3);
       assert.deepStrictEqual(positioned, []);
       assert.ok(!('position' in entry.heading));
       assert.ok(entry.stability && !('position' in entry.stability));

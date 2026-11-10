@@ -155,9 +155,9 @@ export const parseApiDoc = ({ path, tree, mdx = false }, typeMap) => {
     return SKIP;
   });
 
-  // Nothing after this reads where a node came from: letting it go saves
-  // memory, and copying it to and from the worker threads. An entry's heading
-  // and stability are nodes of its content
+  // Nothing after this reads a node's `position` (resolveTypes' warning
+  // already ran): dropping it saves memory, and copying it to and from the
+  // worker threads. An entry's heading and stability are nodes of its content
   for (const { content } of metadataCollection) {
     visit(content, node => {
       delete node.position;
