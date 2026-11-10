@@ -55,7 +55,7 @@ async function* once(value) {
  * Generator caching: each generator's pending result, so a generator and its
  * dependencies are only ever scheduled once.
  *
- * Stream caching: running an async generator exactly once, recording its
+ * Stream caching: running an async generator exactly once, buffering its
  * chunks for every consumer: those that collect it share a single array, and
  * those that stream it read each chunk as soon as it is yielded.
  *
@@ -93,7 +93,7 @@ export const createCache = () => {
    */
   const teeOf = (name, generator) => {
     if (!tees.has(name)) {
-      cachingLogger.debug(`Starting to record "${name}"`);
+      cachingLogger.debug(`Starting the tee of "${name}"`);
 
       tees.set(name, createTee(generator));
     }
@@ -217,7 +217,7 @@ export const createCache = () => {
     /**
      * Gives a reader of a generator's result as it is produced: chunk by chunk
      * if it streams, or as a single chunk once it resolves. As with `consume`,
-     * the result is awaited and its recording started right away, so the
+     * the result is awaited and its tee started right away, so the
      * generator runs and its failure is handled before the reader starts
      * reading, and this counts as one of its reads.
      *

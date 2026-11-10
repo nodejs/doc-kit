@@ -32,7 +32,7 @@ async function* readFrom(node) {
  * `ReadableStream.prototype.tee()`: an async generator can only be iterated
  * once, while several generators may read the same dependency.
  *
- * It runs the generator to its end, recording its chunks so that each reader
+ * It runs the generator to its end, buffering its chunks so that each reader
  * can read all of them, from the first, while it still runs.
  *
  * Once no more readers can start (see `forget`), a chunk every reader has read
@@ -50,7 +50,7 @@ export const createTee = generator => {
    * Runs the generator to its end, linking each chunk after the last, whether
    * or not its readers keep up.
    */
-  const record = async () => {
+  const run = async () => {
     try {
       for await (const chunk of generator) {
         const next = Promise.withResolvers();
@@ -72,7 +72,7 @@ export const createTee = generator => {
     }
   };
 
-  const ended = record();
+  const ended = run();
 
   ended.catch(() => {});
 
