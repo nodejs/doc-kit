@@ -216,7 +216,7 @@ const buildSite = async (input, options) => {
 
         compiled.push(task);
 
-        // A page made of others' content takes by far the longest to render
+        // A composed page takes by far the longest to render
         if ('parts' in item) {
           rendering.prepend([task]);
         } else {

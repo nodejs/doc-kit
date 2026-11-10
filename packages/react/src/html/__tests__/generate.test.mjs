@@ -14,6 +14,7 @@ import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
+import { createSyntheticHead } from '../../jsx-ast/utils/synthetic/synthetic.mjs';
 import { generate as sectionPages } from '../../section-pages/generate.mjs';
 import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { FONTS } from '../constants.mjs';
@@ -21,24 +22,13 @@ import { generate as generatePages } from '../generate.mjs';
 import { processChunk } from '../utils/render.mjs';
 
 /**
- * A page made of the given pages' content, in that order, as Node.js's
+ * A composed page of the given pages' content, in that order, as Node.js's
  * `html-all` generator gives `all.html`.
  *
  * @param {Array<{ data: { api: string }, headings: Array<object> }>} pages
  */
 const createAllPage = pages => ({
-  data: {
-    api: 'all',
-    path: '/all',
-    basename: 'all',
-    synthetic: true,
-    heading: {
-      type: 'heading',
-      depth: 1,
-      children: [{ type: 'text', value: 'All' }],
-      data: { name: 'All', text: 'All', slug: 'all' },
-    },
-  },
+  data: createSyntheticHead('all', 'All'),
   headings: pages.flatMap(({ headings }) => headings),
   parts: pages.map(({ data }) => data.api),
 });
@@ -207,7 +197,7 @@ describe('web generate', () => {
     }
   });
 
-  it('assembles a page made of other pages from their content', async context => {
+  it("assembles a composed page from its parts' content", async context => {
     const { output } = await createTestConfiguration(context);
 
     const entries = [
@@ -235,7 +225,7 @@ describe('web generate', () => {
     assert.doesNotMatch(html, /View As/);
   });
 
-  it('numbers the ids of a page made of others across its parts', async context => {
+  it('numbers the ids of a composed page across its parts', async context => {
     const { output } = await createTestConfiguration(context);
 
     // Each module has code tabs, whose elements take ids
@@ -534,7 +524,7 @@ describe('web generate', () => {
 
           await bundled.promise;
 
-          yield [fs, all];
+          yield [fs];
           yield [index];
         }
 
@@ -545,7 +535,6 @@ describe('web generate', () => {
           'server',
           'client',
           'fs.jsx',
-          'all.jsx',
           'index.jsx',
         ]);
       }
