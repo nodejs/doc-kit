@@ -66,6 +66,7 @@ export async function* generate(input, worker) {
     : [];
 
   const manifest = Promise.withResolvers();
+  const described = createChannel();
 
   /**
    * Describes each arriving page by its head and its module's entries, so a
@@ -73,30 +74,36 @@ export async function* generate(input, worker) {
    * page has arrived, it resolves the manifest and describes the synthetic
    * pages.
    *
-   * @returns {AsyncGenerator<Array<{ head: object, entries: Array<object> }>>}
+   * It runs ahead of `worker.stream`, which only takes the next batch once
+   * there's room for its chunks: the manifest then resolves once the input
+   * ends, not once the last pages are being built.
    */
-  async function* describe() {
+  const describe = async () => {
     const heads = [];
 
-    // A page needs all of its module's entries, which arrive together, as
-    // `metadata` and `section-pages` give them
-    for await (const entries of toBatches(input)) {
-      const groupedModules = groupNodesByModule(entries);
-      const descriptors = entries
-        .filter(node => node.heading.depth === 1)
-        .map(head => ({ head, entries: groupedModules.get(head.api) }));
+    try {
+      // A page needs all of its module's entries, which arrive together, as
+      // `metadata` and `section-pages` give them
+      for await (const entries of toBatches(input)) {
+        const groupedModules = groupNodesByModule(entries);
+        const descriptors = entries
+          .filter(node => node.heading.depth === 1)
+          .map(head => ({ head, entries: groupedModules.get(head.api) }));
 
-      heads.push(...descriptors.map(({ head }) => head));
+        heads.push(...descriptors.map(({ head }) => head));
 
-      yield descriptors;
+        described.push(descriptors);
+      }
+
+      manifest.resolve([...heads, ...synthetic.map(({ head }) => head)]);
+
+      if (synthetic.length > 0) {
+        described.push(synthetic);
+      }
+    } finally {
+      described.end();
     }
-
-    manifest.resolve([...heads, ...synthetic.map(({ head }) => head)]);
-
-    if (synthetic.length > 0) {
-      yield synthetic;
-    }
-  }
+  };
 
   /**
    * Gives the manifest, once every page has arrived.
@@ -109,26 +116,9 @@ export async function* generate(input, worker) {
     yield [{ manifest: heads }];
   }
 
-  const pages = createChannel();
-
-  /**
-   * Describes every page as it arrives, ahead of `worker.stream`, which only
-   * takes the next batch once there's room for its chunks: the manifest then
-   * resolves once the input ends, not once the last pages are being built.
-   */
-  const readPages = async () => {
-    try {
-      for await (const descriptors of describe()) {
-        pages.push(descriptors);
-      }
-    } finally {
-      pages.end();
-    }
-  };
-
   // A failure reading the input reaches the output through the manifest
-  readPages().catch(error => manifest.reject(error));
+  describe().catch(error => manifest.reject(error));
 
   // The manifest goes out as soon as it's ready, not after the next pages
-  yield* merge(worker.stream(pages), announce());
+  yield* merge(worker.stream(described), announce());
 }

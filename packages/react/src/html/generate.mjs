@@ -212,7 +212,7 @@ const buildSite = async (input, options) => {
   // so the manifest is kept until then
   let manifest;
 
-  const alongside = getConfig().threads > 1;
+  const writeWhileCompiling = getConfig().threads > 1;
 
   /**
    * Compiles each page as it arrives, and hands it over. A function of its
@@ -226,7 +226,7 @@ const buildSite = async (input, options) => {
 
       for (const item of items) {
         if ('manifest' in item) {
-          if (alongside) {
+          if (writeWhileCompiling) {
             startWriting(item.manifest);
           } else {
             manifest = item.manifest;

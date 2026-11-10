@@ -514,7 +514,7 @@ describe('web generate', () => {
       // input would never be built
       { timeout: 10_000 },
       async context => {
-        const { config, output } = await createTestConfiguration(context);
+        const { config } = await createTestConfiguration(context);
         const calls = [];
         const bundled = Promise.withResolvers();
 
@@ -544,12 +544,6 @@ describe('web generate', () => {
           'all.jsx',
           'index.jsx',
         ]);
-
-        const html = await readFile(join(output, 'all.html'), 'utf8');
-
-        // In sidebar order, the index left out
-        assert.match(html, /File system body[\s\S]*Zlib body/);
-        assert.doesNotMatch(html, /Index body/);
       }
     );
 

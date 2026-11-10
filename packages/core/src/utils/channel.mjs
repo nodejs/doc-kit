@@ -1,74 +1,80 @@
 'use strict';
 
-import { createSignal } from './misc.mjs';
-
 /**
- * Creates a queue of batches that can be read as an async iterable while it is
+ * Creates a queue of items that can be read as an async iterable while it is
  * still being filled.
  *
  * @template T
  */
 export const createChannel = () => {
-  /** @type {Array<T[]>} */
-  const batches = [];
+  /** @type {Array<T>} */
+  const items = [];
 
-  // Notified as batches are added, and at the end
-  const added = createSignal();
+  // Resolved as items are added, and at the end
+  let added = Promise.withResolvers();
+
+  /**
+   * Wakes the reader waiting for an item, or for the end.
+   */
+  const notify = () => {
+    added.resolve();
+    added = Promise.withResolvers();
+  };
 
   let ended = false;
 
   return {
     /**
-     * Adds a batch, after those not read yet.
+     * Adds an item, after those not read yet.
      *
-     * @param {T[]} batch
+     * @param {T} item
      */
-    push(batch) {
-      batches.push(batch);
-      added.notify();
+    push(item) {
+      items.push(item);
+      notify();
     },
 
     /**
-     * Adds a batch, before those not read yet.
+     * Adds an item, before those not read yet.
      *
-     * @param {T[]} batch
+     * @param {T} item
      */
-    prepend(batch) {
-      batches.unshift(batch);
-      added.notify();
+    prepend(item) {
+      items.unshift(item);
+      notify();
     },
 
     /**
-     * Drops the batches not read yet.
+     * Drops the items not read yet.
      */
     clear() {
-      batches.length = 0;
+      items.length = 0;
     },
 
     /**
-     * Ends the channel: the reader stops once it has read every batch.
+     * Ends the channel: the reader stops once it has read every item.
      */
     end() {
       ended = true;
-      added.notify();
+      notify();
     },
 
     /**
-     * Reads the batches as they are added, until the channel ends.
+     * Reads the items as they are added, until the channel ends.
      *
-     * @returns {AsyncGenerator<T[]>}
+     * @returns {AsyncGenerator<T>}
      */
     async *[Symbol.asyncIterator]() {
       for (;;) {
-        while (batches.length === 0) {
+        while (items.length === 0) {
           if (ended) {
             return;
           }
 
-          await added.wait();
+          await added.promise;
         }
 
-        yield batches.shift();
+        yield items.shift();
       }
     },
   };
