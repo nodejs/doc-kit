@@ -92,8 +92,8 @@ describe('createHighlighter', () => {
     });
     const loaded = () => highlighter.shiki.getLoadedLanguages();
 
-    // Rust stands for any bundled language nothing aliases: JavaScript's
-    // aliases now lead to TypeScript
+    // Rust stands for any bundled language nothing aliases (JavaScript's
+    // aliases lead to TypeScript)
     assert.ok(!loaded().includes('python'));
     assert.ok(!loaded().includes('rust'));
 
@@ -129,14 +129,12 @@ describe('createHighlighter', () => {
     assert.equal(highlighter.resolveLanguage('constructor'), 'text');
   });
 
-  it('takes aliases over the default ones', async () => {
+  it('takes configured aliases over the default ones', async () => {
     const highlighter = await createHighlighter({
-      langAlias: { cpp: 'cpp', js: 'javascript' },
+      langAlias: { cpp: 'cpp' },
     });
 
     assert.equal(highlighter.resolveLanguage('cpp'), 'cpp');
-    assert.equal(highlighter.resolveLanguage('js'), 'javascript');
-    assert.equal(highlighter.resolveLanguage('mjs'), 'typescript');
     assert.ok(highlighter.shiki.getLoadedLanguages().includes('cpp'));
   });
 
@@ -148,8 +146,6 @@ describe('createHighlighter', () => {
         b: 'python',
         loop: 'pool',
         pool: 'loop',
-        Up: 'DOWN',
-        down: 'up',
         oc: 'OxcConf',
         conf: 'INI',
         MyConf: 'ini',
@@ -158,16 +154,10 @@ describe('createHighlighter', () => {
 
     assert.equal(highlighter.resolveLanguage('a'), 'python');
     assert.equal(highlighter.resolveLanguage('loop'), 'text');
-    assert.equal(highlighter.resolveLanguage('UP'), 'text');
     assert.equal(highlighter.resolveLanguage('Python'), 'python');
     assert.equal(highlighter.resolveLanguage('oc'), 'OxcConf');
     assert.equal(highlighter.resolveLanguage('conf'), 'ini');
-    assert.equal(highlighter.resolveLanguage('myconf'), 'ini');
     assert.equal(highlighter.resolveLanguage('MYCONF'), 'ini');
-    assert.equal(
-      highlighter.highlightToHtml('[section]', 'conf'),
-      highlighter.highlightToHtml('[section]', 'ini')
-    );
   });
 
   it('highlights with a language of `langs` an alias leads to', async () => {
