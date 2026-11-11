@@ -35,6 +35,11 @@ const { renderLabel } = await import(renderLabelModule);
 process.once('exit', () => rm(output, { recursive: true, force: true }));
 
 describe('renderLabel', () => {
+  it('returns the label unchanged when it is not a string', () => {
+    assert.equal(renderLabel(undefined), undefined);
+    assert.equal(renderLabel(''), '');
+  });
+
   it('does not render elements for empty segments', () => {
     const result = renderLabel('`value`');
 
