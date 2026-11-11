@@ -32,6 +32,8 @@ export default function createWorkerPool(threads) {
       maxYoungGenerationSizeMb: WORKER_GEN_SIZE,
     },
     recordTiming: false,
+    // Start tasks in submission order, since results are yielded in that order
+    stricterFIFO: true,
     workerData: { logLevel: logger.getLogLevel() },
   });
 }

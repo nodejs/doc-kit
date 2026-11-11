@@ -53,21 +53,29 @@ jobs:
         run: |
           # `174604400` refers to `generate.yml`'s workflow ID, available at https://api.github.com/repos/nodejs/doc-kit/actions/workflows/generate.yml
           # The `databaseId` is a given runs run ID (Ref: https://docs.github.com/en/enterprise-cloud@latest/graphql/reference/objects#workflowrun)
-          ID=$(gh run list --repo $GITHUB_REPOSITORY -c $BASE_SHA -w 174604400 -L 1 --json databaseId --jq ".[].databaseId")
+          # Only `push` runs upload the `commit` artifact: a PR stacked on another PR's branch can find that PR's `pull_request` run for its base
+          ID=$(gh run list --repo $GITHUB_REPOSITORY -c $BASE_SHA -w 174604400 -e push -L 1 --json databaseId --jq ".[].databaseId")
           echo "run_id=$ID" >> $GITHUB_OUTPUT
 
       - name: Download metadata artifact
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && steps.main.outputs.run_id }}
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: commit
           run-id: ${{ steps.main.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # A PR whose base has no `main` run, such as one stacked on another PR's
+      # branch, has nothing to compare against: it builds from the latest SHA
+      # from nodejs/node, and `generate` skips the comparison
       - id: pr
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          SHA=$(cat commit)
+          if [ -f commit ]; then
+            SHA=$(cat commit)
+          else
+            SHA=$(git ls-remote https://github.com/nodejs/node.git HEAD | awk '{print $1}')
+          fi
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
 
   generate:
