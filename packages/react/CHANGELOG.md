@@ -1,5 +1,12 @@
 # @doc-kit/generator-react
 
+## 0.5.4
+
+### Patch Changes
+
+- Updated dependencies [[`b65d7c1`](https://github.com/nodejs/doc-kit/commit/b65d7c1389a0f016d22466b9f1517e8b2c21a6bb), [`e1cbd76`](https://github.com/nodejs/doc-kit/commit/e1cbd769869bab49ef2a8c59986d4fcdfb806815), [`265eb17`](https://github.com/nodejs/doc-kit/commit/265eb17783b13738fbca1346d076af7a7b541696), [`07858b1`](https://github.com/nodejs/doc-kit/commit/07858b11473dac2b7617b2caad78d6a7b08cb08f)]:
+  - @doc-kit/core@1.4.0
+
 ## 0.5.3
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @doc-kit/core
 
+## 1.4.0
+
+### Minor Changes
+
+- [#1239](https://github.com/nodejs/doc-kit/pull/1239) [`b65d7c1`](https://github.com/nodejs/doc-kit/commit/b65d7c1389a0f016d22466b9f1517e8b2c21a6bb) Thanks [@ovflowd](https://github.com/ovflowd)! - `runGenerators` with `discardResults: true` in its configuration keeps none of the requested generators' output: each still runs to its end, and once nothing else reads its output, its chunks go as they are produced. The CLI's `generate` and `preview` commands use it, as they don't read the results.
+
+- [#1238](https://github.com/nodejs/doc-kit/pull/1238) [`265eb17`](https://github.com/nodejs/doc-kit/commit/265eb17783b13738fbca1346d076af7a7b541696) Thanks [@ovflowd](https://github.com/ovflowd)! - Generators can set `streamsInput: true` to receive their dependency's output as an async iterable of chunks as they are produced, instead of waiting for all of it. The cache runs a streamed generator once for every reader, and lets a chunk go once all of them have read it.
+
+### Patch Changes
+
+- [#1232](https://github.com/nodejs/doc-kit/pull/1232) [`e1cbd76`](https://github.com/nodejs/doc-kit/commit/e1cbd769869bab49ef2a8c59986d4fcdfb806815) Thanks [@ovflowd](https://github.com/ovflowd)! - Keep leading, trailing and repeated hyphens in heading slugs, so anchors match the old Node.js doc tooling again (`#-c---check` instead of `#-check`).
+
+- [#1237](https://github.com/nodejs/doc-kit/pull/1237) [`07858b1`](https://github.com/nodejs/doc-kit/commit/07858b11473dac2b7617b2caad78d6a7b08cb08f) Thanks [@ovflowd](https://github.com/ovflowd)! - `worker.stream` also accepts an async iterable of batches, starting each batch's chunks while earlier ones still run. It keeps only a few chunks per thread in flight so concurrent generators share the worker pool, and still yields results in submission order.
+
 ## 1.3.1
 
 ### Patch Changes
