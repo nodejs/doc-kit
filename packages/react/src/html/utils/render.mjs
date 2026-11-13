@@ -74,24 +74,39 @@ export const processChunk = async (tasks, indices, { template, assets }) => {
 };
 
 /**
- * Creates the page writer: it spreads the pages across the worker pool and
- * waits for every one to be written. Without a pool — the generator was called
- * directly rather than by the orchestrator — the pages are rendered on the
- * calling thread instead.
+ * Renders each batch of pages on the calling thread, as it arrives.
+ *
+ * @param {AsyncIterable<Array<import('../types').PageTask>>} batches
+ * @param {{ template: string, assets: import('../types').ClientAssets }} extra
+ * @yields {Array<string>} Each batch's written file names
+ */
+async function* renderOnThisThread(batches, extra) {
+  for await (const tasks of batches) {
+    const written = await processChunk(tasks, [...tasks.keys()], extra);
+
+    yield written;
+  }
+}
+
+/**
+ * Creates the page writer: it spreads the pages across the worker pool as they
+ * arrive, in batches, and waits for every one to be written. Without a pool —
+ * the generator was called directly rather than by the orchestrator — the
+ * pages are rendered on the calling thread instead.
  *
  * @param {ParallelWorker} [worker]
- * @returns {(tasks: Array<import('../types').PageTask>, extra: { template: string, assets: import('../types').ClientAssets }) => Promise<void>}
+ * @returns {(batches: AsyncIterable<Array<import('../types').PageTask>>, extra: { template: string, assets: import('../types').ClientAssets }) => Promise<void>}
  */
-export const createPageWriter = worker => async (tasks, extra) => {
+export const createPageWriter = worker => async (batches, extra) => {
   const chunks = worker
-    ? worker.stream(tasks, extra)
-    : [await processChunk(tasks, [...tasks.keys()], extra)];
+    ? worker.stream(batches, extra)
+    : renderOnThisThread(batches, extra);
 
   let count = 0;
 
   for await (const chunk of chunks) {
     count += chunk.length;
 
-    renderLogger.debug(`Wrote ${count}/${tasks.length} pages`);
+    renderLogger.debug(`Wrote ${count} pages`);
   }
 };

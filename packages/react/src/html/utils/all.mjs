@@ -10,18 +10,25 @@ import { createSyntheticHead } from '../../jsx-ast/utils/synthetic/synthetic.mjs
  *
  * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} data
  */
-const isModulePage = data =>
+export const isModulePage = data =>
   !data.synthetic && !data.chunk && data.api !== 'index';
 
 /**
- * Builds the `all.html` page from the module pages already generated.
+ * The metadata of `all.html`, which the bundles need before its parts are built.
+ *
+ * @returns {import('@doc-kit/core/generators/metadata/types').MetadataEntry}
+ */
+export const createAllPageHead = () => createSyntheticHead('all', 'All');
+
+/**
+ * Builds the `all.html` page from the module pages already compiled.
  *
  * Its content is exactly the module pages' content, one after the other, so
  * nothing is rebuilt: the page program imports each module's `content` export
  * (see `buildPageProgram`) and the table of contents is the modules' own,
  * concatenated. Modules are ordered as the sidebar lists them.
  *
- * @param {Array<import('../../jsx-ast/types').PageCode>} pages - Every generated page
+ * @param {Array<Pick<import('../../jsx-ast/types').PageCode, 'data' | 'headings'>>} pages - The pages compiled, every module page among them
  * @returns {import('../types').ComposedPage}
  */
 export const buildAllPage = pages => {
@@ -31,7 +38,7 @@ export const buildAllPage = pages => {
   const parts = getSortedHeadNodes(modules).map(({ api }) => byApi.get(api));
 
   return {
-    data: createSyntheticHead('all', 'All'),
+    data: createAllPageHead(),
     headings: parts.flatMap(({ headings }) => headings),
     parts: parts.map(({ data }) => data.api),
   };
