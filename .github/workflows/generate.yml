@@ -145,10 +145,7 @@ jobs:
 
       - name: Generate ${{ matrix.target }}
         run: |
-          /usr/bin/time \
-            --output out/benchmark.json \
-            --format '{"elapsedSeconds": %e, "userCpuSeconds": %U, "systemCpuSeconds": %S, "maxRssKiB": %M}' \
-            node packages/cli/bin/cli.mjs generate \
+          node packages/cli/bin/cli.mjs generate \
             -t ${{ matrix.target }} \
             -i "${{ matrix.input }}" \
             -o out \

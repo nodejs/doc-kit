@@ -7,7 +7,7 @@ This guide explains how to create build comparison scripts for `@doc-kit/core`. 
 Comparators are scripts that:
 
 1. **Compare** generated documentation between two builds (base vs. head)
-2. **Identify differences** in content, structure, file size, or performance
+2. **Identify differences** in content, structure, or file size
 3. **Report results** in a format suitable for CI/CD systems
 4. **Help catch regressions** before merging changes
 
@@ -15,7 +15,6 @@ Comparators are scripts that:
 
 - **Verify backward compatibility** - Ensure new code produces same output
 - **Track file size changes** - Monitor bundle size growth
-- **Catch performance regressions** - Compare elapsed time, CPU time, and peak memory
 - **Validate transformations** - Check that refactors don't alter output
 - **Debug generation issues** - Understand what changed between versions
 
@@ -28,10 +27,9 @@ sharing the `BASE`, `HEAD`, and `TITLE` constants from `scripts/constants.mjs`:
 scripts/
 ├── constants.mjs            # Shared constants (BASE, HEAD, TITLE)
 └── comparators/
-    ├── file-size.mjs        # Compare file sizes and performance between builds
+    ├── file-size.mjs        # Compare file sizes between builds
     ├── files.mjs            # Shared output-file listing helpers
     ├── object-assertion.mjs # Deep equality assertion for JSON objects
-    ├── performance.mjs      # Compare benchmark measurements
     └── your-comparator.mjs  # Your new comparator
 ```
 
@@ -42,12 +40,6 @@ Comparators can be reused across multiple generators. You specify which comparat
 - `file-size.mjs` can compare output from `html`, `legacy-html`, or any generator
 - `object-assertion.mjs` can compare JSON output from `legacy-json`, `json-simple`, etc.
 - `my-comparator.mjs` would be a custom comparator for specific needs
-
-The generation workflow also stores timing, CPU, and peak resident memory in
-`benchmark.json`. The built-in comparators include these measurements in their
-Markdown report and exclude the metadata file from output comparisons. If a
-base artifact predates performance measurement, the output comparison still
-runs and the performance section is omitted.
 
 ## Creating a Comparator
 

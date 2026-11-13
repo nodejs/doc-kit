@@ -17,6 +17,7 @@
     "test:ci": "c8 --reporter=lcov node --test --experimental-test-module-mocks \"packages/*/src/**/*.test.mjs\" \"scripts/**/*.test.mjs\" --test-reporter=@reporters/github --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=junit.xml --test-reporter=spec --test-reporter-destination=stdout",
     "test:update-snapshots": "node --test --experimental-test-module-mocks --test-update-snapshots \"packages/*/src/**/*.test.mjs\" \"scripts/**/*.test.mjs\"",
     "test:watch": "node --test --experimental-test-module-mocks --watch \"packages/*/src/**/*.test.mjs\" \"scripts/**/*.test.mjs\"",
+    "bench": "node bench/generate.bench.mjs",
     "test:e2e": "playwright test",
     "prepare": "husky || exit 0",
     "run": "node packages/cli/bin/cli.mjs",
@@ -36,6 +37,8 @@
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3",
+    "@codspeed/tinybench-plugin": "6.1.0",
+    "@doc-kit/core": "workspace:*",
     "@node-core/doc-kit": "workspace:*",
     "@playwright/test": "~1.64.1",
     "@reporters/github": "~2.1.4",
@@ -50,6 +53,7 @@
     "lint-staged": "17.6.0",
     "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
+    "tinybench": "6.2.3",
     "wrangler": "4.151.1"
   }
 }

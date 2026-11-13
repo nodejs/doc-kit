@@ -1,15 +1,13 @@
 import { glob } from 'node:fs/promises';
 import path from 'node:path';
 
-import { BENCHMARK_FILE, COMPARISON_FILE } from '../constants.mjs';
-
-const METADATA_FILES = new Set([BENCHMARK_FILE, COMPARISON_FILE]);
+import { COMPARISON_FILE } from '../constants.mjs';
 
 export const listOutputFiles = async directory => {
   const entries = glob('**/*', {
     cwd: directory,
     withFileTypes: true,
-    exclude: entry => METADATA_FILES.has(entry.name),
+    exclude: entry => entry.name === COMPARISON_FILE,
   });
 
   return (await Array.fromAsync(entries))

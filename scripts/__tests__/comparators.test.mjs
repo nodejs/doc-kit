@@ -7,15 +7,6 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
-import { comparePerformance } from '../comparators/performance.mjs';
-
-const benchmark = {
-  elapsedSeconds: 2,
-  userCpuSeconds: 1,
-  systemCpuSeconds: 0.5,
-  maxRssKiB: 1024,
-};
-
 const executeFile = promisify(execFile);
 const comparatorDirectory = fileURLToPath(
   new URL('../comparators/', import.meta.url)
@@ -35,13 +26,6 @@ const createDirectories = async t => {
   return { base, head };
 };
 
-const writeBenchmark = (directory, value = benchmark) =>
-  writeFile(
-    path.join(directory, 'benchmark.json'),
-    JSON.stringify(value),
-    'utf8'
-  );
-
 const runComparator = async (name, base, head) => {
   const { stdout } = await executeFile(
     process.execPath,
@@ -54,63 +38,12 @@ const runComparator = async (name, base, head) => {
   return stdout;
 };
 
-test('comparePerformance summarizes benchmark differences', async t => {
-  const { base, head } = await createDirectories(t);
-
-  await Promise.all([
-    writeBenchmark(base),
-    writeBenchmark(head, {
-      elapsedSeconds: 3,
-      userCpuSeconds: 0.75,
-      systemCpuSeconds: 0.5,
-      maxRssKiB: 1536,
-    }),
-  ]);
-
-  const result = await comparePerformance(base, head);
-
-  assert.match(
-    result,
-    /\*\*Generation time:\*\* 50\.0% slower \(2\.00 s → 3\.00 s\)/
-  );
-  assert.match(
-    result,
-    /\*\*Peak memory:\*\* 50\.0% higher \(1\.00 MB → 1\.50 MB\)/
-  );
-  assert.match(result, /single CI run/);
-  assert.doesNotMatch(result, /CPU time/);
-});
-
-test('comparePerformance omits results when an artifact has no benchmark', async t => {
-  const { base, head } = await createDirectories(t);
-
-  await writeBenchmark(head);
-
-  assert.equal(await comparePerformance(base, head), '');
-});
-
-test('comparePerformance rejects invalid benchmark values', async t => {
-  const { base, head } = await createDirectories(t);
-
-  await Promise.all([
-    writeBenchmark(base),
-    writeBenchmark(head, { ...benchmark, maxRssKiB: undefined }),
-  ]);
-
-  await assert.rejects(
-    comparePerformance(base, head),
-    /Invalid peak memory benchmark value/
-  );
-});
-
-test('file-size comparator combines output and performance results', async t => {
+test('file-size comparator reports output changes', async t => {
   const { base, head } = await createDirectories(t);
 
   await Promise.all([
     writeFile(path.join(base, 'result.txt'), 'base', 'utf8'),
     writeFile(path.join(head, 'result.txt'), 'a larger result', 'utf8'),
-    writeBenchmark(base),
-    writeBenchmark(head, { ...benchmark, elapsedSeconds: 3 }),
   ]);
 
   const result = await runComparator('file-size', base, head);
@@ -123,26 +56,19 @@ test('file-size comparator combines output and performance results', async t => 
     /\| File \| Main \| PR \| Change \|\n\| --- \| ---: \| ---: \| ---: \|/
   );
   assert.match(result, /`result\.txt`/);
-  assert.match(result, /Performance estimate/);
-  assert.doesNotMatch(result, /benchmark\.json/);
 });
 
-test('object comparator treats benchmark data as metadata', async t => {
+test('object comparator is silent when output matches', async t => {
   const { base, head } = await createDirectories(t);
 
   await Promise.all([
     writeFile(path.join(base, 'result.json'), '{"value":true}', 'utf8'),
     writeFile(path.join(head, 'result.json'), '{"value":true}', 'utf8'),
-    writeBenchmark(base),
-    writeBenchmark(head, { ...benchmark, maxRssKiB: 2048 }),
   ]);
 
   const result = await runComparator('object-assertion', base, head);
 
-  assert.equal(result.match(/## `test` Generator/g)?.length, 1);
-  assert.doesNotMatch(result, /\*\*Output:/);
-  assert.match(result, /Performance estimate/);
-  assert.doesNotMatch(result, /benchmark\.json/);
+  assert.equal(result, '');
 });
 
 test('comparators report added and removed output files', async t => {
