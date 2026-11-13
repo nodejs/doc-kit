@@ -1,7 +1,35 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual, throws } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import { collectAsyncGenerator, createCache } from '../caching.mjs';
+import {
+  collectGarbage,
+  trackReleases,
+} from './fixtures/garbage-collection.mjs';
+
+/**
+ * Reads up to `count` chunks of items, keeping only the items' values, so that
+ * the test holds none of the chunks.
+ *
+ * @param {AsyncIterator<Array<{ value: number }>>} reader
+ * @param {number} [count]
+ * @returns {Promise<number[]>}
+ */
+async function readValues(reader, count = Infinity) {
+  const values = [];
+
+  for (let i = 0; i < count; i++) {
+    const { value, done } = await reader.next();
+
+    if (done) {
+      break;
+    }
+
+    values.push(...value.map(item => item.value));
+  }
+
+  return values;
+}
 
 describe('caching', () => {
   describe('collectAsyncGenerator', () => {
@@ -105,6 +133,124 @@ describe('caching', () => {
       cache.store('a', Promise.resolve('A'));
       await cache.consume('a');
       strictEqual(cache.has('a'), false);
+    });
+
+    it('should run a generator once for streaming and collecting consumers', async () => {
+      const cache = createCache();
+
+      let iterations = 0;
+
+      async function* gen() {
+        iterations++;
+        yield [1, 2];
+        yield [3];
+      }
+
+      cache.store('a', gen());
+
+      const [streamed, collected] = await Promise.all([
+        cache.stream('a').then(stream => Array.fromAsync(stream)),
+        cache.consume('a'),
+      ]);
+
+      deepStrictEqual(streamed, [[1, 2], [3]]);
+      deepStrictEqual(collected, [1, 2, 3]);
+      strictEqual(iterations, 1);
+    });
+
+    it('should stream a non-streaming result as a single chunk', async () => {
+      const cache = createCache();
+
+      cache.store('a', Promise.resolve([1, 2]));
+
+      const stream = await cache.stream('a');
+
+      deepStrictEqual(await Array.fromAsync(stream), [[1, 2]]);
+    });
+
+    it('should read a stream only once', async () => {
+      const cache = createCache();
+
+      async function* gen() {
+        yield [1];
+      }
+
+      cache.store('a', gen());
+
+      const stream = await cache.stream('a');
+
+      deepStrictEqual(await Array.fromAsync(stream), [[1]]);
+      throws(() => stream[Symbol.asyncIterator](), /can only be read once/);
+    });
+
+    it('should run a stream before it is read, and count it as a read', async () => {
+      const cache = createCache();
+
+      let produced = 0;
+
+      cache.populateConsumerCounts(['a'], () => undefined);
+
+      async function* gen() {
+        for (const value of [1, 2, 3]) {
+          produced++;
+
+          yield [value];
+        }
+      }
+
+      cache.store('a', gen());
+
+      // Its only read: the result is evicted, and its chunks go once read
+      const stream = await cache.stream('a');
+
+      strictEqual(cache.has('a'), false);
+
+      await new Promise(resolve => setImmediate(resolve));
+
+      // Every chunk is produced before the reader reads any
+      strictEqual(produced, 3);
+      deepStrictEqual(await Array.fromAsync(stream), [[1], [2], [3]]);
+    });
+
+    it('should let go of a chunk once every streaming reader has read it, while it still runs', async () => {
+      const cache = createCache();
+      const gate = Promise.withResolvers();
+      const { released, chunkOf } = trackReleases();
+
+      // `x` and `y` both read `a`
+      cache.populateConsumerCounts(['x', 'y'], name =>
+        name === 'a' ? undefined : 'a'
+      );
+
+      async function* gen() {
+        yield chunkOf(1);
+        yield chunkOf(2);
+        await gate.promise;
+      }
+
+      cache.store('a', gen());
+
+      // The second is the last read: no more readers can start
+      const first = (await cache.stream('a'))[Symbol.asyncIterator]();
+      const second = (await cache.stream('a'))[Symbol.asyncIterator]();
+
+      deepStrictEqual(await readValues(first, 2), [1, 2]);
+
+      // `second` has yet to read the first chunk
+      await collectGarbage(() => released.has(1));
+
+      strictEqual(released.has(1), false);
+
+      deepStrictEqual(await readValues(second, 2), [1, 2]);
+
+      await collectGarbage(() => released.has(1));
+
+      strictEqual(released.has(1), true);
+
+      gate.resolve();
+
+      await readValues(first);
+      await readValues(second);
     });
   });
 });

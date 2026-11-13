@@ -330,8 +330,35 @@ export async function* generate(input, worker) {
 ### Benefits of Streaming
 
 - **Reduced memory usage** - Process data in chunks
-- **Earlier downstream starts** - Next generator can begin before this one finishes
+- **Earlier downstream starts** - A generator with `streamsInput` begins on the
+  first chunk, before this one finishes
 - **Better parallelism** - Multiple generators can work simultaneously
+
+### Streaming Input
+
+By default, a generator receives its dependency's output once it is complete,
+collected into one array. With `streamsInput: true`, `input` is instead an
+async iterable of the dependency's chunks, read as they are produced, which
+`worker.stream` accepts directly:
+
+```mjs displayName="index.mjs"
+import { processChunk } from './generate.mjs';
+
+export default {
+  name: 'per-chunk-generator',
+  dependsOn: '@doc-kit/core/metadata',
+  hasParallelProcessor: true,
+  streamsInput: true,
+  async *generate(input, worker) {
+    yield* worker.stream(input, {});
+  },
+  processChunk,
+};
+```
+
+- A dependency that does not stream arrives as a single chunk.
+- With one thread, `input` is still the collected array, so accept both.
+- `input` can be iterated only once.
 
 ### Non-Streaming Generators
 

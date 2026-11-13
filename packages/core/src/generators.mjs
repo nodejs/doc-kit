@@ -28,17 +28,18 @@ const createGenerator = () => {
   let pool;
 
   /**
-   * Gets the collected input from a dependency generator.
+   * Gets the input from a dependency generator, collected or streamed.
    *
    * @param {string | undefined} dependsOn - Resolved dependency specifier
+   * @param {boolean} [streamed] - Whether to stream its chunks
    * @returns {Promise<unknown>}
    */
-  const getDependencyInput = async dependsOn => {
+  const getDependencyInput = async (dependsOn, streamed) => {
     if (!dependsOn) {
       return undefined;
     }
 
-    return cache.consume(dependsOn);
+    return streamed ? cache.stream(dependsOn) : cache.consume(dependsOn);
   };
 
   /**
@@ -57,7 +58,7 @@ const createGenerator = () => {
     }
 
     const generator = generators.get(specifier);
-    const { name, generate, hasParallelProcessor } = generator;
+    const { name, generate, hasParallelProcessor, streamsInput } = generator;
 
     const dependsOn = inputOf.get(specifier);
 
@@ -75,7 +76,12 @@ const createGenerator = () => {
     cache.store(
       specifier,
       (async () => {
-        const dependencyInput = await getDependencyInput(dependsOn);
+        // With one thread nothing runs alongside, so streaming would only keep
+        // every stage's data alive at once: each stage takes its input whole
+        const dependencyInput = await getDependencyInput(
+          dependsOn,
+          streamsInput && configuration.threads > 1
+        );
 
         generatorsLogger.debug(`Starting "${name}"`);
 
@@ -91,8 +97,8 @@ const createGenerator = () => {
         // input while the generator runs, and the generator can let it go
         return generate(dependencyInput, await worker);
       })().then(result => {
-        // For streaming generators, "Completed" is logged when the cache
-        // finishes collecting, not here when the generator returns
+        // A streaming generator returns before it has produced anything, so
+        // it isn't complete here
         if (!isAsyncIterable(result)) {
           generatorsLogger.debug(`Completed "${name}"`);
         }

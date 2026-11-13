@@ -13,16 +13,16 @@ declare global {
    */
   export interface ParallelWorker {
     /**
-     * Processes items in parallel across worker threads and yields results
-     * as each chunk completes. Enables downstream processing to begin
-     * while upstream chunks are still being processed.
+     * Processes items in parallel across worker threads and yields each
+     * chunk's results in submission order. Enables downstream processing to
+     * begin while upstream chunks are still being processed.
      *
-     * @param items - Items to process (determines chunk distribution)
+     * @param items - Items to process, or a streamed input's batches of them
      * @param opts - Additional options to pass to workers
-     * @yields Each chunk's results as they complete
+     * @yields Each chunk's results, in submission order
      */
     stream<T, R>(
-      items: T[],
+      items: T[] | AsyncIterable<T[]>,
       opts?: Record<string, unknown>
     ): AsyncGenerator<R[], void, unknown>;
   }
@@ -69,6 +69,13 @@ declare global {
     description: string;
 
     hasParallelProcessor?: boolean;
+
+    /**
+     * Receive the dependency's output as an async iterable of its chunks, as
+     * they are produced, instead of one collected array. With one thread, the
+     * input is still a collected array, so accept both.
+     */
+    streamsInput?: boolean;
 
     /**
      * The unified plugins this generator processes Markdown with, listed as
