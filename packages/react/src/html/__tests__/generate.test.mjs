@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
+import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
@@ -12,7 +13,7 @@ import { jsx, toJs } from 'estree-util-to-js';
 
 import buildContent from '../../jsx-ast/utils/buildContent.mjs';
 import { buildNotFoundPage } from '../../jsx-ast/utils/synthetic/404.mjs';
-import { generate as chunk } from '../../section-pages/generate.mjs';
+import { generate as sectionPages } from '../../section-pages/generate.mjs';
 import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { FONTS } from '../constants.mjs';
 import { generate } from '../generate.mjs';
@@ -196,7 +197,10 @@ describe('web generate', () => {
       ],
     });
 
-    const pages = Map.groupBy(await chunk(entries), entry => entry.api);
+    const pages = Map.groupBy(
+      await collectAsyncGenerator(sectionPages(entries)),
+      entry => entry.api
+    );
     const contents = await Promise.all(
       [...pages.values()].map(group => buildContent(group, group[0]))
     );

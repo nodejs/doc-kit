@@ -73,7 +73,8 @@ declare global {
     /**
      * Receive the dependency's output as an async iterable of its chunks, as
      * they are produced, instead of one collected array. With one thread, the
-     * input is still a collected array, so accept both.
+     * input is still a collected array, so accept both: `toBatches` from
+     * `@doc-kit/core/utils/generators.mjs` gives either as batches.
      */
     streamsInput?: boolean;
 

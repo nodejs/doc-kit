@@ -1,11 +1,30 @@
 import assert from 'node:assert/strict';
 import { before, describe, it } from 'node:test';
 
+import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import getConfig, {
   setConfig,
 } from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { generate } from '../generate.mjs';
+
+/**
+ * Runs the generator over the given batches of entries, streamed in as
+ * `metadata` yields them, and collects what it yields.
+ *
+ * @param {...Array<object>} batches
+ * @returns {Promise<Array<object>>}
+ */
+const run = (...batches) => collectAsyncGenerator(generate(streamOf(batches)));
+
+/**
+ * Yields each batch in turn, as a streamed input.
+ *
+ * @param {Array<Array<object>>} batches
+ */
+async function* streamOf(batches) {
+  yield* batches;
+}
 
 /**
  * Builds a metadata-shaped entry whose heading node is shared between
@@ -72,7 +91,7 @@ describe('section-pages generate', () => {
 
   it('keeps every original entry and appends the chunk pages', async () => {
     const input = createModule();
-    const output = await generate(input);
+    const output = await run(input);
 
     assert.deepEqual(output.slice(0, input.length), input);
 
@@ -97,7 +116,7 @@ describe('section-pages generate', () => {
   });
 
   it('describes where each chunk came from', async () => {
-    const output = await generate(createModule());
+    const output = await run(createModule());
     const readFile = output.find(e => e.path === '/fs/readFile');
 
     assert.deepEqual(readFile.chunk, {
@@ -111,7 +130,7 @@ describe('section-pages generate', () => {
   });
 
   it('promotes headings so the chunk reads as its own page', async () => {
-    const output = await generate(createModule());
+    const output = await run(createModule());
 
     const dir = output.filter(e => e.api === 'fs-Dir');
     assert.deepEqual(
@@ -134,13 +153,13 @@ describe('section-pages generate', () => {
     const input = createModule();
     const snapshot = structuredClone(input);
 
-    await generate(input);
+    await run(input);
 
     assert.deepEqual(input, snapshot);
   });
 
   it('leaves modules with a single section alone', async () => {
-    const output = await generate([
+    const output = await run([
       createEntry('tiny', 1, 'Tiny'),
       createEntry('tiny', 2, '`tiny.only()`', { name: 'only', type: 'method' }),
     ]);
@@ -149,7 +168,7 @@ describe('section-pages generate', () => {
   });
 
   it('leaves modules that document no API entry alone', async () => {
-    const output = await generate([
+    const output = await run([
       createEntry('guide', 1, 'About this documentation'),
       createEntry('guide', 2, 'Contributing'),
       createEntry('guide', 2, 'Stability index'),
@@ -172,7 +191,7 @@ describe('section-pages generate', () => {
       link('https://example.com')
     );
 
-    const output = await generate(input);
+    const output = await run(input);
     const chunk = output.find(e => e.path === '/fs/readFile');
 
     assert.deepEqual(
@@ -206,7 +225,7 @@ describe('section-pages generate', () => {
       },
     });
 
-    const output = await generate(input);
+    const output = await run(input);
     const chunk = output.find(e => e.path === '/fs/readFile');
 
     assert.deepEqual(
@@ -225,7 +244,9 @@ describe('section-pages generate', () => {
     getConfig('section-pages').exclude = ['fs'];
 
     try {
-      assert.equal((await generate(createModule())).length, 6);
+      const output = await run(createModule());
+
+      assert.equal(output.length, 6);
     } finally {
       getConfig('section-pages').exclude = [];
     }
@@ -235,7 +256,7 @@ describe('section-pages generate', () => {
     getConfig('section-pages').maxDepth = 2;
 
     try {
-      const output = await generate(createModule());
+      const output = await run(createModule());
 
       assert.deepEqual(
         output.filter(e => e.chunk && e.heading.depth === 1).map(e => e.path),
@@ -245,4 +266,55 @@ describe('section-pages generate', () => {
       getConfig('section-pages').maxDepth = 3;
     }
   });
+
+  it('builds the same output from several batches as from its whole input', async () => {
+    const tiny = [
+      createEntry('tiny', 1, 'Tiny'),
+      createEntry('tiny', 2, '`tiny.only()`', { name: 'only', type: 'method' }),
+    ];
+
+    const batched = await run(createModule(), tiny);
+
+    // The whole input, as it comes with one thread
+    const whole = await collectAsyncGenerator(
+      generate([...createModule(), ...tiny])
+    );
+
+    assert.deepEqual(batched, whole);
+  });
+
+  it(
+    'passes each batch on before the next one arrives',
+    // The next batch waits for the test, so a batch held back until it
+    // arrives would never be passed on
+    { timeout: 10_000 },
+    async () => {
+      const gate = Promise.withResolvers();
+      const first = [...createModule(), createEntry('tiny', 1, 'Tiny')];
+
+      async function* batches() {
+        yield first;
+        await gate.promise;
+        yield [createEntry('zlib', 1, 'Zlib')];
+      }
+
+      const output = generate(batches());
+      const { value } = await output.next();
+
+      assert.deepEqual(value, first);
+
+      gate.resolve();
+
+      const rest = await collectAsyncGenerator(output);
+
+      assert.deepEqual(
+        rest.filter(e => !e.chunk).map(e => e.api),
+        ['zlib']
+      );
+      assert.equal(
+        rest.filter(e => e.chunk && e.heading.depth === 1).length,
+        3
+      );
+    }
+  );
 });
