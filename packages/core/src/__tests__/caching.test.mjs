@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual, throws } from 'node:assert';
+import { deepStrictEqual, rejects, strictEqual, throws } from 'node:assert';
 import { describe, it } from 'node:test';
 
 import { collectAsyncGenerator, createCache } from '../caching.mjs';
@@ -212,6 +212,61 @@ describe('caching', () => {
       deepStrictEqual(await Array.fromAsync(stream), [[1], [2], [3]]);
     });
 
+    it('should drain a result, alongside its other readers', async () => {
+      const cache = createCache();
+      const produced = [];
+
+      cache.populateConsumerCounts(['a', 'b'], name =>
+        name === 'b' ? 'a' : undefined
+      );
+
+      async function* gen() {
+        for (const value of [1, 2, 3]) {
+          produced.push(value);
+
+          yield [value];
+        }
+      }
+
+      cache.store('a', gen());
+
+      const reader = await cache.stream('a');
+
+      await cache.drain('a');
+
+      strictEqual(cache.has('a'), false);
+      deepStrictEqual(produced, [1, 2, 3]);
+
+      deepStrictEqual(await Array.fromAsync(reader), [[1], [2], [3]]);
+    });
+
+    it('should let go of the chunks of a drained result as they are produced', async () => {
+      const cache = createCache();
+      const gate = Promise.withResolvers();
+      const { released, chunkOf } = trackReleases();
+
+      cache.populateConsumerCounts(['a'], () => undefined);
+
+      async function* gen() {
+        yield chunkOf(1);
+        yield chunkOf(2);
+        yield chunkOf(3);
+        await gate.promise;
+      }
+
+      cache.store('a', gen());
+
+      const draining = cache.drain('a');
+
+      // The generator waits, past its chunks: the first is no longer held
+      await collectGarbage(() => released.has(1));
+
+      strictEqual(released.has(1), true);
+
+      gate.resolve();
+      await draining;
+    });
+
     it('should let go of a chunk once every streaming reader has read it, while it still runs', async () => {
       const cache = createCache();
       const gate = Promise.withResolvers();
@@ -251,6 +306,34 @@ describe('caching', () => {
 
       await readValues(first);
       await readValues(second);
+    });
+
+    it('should drain a non-streaming result', async () => {
+      const cache = createCache();
+
+      cache.populateConsumerCounts(['a'], () => undefined);
+      cache.store('a', Promise.resolve({ value: 1 }));
+
+      const drained = await cache.drain('a');
+
+      strictEqual(drained, undefined);
+      strictEqual(cache.has('a'), false);
+    });
+
+    it('should reject draining a generator that fails', async () => {
+      const cache = createCache();
+
+      cache.populateConsumerCounts(['a'], () => undefined);
+
+      async function* gen() {
+        yield [1];
+
+        throw new Error('drained failure');
+      }
+
+      cache.store('a', gen());
+
+      await rejects(cache.drain('a'), /drained failure/);
     });
   });
 });

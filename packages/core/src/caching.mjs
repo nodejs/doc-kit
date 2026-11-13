@@ -141,8 +141,8 @@ export const createCache = () => {
     /**
      * Computes and records consumer counts across the dependency closure of the
      * requested generators. A generator is consumed once per dependent
-     * generator, plus once more when it is a requested target (read by the
-     * final collection). This drives eviction without coupling the cache to the
+     * generator, plus once more when it is a requested target (read when the run
+     * ends). This drives eviction without coupling the cache to the
      * generator registry: callers supply how to resolve a dependency.
      *
      * @param {string[]} targets - Requested generator cache keys
@@ -179,7 +179,7 @@ export const createCache = () => {
         }
       }
 
-      // Each requested target is consumed once more by the final collection
+      // Each requested target is read once more when the run ends
       for (const name of targets) {
         remaining[name] = (remaining[name] ?? 0) + 1;
       }
@@ -212,6 +212,30 @@ export const createCache = () => {
       release(name);
 
       return value;
+    },
+
+    /**
+     * Runs a generator to its end, keeping none of its result, which counts as
+     * one of its reads.
+     *
+     * @param {string} name - Cache key (resolved generator specifier) to drain
+     * @returns {Promise<void>}
+     */
+    drain: async name => {
+      const result = await results[name];
+
+      if (!isAsyncIterable(result)) {
+        release(name);
+
+        return;
+      }
+
+      const { ended } = teeOf(name, result);
+
+      // Once nothing else reads it, its chunks go as they're produced
+      release(name);
+
+      await ended;
     },
 
     /**

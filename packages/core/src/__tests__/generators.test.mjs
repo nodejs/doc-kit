@@ -312,18 +312,23 @@ describe('createGenerator orchestration', () => {
     }
   );
 
-  it('rejects with the failure of a dependency read as a stream', async () => {
-    const { runGenerators } = createGenerator();
+  it('rejects with the failure of a dependency read as a stream, with or without results', async () => {
     const unhandled = [];
     const onUnhandled = error => unhandled.push(error);
 
     process.on('unhandledRejection', onUnhandled);
 
     try {
-      await assert.rejects(
-        runGenerators({ target: ['failing-reader'], threads: 2 }),
-        /source failed/
-      );
+      for (const discardResults of [false, true]) {
+        await assert.rejects(
+          createGenerator().runGenerators({
+            target: ['failing-reader'],
+            threads: 2,
+            discardResults,
+          }),
+          /source failed/
+        );
+      }
 
       // A rejection left unhandled is reported once the microtasks have run
       await new Promise(resolve => setImmediate(resolve));
@@ -346,5 +351,15 @@ describe('createGenerator orchestration', () => {
 
     assert.deepStrictEqual(one, [{ array: true }]);
     assert.deepStrictEqual(two, [{ array: false }]);
+  });
+
+  it('returns no results with discardResults', async () => {
+    const results = await createGenerator().runGenerators({
+      target: ['gen-c', 'gen-c-all'],
+      threads: 1,
+      discardResults: true,
+    });
+
+    assert.equal(results, undefined);
   });
 });

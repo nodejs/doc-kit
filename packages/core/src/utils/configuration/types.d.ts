@@ -16,6 +16,10 @@ export type Configuration = {
 
   // Number of items to process per worker thread
   chunkSize: number;
+
+  // Keeps none of the requested generators' results, for runs that only need
+  // what the generators write
+  discardResults?: boolean;
 } & {
   [K in keyof AllGenerators]: GlobalConfiguration &
     AllGenerators[K]['defaultConfiguration'];

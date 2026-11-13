@@ -137,6 +137,9 @@ Top-level, alongside `target` and `global`:
   CPU count. Each worker's heap is limited to 512MB; to raise the limit, run
   Node.js with `--max-old-space-size` (directly or through `NODE_OPTIONS`).
 - `chunkSize` {number} Items processed per worker thread. **Default:** `10`.
+- `discardResults` {boolean} Keeps none of the requested generators' results,
+  so each can be let go as soon as it is produced. `doc-kit generate` and
+  `doc-kit preview` set it. **Default:** `false`.
 
 ## Generator options
 
