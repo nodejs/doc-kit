@@ -1,5 +1,13 @@
 # @doc-kit/cli
 
+## 1.1.2
+
+### Patch Changes
+
+- [#1239](https://github.com/nodejs/doc-kit/pull/1239) [`b65d7c1`](https://github.com/nodejs/doc-kit/commit/b65d7c1389a0f016d22466b9f1517e8b2c21a6bb) Thanks [@ovflowd](https://github.com/ovflowd)! - `runGenerators` with `discardResults: true` in its configuration keeps none of the requested generators' output: each still runs to its end, and once nothing else reads its output, its chunks go as they are produced. The CLI's `generate` and `preview` commands use it, as they don't read the results.
+- Updated dependencies [[`b65d7c1`](https://github.com/nodejs/doc-kit/commit/b65d7c1389a0f016d22466b9f1517e8b2c21a6bb), [`e1cbd76`](https://github.com/nodejs/doc-kit/commit/e1cbd769869bab49ef2a8c59986d4fcdfb806815), [`265eb17`](https://github.com/nodejs/doc-kit/commit/265eb17783b13738fbca1346d076af7a7b541696), [`07858b1`](https://github.com/nodejs/doc-kit/commit/07858b11473dac2b7617b2caad78d6a7b08cb08f)]:
+  - @doc-kit/core@1.4.0
+
 ## 1.1.1
 
 ### Patch Changes
