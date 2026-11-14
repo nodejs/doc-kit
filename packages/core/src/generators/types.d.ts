@@ -70,6 +70,9 @@ declare global {
 
     hasParallelProcessor?: boolean;
 
+    /** Configuration keys excluded from worker-thread messages. */
+    workerConfigOmit?: string[];
+
     /**
      * Receive the dependency's output as an async iterable of its chunks, as
      * they are produced, instead of one collected array. With one thread, the
