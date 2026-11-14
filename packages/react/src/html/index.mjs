@@ -96,5 +96,8 @@ export default {
   // page count, so it is farmed out to the worker pool.
   hasParallelProcessor: true,
 
+  // The bundler runs on the main thread and contains non-cloneable functions.
+  workerConfigOmit: ['bundler'],
+
   processChunk,
 };

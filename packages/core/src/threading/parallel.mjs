@@ -1,7 +1,7 @@
 'use strict';
 
 import logger from '#logger/index.mjs';
-import { isAsyncIterable } from '#utils/misc.mjs';
+import { isAsyncIterable, omitKeys } from '#utils/misc.mjs';
 
 import { CHUNKS_PER_THREAD } from './constants.mjs';
 
@@ -76,7 +76,15 @@ export default function createParallelWorker(
 ) {
   const { threads, chunkSize } = configuration;
 
-  const { name } = generator;
+  const { name, workerConfigOmit } = generator;
+
+  const workerConfiguration =
+    workerConfigOmit?.length && configuration[name]
+      ? {
+          ...configuration,
+          [name]: omitKeys(configuration[name], workerConfigOmit),
+        }
+      : configuration;
 
   return {
     /**
@@ -165,7 +173,14 @@ export default function createParallelWorker(
           running++;
 
           const task = pool.run(
-            createTask(batch, indices, extra, configuration, specifier, name)
+            createTask(
+              batch,
+              indices,
+              extra,
+              workerConfiguration,
+              specifier,
+              name
+            )
           );
 
           tasks.push(
