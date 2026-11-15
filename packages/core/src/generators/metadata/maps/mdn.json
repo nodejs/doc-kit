@@ -227,6 +227,7 @@
   "ext_disjoint_timer_query": "https://developer.mozilla.org/docs/Web/API/EXT_disjoint_timer_query",
   "ext_float_blend": "https://developer.mozilla.org/docs/Web/API/EXT_float_blend",
   "ext_frag_depth": "https://developer.mozilla.org/docs/Web/API/EXT_frag_depth",
+  "ext_polygon_offset_clamp": "https://developer.mozilla.org/docs/Web/API/EXT_polygon_offset_clamp",
   "ext_srgb": "https://developer.mozilla.org/docs/Web/API/EXT_sRGB",
   "ext_shader_texture_lod": "https://developer.mozilla.org/docs/Web/API/EXT_shader_texture_lod",
   "ext_texture_compression_bptc": "https://developer.mozilla.org/docs/Web/API/EXT_texture_compression_bptc",
