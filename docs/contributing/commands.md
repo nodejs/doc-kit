@@ -1,74 +1,113 @@
-# Creating Commands
+# Adding a command
 
-The `doc-kit` CLI is built on [Commander](https://www.npmjs.com/package/commander).
-Each command is a module in `packages/cli/bin/commands/` whose default export
-is a Commander `Command` instance; the CLI entry point registers every command
-exported from `packages/cli/bin/commands/index.mjs`.
+This page shows how to add a command to the `doc-kit` CLI
+([`@doc-kit/cli`](../packages/cli.md), in `packages/cli`). Add one for a new
+action. For a new output, write a [generator](../creating-generators.md)
+instead: `doc-kit generate --target` already runs custom generators.
 
-Today the CLI ships a single command, [`generate`](../cli.md).
+The CLI is built on [Commander](https://github.com/tj/commander.js). Each
+command is a module in `packages/cli/bin/commands/` whose default export is a
+Commander `Command`. `packages/cli/bin/cli.mjs` adds every command listed in
+`packages/cli/bin/commands/index.mjs` to the program. The commands that exist
+today are documented on the [CLI](../cli.md) page.
 
-## Creating a New Command
+## Create the command
 
-### Step 1: Create the Command File
-
-Create a new file in `packages/cli/bin/commands/` with your command name:
-
-```mjs displayName="packages/cli/bin/commands/my-command.mjs"
+```js displayName="packages/cli/bin/commands/my-command.mjs"
+import logger from '@doc-kit/core/logger/index.mjs';
 import { Command, Option } from 'commander';
 
 import { errorWrap } from '../utils.mjs';
 
 export default new Command('my-command')
   .description('Does something useful')
-  .addOption(new Option('-f, --force', 'Force overwrite existing files'))
+  .addOption(new Option('-f, --force', 'Overwrite existing files'))
   .action(
     errorWrap(async opts => {
-      // Your command logic here
+      logger.info(`Running with force: ${Boolean(opts.force)}`);
     })
   );
 ```
 
-`errorWrap` catches both synchronous and asynchronous errors, logs them, and
-exits with a non-zero status — wrap every action with it so failures are
-reported consistently.
+Wrap every action in `errorWrap` from `packages/cli/bin/utils.mjs`. It awaits
+the action, logs anything it throws (synchronously or not) with the doc-kit
+logger, and exits with code 1. To fail a command, throw an `Error`.
 
-### Step 2: Register the Command
+Log through the logger from `@doc-kit/core/logger/index.mjs` rather than
+`console`. A `preAction` hook in `cli.mjs` sets its level from `--log-level`
+before any command runs.
 
-Add your command to the exports in `packages/cli/bin/commands/index.mjs`:
+## Register it
 
-```mjs displayName="packages/cli/bin/commands/index.mjs"
+Import the command in `packages/cli/bin/commands/index.mjs` and add it to the
+exported array:
+
+```js displayName="packages/cli/bin/commands/index.mjs"
 import generate from './generate.mjs';
-import myCommand from './my-command.mjs'; // Add this
+import myCommand from './my-command.mjs';
+import preview from './preview.mjs';
 
-export default [
-  generate,
-  myCommand, // Add this
-];
+export default [generate, preview, myCommand];
 ```
 
-The CLI in `packages/cli/bin/cli.mjs` registers every command in that array,
-so no further changes are needed.
+Nothing else needs to change. Commander builds the help text from the
+command's description and options, so `doc-kit --help` lists the new command
+and `doc-kit my-command --help` shows its options.
 
-## Command Options
+## Options and arguments
 
-Options use Commander's `Option` class directly; see the [Commander
-documentation](https://www.npmjs.com/package/commander#options) for the full
-API.
+Define options with Commander's `Option` class, as `generate.mjs` does, and
+positional arguments with `.argument()`. The action receives the positional
+arguments first, then the parsed options, then the `Command` itself.
 
-```js
-.addOption(new Option('-i, --input <patterns...>', 'Input file patterns (glob)'))
-.addOption(new Option('-o, --output <directory>', 'The output directory'))
-.addOption(
-  new Option('--log-level <level>', 'Log level').choices(['debug', 'info'])
-)
+```js displayName="packages/cli/bin/commands/my-command.mjs"
+export default new Command('my-command')
+  .argument('<name>', 'What to act on')
+  .addOption(new Option('-o, --output <directory>', 'The output directory'))
+  .addOption(new Option('--count <number>', 'How many').argParser(Number))
+  .addOption(
+    new Option('--mode <mode>', 'How to run')
+      .choices(['fast', 'safe'])
+      .default('safe')
+  )
+  .action(
+    errorWrap(async (name, opts) => {
+      // opts.output, opts.count, opts.mode
+    })
+  );
 ```
 
-### Flag Syntax
+| Syntax               | Meaning                                         |
+| -------------------- | ----------------------------------------------- |
+| `--flag`             | Boolean, `true` when present                    |
+| `--name <value>`     | Takes a required value                          |
+| `--name [value]`     | Takes an optional value                         |
+| `--name <values...>` | Takes one or more values, collected in an array |
 
-- `<value>` - Required argument
-- `[value]` - Optional argument
-- `<values...>` - Variadic (multiple values)
-- `[values...]` - Optional variadic
+Values arrive as strings unless you add an `.argParser()`. Multi-word flags
+are camelCased on the options object, so `--git-ref` becomes `opts.gitRef`.
+See the [Commander options documentation](https://github.com/tj/commander.js#options)
+for the full API.
 
-One global option, `--log-level`, is defined on the program itself in
-`packages/cli/bin/cli.mjs` and applies to every command.
+`--log-level` is defined on the program, not on each command, so it works on
+either side of the command name (`doc-kit --log-level debug my-command` or
+`doc-kit my-command --log-level debug`). Don't add it to your command.
+
+## Before you open a pull request
+
+- **Try it** from the repository root with
+  `node --run run -- my-command --help`, which runs
+  `node packages/cli/bin/cli.mjs`.
+- **Keep the command thin.** `@doc-kit/cli` publishes only `bin/` (see
+  `files` in `packages/cli/package.json`), and `node --run test` only picks up
+  tests under `packages/*/src/` and `scripts/`, never `bin/`. Put logic worth
+  testing in `@doc-kit/core`, with its tests in a `__tests__` directory next
+  to it.
+- **Document it** with a section on the [CLI page](../cli.md) (`docs/cli.md`),
+  using the same option-list format as the existing commands, and in
+  `packages/cli/README.md` if it changes how people use the package. If it
+  adds a flag that sets configuration, name the key it sets, as the
+  `generate` options do.
+- **Add a changeset** with `node --run changeset`, since `@doc-kit/cli` is
+  published. See
+  [Adding a changeset](https://github.com/nodejs/doc-kit/blob/main/CONTRIBUTING.md#adding-a-changeset).

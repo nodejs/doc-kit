@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 
 import {
   default as getConfig,
@@ -12,6 +12,7 @@ import {
   buildHead,
   buildSpeculationRules,
   pageFileName,
+  populatePage,
   populateWithEvaluation,
   resolvePageRoot,
 } from '../processing.mjs';
@@ -292,5 +293,85 @@ describe('pageFileName', () => {
   it('derives the output file from the page path', () => {
     assert.strictEqual(pageFileName({ path: '/api/fs' }), 'api/fs.html');
     assert.strictEqual(pageFileName({ path: '/404' }), '404.html');
+  });
+});
+
+describe('populatePage', () => {
+  beforeEach(() => {
+    getConfig('html').baseURL = 'https://nodejs.org/docs';
+  });
+
+  const canonical = data =>
+    populatePage({
+      template: '${canonical}',
+      data: { title: 'Page', ...data },
+      dehydrated: '',
+      assets: { scripts: [], preloads: [], stylesheets: [] },
+    });
+
+  it('links a page to its URL', () => {
+    assert.strictEqual(
+      canonical({ path: '/fs' }),
+      'https://nodejs.org/docs/fs.html'
+    );
+  });
+
+  it('links the index to the site root', () => {
+    assert.strictEqual(
+      canonical({ path: '/index' }),
+      'https://nodejs.org/docs/'
+    );
+  });
+
+  it('leaves synthetic pages without one', () => {
+    assert.strictEqual(canonical({ path: '/404', synthetic: true }), '');
+  });
+
+  describe('with a versioned pageURL', () => {
+    const NODE_PAGE_URL = '{baseURL}/latest-{version}/api{path}.html';
+
+    let original;
+
+    const release = (version, major, minor) => {
+      getConfig('html').version = { version, major, minor };
+    };
+
+    beforeEach(() => {
+      const config = getConfig('html');
+
+      original = { pageURL: config.pageURL, version: config.version };
+      config.pageURL = NODE_PAGE_URL;
+    });
+
+    afterEach(() => {
+      Object.assign(getConfig('html'), original);
+    });
+
+    it('uses the release line for a non-zero minor', () => {
+      release('26.13.0', 26, 13);
+
+      assert.strictEqual(
+        canonical({ path: '/fs' }),
+        'https://nodejs.org/docs/latest-v26.x/api/fs.html'
+      );
+    });
+
+    it('uses the release line for a .0 minor', () => {
+      release('26.0.0', 26, 0);
+
+      assert.strictEqual(
+        canonical({ path: '/fs' }),
+        'https://nodejs.org/docs/latest-v26.x/api/fs.html'
+      );
+    });
+
+    it('keeps the index under the versioned docs', () => {
+      release('26.13.0', 26, 13);
+
+      assert.strictEqual(
+        canonical({ path: '/index' }),
+        'https://nodejs.org/docs/latest-v26.x/api/'
+      );
+    });
   });
 });

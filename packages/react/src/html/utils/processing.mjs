@@ -216,6 +216,18 @@ export const populatePage = ({ template, data, dehydrated, assets }) => {
   const root = resolvePageRoot(data);
   const title = data.title ?? data.heading.data.name;
 
+  // Synthetic pages, such as `404.html`, aren't served at a URL of their own.
+  // `{version}` is the release line (`v26.x`), like the version selector's
+  // labels, and an index page is linked as its directory.
+  const canonical =
+    config.baseURL && !data.synthetic
+      ? populate(config.pageURL, {
+          ...config,
+          version: `v${config.version.major}.x`,
+          path: data.path,
+        }).replace(/\/index(\.html)?$/, '/')
+      : '';
+
   return populateWithEvaluation(template, {
     title: escapeHTML(
       title ? (titleSuffix ? `${title} | ${titleSuffix}` : title) : titleSuffix
@@ -226,6 +238,7 @@ export const populatePage = ({ template, data, dehydrated, assets }) => {
     themeScript: THEME_SCRIPT,
     preloads: buildPreloads(assets.fonts ?? [], root),
     root,
+    canonical,
     metadata: data,
     config,
     head: buildHead(config.head),

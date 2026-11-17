@@ -29,6 +29,7 @@
     "packages/node/src/api-links/__tests__/fixtures/",
     "*.snapshot",
     "packages/react/src/html/template.html",
+    "www/theme/template.html",
     "out/",
     "www/content/",
     "www/out/",

@@ -1,0 +1,5 @@
+# Pages the site no longer builds, sent to where their content lives now.
+# Cloudflare reads this file on deploy; it is not served.
+
+# `docs/index.md` became the introduction
+/index.md /introduction.md 301
