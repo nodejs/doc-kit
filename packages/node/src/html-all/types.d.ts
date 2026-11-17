@@ -4,5 +4,5 @@ type Pages = Array<PageCode | { manifest: Array<PageCode['data']> }>;
 
 export type Generator = GeneratorMetadata<
   {},
-  Generate<Pages | AsyncIterable<Pages>, AsyncGenerator<Pages>>
+  Generate<AsyncIterable<Pages>, AsyncGenerator<Pages>>
 >;

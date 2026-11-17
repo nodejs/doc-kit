@@ -1,6 +1,5 @@
 'use strict';
 
-import { toBatches } from '@doc-kit/core/utils/generators.mjs';
 import { headingSortFn } from '@doc-kit/generator-react/jsx-ast/utils/getSortedHeadNodes';
 
 // The metadata of `all.html`
@@ -56,7 +55,7 @@ export async function* generate(input) {
   let missing;
   let added = false;
 
-  for await (const batch of toBatches(input)) {
+  for await (const batch of input) {
     const pages = [];
 
     for (const item of batch) {

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { once } from '@doc-kit/core/utils/generators.mjs';
+
 import { generate } from '../generate.mjs';
 
 /**
@@ -19,17 +21,9 @@ const createPage = (api, name, extra = {}) => ({
 /**
  * Reads every batch the generator yields.
  *
- * @param {AsyncIterable<Array<object>> | Array<object>} input
+ * @param {AsyncIterable<Array<object>>} input
  */
-const run = async input => {
-  const batches = [];
-
-  for await (const batch of generate(input)) {
-    batches.push(batch);
-  }
-
-  return batches;
-};
+const run = input => Array.fromAsync(generate(input));
 
 describe('html-all', () => {
   const zlib = createPage('zlib', 'Zlib');
@@ -71,7 +65,9 @@ describe('html-all', () => {
   });
 
   it('adds all.html after every page given at once, as with one thread', async () => {
-    const batches = await run([zlib, fs, { manifest: [zlib.data, fs.data] }]);
+    const batches = await run(
+      once([zlib, fs, { manifest: [zlib.data, fs.data] }])
+    );
 
     const pages = batches.flat();
 
