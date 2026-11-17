@@ -14,6 +14,12 @@ const isFootnotesSection = node =>
     node.properties?.className?.includes('footnotes'));
 
 /**
+ * Whether a HAST node is a table cell.
+ * @param {import('hast').Element} node
+ */
+const isTableCell = node => node.tagName === 'td' || node.tagName === 'th';
+
+/**
  * Finds the JSX fragment wrapping the page content (see `buildContent`).
  * @param {import('hast').Root} tree
  */
@@ -50,18 +56,28 @@ const transformer = tree => {
       // Not every table will have a header, so only do this on tables
       // with them.
       const thead = node.children.find(el => el.tagName === 'thead');
+      const tbody = node.children.find(el => el.tagName === 'tbody');
 
-      if (thead) {
+      if (thead && tbody) {
+        // Table rows and cells don't have to be the first children, nor be
+        // adjacent: `rehype-raw` keeps the whitespace between them as text
+        // nodes.
         // TODO(@avivkeller): These are only strings afaict, so a `toString` dependency
         // might not actually be needed.
-        const headers = thead.children[0].children.map(toString);
-        const tbody = node.children.find(el => el.tagName === 'tbody');
+        const headerRow = thead.children.find(el => el.tagName === 'tr');
+        const headers =
+          headerRow?.children.filter(isTableCell).map(toString) ?? [];
 
-        visit(
-          tbody,
-          node => node.tagName === 'td',
-          (node, index) => (node.properties['data-label'] = headers[index])
-        );
+        for (const tr of tbody.children.filter(el => el.tagName === 'tr')) {
+          const cells = tr.children.filter(isTableCell);
+
+          for (const [column, cell] of cells.entries()) {
+            if (cell.tagName === 'td' && headers[column] !== undefined) {
+              cell.properties ||= {};
+              cell.properties['data-label'] = headers[column];
+            }
+          }
+        }
       }
     }
   });
