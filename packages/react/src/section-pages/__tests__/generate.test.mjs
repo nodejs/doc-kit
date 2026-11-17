@@ -275,10 +275,8 @@ describe('section-pages generate', () => {
 
     const batched = await run(createModule(), tiny);
 
-    // The whole input, as it comes with one thread
-    const whole = await collectAsyncGenerator(
-      generate([...createModule(), ...tiny])
-    );
+    // The whole input as one batch, as it comes with one thread
+    const whole = await run([...createModule(), ...tiny]);
 
     assert.deepEqual(batched, whole);
   });

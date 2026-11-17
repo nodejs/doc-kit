@@ -2,7 +2,6 @@
 
 import { coerce, major } from 'semver';
 
-import { isAsyncIterable } from './misc.mjs';
 import { transformNodeToString } from './unist.mjs';
 
 /**
@@ -44,20 +43,15 @@ export const groupNodesByModule = nodes => {
 };
 
 /**
- * Gives a generator's input as batches: as they arrive if it streams, or as a
- * single batch if it arrives whole, as it does with one thread.
+ * Gives a value as the single chunk of an async generator.
  *
  * @template T
- * @param {Array<T> | AsyncIterable<Array<T>>} input
- * @returns {Array<Array<T>> | AsyncIterable<Array<T>>}
+ * @param {T} value
+ * @returns {AsyncGenerator<T>}
  */
-export const toBatches = input => {
-  if (isAsyncIterable(input)) {
-    return input;
-  }
-
-  return [input];
-};
+export async function* once(value) {
+  yield value;
+}
 
 /**
  * Parses the SemVer string into a Node.js-alike version

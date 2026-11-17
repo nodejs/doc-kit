@@ -1,10 +1,7 @@
 'use strict';
 
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import {
-  groupNodesByModule,
-  toBatches,
-} from '@doc-kit/core/utils/generators.mjs';
+import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { visit } from 'unist-util-visit';
 
 import { headingLabel } from '../jsx-ast/utils/buildBarProps.mjs';
@@ -162,7 +159,7 @@ export async function* generate(input) {
   // A module's chunk pages need all of its entries, which arrive in the same
   // batch: each batch `metadata` yields holds whole files, and a file is one
   // module
-  for await (const entries of toBatches(input)) {
+  for await (const entries of input) {
     yield entries;
 
     chunkPages.push(...buildChunkPages(entries, config));

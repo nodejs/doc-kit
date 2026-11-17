@@ -7,7 +7,7 @@ import {
   getVersionFromSemVer,
   coerceSemVer,
   getCompatibleVersions,
-  toBatches,
+  once,
 } from '../generators.mjs';
 
 describe('getEntryDescription', () => {
@@ -140,11 +140,10 @@ describe('getCompatibleVersions', () => {
   });
 });
 
-describe('toBatches', () => {
-  it('gives an array as a single batch, and batches as they are', () => {
-    const streamed = (async function* () {})();
+describe('once', () => {
+  it('gives a value as the only chunk', async () => {
+    const chunks = await Array.fromAsync(once([1, 2]));
 
-    assert.deepEqual(toBatches([1, 2]), [[1, 2]]);
-    assert.equal(toBatches(streamed), streamed);
+    assert.deepEqual(chunks, [[1, 2]]);
   });
 });

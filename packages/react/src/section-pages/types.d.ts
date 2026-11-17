@@ -25,7 +25,7 @@ export type Chunk = {
 export type Generator = GeneratorMetadata<
   Configuration,
   Generate<
-    Array<MetadataEntry> | AsyncIterable<Array<MetadataEntry>>,
+    AsyncIterable<Array<MetadataEntry>>,
     AsyncGenerator<Array<MetadataEntry>>
   >
 >;

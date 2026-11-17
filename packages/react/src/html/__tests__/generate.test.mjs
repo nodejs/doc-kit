@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
+import { once } from '@doc-kit/core/utils/generators.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
@@ -198,7 +199,7 @@ describe('web generate', () => {
     });
 
     const pages = Map.groupBy(
-      await collectAsyncGenerator(sectionPages(entries)),
+      await collectAsyncGenerator(sectionPages(once(entries))),
       entry => entry.api
     );
     const contents = await Promise.all(

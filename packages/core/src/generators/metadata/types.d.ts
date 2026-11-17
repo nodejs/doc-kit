@@ -3,10 +3,7 @@ import type { Position } from 'unist';
 
 export type Generator = GeneratorMetadata<
   {},
-  Generate<
-    Array<Root> | AsyncIterable<Array<Root>>,
-    AsyncGenerator<MetadataEntry>
-  >,
+  Generate<AsyncIterable<Array<Root>>, AsyncGenerator<MetadataEntry>>,
   ProcessChunk<Root, MetadataEntry, Record<string, string>>
 >;
 
