@@ -10,13 +10,9 @@
  * @returns {import('preact').ComponentChildren}
  */
 export const renderLabel = label => {
-  if (!label) {
-    return label;
-  }
+  const segments = label?.split('`');
 
-  const segments = label.split('`');
-
-  if (segments.length === 1) {
+  if (!segments || segments.length === 1) {
     return label;
   }
 
