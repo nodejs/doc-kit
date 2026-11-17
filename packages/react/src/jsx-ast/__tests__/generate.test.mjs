@@ -188,18 +188,18 @@ describe('jsx-ast generate', () => {
     );
   });
 
-  it('builds the same pages from its whole input, as it gets it with one thread', async () => {
+  it('builds the same pages from batches as from its whole input, as it gets it with one thread', async () => {
     await setConfig({ target: ['jsx-ast'] });
 
-    const entries = () => [
-      createEntry('fs', 'File system'),
-      createEntry('buffer', 'Buffer'),
-    ];
+    const fs = () => createEntry('fs', 'File system');
+    const buffer = () => createEntry('buffer', 'Buffer');
 
     const streamed = await collect(
-      generate(streamOf([entries()]), createWorker([]))
+      generate(streamOf([[fs()], [buffer()]]), createWorker([]))
     );
-    const whole = await collect(generate(entries(), createWorker([])));
+    const whole = await collect(
+      generate(streamOf([[fs(), buffer()]]), createWorker([]))
+    );
 
     assert.deepEqual(whole, streamed);
 

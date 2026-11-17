@@ -9,7 +9,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import logger from '@doc-kit/core/logger/index.mjs';
 import { createChannel } from '@doc-kit/core/utils/channel.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import { toBatches } from '@doc-kit/core/utils/generators.mjs';
 
 import { headingSortFn } from '../jsx-ast/utils/getSortedHeadNodes.mjs';
 import { resolveBundler } from './bundlers/index.mjs';
@@ -221,7 +220,7 @@ const buildSite = async (input, options) => {
    * @param {typeof input} pages
    */
   const compilePages = async pages => {
-    for await (const items of toBatches(pages)) {
+    for await (const items of pages) {
       const tasks = [];
 
       for (const item of items) {

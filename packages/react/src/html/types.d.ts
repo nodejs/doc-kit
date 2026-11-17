@@ -124,8 +124,7 @@ export type Configuration = {
 export type Generator = GeneratorMetadata<
   Configuration,
   Generate<
-    | Array<PageCode | { manifest: Array<MetadataEntry> }>
-    | AsyncIterable<Array<PageCode | { manifest: Array<MetadataEntry> }>>,
+    AsyncIterable<Array<PageCode | { manifest: Array<MetadataEntry> }>>,
     Promise<void>
   >,
   ProcessChunk<PageTask, string, { template: string; assets: ClientAssets }>

@@ -2,11 +2,7 @@ import { isMainThread } from 'node:worker_threads';
 
 import { createChannel } from '@doc-kit/core/utils/channel.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import {
-  groupNodesByModule,
-  merge,
-  toBatches,
-} from '@doc-kit/core/utils/generators.mjs';
+import { groupNodesByModule, merge } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
@@ -84,7 +80,7 @@ export async function* generate(input, worker) {
     try {
       // A page needs all of its module's entries, which arrive together, as
       // `metadata` and `section-pages` give them
-      for await (const entries of toBatches(input)) {
+      for await (const entries of input) {
         const groupedModules = groupNodesByModule(entries);
         const descriptors = entries
           .filter(node => node.heading.depth === 1)

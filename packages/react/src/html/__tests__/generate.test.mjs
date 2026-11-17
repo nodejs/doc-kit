@@ -22,21 +22,12 @@ import { generate as generatePages } from '../generate.mjs';
 import { processChunk } from '../utils/render.mjs';
 
 /**
- * Yields the given items as one batch, as a dependency streaming them does.
- *
- * @param {Array<object>} items
- */
-async function* streamInOneBatch(items) {
-  yield items;
-}
-
-/**
  * Runs the generator over the given pages, streamed in as one batch, as
  * `jsx-ast` yields them.
  *
  * @param {Array<object>} pages
  */
-const generate = pages => generatePages(streamInOneBatch(pages));
+const generate = pages => generatePages(once(pages));
 
 // Pages are rendered with the pipeline of `jsx-ast`
 await loadMarkdownPlugins(
@@ -553,7 +544,7 @@ describe('web generate', () => {
        * Builds the site from the given input and reads its pages.
        *
        * @param {number} threads
-       * @param {Array<object> | AsyncIterable<Array<object>>} input
+       * @param {AsyncIterable<Array<object>>} input
        */
       const build = async (threads, input) => {
         const { config, output } = await createTestConfiguration(context);
@@ -575,7 +566,7 @@ describe('web generate', () => {
       }
 
       const streamed = await build(2, batches());
-      const whole = await build(1, [zlib, fs, { manifest }, index]);
+      const whole = await build(1, once([zlib, fs, { manifest }, index]));
 
       assert.deepStrictEqual(Object.keys(whole), [
         'all.html',

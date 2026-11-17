@@ -12,7 +12,7 @@ export type Generator = GeneratorMetadata<
     showReadingTime: boolean;
   },
   Generate<
-    Array<MetadataEntry> | AsyncIterable<Array<MetadataEntry>>,
+    AsyncIterable<Array<MetadataEntry>>,
     AsyncGenerator<Array<PageCode | { manifest: Array<MetadataEntry> }>>
   >,
   ProcessChunk<{ head: MetadataEntry; entries: Array<MetadataEntry> }, PageCode>
