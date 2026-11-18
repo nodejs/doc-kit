@@ -9,6 +9,7 @@ import { resolvePipeline } from './generators/pipeline.mjs';
 import logger from './logger/index.mjs';
 import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
+import { once } from './utils/generators.mjs';
 import { loadMarkdownPlugins } from './utils/markdown/plugins.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
 
@@ -31,15 +32,30 @@ const createGenerator = () => {
    * Gets the input from a dependency generator, collected or streamed.
    *
    * @param {string | undefined} dependsOn - Resolved dependency specifier
-   * @param {boolean} [streamed] - Whether to stream its chunks
+   * @param {boolean} [streamsInput] - Whether to give it as an async iterable
+   * of its chunks
+   * @param {number} threads - The number of threads the run uses
    * @returns {Promise<unknown>}
    */
-  const getDependencyInput = async (dependsOn, streamed) => {
+  const getDependencyInput = async (dependsOn, streamsInput, threads) => {
     if (!dependsOn) {
       return undefined;
     }
 
-    return streamed ? cache.stream(dependsOn) : cache.consume(dependsOn);
+    if (!streamsInput) {
+      return cache.consume(dependsOn);
+    }
+
+    if (threads > 1) {
+      return cache.stream(dependsOn);
+    }
+
+    // With one thread nothing runs alongside, so streaming would only keep
+    // every stage's data alive at once: the input is collected whole first,
+    // and given as its only chunk
+    const whole = await cache.consume(dependsOn);
+
+    return once(whole);
   };
 
   /**
@@ -76,11 +92,10 @@ const createGenerator = () => {
     cache.store(
       specifier,
       (async () => {
-        // With one thread nothing runs alongside, so streaming would only keep
-        // every stage's data alive at once: each stage takes its input whole
         const dependencyInput = await getDependencyInput(
           dependsOn,
-          streamsInput && configuration.threads > 1
+          streamsInput,
+          configuration.threads
         );
 
         generatorsLogger.debug(`Starting "${name}"`);

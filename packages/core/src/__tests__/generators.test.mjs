@@ -142,11 +142,25 @@ const syntheticGenerators = {
       yield* input;
     },
   },
+  // A source of two chunks, and a reader that tells which it got
+  'two-chunks': {
+    name: 'two-chunks',
+    hasParallelProcessor: true,
+    generate: async () =>
+      (async function* () {
+        yield [1];
+        yield [2];
+      })(),
+  },
   'shape-reader': {
     name: 'shape-reader',
-    dependsOn: 'metadata',
+    dependsOn: 'two-chunks',
     streamsInput: true,
-    generate: async input => ({ array: Array.isArray(input) }),
+    generate: async input => {
+      const chunks = await Array.fromAsync(input);
+
+      return { chunks };
+    },
   },
 };
 
@@ -339,7 +353,7 @@ describe('createGenerator orchestration', () => {
     assert.deepStrictEqual(unhandled, []);
   });
 
-  it('gives a generator that streams its input the whole input with one thread', async () => {
+  it('gives a generator that streams its input the whole input as one chunk with one thread', async () => {
     const one = await createGenerator().runGenerators({
       target: ['shape-reader'],
       threads: 1,
@@ -349,8 +363,8 @@ describe('createGenerator orchestration', () => {
       threads: 2,
     });
 
-    assert.deepStrictEqual(one, [{ array: true }]);
-    assert.deepStrictEqual(two, [{ array: false }]);
+    assert.deepStrictEqual(one, [{ chunks: [[1, 2]] }]);
+    assert.deepStrictEqual(two, [{ chunks: [[1], [2]] }]);
   });
 
   it('returns no results with discardResults', async () => {

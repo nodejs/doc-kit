@@ -1,6 +1,7 @@
 'use strict';
 
 import logger from './logger/index.mjs';
+import { once } from './utils/generators.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
 import { createTee } from './utils/tee.mjs';
 
@@ -36,17 +37,6 @@ export const collectAsyncGenerator = async generator => {
 
   return results;
 };
-
-/**
- * Gives a value as the single chunk of an async generator.
- *
- * @template T
- * @param {T} value
- * @returns {AsyncGenerator<T>}
- */
-async function* once(value) {
-  yield value;
-}
 
 /**
  * Creates the cache that backs the generator pipeline. It is the single owner

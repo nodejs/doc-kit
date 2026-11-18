@@ -100,14 +100,14 @@ const buildChunkEntries = (module, chunk, index, anchors) => {
 };
 
 /**
- * Adds per-section chunk pages for every module, next to the full pages.
+ * Builds the chunk pages of every module among the given entries.
  *
- * @type {import('./types').Generator['generate']}
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} input - Whole modules' entries
+ * @param {import('./types').Configuration} config
+ * @returns {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>}
  */
-export async function generate(input) {
-  const { maxDepth, exclude } = getConfig('section-pages');
-
-  const output = [...input];
+const buildChunkPages = (input, { maxDepth, exclude }) => {
+  const pages = [];
 
   for (const entries of groupNodesByModule(input).values()) {
     const module = entries.find(entry => entry.heading.depth === 1);
@@ -135,9 +135,37 @@ export async function generate(input) {
     const anchors = buildAnchorMap(chunks);
 
     chunks.forEach((chunk, index) => {
-      output.push(...buildChunkEntries(module, chunk, index, anchors));
+      pages.push(...buildChunkEntries(module, chunk, index, anchors));
     });
   }
 
-  return output;
+  return pages;
+};
+
+/**
+ * Adds per-section chunk pages for every module, next to the full pages.
+ *
+ * The entries are passed on as their modules arrive, so the pages built from
+ * them can start while `metadata` still runs, and the chunk pages follow them
+ * all, in module order, as if built from the whole input at once.
+ *
+ * @type {import('./types').Generator['generate']}
+ */
+export async function* generate(input) {
+  const config = getConfig('section-pages');
+
+  const chunkPages = [];
+
+  // A module's chunk pages need all of its entries, which arrive in the same
+  // batch: each batch `metadata` yields holds whole files, and a file is one
+  // module
+  for await (const entries of input) {
+    yield entries;
+
+    chunkPages.push(...buildChunkPages(entries, config));
+  }
+
+  if (chunkPages.length > 0) {
+    yield chunkPages;
+  }
 }
