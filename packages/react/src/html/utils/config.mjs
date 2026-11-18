@@ -2,7 +2,10 @@
 
 import { getHighlighter } from '@doc-kit/core/plugins/shiki/highlighter.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
+import {
+  populate,
+  populateEditURL,
+} from '@doc-kit/core/utils/configuration/templates.mjs';
 import {
   getEntryDescription,
   getVersionFromSemVer,
@@ -179,7 +182,7 @@ export default function createConfigSource(input, server = false) {
 
   const editURL =
     config.editURL &&
-    populate(config.editURL, {
+    populateEditURL(config.editURL, {
       ...config,
       version: `v${configVersion.version}`,
     });

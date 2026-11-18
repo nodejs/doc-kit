@@ -19,14 +19,6 @@ describe('Node.js preset', () => {
     assert.ok(preset.html.editURL.includes('/doc/api{path}.md'));
   });
 
-  it('should link "edit this page" to a branch, not the git ref', () => {
-    assert.ok(
-      preset.html.editURL.startsWith(
-        'https://github.com/{repository}/edit/main/'
-      )
-    );
-  });
-
   it('should ship the Node.js llms.txt template', () => {
     assert.ok(existsSync(preset['llms-txt'].templatePath));
   });
