@@ -544,7 +544,10 @@ The `bundler` option takes a small adapter, so the site can be built with Vite
 
 An adapter is an object with three methods. The generator calls `buildServer`
 and `buildClient` once each and `compile` once per page, then renders the pages
-from the compiled modules across the worker threads.
+from the compiled modules across the worker threads. Pages are compiled as they
+arrive, so `compile` can run before `buildServer`, and while either build still
+runs: it must leave the module's imports as they are, as the library they point
+to may not exist yet, and must not depend on the builds.
 
 - `buildServer(options)` {Function} Bundles the component library for Node.js
   and returns a promise of the `file:` URL of the built module.
@@ -552,8 +555,8 @@ from the compiled modules across the worker threads.
     page may render, Preact's `h` and `Fragment`, and `renderToStringAsync`.
   - `virtualImports` {Object} In-memory modules to make available, by module
     ID, `#theme/config` included.
-  - `outDir` {string} A temporary directory to write the library to, which the
-    generator removes afterwards.
+  - `outDir` {string} An empty temporary directory to write the library to,
+    which the generator removes afterwards.
   - `config` {Object} The resolved `html` configuration.
 - `compile(code, fileName)` {Function} Turns one page module, written in JSX,
   into plain JavaScript Node.js can import, and returns a promise of it.

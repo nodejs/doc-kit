@@ -7,7 +7,6 @@ import {
   getVersionFromSemVer,
   coerceSemVer,
   getCompatibleVersions,
-  once,
 } from '../generators.mjs';
 
 describe('getEntryDescription', () => {
@@ -137,13 +136,5 @@ describe('getCompatibleVersions', () => {
 
     const result = getCompatibleVersions('14.0.0', releases);
     assert.equal(result.length, 2);
-  });
-});
-
-describe('once', () => {
-  it('gives a value as the only chunk', async () => {
-    const chunks = await Array.fromAsync(once([1, 2]));
-
-    assert.deepEqual(chunks, [[1, 2]]);
   });
 });

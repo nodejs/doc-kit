@@ -9,7 +9,6 @@ import { resolvePipeline } from './generators/pipeline.mjs';
 import logger from './logger/index.mjs';
 import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
-import { once } from './utils/generators.mjs';
 import { loadMarkdownPlugins } from './utils/markdown/plugins.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
 
@@ -55,7 +54,9 @@ const createGenerator = () => {
     // and given as its only chunk
     const whole = await cache.consume(dependsOn);
 
-    return once(whole);
+    return (async function* () {
+      yield whole;
+    })();
   };
 
   /**
