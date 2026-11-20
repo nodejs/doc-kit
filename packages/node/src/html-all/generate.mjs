@@ -1,7 +1,5 @@
 'use strict';
 
-import { headingSortFn } from '@doc-kit/generator-react/jsx-ast/utils/getSortedHeadNodes';
-
 // The metadata of `all.html`
 const HEAD = {
   api: 'all',
@@ -28,12 +26,15 @@ const isPart = data => !data.synthetic && !data.chunk && data.api !== 'index';
 
 /**
  * Builds `all.html` from its parts: their content one after the other, and
- * their tables of contents, in the order the sidebar lists them.
+ * their tables of contents, in the order the manifest lists them, which is the
+ * order the sidebar does.
  *
  * @param {Array<Pick<import('@doc-kit/generator-react/jsx-ast/types').PageCode, 'data' | 'headings'>>} parts
+ * @param {Array<string>} order - The parts' `api`, as the manifest lists them
  */
-const buildAllPage = parts => {
-  const pages = parts.toSorted((a, b) => headingSortFn(a.data, b.data));
+const buildAllPage = (parts, order) => {
+  const byApi = new Map(parts.map(part => [part.data.api, part]));
+  const pages = order.map(api => byApi.get(api));
 
   return {
     data: HEAD,
@@ -51,7 +52,9 @@ const buildAllPage = parts => {
 export async function* generate(input) {
   const parts = [];
 
-  // The parts still to come, once every page's metadata is known
+  // The parts in the manifest's order, and those still to come, once every
+  // page's metadata is known
+  let order;
   let missing;
   let added = false;
 
@@ -60,7 +63,8 @@ export async function* generate(input) {
 
     for (const item of batch) {
       if ('manifest' in item) {
-        missing = new Set(item.manifest.filter(isPart).map(({ api }) => api));
+        order = item.manifest.filter(isPart).map(({ api }) => api);
+        missing = new Set(order);
 
         for (const { data } of parts) {
           missing.delete(data.api);
@@ -80,7 +84,7 @@ export async function* generate(input) {
     }
 
     if (!added && missing?.size === 0) {
-      pages.push(buildAllPage(parts));
+      pages.push(buildAllPage(parts, order));
       added = true;
     }
 

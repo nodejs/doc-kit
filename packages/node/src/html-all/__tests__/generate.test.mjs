@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { once } from '@doc-kit/core/utils/generators.mjs';
-
 import { generate } from '../generate.mjs';
 
 /**
@@ -19,6 +17,16 @@ const createPage = (api, name, extra = {}) => ({
 });
 
 /**
+ * Gives the items as the only batch of a stream, as `jsx-ast` gives its pages
+ * with one thread.
+ *
+ * @param {Array<object>} items
+ */
+async function* once(items) {
+  yield items;
+}
+
+/**
  * Reads every batch the generator yields.
  *
  * @param {AsyncIterable<Array<object>>} input
@@ -32,10 +40,11 @@ describe('html-all', () => {
   const chunk = createPage('fs/promises', 'fs.promises', { chunk: {} });
   const notFound = createPage('404', 'Page not found', { synthetic: true });
 
-  it('adds all.html right after its last part, in sidebar order', async () => {
+  it("adds all.html right after its last part, in the manifest's order", async () => {
     async function* input() {
       yield [zlib];
-      yield [{ manifest: [zlib.data, fs.data, index.data, notFound.data] }];
+      // In the order the site lists the pages, as `jsx-ast` gives it
+      yield [{ manifest: [index.data, fs.data, zlib.data, notFound.data] }];
       yield [index, fs];
       yield [chunk, notFound];
     }
@@ -47,9 +56,9 @@ describe('html-all', () => {
     const [{ manifest }] = batches[1];
 
     assert.deepEqual(manifest.slice(0, -1), [
-      zlib.data,
-      fs.data,
       index.data,
+      fs.data,
+      zlib.data,
       notFound.data,
     ]);
     assert.equal(manifest.at(-1).api, 'all');
@@ -66,7 +75,7 @@ describe('html-all', () => {
 
   it('adds all.html after every page given at once, as with one thread', async () => {
     const batches = await run(
-      once([zlib, fs, { manifest: [zlib.data, fs.data] }])
+      once([zlib, fs, { manifest: [fs.data, zlib.data] }])
     );
 
     const pages = batches.flat();
