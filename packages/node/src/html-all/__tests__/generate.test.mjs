@@ -1,0 +1,86 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import { generate } from '../generate.mjs';
+
+/**
+ * A page as `jsx-ast` gives it.
+ *
+ * @param {string} api
+ * @param {string} name
+ * @param {object} [extra] - More of its metadata
+ */
+const createPage = (api, name, extra = {}) => ({
+  data: { api, heading: { depth: 1, data: { name } }, ...extra },
+  headings: [{ slug: api }],
+  content: '<></>',
+});
+
+/**
+ * Gives the items as the only batch of a stream, as `jsx-ast` gives its pages
+ * with one thread.
+ *
+ * @param {Array<object>} items
+ */
+async function* once(items) {
+  yield items;
+}
+
+/**
+ * Reads every batch the generator yields.
+ *
+ * @param {AsyncIterable<Array<object>>} input
+ */
+const run = input => Array.fromAsync(generate(input));
+
+describe('html-all', () => {
+  const zlib = createPage('zlib', 'Zlib');
+  const fs = createPage('fs', 'File system');
+  const index = createPage('index', 'Index');
+  const chunk = createPage('fs/promises', 'fs.promises', { chunk: {} });
+  const notFound = createPage('404', 'Page not found', { synthetic: true });
+
+  it("adds all.html right after its last part, in the manifest's order", async () => {
+    async function* input() {
+      yield [zlib];
+      // In the order the site lists the pages, as `jsx-ast` gives it
+      yield [{ manifest: [index.data, fs.data, zlib.data, notFound.data] }];
+      yield [index, fs];
+      yield [chunk, notFound];
+    }
+
+    const batches = await run(input());
+
+    assert.deepEqual(batches[0], [zlib]);
+
+    const [{ manifest }] = batches[1];
+
+    assert.deepEqual(manifest.slice(0, -1), [
+      index.data,
+      fs.data,
+      zlib.data,
+      notFound.data,
+    ]);
+    assert.equal(manifest.at(-1).api, 'all');
+
+    const [, , all] = batches[2];
+
+    assert.deepEqual(batches[2].slice(0, 2), [index, fs]);
+    assert.equal(all.data.api, 'all');
+    assert.deepEqual(all.parts, ['fs', 'zlib']);
+    assert.deepEqual(all.headings, [{ slug: 'fs' }, { slug: 'zlib' }]);
+
+    assert.deepEqual(batches[3], [chunk, notFound]);
+  });
+
+  it('adds all.html after every page given at once, as with one thread', async () => {
+    const batches = await run(
+      once([zlib, fs, { manifest: [fs.data, zlib.data] }])
+    );
+
+    const pages = batches.flat();
+
+    assert.equal(pages.at(-1).data.api, 'all');
+    assert.deepEqual(pages.at(-1).parts, ['fs', 'zlib']);
+  });
+});
