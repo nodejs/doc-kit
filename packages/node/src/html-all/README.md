@@ -7,8 +7,9 @@ itself: it is spliced between `jsx-ast` and `html`, passes the pages on, adds
 adds a composed page of them. `html` assembles it from their compiled content,
 so no module is built twice.
 
-The module pages are its parts, in the order the sidebar lists them; the
-index, section pages and the other synthetic pages are left out.
+The module pages are its parts, in the order the sidebar lists them, which is
+the order of `jsx-ast`'s manifest; the index, section pages and the other
+synthetic pages are left out.
 
 ```sh
 npx @doc-kit/cli generate -t web -t html-all -i "doc/api/*.md" -o out
