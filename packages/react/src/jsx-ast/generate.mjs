@@ -1,10 +1,12 @@
 import { isMainThread } from 'node:worker_threads';
 
-import { createChannel } from '@doc-kit/core/utils/channel.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
-import { groupNodesByModule, merge } from '@doc-kit/core/utils/generators.mjs';
+import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
+import { createChannel } from './utils/channel.mjs';
+import { headingSortFn } from './utils/getSortedHeadNodes.mjs';
+import { merge } from './utils/merge.mjs';
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
 
 /**
@@ -48,8 +50,9 @@ export async function processChunk(slicedInput, itemIndices) {
  * last: the `html` generator puts them in the order the site lists them.
  *
  * Once every page has arrived, it also emits `{ manifest }`, without waiting
- * for the pages still being built: every page's head, in that same order, so
- * that `html` can prepare what needs the whole site in the meantime.
+ * for the pages still being built: every page's head, in the order the site
+ * lists them, so that `html` can prepare what needs the whole site in the
+ * meantime.
  *
  * @type {import('./types').Generator['generate']}
  */
@@ -91,7 +94,11 @@ export async function* generate(input, worker) {
         described.push(descriptors);
       }
 
-      manifest.resolve([...heads, ...synthetic.map(({ head }) => head)]);
+      // In the order the site lists them, the synthetic pages last
+      manifest.resolve([
+        ...heads.toSorted(headingSortFn),
+        ...synthetic.map(({ head }) => head),
+      ]);
 
       if (synthetic.length > 0) {
         described.push(synthetic);

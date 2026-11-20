@@ -14,13 +14,6 @@ export const isModulePage = data =>
   !data.synthetic && !data.chunk && data.api !== 'index';
 
 /**
- * The metadata of `all.html`, which the bundles need before its parts are built.
- *
- * @returns {import('@doc-kit/core/generators/metadata/types').MetadataEntry}
- */
-export const createAllPageHead = () => createSyntheticHead('all', 'All');
-
-/**
  * Builds the `all.html` page from the module pages already compiled.
  *
  * Its content is exactly the module pages' content, one after the other, so
@@ -38,7 +31,7 @@ export const buildAllPage = pages => {
   const parts = getSortedHeadNodes(modules).map(({ api }) => byApi.get(api));
 
   return {
-    data: createAllPageHead(),
+    data: createSyntheticHead('all', 'All'),
     headings: parts.flatMap(({ headings }) => headings),
     parts: parts.map(({ data }) => data.api),
   };

@@ -181,10 +181,11 @@ describe('jsx-ast generate', () => {
       ['fs', 'buffer', 'index', '404']
     );
 
-    // Once every page has arrived, every page's head, in that order
+    // Once every page has arrived, every page's head in the order the site
+    // lists them, the 404 page last
     assert.deepEqual(
       manifests.map(heads => heads.map(({ api }) => api)),
-      [['fs', 'buffer', 'index', '404']]
+      [['index', 'buffer', 'fs', '404']]
     );
   });
 

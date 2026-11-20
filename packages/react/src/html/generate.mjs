@@ -7,12 +7,13 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import logger from '@doc-kit/core/logger/index.mjs';
-import { createChannel } from '@doc-kit/core/utils/channel.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 
+import { createChannel } from '../jsx-ast/utils/channel.mjs';
 import { headingSortFn } from '../jsx-ast/utils/getSortedHeadNodes.mjs';
+import { createSyntheticHead } from '../jsx-ast/utils/synthetic/synthetic.mjs';
 import { resolveBundler } from './bundlers/index.mjs';
-import { buildAllPage, createAllPageHead, isModulePage } from './utils/all.mjs';
+import { buildAllPage, isModulePage } from './utils/all.mjs';
 import { copyStaticAssets } from './utils/copying.mjs';
 import createProgramBuilder, { moduleFileName } from './utils/generate.mjs';
 import { createPageWriter } from './utils/render.mjs';
@@ -137,7 +138,8 @@ const buildSite = async (input, options) => {
     const datas = [
       ...heads.filter(data => !data.synthetic).toSorted(headingSortFn),
       ...heads.filter(data => data.synthetic),
-      ...(config.generateAllPage ? [createAllPageHead()] : []),
+      // all.html, which the bundles need before its parts are built
+      ...(config.generateAllPage ? [createSyntheticHead('all', 'All')] : []),
     ];
 
     // An empty directory of its own: the compiled pages are already in `outDir`

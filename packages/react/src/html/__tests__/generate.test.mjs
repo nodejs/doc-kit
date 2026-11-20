@@ -9,7 +9,6 @@ import { pathToFileURL } from 'node:url';
 import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
-import { once } from '@doc-kit/core/utils/generators.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
@@ -20,6 +19,16 @@ import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { FONTS } from '../constants.mjs';
 import { generate as generatePages } from '../generate.mjs';
 import { processChunk } from '../utils/render.mjs';
+
+/**
+ * Gives the items as the only batch of a stream, as a dependency gives its
+ * output with one thread.
+ *
+ * @param {Array<object>} items
+ */
+async function* once(items) {
+  yield items;
+}
 
 /**
  * Runs the generator over the given pages, streamed in as one batch, as
