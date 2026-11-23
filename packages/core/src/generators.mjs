@@ -45,18 +45,10 @@ const createGenerator = () => {
       return cache.consume(dependsOn);
     }
 
-    if (threads > 1) {
-      return cache.stream(dependsOn);
-    }
-
     // With one thread nothing runs alongside, so streaming would only keep
     // every stage's data alive at once: the input is collected whole first,
     // and given as its only chunk
-    const whole = await cache.consume(dependsOn);
-
-    return (async function* () {
-      yield whole;
-    })();
+    return cache.stream(dependsOn, { whole: threads === 1 });
   };
 
   /**

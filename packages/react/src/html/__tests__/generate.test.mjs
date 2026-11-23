@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, it } from 'node:test';
-import { setTimeout } from 'node:timers/promises';
+import { before, describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
 import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
@@ -21,22 +20,12 @@ import { generate as generatePages } from '../generate.mjs';
 import { processChunk } from '../utils/render.mjs';
 
 /**
- * Gives the items as the only batch of a stream, as a dependency gives its
- * output with one thread.
- *
- * @param {Array<object>} items
- */
-async function* once(items) {
-  yield items;
-}
-
-/**
- * Runs the generator over the given pages, streamed in as one batch, as
- * `jsx-ast` yields them.
+ * Runs the generator over the given pages, given as one batch, as `jsx-ast`
+ * gives them with one thread.
  *
  * @param {Array<object>} pages
  */
-const generate = pages => generatePages(once(pages));
+const generate = pages => generatePages([pages]);
 
 // Pages are rendered with the pipeline of `jsx-ast`
 await loadMarkdownPlugins(
@@ -104,73 +93,53 @@ const createTestConfiguration = async (context, target = ['html']) => {
 };
 
 /**
- * A page as `jsx-ast` emits it, its content a plain paragraph.
+ * A page as `jsx-ast` emits it, built from a plain entry.
  *
  * @param {string} api
  * @param {string} text
  */
-const createPage = (api, text) => ({
-  data: createEntry(api, text),
-  headings: [{ depth: 1, value: text, slug: api }],
-  readingTime: undefined,
-  content: `<><p>${text} body</p></>`,
-});
+const createPage = async (api, text) => {
+  const entry = createEntry(api, text);
+  const page = await buildContent([entry], entry);
+
+  return toPage(page);
+};
 
 /**
- * A stand-in for the component library: the JSX runtime, and a renderer that
- * writes the elements out as plain markup.
- */
-const STAND_IN_LIBRARY = [
-  'export const h = (type, props, ...children) => ({ type, props: { ...props, children } });',
-  'export const Fragment = ({ children }) => children;',
-  'export const Layout = ({ children }) => children;',
-  'const render = node =>',
-  '  Array.isArray(node) ? node.map(render).join("")',
-  '  : typeof node?.type === "function" ? render(node.type(node.props))',
-  '  : typeof node?.type === "string" ? `<${node.type}>${render(node.props.children)}</${node.type}>`',
-  '  : String(node ?? "");',
-  'export const renderToStringAsync = async node => render(node);',
-].join('\n');
-
-/**
- * A stand-in bundler: it builds the stand-in library, compiles the pages
- * with the real compiler, and has no client assets. It records each program
- * it compiles, by file name, and each bundle it builds.
+ * The Vite adapter, recording each program it compiles, by file name, and each
+ * bundle it builds.
  *
  * @param {Array<string>} calls
- * @param {{ bundled?: PromiseWithResolvers<void>, slow?: boolean }} [options]
- *   `bundled` is resolved once both bundles are built; `slow` makes the
- *   library take a while, as a real one does, so that a generator that didn't
- *   wait for it would remove its directory while it is being built.
+ * @param {{ bundled?: PromiseWithResolvers<void> }} [options] - `bundled` is
+ *   resolved once both bundles are built
  */
-const createStandInBundler = (calls, { bundled, slow = false } = {}) => ({
-  async buildServer({ outDir }) {
-    calls.push('server');
+const createRecordingBundler = (calls, { bundled } = {}) => {
+  const vite = createViteBundler();
 
-    if (slow) {
-      await setTimeout(50);
-    }
+  return {
+    buildServer(options) {
+      calls.push('server');
 
-    const library = join(outDir, 'library.mjs');
+      return vite.buildServer(options);
+    },
 
-    await writeFile(library, STAND_IN_LIBRARY);
+    compile(code, fileName) {
+      calls.push(fileName);
 
-    return pathToFileURL(library).href;
-  },
+      return vite.compile(code, fileName);
+    },
 
-  compile(code, fileName) {
-    calls.push(fileName);
+    async buildClient(options) {
+      calls.push('client');
 
-    return compile(code, fileName);
-  },
+      const assets = await vite.buildClient(options);
 
-  async buildClient() {
-    calls.push('client');
-    bundled?.resolve();
+      bundled?.resolve();
 
-    return { scripts: [], preloads: [], stylesheets: [] };
-  },
-});
+      return assets;
+    },
+  };
+};
 
 /**
  * The temporary directories the generator builds the site in.
@@ -313,7 +282,7 @@ describe('web generate', () => {
     });
 
     const pages = Map.groupBy(
-      await collectAsyncGenerator(sectionPages(once(entries))),
+      await collectAsyncGenerator(sectionPages([entries])),
       entry => entry.api
     );
     const contents = await Promise.all(
@@ -504,10 +473,19 @@ describe('web generate', () => {
   });
 
   describe('with the manifest', () => {
-    const zlib = createPage('zlib', 'Zlib');
-    const fs = createPage('fs', 'File system');
-    const index = createPage('index', 'Index');
-    const manifest = [zlib, fs, index].map(({ data }) => data);
+    let zlib;
+    let fs;
+    let index;
+    let manifest;
+
+    before(async () => {
+      await setConfig({ target: ['html'], version: 'v22.0.0', changelog: [] });
+
+      zlib = await createPage('zlib', 'Zlib');
+      fs = await createPage('fs', 'File system');
+      index = await createPage('index', 'Index');
+      manifest = [zlib, fs, index].map(({ data }) => data);
+    });
 
     it(
       'bundles once the manifest arrives, and compiles all.html once its parts are',
@@ -521,7 +499,7 @@ describe('web generate', () => {
 
         config.threads = 2;
         config.html.generateAllPage = true;
-        config.html.bundler = createStandInBundler(calls, { bundled });
+        config.html.bundler = createRecordingBundler(calls, { bundled });
 
         async function* input() {
           yield [zlib];
@@ -553,14 +531,14 @@ describe('web generate', () => {
        * Builds the site from the given input and reads its pages.
        *
        * @param {number} threads
-       * @param {AsyncIterable<Array<object>>} input
+       * @param {Iterable<Array<object>> | AsyncIterable<Array<object>>} input
        */
       const build = async (threads, input) => {
         const { config, output } = await createTestConfiguration(context);
 
         config.threads = threads;
         config.html.generateAllPage = true;
-        config.html.bundler = createStandInBundler([]);
+        config.html.bundler = createRecordingBundler([]);
 
         await generatePages(input);
 
@@ -575,7 +553,7 @@ describe('web generate', () => {
       }
 
       const streamed = await build(2, batches());
-      const whole = await build(1, once([zlib, fs, { manifest }, index]));
+      const whole = await build(1, [[zlib, fs, { manifest }, index]]);
 
       assert.deepStrictEqual(Object.keys(whole), [
         'all.html',
@@ -594,7 +572,7 @@ describe('web generate', () => {
         const before = await listBuildDirectories();
 
         config.threads = 2;
-        config.html.bundler = createStandInBundler([]);
+        config.html.bundler = createRecordingBundler([]);
 
         async function* input() {
           yield [zlib];
@@ -625,7 +603,7 @@ describe('web generate', () => {
 
         config.threads = 2;
         // Still bundling when the input fails
-        config.html.bundler = createStandInBundler(calls, { slow: true });
+        config.html.bundler = createRecordingBundler(calls);
 
         async function* input() {
           yield [zlib];
@@ -660,7 +638,7 @@ describe('web generate', () => {
         const failed = Promise.withResolvers();
 
         config.threads = 2;
-        config.html.bundler = createStandInBundler([]);
+        config.html.bundler = createRecordingBundler([]);
 
         // Renders on this thread, a batch at a time, as the generator does
         // without a pool, but the first only once the input has failed
