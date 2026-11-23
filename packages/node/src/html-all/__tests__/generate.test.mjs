@@ -17,19 +17,9 @@ const createPage = (api, name, extra = {}) => ({
 });
 
 /**
- * Gives the items as the only batch of a stream, as `jsx-ast` gives its pages
- * with one thread.
- *
- * @param {Array<object>} items
- */
-async function* once(items) {
-  yield items;
-}
-
-/**
  * Reads every batch the generator yields.
  *
- * @param {AsyncIterable<Array<object>>} input
+ * @param {Iterable<Array<object>> | AsyncIterable<Array<object>>} input
  */
 const run = input => Array.fromAsync(generate(input));
 
@@ -74,9 +64,7 @@ describe('html-all', () => {
   });
 
   it('adds all.html after every page given at once, as with one thread', async () => {
-    const batches = await run(
-      once([zlib, fs, { manifest: [fs.data, zlib.data] }])
-    );
+    const batches = await run([[zlib, fs, { manifest: [fs.data, zlib.data] }]]);
 
     const pages = batches.flat();
 
