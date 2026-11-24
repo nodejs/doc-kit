@@ -64,6 +64,7 @@ node packages/cli/bin/cli.mjs generate \
   -o "./$OUT_DIR" \
   -c "./$SRC_DIR/CHANGELOG.md" \
   -v "$LATEST_TAG" \
+  --git-ref main \
   --type-map "./$SRC_DIR/doc/type-map.json" \
   --config-file "./beta/doc-kit.config.mjs" \
   --log-level debug
