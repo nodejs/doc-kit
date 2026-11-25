@@ -74,6 +74,16 @@ describe('Mandoc Conversion', () => {
           expected: '',
         },
         { input: u('paragraph', []), expected: '' },
+        {
+          input: u('list', [
+            u('listItem', [
+              u('paragraph', [textNode('Outer')]),
+              u('list', [u('listItem', [textNode('Inner')])]),
+            ]),
+          ]),
+          expected:
+            '.Bl -bullet\n.It\nOuter\n.Bl -bullet\n.It\nInner\n.El\n.El',
+        },
         { input: u('list', []), expected: '.Bl -bullet\n\n.El' },
         {
           input: u('strong', [textNode('strongly emphasized text')]),
@@ -148,6 +158,13 @@ describe('Mandoc Conversion', () => {
         convertOptionToMandoc(mockElement),
         `.It Fl d , Fl -option Ns = Ns Ar value with spaces\nDescription of special options.\n.\n`
       );
+    });
+
+    it('should leave the entry untouched', () => {
+      const mockElement = createMockElement('`-a`', 'Description.');
+      const { length } = mockElement.content.children;
+      convertOptionToMandoc(mockElement);
+      strictEqual(mockElement.content.children.length, length);
     });
   });
 

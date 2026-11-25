@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { populate } from '@doc-kit/core/utils/configuration/templates.mjs';
 import { writeFile } from '@doc-kit/core/utils/file.mjs';
 
 import {
@@ -12,18 +13,42 @@ import {
 } from './utils/converter.mjs';
 
 /**
- * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} components
- * @param {number} start
- * @param {number} end
- * @param {(element: import('@doc-kit/core/generators/metadata/types').MetadataEntry) => string} convert
- * @returns {string}
+ * @param {string} items
  */
-function extractMandoc(components, start, end, convert) {
-  return components
-    .slice(start, end)
+const toList = items => `.Bl -tag -width 6n\n${items}.El`;
+
+/**
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries
+ */
+function buildOptions(entries) {
+  const groups = [{ title: undefined, items: '' }];
+
+  for (const entry of entries) {
+    if (entry.heading.data.text.startsWith('`-')) {
+      groups.at(-1).items += convertOptionToMandoc(entry);
+    } else if (entry.heading.depth === 3) {
+      groups.push({ title: entry.heading.data.text, items: '' });
+    }
+  }
+
+  return groups
+    .filter(({ items }) => items)
+    .map(({ title, items }) =>
+      title ? `.Ss ${title}\n${toList(items)}` : toList(items)
+    )
+    .join('\n');
+}
+
+/**
+ * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} entries
+ */
+function buildEnvironment(entries) {
+  const items = entries
     .filter(({ heading }) => heading.depth === 3)
-    .map(convert)
+    .map(convertEnvVarToMandoc)
     .join('');
+
+  return items && toList(items);
 }
 
 /**
@@ -54,26 +79,16 @@ export async function generate(input) {
 
   const output = {
     // Extract the CLI options.
-    options: extractMandoc(
-      input,
-      optionsStart + 1,
-      environmentStart,
-      convertOptionToMandoc
-    ),
+    options: buildOptions(input.slice(optionsStart + 1, environmentStart)),
     // Extract the environment variables.
-    env: extractMandoc(
-      input,
-      environmentStart + 1,
-      environmentEnd,
-      convertEnvVarToMandoc
+    environment: buildEnvironment(
+      input.slice(environmentStart + 1, environmentEnd)
     ),
   };
 
   const template = await readFile(config.templatePath, 'utf-8');
 
-  const filledTemplate = template
-    .replace('__OPTIONS__', () => output.options)
-    .replace('__ENVIRONMENT__', () => output.env);
+  const filledTemplate = populate(template, output);
 
   if (config.output) {
     await writeFile(join(config.output, config.fileName), filledTemplate);

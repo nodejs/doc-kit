@@ -36,7 +36,7 @@ It writes to `output`, a
 ## Writing the command-line page
 
 The generator finds two sections by the slugs of their headings, and turns
-every `###` heading in them into an entry of the man page:
+the headings in them into entries of the man page:
 
 ```md displayName="docs/cli.md"
 # Command-line reference
@@ -62,12 +62,35 @@ Where mytool keeps its cache. **Default:** `~/.mytool`.
 `0` on success, `1` on any error.
 ```
 
-- Options are the `###` headings between the options heading and the
-  environment variables heading, so the options section must come first.
+- Options are the headings that start with a flag, between the options
+  heading and the environment variables heading, so the options section must
+  come first.
 - Environment variables are the `###` headings after their heading, up to the
   next `#` or `##` heading.
-- Text right under a section heading, and `####` headings with their content,
-  are left out.
+- Text right under a section heading, and headings below an entry with their
+  content, are left out.
+
+### Grouping options
+
+To group options by topic, put a `###` heading over each group and write its
+options as `####` headings. Each group becomes a subsection of OPTIONS, titled
+with the group's heading:
+
+```md displayName="docs/cli.md"
+## Options
+
+### Output
+
+#### `-o`, `--output=dir`
+
+Writes the result to _dir_ instead of the working directory.
+
+#### `--quiet`
+
+Prints nothing but errors.
+```
+
+Options above the first group are listed before the subsections.
 
 A slug is the anchor doc-kit gives a heading: GitHub-style, lowercase with hyphens for spaces, and with `-1`, `-2` and so on
 when the same heading appears earlier on the page. Node.js's `cli.md` has a
@@ -116,10 +139,10 @@ and alerts too), images and HTML, so YAML metadata comments don't show up.
 The default template describes Node.js: its name, synopsis, description and
 links are all about `node`. For another command, write your own.
 
-A template is an mdoc file with two placeholders, `__OPTIONS__` and
-`__ENVIRONMENT__`. The generator replaces the first occurrence of each with the
-entries it builds. Those entries are `.It` items, so put each placeholder
-inside a `.Bl -tag` list:
+A template is an mdoc file with two placeholders, `{options}` and
+`{environment}`. The generator replaces them with the entries it builds, as
+complete `.Bl -tag` lists (with `.Ss` subsections for grouped options), so put
+each placeholder on a line of its own under its section heading:
 
 ```text displayName="man/template.1"
 .Dd $Mdocdate$
@@ -133,13 +156,9 @@ inside a `.Bl -tag` list:
 .Op Ar options
 .Ar input
 .Sh OPTIONS
-.Bl -tag -width 6n
-__OPTIONS__
-.El
+{options}
 .Sh ENVIRONMENT
-.Bl -tag -width 6n
-__ENVIRONMENT__
-.El
+{environment}
 ```
 
 Then set the template, the file name and the slugs your page needs:

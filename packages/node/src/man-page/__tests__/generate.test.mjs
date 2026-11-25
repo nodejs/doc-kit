@@ -38,6 +38,26 @@ describe('man-page generate', () => {
     assert.match(output, /\.It Ev NODE_THREE Ar value\nThird var\./);
   });
 
+  it('extracts options nested in topic groups', async () => {
+    const input = [
+      entry(2, 'options', 'Options'),
+      entry(3, 'general', 'General'),
+      entry(4, '--foo', '`--foo`', 'Foo option.'),
+      entry(5, 'intentional-limitations', 'Intentional limitations'),
+      entry(3, 'modules', 'Modules'),
+      entry(4, '--bar', '`--bar`', 'Bar option.'),
+      entry(2, 'environment-variables-1', 'Environment variables'),
+    ];
+
+    const output = await generate(input);
+
+    assert.match(
+      output,
+      /\.Ss General\n\.Bl -tag -width 6n\n\.It Fl -foo\nFoo option\.\n\.\n\.El\n\.Ss Modules\n\.Bl -tag -width 6n\n\.It Fl -bar\n/
+    );
+    assert.doesNotMatch(output, /limitations/);
+  });
+
   it('stops the environment variables at the next section', async () => {
     const input = [
       entry(2, 'options', 'Options'),
