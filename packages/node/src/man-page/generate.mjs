@@ -24,8 +24,10 @@ function buildOptions(entries) {
   const groups = [{ title: undefined, items: '' }];
 
   for (const entry of entries) {
+    // Is it the start of a flag?
     if (entry.heading.data.text.startsWith('`-')) {
       groups.at(-1).items += convertOptionToMandoc(entry);
+    // Is it a group?
     } else if (entry.heading.depth === 3) {
       groups.push({ title: entry.heading.data.text, items: '' });
     }
