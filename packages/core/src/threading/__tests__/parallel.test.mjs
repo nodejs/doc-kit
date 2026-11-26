@@ -93,6 +93,48 @@ describe('createParallelWorker', () => {
     await pool.destroy();
   });
 
+  it('omits bundler adapters from the configuration sent to workers', async () => {
+    let captured;
+
+    const pool = {
+      run: async task => {
+        captured = task;
+        return task.input;
+      },
+    };
+
+    const bundler = {
+      buildServer: async () => 'file:///library.js',
+      compile: async code => code,
+      buildClient: async () => ({ scripts: [], preloads: [], stylesheets: [] }),
+    };
+
+    const worker = createParallelWorker(
+      'html',
+      {
+        name: 'html',
+        processChunk: async (input, indices) => indices.map(i => input[i]),
+      },
+      pool,
+      {
+        threads: 2,
+        chunkSize: 10,
+        html: {
+          output: '/tmp/out',
+          bundler,
+        },
+      }
+    );
+
+    await collectStream(worker.stream([{ id: 1 }, { id: 2 }, { id: 3 }], {}));
+
+    ok(captured);
+    deepStrictEqual(captured.configuration.html.output, '/tmp/out');
+    strictEqual(captured.configuration.html.bundler, undefined);
+    // structured clone would throw if bundler were still present
+    structuredClone(captured.configuration);
+  });
+
   it('should handle empty items array', async () => {
     const pool = createWorkerPool(2);
     const worker = createParallelWorker('ast-js', astJsGenerator, pool, {

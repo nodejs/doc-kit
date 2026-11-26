@@ -534,11 +534,10 @@ When you customize the site, keep in mind that:
 The `bundler` option takes a small adapter, so the site can be built with Vite
 (the default) or any other bundler.
 
-> [!WARNING]
-> Worker threads receive a copy of the configuration, and functions can't be
-> copied. A configuration that sets `bundler`, the Vite adapter included, must
-> build with `threads: 1` (or `--threads 1`). With more threads, the build
-> fails with a `DataCloneError`.
+The adapter stays on the main thread that builds the component library and
+client assets. Worker threads that render pages receive the rest of the `html`
+configuration without `bundler`, so a custom adapter (including
+`createViteBundler(...)`) works with the default thread count.
 
 ### Writing an adapter
 
@@ -584,7 +583,7 @@ CSS modules, resolve the `config.imports` aliases, and serve the
   indefinitely.
 
 An adapter can live in your project, without changes to doc-kit. Pass it as
-`bundler`, with `threads: 1`:
+`bundler`:
 
 ```js displayName="webpack-bundler.mjs"
 export const createWebpackBundler = webpackOptions => ({
@@ -617,8 +616,6 @@ import { createViteBundler } from '@doc-kit/generator-react/html/bundlers/vite';
 import myVitePlugin from './my-vite-plugin.mjs';
 
 export default {
-  threads: 1,
-
   html: {
     bundler: createViteBundler({
       plugins: [myVitePlugin()],

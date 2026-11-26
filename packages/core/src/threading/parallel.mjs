@@ -1,9 +1,18 @@
 'use strict';
 
 import logger from '#logger/index.mjs';
-import { isAsyncIterable } from '#utils/misc.mjs';
+import { isAsyncIterable, omitKeys } from '#utils/misc.mjs';
 
 import { CHUNKS_PER_THREAD } from './constants.mjs';
+
+/**
+ * Configuration keys that may hold functions (or other non-cloneable values).
+ * Worker threads only need the rest of the generator options for rendering;
+ * adapters such as `html.bundler` stay on the main thread that builds assets.
+ *
+ * @see https://github.com/nodejs/doc-kit/issues/1201
+ */
+const NON_CLONEABLE_CONFIG_KEYS = ['bundler'];
 
 const parallelLogger = logger.child('parallel');
 
@@ -45,6 +54,8 @@ const createTask = (
   generatorSpecifier,
   generatorName
 ) => {
+  const generatorConfiguration = configuration[generatorName];
+
   return {
     generatorSpecifier,
     // Only send the items needed for this chunk (reduces serialization overhead)
@@ -52,9 +63,15 @@ const createTask = (
     // Remap indices to 0-based for the sliced array
     itemIndices: indices.map((_, i) => i),
     extra,
-    // Only pass the needed configuration to this generator
+    // Only pass the needed configuration to this generator. Drop keys that
+    // hold functions (e.g. a custom `bundler` adapter): workers receive a
+    // structured clone of this object, and those adapters are only used on
+    // the main thread before pages are farmed out.
     configuration: {
-      [generatorName]: configuration[generatorName],
+      [generatorName]:
+        generatorConfiguration && typeof generatorConfiguration === 'object'
+          ? omitKeys(generatorConfiguration, NON_CLONEABLE_CONFIG_KEYS)
+          : generatorConfiguration,
     },
   };
 };

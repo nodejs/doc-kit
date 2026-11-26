@@ -262,7 +262,9 @@ Filtering entries is light work, but heavier work takes the same shape.
   are copied between threads with the
   [structured clone algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm).
   Functions can't be copied (passing one throws a `DataCloneError`), and class
-  instances arrive as plain objects.
+  instances arrive as plain objects. Keys that are expected to hold functions
+  (such as `html.bundler`) are omitted from the worker copy: those adapters
+  run only on the main thread that builds assets.
 - Each worker imports your module on its own, so `processChunk` sees nothing
   `generate` set up: pass what it needs in `deps`. A module only
   `processChunk` uses can be imported inside it, as the `metadata` generator
