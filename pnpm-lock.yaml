@@ -289,6 +289,9 @@ importers:
       shiki:
         specifier: ^4.5.0
         version: 4.5.0
+      to-cloneable:
+        specifier: ^1.0.0
+        version: 1.0.0
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -3360,6 +3363,10 @@ packages:
   tinypool@2.2.0:
     resolution: {integrity: sha512-jBrmx4lYmaC9k/mgPbylxs7kBUxHtD8256up+HjLaDFfXScKJQyil+SWXSvhAtT7XHo+yTVlpB81PGmHP8oLSQ==}
     engines: {node: ^20.0.0 || >=22.0.0}
+
+  to-cloneable@1.0.0:
+    resolution: {integrity: sha512-TMxLWj7J7i5C8HqOigb+NpPcJycWrJpoSMoEo/qOjG1PCTou0MgFbnxKSi11L7YrkA6poffPT4srIzUdk+wyIg==}
+    engines: {node: '>=22'}
 
   to-valid-identifier@1.0.0:
     resolution: {integrity: sha512-41wJyvKep3yT2tyPqX/4blcfybknGB4D+oETKLs7Q76UiPqRpUJK3hr1nxelyYO0PHKVzJwlu0aCeEAsGI6rpw==}
@@ -6712,6 +6719,8 @@ snapshots:
       picomatch: 4.0.7
 
   tinypool@2.2.0: {}
+
+  to-cloneable@1.0.0: {}
 
   to-valid-identifier@1.0.0:
     dependencies:

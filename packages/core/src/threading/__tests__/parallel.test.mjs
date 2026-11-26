@@ -241,6 +241,32 @@ describe('createParallelWorker', () => {
     deepStrictEqual(await result, [0, 1, 2, 3, 4]);
   });
 
+  it('sends workers only what can be cloned of the configuration', async () => {
+    const configurations = [];
+    const pool = {
+      run: async task => {
+        configurations.push(structuredClone(task.configuration));
+
+        return task.input;
+      },
+    };
+    const worker = createParallelWorker('ast-js', astJsGenerator, pool, {
+      threads: 2,
+      chunkSize: 1,
+      'ast-js': {
+        minify: true,
+        bundler: { compile: () => {}, name: 'custom' },
+      },
+      other: { minify: false },
+    });
+
+    await collectStream(worker.stream([0, 1, 2], {}));
+
+    deepStrictEqual(configurations[0], {
+      'ast-js': { minify: true, bundler: { name: 'custom' } },
+    });
+  });
+
   it('propagates a later worker failure without an unhandled rejection', async () => {
     const tasks = [];
     const pool = {
