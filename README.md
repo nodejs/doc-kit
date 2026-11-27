@@ -49,6 +49,8 @@ Options:
 
 Commands:
   generate [options]   Generate API docs
+  preview [options]    Serve the generated docs locally, building first when any
+                       `generate` option is passed
   help [command]       display help for command
 ```
 
@@ -89,6 +91,54 @@ Options:
   -h, --help                   display help for command
 ```
 
+### `preview`
+
+To verify the output locally, `preview` serves it over HTTP. Passing any
+`generate` option builds first; otherwise the existing output directory
+(`./out` by default) is served as-is, without reading your configuration file.
+It builds once and doesn't watch for changes, so run it again after editing.
+
+```sh
+npx @doc-kit/cli preview --host localhost --port 3000
+```
+
+```
+Usage: doc-kit preview [options]
+
+Serve the generated docs locally, building first when any `generate` option is
+passed
+
+Options:
+  --port <number>              Port to serve on (default: 3000)
+  --host <host>                Host to listen on (default: "localhost")
+  --config-file <path>         Config file
+  -i, --input <patterns...>    Input file patterns (glob)
+  -t, --target <generator...>  Target generator(s): a built-in name (json,
+                               json-all, json-simple, legacy-html,
+                               legacy-html-all, man-page, legacy-json,
+                               legacy-json-all, addon-verify, api-links,
+                               orama-db, llms-txt, llms-txt-full, sitemap, html,
+                               section-pages) or an import specifier for a
+                               custom generator
+  --ignore <patterns...>       Ignore file patterns (glob)
+  -o, --output <directory>     The output directory
+  -p, --threads <number>       Number of threads to use (minimum: 1)
+  --chunk-size <number>        Number of items to process per worker thread
+                               (minimum: 1)
+  -v, --version <semver>       Target Node.js version
+  -c, --changelog <url>        Changelog URL or path
+  --git-ref <ref>              Git ref
+  --index <url>                index.md URL or path
+  --minify                     Minify?
+  --type-map <url>             Type map URL or path
+  -h, --help                   display help for command
+```
+
+> [!WARNING]
+> The preview server is meant for local testing only. It is not a secure,
+> production-grade server: don't expose it to other machines. To publish your
+> docs, see [Publishing your docs](https://doc-kit.nodejs.org/publishing).
+
 ## Examples
 
 ### Legacy
@@ -121,5 +171,5 @@ npx @doc-kit/cli generate \
 > In order to use the search functionality, you _must_ serve the output directory.
 >
 > ```sh
-> npx serve out
+> npx @doc-kit/cli preview
 > ```
