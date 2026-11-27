@@ -1,8 +1,8 @@
 # `@node-core/doc-kit`
 
-The Node.js-specific parts of [doc-kit](https://doc-kit.nodejs.org): three
+The Node.js-specific parts of [doc-kit](https://doc-kit.nodejs.org): four
 generators for outputs only the Node.js project needs (its man page,
-`apilinks.json` and its addon example tests), and `@node-core/doc-kit/config`,
+`apilinks.json`, its addon example tests and `all.html`), and `@node-core/doc-kit/config`,
 a preset that configures the general-purpose generators the way nodejs.org builds its
 API documentation.
 
@@ -16,9 +16,9 @@ start from [Getting started](https://doc-kit.nodejs.org/getting-started).
 npm install --save-dev @doc-kit/cli @node-core/doc-kit
 ```
 
-That covers the three generators. To build the website, the search index,
-`llms.txt` or the sitemap with the preset, also install the generators that
-make them:
+That covers `man-page`, `api-links` and `addon-verify`. For `html-all`, and to
+build the website, the search index, `llms.txt` or the sitemap with the
+preset, also install the generators that make them:
 
 ```sh
 npm install --save-dev @doc-kit/generator-react

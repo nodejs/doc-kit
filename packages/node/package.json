@@ -2,7 +2,7 @@
   "name": "@node-core/doc-kit",
   "type": "module",
   "version": "2.0.8",
-  "description": "Node.js-specific generators for @doc-kit/core: api-links, addon-verify, and man-page",
+  "description": "Node.js-specific generators for @doc-kit/core: api-links, addon-verify, html-all, and man-page",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nodejs/doc-kit.git",
@@ -27,11 +27,19 @@
   ],
   "dependencies": {
     "@doc-kit/core": "workspace:*",
-    "@doc-kit/generator-react": "workspace:*",
     "estree-util-visit": "^2.0.0",
     "unist-util-visit": "^5.2.0"
   },
   "devDependencies": {
+    "@doc-kit/generator-react": "workspace:*",
     "unist-builder": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@doc-kit/generator-react": "workspace:>=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@doc-kit/generator-react": {
+      "optional": true
+    }
   }
 }

@@ -10,6 +10,7 @@ node packages/cli/bin/cli.mjs generate \
   -t json \
   -t llms-txt \
   -t section-pages \
+  -t html-all \
   -i "./node/doc/api/*.md" \
   --ignore "./node/doc/api/quic.md" \
   -o "./out" \

@@ -332,9 +332,6 @@ importers:
       '@doc-kit/core':
         specifier: workspace:*
         version: link:../core
-      '@doc-kit/generator-react':
-        specifier: workspace:*
-        version: link:../react
       estree-util-visit:
         specifier: ^2.0.0
         version: 2.0.0
@@ -342,6 +339,9 @@ importers:
         specifier: ^5.2.0
         version: 5.2.0
     devDependencies:
+      '@doc-kit/generator-react':
+        specifier: workspace:*
+        version: link:../react
       unist-builder:
         specifier: ^4.0.0
         version: 4.0.0

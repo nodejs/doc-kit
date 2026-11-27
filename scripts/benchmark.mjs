@@ -194,7 +194,7 @@ const node = {
       'llms-txt': ['-t', 'llms-txt'],
       'orama-db': ['-t', 'orama-db'],
       json: ['-t', 'json'],
-      'section-pages': ['-t', 'section-pages'],
+      'section-pages': ['-t', 'section-pages', '-t', 'html-all'],
     }
   ),
 };
