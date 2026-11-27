@@ -4,20 +4,15 @@
  * to its corresponding Mandoc markup representation. Unsupported node types will be ignored.
  *
  * @param {import('@types/mdast').Node} node - The AST node to be converted to Mandoc format.
- * @param {boolean} [isListItem=false] - Indicates if the current node is a list item.
- * This parameter is used to correctly format list elements in Mandoc.
  * @returns {string} The Mandoc formatted string representing the given node and its children.
  */
-export function convertNodeToMandoc(node, isListItem = false) {
+export function convertNodeToMandoc(node) {
   /**
-   * Converts the children of a node to Mandoc format.
+   * Converts the children of a node to Mandoc format, skipping ignored nodes.
    * @param {string} separator
-   * @param {boolean} isListItem
    */
-  const convertChildren = (separator = '', isListItem = false) =>
-    node.children
-      .map(child => convertNodeToMandoc(child, isListItem))
-      .join(separator);
+  const convertChildren = (separator = '') =>
+    node.children.map(convertNodeToMandoc).filter(Boolean).join(separator);
 
   /**
    * Escapes special characters in plain text content.
@@ -36,10 +31,12 @@ export function convertNodeToMandoc(node, isListItem = false) {
 
     case 'link':
     case 'paragraph':
+      // Convert to Mandoc paragraph.
+      return convertChildren();
+
     case 'listItem':
-      // Convert to Mandoc paragraph or list item.
-      // .It denotes a list item in Mandoc, added only if the node is a list item.
-      return `${isListItem && node.type === 'listItem' ? '.It\n' : ''}${convertChildren()}`;
+      // .It denotes a list item in Mandoc. Its children (e.g. nested lists) go on their own lines.
+      return `.It\n${convertChildren('\n')}`;
 
     case 'text':
       // Escape any special characters in plain text content.
@@ -63,7 +60,7 @@ export function convertNodeToMandoc(node, isListItem = false) {
 
     case 'list':
       // Convert to a bullet list in Mandoc, starting with .Bl -bullet and ending with .El.
-      return `.Bl -bullet\n${convertChildren('\n', true)}\n.El`;
+      return `.Bl -bullet\n${convertChildren('\n')}\n.El`;
 
     case 'emphasis':
       // Format emphasized text in Mandoc using italic markup (\\fI ... \\fR).
@@ -122,6 +119,14 @@ const formatFlag = flag =>
   `Fl ${flag.split(/\[?[= ]/)[0].slice(1)}${flagValueToMandoc(flag)}`;
 
 /**
+ * Converts the content of an entry, without the header itself.
+ *
+ * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} element
+ */
+const convertContent = ({ content }) =>
+  convertNodeToMandoc({ ...content, children: content.children.slice(1) });
+
+/**
  * Converts an API option metadata entry into the Mandoc format.
  * This function formats command-line options, including flags and descriptions,
  * for display in Unix manual pages using Mandoc.
@@ -138,11 +143,8 @@ export function convertOptionToMandoc(element) {
     .join(' , ')
     .trim();
 
-  // Remove the header itself.
-  element.content.children.shift();
-
   // Return the formatted flags and content, separated by Mandoc markers.
-  return `.It ${formattedFlags}\n${convertNodeToMandoc(element.content).trim()}\n.\n`;
+  return `.It ${formattedFlags}\n${convertContent(element).trim()}\n.\n`;
 }
 
 /**
@@ -162,9 +164,6 @@ export function convertEnvVarToMandoc(element) {
   // Format the variable value if present.
   const formattedValue = varValue ? ` Ar ${varValue}` : '';
 
-  // Remove the header itself.
-  element.content.children.shift();
-
   // Return the formatted environment variable and content, using Mandoc's .It (List item) and .Ev (Env Var) macros.
-  return `.It Ev ${varName}${formattedValue}\n${convertNodeToMandoc(element.content)}\n.\n`;
+  return `.It Ev ${varName}${formattedValue}\n${convertContent(element)}\n.\n`;
 }
