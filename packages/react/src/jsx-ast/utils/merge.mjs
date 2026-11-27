@@ -3,9 +3,8 @@
 import { createChannel } from './channel.mjs';
 
 /**
- * Reads several async iterables at once, yielding each item as soon as it
- * arrives, until they have all ended. A failure is thrown once the items that
- * arrived before it are yielded, without waiting for the other iterables.
+ * Yields the items of several async iterables as they arrive. A failure is
+ * thrown without waiting for the other iterables.
  *
  * @template T
  * @param {...AsyncIterable<T>} sources
@@ -18,8 +17,7 @@ export async function* merge(...sources) {
   let failure;
 
   /**
-   * Passes a source's items on as they arrive, and ends the channel once every
-   * source has ended, or one fails.
+   * Passes a source's items on.
    *
    * @param {AsyncIterable<T>} source
    */

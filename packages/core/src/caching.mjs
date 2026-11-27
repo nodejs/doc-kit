@@ -1,21 +1,11 @@
 'use strict';
 
 import logger from './logger/index.mjs';
+import { once } from './utils/generators.mjs';
 import { isAsyncIterable } from './utils/misc.mjs';
 import { createTee } from './utils/tee.mjs';
 
 const cachingLogger = logger.child('caching');
-
-/**
- * Gives a value as the single chunk of an async generator.
- *
- * @template T
- * @param {T} value
- * @returns {AsyncGenerator<T>}
- */
-async function* once(value) {
-  yield value;
-}
 
 /**
  * Collects all values from an async generator into a flat array.
@@ -99,25 +89,6 @@ export const createCache = () => {
     }
 
     return tees.get(name);
-  };
-
-  /**
-   * Collects a streamed result into one array, shared by every consumer that
-   * collects it.
-   *
-   * @param {string} name - Cache key (resolved generator specifier)
-   * @param {AsyncGenerator<unknown[]>} generator - The result
-   * @returns {Promise<unknown[]>}
-   */
-  const collect = (name, generator) => {
-    if (!collections.has(name)) {
-      collections.set(
-        name,
-        collectAsyncGenerator(teeOf(name, generator).read())
-      );
-    }
-
-    return collections.get(name);
   };
 
   /**
@@ -217,7 +188,15 @@ export const createCache = () => {
       let value = result;
 
       if (isAsyncIterable(result)) {
-        value = await collect(name, result);
+        // Consumers that collect it share one array, read like a stream
+        if (!collections.has(name)) {
+          collections.set(
+            name,
+            collectAsyncGenerator(teeOf(name, result).read())
+          );
+        }
+
+        value = await collections.get(name);
       }
 
       release(name);
@@ -257,23 +236,17 @@ export const createCache = () => {
      * reading, and this counts as one of its reads.
      *
      * @param {string} name - Cache key (resolved generator specifier) to stream
-     * @param {{ whole?: boolean }} [options] - With `whole`, a streamed result
-     * is collected first and given as its only chunk
      * @returns {Promise<AsyncIterable<unknown[]>>}
      */
-    stream: async (name, { whole = false } = {}) => {
+    stream: async name => {
       const result = await results[name];
 
       let reader;
 
-      if (!isAsyncIterable(result)) {
-        reader = once(result);
-      } else if (whole) {
-        const value = await collect(name, result);
-
-        reader = once(value);
-      } else {
+      if (isAsyncIterable(result)) {
         reader = teeOf(name, result).read();
+      } else {
+        reader = once(result);
       }
 
       release(name);

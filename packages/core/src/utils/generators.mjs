@@ -43,6 +43,17 @@ export const groupNodesByModule = nodes => {
 };
 
 /**
+ * Gives a value as the single chunk of an async generator.
+ *
+ * @template T
+ * @param {T} value
+ * @returns {AsyncGenerator<T>}
+ */
+export async function* once(value) {
+  yield value;
+}
+
+/**
  * Parses the SemVer string into a Node.js-alike version
  *
  * @param {import('semver').SemVer} version The version to be parsed

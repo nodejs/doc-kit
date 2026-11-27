@@ -3,13 +3,12 @@
 import { OVERRIDDEN_POSITIONS } from '../constants.mjs';
 
 /**
- * Compares two entries to sort them: those in OVERRIDDEN_POSITIONS first, in
- * that order, then the rest by heading name.
+ * Sorts entries by OVERRIDDEN_POSITIONS and then heading name.
  * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} a
  * @param {import('@doc-kit/core/generators/metadata/types').MetadataEntry} b
  * @returns {number}
  */
-export const headingSortFn = (a, b) => {
+const headingSortFn = (a, b) => {
   const ai = OVERRIDDEN_POSITIONS.indexOf(a.api);
   const bi = OVERRIDDEN_POSITIONS.indexOf(b.api);
 

@@ -5,7 +5,7 @@ import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
 import { createChannel } from './utils/channel.mjs';
-import { headingSortFn } from './utils/getSortedHeadNodes.mjs';
+import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { merge } from './utils/merge.mjs';
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
 
@@ -45,14 +45,9 @@ export async function processChunk(slicedInput, itemIndices) {
 /**
  * Generates per-page JSX code from API metadata.
  *
- * Each page starts building once all of its module's entries have arrived, and
- * is emitted once built, in the order the pages arrived, the synthetic pages
- * last: the `html` generator puts them in the order the site lists them.
- *
- * Once every page has arrived, it also emits `{ manifest }`, without waiting
- * for the pages still being built: every page's head, in the order the site
- * lists them, so that `html` can prepare what needs the whole site in the
- * meantime.
+ * Pages are emitted as they are built, in the order they arrive, the synthetic
+ * pages last. Once the input ends, `{ manifest }` lists every page's head in
+ * the site's order, without waiting for the pages still being built.
  *
  * @type {import('./types').Generator['generate']}
  */
@@ -68,35 +63,29 @@ export async function* generate(input, worker) {
   const described = createChannel();
 
   /**
-   * Describes each arriving page by its head and its module's entries, so a
-   * worker gets only what its page needs, not all 4700+ entries. Once every
-   * page has arrived, it resolves the manifest and describes the synthetic
-   * pages.
-   *
-   * It runs ahead of `worker.stream`, which only takes the next batch once
-   * there's room for its chunks: the manifest then resolves once the input
-   * ends, not once the last pages are being built.
+   * Describes each page by its head and its module's entries. It reads ahead
+   * of `worker.stream`, which waits for room before taking a batch, so the
+   * manifest is known as soon as the input ends.
    */
   const describe = async () => {
     const heads = [];
 
     try {
-      // A page needs all of its module's entries, which arrive together, as
-      // `metadata` and `section-pages` give them
+      // A module's entries arrive in one batch
       for await (const entries of input) {
         const groupedModules = groupNodesByModule(entries);
-        const descriptors = entries
-          .filter(node => node.heading.depth === 1)
-          .map(head => ({ head, entries: groupedModules.get(head.api) }));
+        const arrived = entries.filter(node => node.heading.depth === 1);
 
-        heads.push(...descriptors.map(({ head }) => head));
+        heads.push(...arrived);
 
-        described.push(descriptors);
+        // A worker gets its module's entries, not all 4700+
+        described.push(
+          arrived.map(head => ({ head, entries: groupedModules.get(head.api) }))
+        );
       }
 
-      // In the order the site lists them, the synthetic pages last
       manifest.resolve([
-        ...heads.toSorted(headingSortFn),
+        ...getSortedHeadNodes(heads),
         ...synthetic.map(({ head }) => head),
       ]);
 
@@ -109,7 +98,7 @@ export async function* generate(input, worker) {
   };
 
   /**
-   * Gives the manifest, once every page has arrived.
+   * Yields the manifest once it is known.
    *
    * @returns {AsyncGenerator<Array<{ manifest: Array<object> }>>}
    */
@@ -119,9 +108,8 @@ export async function* generate(input, worker) {
     yield [{ manifest: heads }];
   }
 
-  // A failure reading the input reaches the output through the manifest
+  // The input's failure reaches the output through the manifest
   describe().catch(error => manifest.reject(error));
 
-  // The manifest goes out as soon as it's ready, not after the next pages
   yield* merge(worker.stream(described), announce());
 }

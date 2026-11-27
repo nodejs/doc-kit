@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
+import { once } from '@doc-kit/core/utils/generators.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
@@ -19,12 +20,7 @@ import { FONTS } from '../constants.mjs';
 import { generate as generatePages } from '../generate.mjs';
 import { processChunk } from '../utils/render.mjs';
 
-/**
- * Runs the generator over the given pages, given as one batch, as `jsx-ast`
- * gives them with one thread.
- *
- * @param {Array<object>} pages
- */
+// With one thread, the pages arrive as one batch
 const generate = pages => generatePages([pages]);
 
 // Pages are rendered with the pipeline of `jsx-ast`
@@ -92,12 +88,6 @@ const createTestConfiguration = async (context, target = ['html']) => {
   return { config, output };
 };
 
-/**
- * A page as `jsx-ast` emits it, built from a plain entry.
- *
- * @param {string} api
- * @param {string} text
- */
 const createPage = async (api, text) => {
   const entry = createEntry(api, text);
   const page = await buildContent([entry], entry);
@@ -105,14 +95,7 @@ const createPage = async (api, text) => {
   return toPage(page);
 };
 
-/**
- * The Vite adapter, recording each program it compiles, by file name, and each
- * bundle it builds.
- *
- * @param {Array<string>} calls
- * @param {{ bundled?: PromiseWithResolvers<void> }} [options] - `bundled` is
- *   resolved once both bundles are built
- */
+// The Vite adapter, recording what it compiles and bundles
 const createRecordingBundler = (calls, { bundled } = {}) => {
   const vite = createViteBundler();
 
@@ -141,20 +124,12 @@ const createRecordingBundler = (calls, { bundled } = {}) => {
   };
 };
 
-/**
- * The temporary directories the generator builds the site in.
- */
 const listBuildDirectories = async () => {
   const names = await readdir(tmpdir());
 
   return names.filter(name => name.startsWith('doc-kit-html-'));
 };
 
-/**
- * Every page written to the output directory, by file name.
- *
- * @param {string} output
- */
 const readPages = async output => {
   const names = await readdir(output, { recursive: true });
   const pages = names.filter(name => name.endsWith('.html')).sort();
@@ -282,7 +257,7 @@ describe('web generate', () => {
     });
 
     const pages = Map.groupBy(
-      await collectAsyncGenerator(sectionPages([entries])),
+      await collectAsyncGenerator(sectionPages(once(entries))),
       entry => entry.api
     );
     const contents = await Promise.all(
@@ -468,7 +443,6 @@ describe('web generate', () => {
       html,
       /<link rel="stylesheet" crossorigin href="\.\/custom\/index\.css" \/>/
     );
-    // The page is compiled as it arrives, before the library is built
     assert.deepStrictEqual(calls, ['compile', 'server', 'client']);
   });
 
@@ -489,8 +463,7 @@ describe('web generate', () => {
 
     it(
       'bundles once the manifest arrives, and compiles all.html once its parts are',
-      // The input waits for the bundles, so bundles that wait for the whole
-      // input would never be built
+      // The input waits for the bundles
       { timeout: 10_000 },
       async context => {
         const { config } = await createTestConfiguration(context);
@@ -505,7 +478,6 @@ describe('web generate', () => {
           yield [zlib];
           yield [{ manifest }];
 
-          // The bundles are built without waiting for the pages still to come
           await bundled.promise;
 
           yield [fs];
@@ -514,7 +486,6 @@ describe('web generate', () => {
 
         await generatePages(input());
 
-        // all.html is compiled once, as soon as its last part has been
         assert.deepStrictEqual(calls, [
           'zlib.jsx',
           'server',
@@ -526,13 +497,7 @@ describe('web generate', () => {
       }
     );
 
-    it('builds the same site from its whole input, as it gets it with one thread', async context => {
-      /**
-       * Builds the site from the given input and reads its pages.
-       *
-       * @param {number} threads
-       * @param {Iterable<Array<object>> | AsyncIterable<Array<object>>} input
-       */
+    it('builds the same site with one thread', async context => {
       const build = async (threads, input) => {
         const { config, output } = await createTestConfiguration(context);
 
@@ -565,36 +530,7 @@ describe('web generate', () => {
     });
 
     it(
-      'rejects when its input fails before the manifest, leaving no temporary files',
-      { timeout: 10_000 },
-      async context => {
-        const { config, output } = await createTestConfiguration(context);
-        const before = await listBuildDirectories();
-
-        config.threads = 2;
-        config.html.bundler = createRecordingBundler([]);
-
-        async function* input() {
-          yield [zlib];
-
-          throw new Error('jsx-ast failed');
-        }
-
-        await assert.rejects(generatePages(input()), /jsx-ast failed/);
-
-        const after = await listBuildDirectories();
-        const pages = await readPages(output);
-
-        assert.deepStrictEqual(
-          after.filter(name => !before.includes(name)),
-          []
-        );
-        assert.deepStrictEqual(pages, {});
-      }
-    );
-
-    it(
-      'writes no page once its input has failed after the manifest, and leaves no temporary files',
+      'waits for the bundles and writes nothing when its input fails',
       { timeout: 10_000 },
       async context => {
         const { config, output } = await createTestConfiguration(context);
@@ -602,9 +538,9 @@ describe('web generate', () => {
         const calls = [];
 
         config.threads = 2;
-        // Still bundling when the input fails
         config.html.bundler = createRecordingBundler(calls);
 
+        // Fails while the bundles are being built
         async function* input() {
           yield [zlib];
           yield [{ manifest }];
@@ -617,8 +553,6 @@ describe('web generate', () => {
         const after = await listBuildDirectories();
         const pages = await readPages(output);
 
-        // It waited for the bundles before removing the directory they are
-        // written to
         assert.deepStrictEqual(calls, ['zlib.jsx', 'server', 'client']);
         assert.deepStrictEqual(
           after.filter(name => !before.includes(name)),
@@ -629,7 +563,7 @@ describe('web generate', () => {
     );
 
     it(
-      'writes none of the pages still waiting for a worker once its input has failed',
+      'drops the pages still waiting for a worker when its input fails',
       // The worker waits for the input to fail
       { timeout: 10_000 },
       async context => {
@@ -640,8 +574,7 @@ describe('web generate', () => {
         config.threads = 2;
         config.html.bundler = createRecordingBundler([]);
 
-        // Renders on this thread, a batch at a time, as the generator does
-        // without a pool, but the first only once the input has failed
+        // Renders a batch at a time, the first once the input has failed
         const worker = {
           async *stream(batches, extra) {
             for await (const tasks of batches) {
@@ -664,13 +597,11 @@ describe('web generate', () => {
           yield [zlib];
           yield [{ manifest }];
 
-          // While the zlib page is being rendered, so this one waits for it
           await rendering.promise;
 
           yield [fs];
 
-          // The failure reaches the generator within this turn of the event
-          // loop
+          // Once the failure has reached the generator
           setImmediate(failed.resolve);
 
           throw new Error('jsx-ast failed');

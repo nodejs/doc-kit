@@ -1,8 +1,7 @@
 'use strict';
 
 /**
- * Creates a queue of items that can be read as an async iterable while it is
- * still being filled.
+ * Creates a queue that can be read as an async iterable while it is filled.
  *
  * @template T
  */
@@ -10,22 +9,20 @@ export const createChannel = () => {
   /** @type {Array<T>} */
   const items = [];
 
-  // Resolved as items are added, and at the end
   let added = Promise.withResolvers();
+  let ended = false;
 
   /**
-   * Wakes the reader waiting for an item, or for the end.
+   * Wakes the reader.
    */
   const notify = () => {
     added.resolve();
     added = Promise.withResolvers();
   };
 
-  let ended = false;
-
   return {
     /**
-     * Adds an item, after those not read yet.
+     * Adds an item after those not read yet.
      *
      * @param {T} item
      */
@@ -35,7 +32,7 @@ export const createChannel = () => {
     },
 
     /**
-     * Adds an item, before those not read yet.
+     * Adds an item before those not read yet.
      *
      * @param {T} item
      */
@@ -52,7 +49,7 @@ export const createChannel = () => {
     },
 
     /**
-     * Ends the channel: the reader stops once it has read every item.
+     * Ends the reading once every item is read.
      */
     end() {
       ended = true;

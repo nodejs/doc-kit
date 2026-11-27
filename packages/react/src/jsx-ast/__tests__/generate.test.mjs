@@ -13,7 +13,6 @@ import { generate, processChunk } from '../generate.mjs';
 
 setFlagsFromString('--expose-gc');
 
-// Collects garbage, to tell what is let go
 const gc = runInNewContext('gc');
 
 // Pages are rendered with the pipeline of `jsx-ast`
@@ -56,36 +55,18 @@ const createEntry = (api, name, { stabilityIndex = '2' } = {}) => {
   };
 };
 
-/**
- * Reads everything the generator emits, keeping the pages apart from the
- * manifests.
- *
- * @param {AsyncIterable<Array<object>>} output
- * @returns {Promise<{ pages: Array<object>, manifests: Array<Array<object>> }>}
- */
 const collect = async output => {
-  const pages = [];
-  const manifests = [];
+  const items = (await Array.fromAsync(output)).flat();
+  const manifests = items.filter(item => 'manifest' in item);
 
-  for await (const items of output) {
-    for (const item of items) {
-      if ('manifest' in item) {
-        manifests.push(item.manifest);
-      } else {
-        pages.push(item);
-      }
-    }
-  }
-
-  return { pages, manifests };
+  return {
+    pages: items
+      .filter(item => !('manifest' in item))
+      .map(({ data }) => data.api),
+    manifests: manifests.map(({ manifest }) => manifest.map(({ api }) => api)),
+  };
 };
 
-/**
- * Stands in for the worker pool: builds each page from its head alone, as its
- * batch arrives, and records every item it is given.
- *
- * @param {Array<object>} seenItems - Where the items it is given go
- */
 const createWorker = seenItems => ({
   async *stream(batches) {
     for await (const items of batches) {
@@ -94,15 +75,6 @@ const createWorker = seenItems => ({
     }
   },
 });
-
-/**
- * Yields each batch in turn, as a streamed input.
- *
- * @param {Array<Array<object>>} batches
- */
-async function* streamOf(batches) {
-  yield* batches;
-}
 
 describe('jsx-ast generate', () => {
   it('returns the page content as a JSX fragment alongside its ToC', async () => {
@@ -132,9 +104,7 @@ describe('jsx-ast generate', () => {
     const seenItems = [];
     const { pages, manifests } = await collect(
       generate(
-        streamOf([
-          [createEntry('index', 'Index'), createEntry('fs', 'File system')],
-        ]),
+        [[createEntry('index', 'Index'), createEntry('fs', 'File system')]],
         createWorker(seenItems)
       )
     );
@@ -143,88 +113,25 @@ describe('jsx-ast generate', () => {
       seenItems.map(({ head }) => head.api),
       ['index', 'fs']
     );
-    assert.deepEqual(
-      pages.map(({ data }) => data.api),
-      ['index', 'fs']
-    );
-
-    // Without the 404 page, the manifest lists only the input's pages
-    assert.deepEqual(
-      manifests.map(heads => heads.map(({ api }) => api)),
-      [['index', 'fs']]
-    );
-  });
-
-  it('starts pages as they arrive and emits them as they are built', async () => {
-    await setConfig({ target: ['jsx-ast'] });
-
-    const seenItems = [];
-    const { pages, manifests } = await collect(
-      generate(
-        streamOf([
-          [createEntry('fs', 'File system')],
-          [createEntry('buffer', 'Buffer'), createEntry('index', 'Index')],
-        ]),
-        createWorker(seenItems)
-      )
-    );
-
-    // Built in the order they arrived, the 404 page last
-    assert.deepEqual(
-      seenItems.map(({ head }) => head.api),
-      ['fs', 'buffer', 'index', '404']
-    );
-
-    // Emitted as built: the html generator puts them in the site's order
-    assert.deepEqual(
-      pages.map(({ data }) => data.api),
-      ['fs', 'buffer', 'index', '404']
-    );
-
-    // Once every page has arrived, every page's head in the order the site
-    // lists them, the 404 page last
-    assert.deepEqual(
-      manifests.map(heads => heads.map(({ api }) => api)),
-      [['index', 'buffer', 'fs', '404']]
-    );
-  });
-
-  it('builds the same pages from batches as from its whole input, as it gets it with one thread', async () => {
-    await setConfig({ target: ['jsx-ast'] });
-
-    const fs = () => createEntry('fs', 'File system');
-    const buffer = () => createEntry('buffer', 'Buffer');
-
-    const streamed = await collect(
-      generate(streamOf([[fs()], [buffer()]]), createWorker([]))
-    );
-    const whole = await collect(
-      generate(streamOf([[fs(), buffer()]]), createWorker([]))
-    );
-
-    assert.deepEqual(whole, streamed);
-
-    // The manifest still comes with them
-    assert.equal(whole.manifests.length, 1);
+    assert.deepEqual(pages, ['index', 'fs']);
+    assert.deepEqual(manifests, [['index', 'fs']]);
   });
 
   it(
-    'emits the manifest while worker.stream holds back the next batch',
-    // The pool only takes the next batch once there's room, and the first
-    // page holds it until the manifest has arrived, so a manifest that waited
-    // for the pages, or for the pool to take every batch, would never come
+    'emits the manifest once the input ends, before the pages still building',
+    // The worker builds nothing until the manifest is out
     { timeout: 10_000 },
     async () => {
       await setConfig({ target: ['jsx-ast'] });
 
       const gate = Promise.withResolvers();
+
+      // Takes the next batch only once this one is built, as worker.stream
+      // does once it has no room
       const worker = {
         async *stream(batches) {
-          // One batch at a time: the next is only taken once this one's built
           for await (const items of batches) {
-            if (items.some(({ head }) => head.api === 'fs')) {
-              await gate.promise;
-            }
+            await gate.promise;
 
             yield items.map(({ head }) => ({ data: head }));
           }
@@ -232,10 +139,10 @@ describe('jsx-ast generate', () => {
       };
 
       const output = generate(
-        streamOf([
+        [
           [createEntry('fs', 'File system')],
-          [createEntry('zlib', 'Zlib')],
-        ]),
+          [createEntry('buffer', 'Buffer'), createEntry('index', 'Index')],
+        ],
         worker
       );
 
@@ -243,19 +150,31 @@ describe('jsx-ast generate', () => {
 
       assert.deepEqual(
         value[0].manifest.map(({ api }) => api),
-        ['fs', 'zlib', '404']
+        ['index', 'buffer', 'fs', '404']
       );
 
       gate.resolve();
 
       const { pages } = await collect(output);
 
-      assert.deepEqual(
-        pages.map(({ data }) => data.api),
-        ['fs', 'zlib', '404']
-      );
+      assert.deepEqual(pages, ['fs', 'buffer', 'index', '404']);
     }
   );
+
+  it('emits the same from one batch as from several', async () => {
+    await setConfig({ target: ['jsx-ast'] });
+
+    const fs = createEntry('fs', 'File system');
+    const buffer = createEntry('buffer', 'Buffer');
+
+    const streamed = await collect(
+      generate([[fs], [buffer]], createWorker([]))
+    );
+    const whole = await collect(generate([[fs, buffer]], createWorker([])));
+
+    assert.deepEqual(whole, streamed);
+    assert.deepEqual(whole.manifests, [['buffer', 'fs', '404']]);
+  });
 
   it('rejects with the failure of its input, leaving none unhandled', async () => {
     await setConfig({ target: ['jsx-ast'] });
@@ -278,7 +197,7 @@ describe('jsx-ast generate', () => {
         failure
       );
 
-      // A rejection left unhandled is reported once the microtasks have run
+      // Unhandled rejections are reported once the microtasks have run
       await new Promise(resolve => setImmediate(resolve));
     } finally {
       process.off('unhandledRejection', onUnhandled);
@@ -289,8 +208,7 @@ describe('jsx-ast generate', () => {
 
   it(
     'lets go of the pages it emits before the manifest',
-    // The input only ends once the test lets it, so pages that waited for the
-    // manifest would never come
+    // The input only ends once the test lets it
     { timeout: 10_000 },
     async () => {
       await setConfig({ target: ['jsx-ast'] });
@@ -299,7 +217,6 @@ describe('jsx-ast generate', () => {
       const registry = new FinalizationRegistry(api => released.add(api));
       const end = Promise.withResolvers();
 
-      // `metadata` is still running, so the manifest waits for it
       async function* input() {
         yield [createEntry('fs', 'File system')];
         yield [createEntry('zlib', 'Zlib')];
@@ -323,9 +240,7 @@ describe('jsx-ast generate', () => {
 
       const output = generate(input(), worker);
 
-      // Each module's page is built as its batch arrives, and read as `html`
-      // reads it, letting go of it once it has it. The last one read may still
-      // be in a register: the first one must not be held.
+      // The last page read may still be in a register, the first must not be
       await output.next();
       await output.next();
 
@@ -341,7 +256,7 @@ describe('jsx-ast generate', () => {
       end.resolve();
 
       await reading;
-      await collect(output);
+      await Array.fromAsync(output);
 
       assert.equal(releasedEarly, true);
     }

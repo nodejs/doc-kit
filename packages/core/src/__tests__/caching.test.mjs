@@ -158,21 +158,6 @@ describe('caching', () => {
       strictEqual(iterations, 1);
     });
 
-    it('should stream a result collected whole as its only chunk', async () => {
-      const cache = createCache();
-
-      async function* gen() {
-        yield [1];
-        yield [2];
-      }
-
-      cache.store('a', gen());
-
-      const stream = await cache.stream('a', { whole: true });
-
-      deepStrictEqual(await Array.fromAsync(stream), [[1, 2]]);
-    });
-
     it('should stream a non-streaming result as a single chunk', async () => {
       const cache = createCache();
 

@@ -10,7 +10,6 @@ import logger from '@doc-kit/core/logger/index.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { createChannel } from '../jsx-ast/utils/channel.mjs';
-import { headingSortFn } from '../jsx-ast/utils/getSortedHeadNodes.mjs';
 import { createSyntheticHead } from '../jsx-ast/utils/synthetic/synthetic.mjs';
 import { resolveBundler } from './bundlers/index.mjs';
 import { buildAllPage, isModulePage } from './utils/all.mjs';
@@ -23,13 +22,19 @@ const htmlLogger = logger.child('html');
 /**
  * Main generation function: turns the pages' JSX into the static site.
  *
- * Receives `jsx-ast`'s pages as it builds them, `content` being each page's JSX
- * code, and a `{ manifest }` of every page's head once it knows them all. Each
- * page's program is compiled to a plain module as it arrives, the component
- * library and the client assets are bundled once every page's metadata is
- * known, and the worker pool renders the pages as they are compiled, one in
- * memory per worker. `all.html` imports the module pages' content, so it is
- * compiled once they all are. With one thread, the input arrives whole.
+ * Receives `jsx-ast`'s output as `{ data, headings, readingTime, content }`
+ * items, `content` being each page's JSX code, and a `{ manifest }` of every
+ * page's head. The site is then built in pieces that are each as small as they
+ * can be:
+ *
+ * 1. Each page's program is compiled (JSX to a plain module) and written to a
+ * temporary directory as it arrives, so no page is held longer than that.
+ * 2. Once the manifest arrives, the component library is bundled once, for the
+ * server, and the client assets once; every page loads the same ones.
+ * 3. `all.html`, when enabled, is a program that imports the module pages'
+ * content, so it is compiled once they are.
+ * 4. The worker pool imports, renders, templates, minifies and writes the
+ * pages as they are compiled, one page in memory per worker.
  *
  * @type {import('./types').Generator['generate']}
  */
@@ -44,7 +49,7 @@ export async function generate(input, worker) {
 
   /**
    * Removes the directory if another generator's failure ends the process
-   * before this one returns.
+   * first.
    */
   const removeOnExit = () => rmSync(outDir, { recursive: true, force: true });
 
@@ -66,22 +71,21 @@ export async function generate(input, worker) {
 }
 
 /**
- * Compiles every page's program into `outDir` as the pages arrive, bundles the
- * component library and the client assets as soon as every page's metadata is
- * known, and has the worker pool render the pages as they are compiled.
+ * Compiles each page's program into `outDir` as it arrives, bundles the
+ * component library and the client assets once the manifest arrives, and has
+ * the worker pool render the pages as they are compiled.
  *
- * @param {Parameters<import('./types').Generator['generate']>[0]} input - The pages and the manifest, as they arrive, or all at once with one thread
+ * @param {Parameters<import('./types').Generator['generate']>[0]} input
  * @param {object} options
- * @param {ParallelWorker} [options.worker] - Renders the pages; without it, they are rendered on this thread
+ * @param {ParallelWorker} [options.worker] - Without it, pages are rendered on this thread
  * @param {string} options.outDir - Where the library and the programs are written
  * @param {import('./types').ResolvedWebConfiguration} options.config
  * @param {string} options.template - The page template
  * @returns {Promise<void>}
  */
 const buildSite = async (input, options) => {
-  // Destructured here rather than in the parameters: with a destructuring
-  // parameter, the arguments keep their own copy of `input`, which letting go
-  // of `input` below would not let go of
+  // Not destructured in the parameters, so that clearing `input` below lets
+  // go of it
   const { worker, outDir, config, template } = options;
 
   // Loaded here rather than with the generator, so the threads rendering
@@ -95,7 +99,7 @@ const buildSite = async (input, options) => {
   const modulesDir = join(outDir, 'pages');
   await mkdir(modulesDir);
 
-  // Pages are compiled before the library is built, so they import it through
+  // Pages are compiled before the library is built, so they import it from
   // this module, which re-exports it once it is
   const libraryURL = pathToFileURL(join(outDir, 'page-library.mjs')).href;
 
@@ -129,20 +133,18 @@ const buildSite = async (input, options) => {
   /**
    * Bundles the component library and the client assets.
    *
-   * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} heads - Every page's metadata, in the order the pages arrived
+   * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} heads - Every page's metadata, in the site's order
    * @returns {Promise<import('./types').ClientAssets>}
    */
   const bundle = async heads => {
-    // Every page's metadata, in the order the site lists the pages — the
-    // sidebar, the index and the cross links need the whole set
+    // The sidebar, the index and the cross links need the whole set, all.html
+    // included before it is compiled
     const datas = [
-      ...heads.filter(data => !data.synthetic).toSorted(headingSortFn),
-      ...heads.filter(data => data.synthetic),
-      // all.html, which the bundles need before its parts are built
+      ...heads,
       ...(config.generateAllPage ? [createSyntheticHead('all', 'All')] : []),
     ];
 
-    // An empty directory of its own: the compiled pages are already in `outDir`
+    // Adapters expect an empty directory, and `outDir` holds the pages
     const libraryDir = join(outDir, 'library');
     await mkdir(libraryDir);
 
@@ -186,7 +188,7 @@ const buildSite = async (input, options) => {
       createPageWriter(worker)(rendering, { template, assets })
     );
 
-    // Thrown once every compiled page has been handed over
+    // Awaited once every page is compiled
     writing.catch(() => {});
   };
 
@@ -198,8 +200,8 @@ const buildSite = async (input, options) => {
   let missingParts;
 
   /**
-   * Compiles `all.html`, which imports the module pages' compiled programs,
-   * and has the worker pool render it first, as it takes by far the longest.
+   * Compiles `all.html` from the module pages' programs, and renders it first,
+   * as it takes by far the longest.
    */
   const writeAllPage = async () => {
     const allTask = await compile(buildAllPage(compiled));
@@ -209,15 +211,15 @@ const buildSite = async (input, options) => {
     allWritten = true;
   };
 
-  // With one thread, pages are rendered on this thread once all are compiled,
-  // so the manifest is kept until then
-  let manifest;
-
+  // With one thread, rendering waits for every page to be compiled, and the
+  // manifest is kept until then
   const writeWhileCompiling = getConfig().threads > 1;
 
+  let manifest;
+
   /**
-   * Compiles each page as it arrives, and hands it over. A function of its
-   * own, so that once it returns nothing holds the pages' code.
+   * Compiles each page as it arrives, and hands it over to be rendered. Its
+   * own function, so nothing holds the pages' code once it returns.
    *
    * @param {typeof input} pages
    */

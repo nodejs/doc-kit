@@ -14,7 +14,7 @@ export const isModulePage = data =>
   !data.synthetic && !data.chunk && data.api !== 'index';
 
 /**
- * Builds the `all.html` page from the module pages already compiled.
+ * Builds the `all.html` page from the module pages already generated.
  *
  * Its content is exactly the module pages' content, one after the other, so
  * nothing is rebuilt: the page program imports each module's `content` export
