@@ -94,6 +94,18 @@ export default {
 
   generate,
 
+  incremental: {
+    // Functions and paths. Their effect is covered by the built library's hash
+    omit: [
+      'bundler',
+      'templatePath',
+      'imports',
+      'virtualImports',
+      'stylesheets',
+      'components',
+    ],
+  },
+
   // Rendering, templating, minifying and writing the pages scales with the
   // page count, so it is farmed out to the worker pool.
   hasParallelProcessor: true,

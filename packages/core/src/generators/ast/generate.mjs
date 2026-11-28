@@ -1,10 +1,12 @@
 'use strict';
 
+import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { relative, sep } from 'node:path/posix';
 
 import { parse as parseYaml } from 'yaml';
 
+import { DISABLED_SECTION } from '#incremental/section.mjs';
 import getConfig from '#utils/configuration/index.mjs';
 import { withExt } from '#utils/file.mjs';
 import { findFiles, globParent } from '#utils/glob.mjs';
@@ -106,11 +108,16 @@ export async function processChunk(inputSlice, itemIndices) {
 }
 
 /**
- * Generates AST trees from markdown input files.
+ * Generates AST trees from markdown input files. An incremental build only
+ * parses the files that changed.
  *
  * @type {import('./types').Generator['generate']}
  */
-export async function* generate(_, worker) {
+export async function* generate(
+  _,
+  worker,
+  { incremental = DISABLED_SECTION } = {}
+) {
   const { ast: config } = getConfig();
 
   const files = config.input.flatMap(input => {
@@ -122,7 +129,8 @@ export async function* generate(_, worker) {
   });
 
   // Parse markdown files in parallel using worker threads
-  for await (const chunkResult of worker.stream(files)) {
-    yield chunkResult;
-  }
+  yield* incremental.reuse(files, stale => worker.stream(stale), {
+    /** @param {[string, string]} file */
+    key: ([path, parent]) => [path, parent, readFileSync(path)],
+  });
 }

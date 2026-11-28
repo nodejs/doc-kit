@@ -1,5 +1,6 @@
 'use strict';
 
+import { DISABLED_SECTION } from '#incremental/section.mjs';
 import getConfig from '#utils/configuration/index.mjs';
 import { loadFromURL } from '#utils/loaders.mjs';
 
@@ -16,28 +17,40 @@ export async function processChunk(fullInput, itemIndices, typeMap) {
 
   const results = [];
 
+  // One list of entries per file, so each file's result can be stored
   for (const idx of itemIndices) {
-    results.push(...parseApiDoc(fullInput[idx], typeMap));
+    results.push(parseApiDoc(fullInput[idx], typeMap));
   }
 
   return results;
 }
 
 /**
- * Generates a flattened list of metadata entries from API docs.
+ * Generates a flattened list of metadata entries from API docs. An
+ * incremental build only parses the trees that changed.
  *
  * @type {import('./types').Generator['generate']}
  */
-export async function* generate(inputs, worker) {
+export async function* generate(
+  inputs,
+  worker,
+  { incremental = DISABLED_SECTION } = {}
+) {
   const { metadata: config } = getConfig();
 
   const typeMap = config.typeMap
     ? JSON.parse(await loadFromURL(config.typeMap))
     : {};
 
+  await incremental.salt(() => [typeMap]);
+
   // Stream chunks as they complete - allows dependent generators
   // to start collecting/preparing while we're still processing
-  for await (const chunkResult of worker.stream(inputs, typeMap)) {
+  const entries = incremental.reuse(inputs, stale =>
+    worker.stream(stale, typeMap)
+  );
+
+  for await (const chunkResult of entries) {
     yield chunkResult.flat();
   }
 }

@@ -20,6 +20,9 @@ export type Configuration = {
   // Keeps none of the requested generators' results, for runs that only need
   // what the generators write
   discardResults?: boolean;
+
+  // Enable incremental building?
+  experimentalIncremental: boolean;
 } & {
   [K in keyof AllGenerators]: GlobalConfiguration &
     AllGenerators[K]['defaultConfiguration'];
