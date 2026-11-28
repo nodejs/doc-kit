@@ -163,9 +163,9 @@ can override any of them for that generator alone; see
   [Publishing several versions](./publishing.md#publishing-several-versions).
   **Default:** `[]`, which builds a single version without a selector.
 - `index` {string|Array} The path or URL of an `index.md` whose links
-  (`* [Title](file.md)`) set the order of the documents in the JSON bundle,
-  the legacy HTML sidebar and the legacy JSON bundle, or, in a JavaScript
-  file, the parsed list of `{ section, api }` objects.
+  (`* [Title](file.md)`) set the order of the documents in the JSON bundle
+  and the legacy JSON bundle, or, in a JavaScript file, the parsed list of
+  `{ section, api }` objects.
 - `pathsToCopy` {Array} Files and directories the `html` generator copies into
   the output directory. A string copies that path under its own name; an
   object maps source paths to destinations inside the output, such as

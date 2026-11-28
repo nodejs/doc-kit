@@ -107,7 +107,7 @@ hover over or press a link, so most navigations don't wait on the network.
 A few places doc-kit is already in use. Feel free to open a pull request to
 add yours.
 
-- <https://nodejs.org/api> - `legacy-html`, `legacy-json`
+- <https://nodejs.org/api> - `html`, `section-pages`, `legacy-json`
 - <https://nodejs.org/llms.txt> - `llms-txt`
 - <https://beta.docs.nodejs.org/> - `html`, `orama-db`, `llms-txt`
 - <https://nodejs.org/learn> - `html`, `orama-db`, `llms-txt`
