@@ -186,6 +186,13 @@ These sit at the top level, next to `target` and `global`:
 - `discardResults` {boolean} Keep none of the requested generators' results,
   so each can be let go as soon as it's produced. `doc-kit generate` and
   `doc-kit preview` set it. **Default:** `false`.
+- `experimentalIncremental` {boolean} Reuse the previous build's output: the
+  generators that support it only rebuild what changed, leave the other files
+  untouched, and remove the files whose sources are gone. The state is stored
+  in `<output>/.doc-kit/`, which is about as large as the output and
+  shouldn't be deployed. After an interrupted build, every file is written
+  again. **Default:** `false`. **Experimental:** the option and the
+  directory's format may change.
 
 Each worker's heap is limited to 512 MB. If a build runs out of memory, lower
 `threads`, or raise the limit by running Node.js with `--max-old-space-size`,

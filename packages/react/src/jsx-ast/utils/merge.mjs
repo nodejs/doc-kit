@@ -1,6 +1,6 @@
 'use strict';
 
-import { createChannel } from './channel.mjs';
+import { createChannel } from '@doc-kit/core/utils/channel.mjs';
 
 /**
  * Yields the items of several async iterables as they arrive. A failure is

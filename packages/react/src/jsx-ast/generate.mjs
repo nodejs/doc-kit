@@ -1,10 +1,11 @@
 import { isMainThread } from 'node:worker_threads';
 
+import { DISABLED_SECTION } from '@doc-kit/core/incremental/section.mjs';
+import { createChannel } from '@doc-kit/core/utils/channel.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
-import { createChannel } from './utils/channel.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
 import { merge } from './utils/merge.mjs';
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
@@ -47,11 +48,16 @@ export async function processChunk(slicedInput, itemIndices) {
  *
  * Pages are emitted as they are built, in the order they arrive, the synthetic
  * pages last. Once the input ends, `{ manifest }` lists every page's head in
- * the site's order, without waiting for the pages still being built.
+ * the site's order, without waiting for the pages still being built. An
+ * incremental build only builds the pages whose entries changed.
  *
  * @type {import('./types').Generator['generate']}
  */
-export async function* generate(input, worker) {
+export async function* generate(
+  input,
+  worker,
+  { incremental = DISABLED_SECTION } = {}
+) {
   // `all.html` is not built here: it is the module pages concatenated, so the
   // `html` generator assembles it from their content instead of building
   // every module a second time.
@@ -111,5 +117,7 @@ export async function* generate(input, worker) {
   // The input's failure reaches the output through the manifest
   describe().catch(error => manifest.reject(error));
 
-  yield* merge(worker.stream(described), announce());
+  const pages = incremental.reuse(described, stale => worker.stream(stale));
+
+  yield* merge(pages, announce());
 }

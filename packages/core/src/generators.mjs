@@ -6,6 +6,7 @@ import {
   resolveGeneratorSpecifier,
 } from './generators/loader.mjs';
 import { resolvePipeline } from './generators/pipeline.mjs';
+import { createIncrementalStore } from './incremental/index.mjs';
 import logger from './logger/index.mjs';
 import createWorkerPool from './threading/index.mjs';
 import createParallelWorker from './threading/parallel.mjs';
@@ -27,6 +28,9 @@ const createGenerator = () => {
 
   /** @type {import('piscina').Piscina} */
   let pool;
+
+  /** @type {import('./incremental/types').IncrementalStore} */
+  let incremental;
 
   /**
    * Gets the input from a dependency generator, collected or streamed.
@@ -110,7 +114,12 @@ const createGenerator = () => {
 
         // Returned rather than awaited, so this function doesn't hold on to the
         // input while the generator runs, and the generator can let it go
-        return generate(dependencyInput, await worker);
+        return generate(dependencyInput, await worker, {
+          incremental: await incremental.section(
+            generator,
+            configuration[name]
+          ),
+        });
       })().then(result => {
         // A streaming generator returns before it has produced anything, so
         // it isn't complete here
@@ -159,6 +168,10 @@ const createGenerator = () => {
     // Create worker pool
     pool = createWorkerPool(threads);
 
+    incremental = createIncrementalStore({
+      enabled: configuration.experimentalIncremental === true,
+    });
+
     // Schedule all generators
     for (const specifier of targets) {
       scheduleGenerator(specifier, generators, inputOf, configuration);
@@ -168,6 +181,8 @@ const createGenerator = () => {
     // the shared path lets the final read also trigger eviction.
     const read = discardResults ? cache.drain : cache.consume;
     const collected = await Promise.all(targets.map(read));
+
+    await incremental.save();
 
     await pool.destroy();
 

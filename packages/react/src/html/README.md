@@ -29,6 +29,22 @@ It then copies the paths in
 [`pathsToCopy`](https://doc-kit.nodejs.org/configuration#global-options) into
 the output.
 
+### Incremental builds
+
+With [`experimentalIncremental`](https://doc-kit.nodejs.org/configuration#execution-options)
+on, a page is only rendered again when one of these changes:
+
+- The page itself, as built by `jsx-ast`. `all.html` depends on every module
+  page it includes.
+- What all pages share: the component library, the client assets, the
+  template and the `html` configuration. The library contains every component
+  and the `#theme/config` module, so editing a component, upgrading a
+  dependency, or adding or removing a page renders every page again.
+
+The library and the client assets are still bundled on every build, and every
+page is still compiled. Pages and client files that a build no longer
+produces are removed.
+
 ## Configuring
 
 Several options are
@@ -564,9 +580,12 @@ module's imports as they are, as the library they point to may not exist yet.
   share one Preact.
 - `buildClient(options)` {Function} Bundles the client entry into
   `config.output` and returns a promise of the assets every page loads:
-  `{ scripts, preloads, stylesheets, fonts }`, as paths relative to the output
-  directory. `preloads` are the chunks the scripts import statically, rendered
-  as `modulepreload` hints, and `fonts` (optional) are fonts to preload.
+  `{ scripts, preloads, stylesheets, fonts, emitted }`, as paths relative to
+  the output directory. `preloads` are the chunks the scripts import
+  statically, rendered as `modulepreload` hints, and `fonts` (optional) are
+  fonts to preload. `emitted` (optional) is every file the build wrote, so an
+  [incremental build](#incremental-builds) can remove the ones a later build
+  doesn't write. Without it, only the files every page loads are tracked.
   - `entry` {string} The client program every page shares.
   - `virtualImports` {Object} In-memory modules to make available, by module
     ID, `#theme/config` included.

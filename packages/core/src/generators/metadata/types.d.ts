@@ -4,7 +4,8 @@ import type { Position } from 'unist';
 export type Generator = GeneratorMetadata<
   {},
   Generate<AsyncIterable<Array<Root>>, AsyncGenerator<MetadataEntry>>,
-  ProcessChunk<Root, MetadataEntry, Record<string, string>>
+  // One list of entries per file
+  ProcessChunk<Root, Array<Array<MetadataEntry>>, Record<string, string>>
 >;
 
 /**

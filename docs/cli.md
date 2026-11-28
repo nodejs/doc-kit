@@ -62,6 +62,9 @@ parentheses.
   **Default:** the number of CPUs, up to 4.
 - `--chunk-size <n>` {number} Items each worker processes per task, at least 1
   (`chunkSize`). **Default:** `10`.
+- `--experimental-incremental` {boolean} Reuse the previous build's output,
+  rebuilding only what changed (`experimentalIncremental`). **Default:**
+  `false`. **Experimental.**
 
 ```bash
 # Build everything the configuration file describes

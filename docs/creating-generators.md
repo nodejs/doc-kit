@@ -203,6 +203,90 @@ await cp(new URL('./assets', import.meta.url), join(output, 'assets'), {
 });
 ```
 
+### Incremental builds
+
+With [`experimentalIncremental`](./configuration.md#execution-options) on, a
+generator can skip the items that haven't changed since the previous build.
+`generate` receives a third argument for this, with an `incremental` property.
+
+A generator that produces one result per item, for other generators to read,
+uses `reuse`:
+
+```mjs displayName="generate.mjs"
+export async function* generate(entries, worker, { incremental }) {
+  // `stale` holds the entries that changed. Results for the others are
+  // loaded from the previous build, and all results are yielded in order
+  yield* incremental.reuse(entries, stale => worker.stream(stale));
+}
+```
+
+A generator that only writes files uses `partition`:
+
+```mjs displayName="generate.mjs"
+import { join } from 'node:path';
+
+import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
+import { writeFile } from '@doc-kit/core/utils/file.mjs';
+
+export async function generate(entries, worker, { incremental }) {
+  const { output } = getConfig('my-format');
+
+  // `files` returns the file, or files, an entry is written to
+  const { stale } = incremental.partition(entries, {
+    files: entry => `${entry.api}.txt`,
+  });
+
+  for (const entry of stale) {
+    await writeFile(join(output, `${entry.api}.txt`), render(entry));
+  }
+}
+```
+
+In both cases, files and results from the previous build that this build
+doesn't use are removed when it finishes.
+
+Each item has a key: a hash of its JSON and of the generator's configuration,
+so changing the configuration rebuilds everything. A result of `reuse` is
+hashed by the key it was stored under instead of by its content, so whatever
+is built from it is rebuilt whenever it is. The generator object can adjust
+the key under `incremental`:
+
+- `key` {Function} Returns what to hash for an item instead of the item
+  itself: one value or an array. Strings and bytes are hashed as they are,
+  other values as JSON.
+- `omit` {string[]} Configuration keys that don't affect the output, such as
+  paths. `input`, `output`, `ignore` and `pathsToCopy` are always omitted.
+- `salt` {Array} Extra values to hash into every key, such as a format
+  version.
+
+`incremental` has these methods:
+
+- `reuse(items, make[, options])` yields one result per item, in order, as
+  arrays. `items` is an array, or an async iterable of arrays. `make` receives
+  the stale items as an async iterable of arrays and yields one result for
+  each, in order. Results are stored in `<output>/.doc-kit/`, so they must be
+  [structured-cloneable](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm).
+  `options.key` overrides the declared `key`. A generator that already writes
+  each result to its own file can pass `options.file`, which returns that
+  file for an item, and `options.read`, which reads a result from it, so the
+  result isn't stored twice.
+- `partition(items, options)` splits the items into `{ fresh, stale }`.
+  `options.files` returns the file or files an item is written to, and
+  `options.key` overrides the declared `key`.
+- `record(label, ...files)` tracks files that don't belong to an item, such as
+  assets, so they aren't removed.
+- `salt(compute)` hashes values computed at run time into every key, such as
+  the hash of a built bundle. Call it before the first `reuse` or `partition`.
+- `digest(...parts)` hashes values into a string that a `key` function can
+  return later, without holding on to the values.
+
+When the option is off, or the generator has no `output`, every item is stale
+and nothing is stored or removed, so a generator doesn't need a separate code
+path.
+
+Keys don't cover code. After changing a generator or a plugin, or upgrading
+doc-kit, delete `<output>/.doc-kit/` to rebuild everything.
+
 ## Worker threads
 
 For heavy work on many independent items, give the generator a

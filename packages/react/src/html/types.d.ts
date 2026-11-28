@@ -58,6 +58,9 @@ export type ClientAssets = {
   stylesheets: Array<string>;
   // Fonts to preload, so text does not wait on the stylesheet to request them.
   fonts?: Array<string>;
+  // Every file the build wrote, so an incremental build can remove the ones a
+  // later build doesn't write. Without it, only the files above are tracked.
+  emitted?: Array<string>;
 };
 
 export type ServerBundleOptions = {

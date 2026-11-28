@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it, mock, beforeEach } from 'node:test';
+
+import { loadManifest, manifestPath } from '../incremental/manifest.mjs';
+import { DISABLED_SECTION } from '../incremental/section.mjs';
 
 // Tracks how many times each synthetic generator actually executed so we can
 // assert that a shared dependency runs exactly once even after its result is
@@ -160,6 +167,25 @@ const syntheticGenerators = {
       const chunks = await Array.fromAsync(input);
 
       return { chunks };
+    },
+  },
+  // A generator recording an output through the incremental section it is
+  // handed, and one failing after it
+  'gen-record': {
+    name: 'gen-record',
+    dependsOn: 'metadata',
+    generate: async (input, worker, { incremental }) => {
+      record('gen-record');
+      incremental.record('recorded', 'recorded.txt');
+      return { disabled: incremental === DISABLED_SECTION };
+    },
+  },
+  'gen-fail': {
+    name: 'gen-fail',
+    dependsOn: 'metadata',
+    generate: async () => {
+      record('gen-fail');
+      throw new Error('boom');
     },
   },
 };
@@ -375,5 +401,65 @@ describe('createGenerator orchestration', () => {
     });
 
     assert.equal(results, undefined);
+  });
+
+  describe('incremental building', () => {
+    const createOutput = async context => {
+      const output = await mkdtemp(join(tmpdir(), 'doc-kit-orchestrator-'));
+      context.after(() => rm(output, { recursive: true, force: true }));
+
+      return output;
+    };
+
+    it('gives each generator its section and saves the manifest after every target finishes', async context => {
+      const output = await createOutput(context);
+      const { runGenerators } = createGenerator();
+
+      const results = await runGenerators({
+        target: ['gen-record'],
+        threads: 1,
+        experimentalIncremental: true,
+        'gen-record': { output },
+      });
+
+      assert.deepStrictEqual(results, [{ disabled: false }]);
+
+      const { manifest } = await loadManifest(output);
+      assert.deepStrictEqual(manifest.generators['gen-record'], {
+        recorded: ['recorded.txt'],
+      });
+    });
+
+    it('writes no manifest when a generator fails', async context => {
+      const output = await createOutput(context);
+      const { runGenerators } = createGenerator();
+
+      await assert.rejects(
+        runGenerators({
+          target: ['gen-record', 'gen-fail'],
+          threads: 1,
+          experimentalIncremental: true,
+          'gen-record': { output },
+          'gen-fail': { output },
+        }),
+        /boom/
+      );
+
+      assert.equal(existsSync(manifestPath(output)), false);
+    });
+
+    it('gives disabled sections and writes nothing without the flag', async context => {
+      const output = await createOutput(context);
+      const { runGenerators } = createGenerator();
+
+      const results = await runGenerators({
+        target: ['gen-record'],
+        threads: 1,
+        'gen-record': { output },
+      });
+
+      assert.deepStrictEqual(results, [{ disabled: true }]);
+      assert.equal(existsSync(manifestPath(output)), false);
+    });
   });
 });

@@ -1,12 +1,23 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import {
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { before, describe, it } from 'node:test';
+import { setTimeout } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
 
 import { collectAsyncGenerator } from '@doc-kit/core/caching.mjs';
 import { loadGenerator } from '@doc-kit/core/generators/loader.mjs';
+import { createIncrementalStore } from '@doc-kit/core/incremental/index.mjs';
+import { loadManifest } from '@doc-kit/core/incremental/manifest.mjs';
 import { setConfig } from '@doc-kit/core/utils/configuration/index.mjs';
 import { once } from '@doc-kit/core/utils/generators.mjs';
 import { loadMarkdownPlugins } from '@doc-kit/core/utils/markdown/plugins.mjs';
@@ -18,6 +29,8 @@ import { generate as sectionPages } from '../../section-pages/generate.mjs';
 import { compile, createViteBundler } from '../bundlers/vite.mjs';
 import { FONTS } from '../constants.mjs';
 import { generate as generatePages } from '../generate.mjs';
+import html from '../index.mjs';
+import { pageFileName } from '../utils/processing.mjs';
 import { processChunk } from '../utils/render.mjs';
 
 // With one thread, the pages arrive as one batch
@@ -27,6 +40,14 @@ const generate = pages => generatePages([pages]);
 await loadMarkdownPlugins(
   await loadGenerator(import.meta.resolve('../../jsx-ast/index.mjs'))
 );
+
+/**
+ * Builds the pages of module entries, one page per module.
+ */
+const buildPages = async entries =>
+  Promise.all(entries.map(entry => buildContent([entry], entry))).then(
+    contents => contents.map(toPage)
+  );
 
 /**
  * Converts a page's JSX AST into the `{ data, headings, readingTime, content }`
@@ -197,11 +218,7 @@ describe('web generate', () => {
       createEntry('index', 'Index'),
     ];
 
-    await generate(
-      await Promise.all(
-        entries.map(entry => buildContent([entry], entry))
-      ).then(contents => contents.map(toPage))
-    );
+    await generate(await buildPages(entries));
 
     const html = await readFile(join(output, 'all.html'), 'utf8');
 
@@ -614,5 +631,223 @@ describe('web generate', () => {
         assert.deepStrictEqual(Object.keys(pages), ['zlib.html']);
       }
     );
+  });
+
+  describe('incremental', () => {
+    /**
+     * Runs an incremental build of the pages into the output, through a
+     * worker that renders on this thread and notes which pages it rendered.
+     *
+     * @returns {Promise<{ rendered: Array<string>, manifest: import('@doc-kit/core/incremental/types').Manifest }>}
+     */
+    const build = async (pages, output) => {
+      const rendered = [];
+
+      const worker = {
+        async *stream(batches, extra) {
+          for await (const tasks of batches) {
+            rendered.push(...tasks.map(task => pageFileName(task.data)));
+
+            yield await processChunk(tasks, [...tasks.keys()], extra);
+          }
+        },
+      };
+
+      const store = createIncrementalStore({ enabled: true });
+      const incremental = await store.section(html, { output });
+
+      await generatePages([pages], worker, { incremental });
+      await store.save();
+
+      // Let the clock move, so an unchanged mtime means no write happened
+      await setTimeout(20);
+
+      return { rendered, manifest: (await loadManifest(output)).manifest };
+    };
+
+    /**
+     * The modification times of the given files, by file.
+     */
+    const mtimes = async (output, files) =>
+      Object.fromEntries(
+        await Promise.all(
+          files.map(async file => [
+            file,
+            (await stat(join(output, file))).mtimeMs,
+          ])
+        )
+      );
+
+    it('renders nothing the second time and leaves every file alone', async context => {
+      const { config, output } = await createTestConfiguration(context);
+      config.html.generateAllPage = true;
+
+      const pages = await buildPages([
+        createEntry('fs', 'File system'),
+        createEntry('zlib', 'Zlib'),
+      ]);
+
+      const first = await build(pages, output);
+
+      assert.deepEqual(first.rendered.toSorted(), [
+        'all.html',
+        'fs.html',
+        'zlib.html',
+      ]);
+
+      const files = Object.values(first.manifest.generators.html).flat();
+      const pageFiles = files.filter(file => !file.startsWith('assets/'));
+      const before = await mtimes(output, pageFiles);
+
+      const second = await build(pages, output);
+
+      // The client is bundled again (into the same files); the pages are not
+      assert.deepEqual(second.rendered, []);
+      assert.deepEqual(await mtimes(output, pageFiles), before);
+
+      // Building the same library twice gives the same bytes: the salt holds
+      assert.deepEqual(second.manifest, first.manifest);
+
+      // The pages and the client's files are all recorded
+      assert.ok(files.includes('fs.html'));
+      assert.ok(files.some(file => file.startsWith('assets/')));
+    });
+
+    it('renders an edited page again, and all.html with it, but nothing else', async context => {
+      const { config, output } = await createTestConfiguration(context);
+      config.html.generateAllPage = true;
+
+      const fs = createEntry('fs', 'File system');
+      const zlib = createEntry('zlib', 'Zlib');
+
+      await build(await buildPages([fs, zlib]), output);
+      const before = await mtimes(output, ['fs.html', 'zlib.html', 'all.html']);
+
+      // A change after the first paragraph: the description every page's
+      // documentation index shows stays the same, so the library does too
+      zlib.content.children.push({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'More about zlib' }],
+      });
+
+      const { rendered } = await build(await buildPages([fs, zlib]), output);
+      const after = await mtimes(output, ['fs.html', 'zlib.html', 'all.html']);
+
+      assert.deepEqual(rendered, ['all.html', 'zlib.html']);
+      assert.equal(after['fs.html'], before['fs.html']);
+      assert.notEqual(after['zlib.html'], before['zlib.html']);
+      assert.notEqual(after['all.html'], before['all.html']);
+      assert.match(
+        await readFile(join(output, 'all.html'), 'utf8'),
+        /More about zlib/
+      );
+    });
+
+    it('renders every page again when the page set changes', async context => {
+      const { config, output } = await createTestConfiguration(context);
+      config.html.generateAllPage = false;
+
+      const fs = createEntry('fs', 'File system');
+      const zlib = createEntry('zlib', 'Zlib');
+
+      await build(await buildPages([fs, zlib]), output);
+
+      // A new module is on every page's sidebar
+      const { rendered } = await build(
+        await buildPages([fs, zlib, createEntry('net', 'Net')]),
+        output
+      );
+
+      assert.deepEqual(rendered.toSorted(), [
+        'fs.html',
+        'net.html',
+        'zlib.html',
+      ]);
+    });
+
+    it('removes the pages of a dropped module, and nothing else', async context => {
+      const { config, output } = await createTestConfiguration(context, [
+        'section-pages',
+      ]);
+      config.html.generateAllPage = false;
+      config['section-pages'].maxDepth = 2;
+
+      const fs = [
+        createEntry('fs', 'File system'),
+        createEntry('fs', '`fs.readFile()`', {
+          depth: 2,
+          slug: 'fsreadfile',
+          type: 'method',
+          name: 'readFile',
+        }),
+        createEntry('fs', '`fs.watch()`', {
+          depth: 2,
+          slug: 'fswatch',
+          type: 'method',
+          name: 'watch',
+        }),
+      ];
+      const zlib = createEntry('zlib', 'Zlib');
+
+      const toPages = async entries => {
+        const groups = Map.groupBy(
+          await collectAsyncGenerator(sectionPages(once(entries))),
+          entry => entry.api
+        );
+
+        return Promise.all(
+          [...groups.values()].map(group => buildContent(group, group[0]))
+        ).then(contents => contents.map(toPage));
+      };
+
+      await build(await toPages([...fs, zlib]), output);
+
+      assert.ok(existsSync(join(output, 'fs/readFile.html')));
+      await writeFile(join(output, 'mine.txt'), 'not doc-kit’s');
+
+      const { rendered, manifest } = await build(await toPages([zlib]), output);
+
+      // The sidebar lost a module, so the remaining page is rendered again
+      assert.deepEqual(rendered, ['zlib.html']);
+      assert.equal(existsSync(join(output, 'fs.html')), false);
+      assert.equal(existsSync(join(output, 'fs')), false);
+      assert.ok(existsSync(join(output, 'zlib.html')));
+      assert.ok(existsSync(join(output, 'mine.txt')));
+      assert.deepEqual(
+        Object.values(manifest.generators.html)
+          .flat()
+          .filter(file => !file.startsWith('assets/')),
+        ['zlib.html']
+      );
+    });
+
+    it('removes the client files a previous build wrote and this one did not', async context => {
+      const { config, output } = await createTestConfiguration(context);
+      config.html.generateAllPage = false;
+
+      const pages = await buildPages([createEntry('fs', 'File system')]);
+
+      await build(pages, output);
+
+      const stylesheets = async () =>
+        (await readdir(join(output, 'assets'))).filter(file =>
+          file.endsWith('.css')
+        );
+
+      const [before] = await stylesheets();
+
+      const stylesheet = join(output, '..', `doc-kit-test-${Date.now()}.css`);
+      context.after(() => rm(stylesheet, { force: true }));
+      await writeFile(stylesheet, '.extra { color: red }');
+      config.html.stylesheets = [stylesheet];
+
+      const { rendered } = await build(pages, output);
+
+      // The assets changed, so the page did, and the old stylesheet is gone
+      assert.deepEqual(rendered, ['fs.html']);
+      const after = await stylesheets();
+      assert.equal(after.length, 1);
+      assert.notEqual(after[0], before);
+    });
   });
 });

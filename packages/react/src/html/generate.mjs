@@ -6,15 +6,18 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { hashDirectory } from '@doc-kit/core/incremental/hash.mjs';
+import { DISABLED_SECTION } from '@doc-kit/core/incremental/section.mjs';
 import logger from '@doc-kit/core/logger/index.mjs';
+import { createChannel } from '@doc-kit/core/utils/channel.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 
-import { createChannel } from '../jsx-ast/utils/channel.mjs';
 import { createSyntheticHead } from '../jsx-ast/utils/synthetic/synthetic.mjs';
 import { resolveBundler } from './bundlers/index.mjs';
 import { buildAllPage, isModulePage } from './utils/all.mjs';
 import { copyStaticAssets } from './utils/copying.mjs';
 import createProgramBuilder, { moduleFileName } from './utils/generate.mjs';
+import { pageFileName } from './utils/processing.mjs';
 import { createPageWriter } from './utils/render.mjs';
 
 const htmlLogger = logger.child('html');
@@ -34,11 +37,16 @@ const htmlLogger = logger.child('html');
  * 3. `all.html`, when enabled, is a program that imports the module pages'
  * content, so it is compiled once they are.
  * 4. The worker pool imports, renders, templates, minifies and writes the
- * pages as they are compiled, one page in memory per worker.
+ * pages as they are compiled, one page in memory per worker. An incremental
+ * build only renders the pages that changed.
  *
  * @type {import('./types').Generator['generate']}
  */
-export async function generate(input, worker) {
+export async function generate(
+  input,
+  worker,
+  { incremental = DISABLED_SECTION } = {}
+) {
   const config = getConfig('html');
 
   const template = await readFile(config.templatePath, 'utf-8');
@@ -56,7 +64,13 @@ export async function generate(input, worker) {
   process.once('exit', removeOnExit);
 
   try {
-    const building = buildSite(input, { worker, outDir, config, template });
+    const building = buildSite(input, {
+      worker,
+      outDir,
+      config,
+      template,
+      incremental,
+    });
 
     input = undefined;
 
@@ -81,12 +95,13 @@ export async function generate(input, worker) {
  * @param {string} options.outDir - Where the library and the programs are written
  * @param {import('./types').ResolvedWebConfiguration} options.config
  * @param {string} options.template - The page template
+ * @param {import('@doc-kit/core/incremental/types').IncrementalSection} options.incremental
  * @returns {Promise<void>}
  */
 const buildSite = async (input, options) => {
   // Not destructured in the parameters, so that clearing `input` below lets
   // go of it
-  const { worker, outDir, config, template } = options;
+  const { worker, outDir, config, template, incremental } = options;
 
   // Loaded here rather than with the generator, so the threads rendering
   // pages, which load this module too, never load what only this needs
@@ -103,13 +118,24 @@ const buildSite = async (input, options) => {
   // this module, which re-exports it once it is
   const libraryURL = pathToFileURL(join(outDir, 'page-library.mjs')).href;
 
+  // Adapters expect an empty directory, and `outDir` holds the pages
+  const libraryDir = join(outDir, 'library');
+
+  /**
+   * A hash of each compiled page's source, so the source itself can be freed
+   *
+   * @type {WeakMap<import('./types').PageTask, string>}
+   */
+  const sources = new WeakMap();
+
   /**
    * Compiles a page's program to disk and describes it for the workers.
    *
    * @param {import('./types').Page} page
+   * @param {...string} parts - Hashes of other pages this one includes
    * @returns {Promise<import('./types').PageTask>}
    */
-  const compile = async page => {
+  const compile = async (page, ...parts) => {
     const file = join(modulesDir, moduleFileName(page.data.api));
 
     await writeFile(
@@ -122,12 +148,16 @@ const buildSite = async (input, options) => {
 
     const { data, headings, readingTime } = page;
 
-    return {
+    const task = {
       moduleURL: pathToFileURL(file).href,
       data,
       headings,
       readingTime,
     };
+
+    sources.set(task, incremental.digest(page, ...parts));
+
+    return task;
   };
 
   /**
@@ -144,8 +174,6 @@ const buildSite = async (input, options) => {
       ...(config.generateAllPage ? [createSyntheticHead('all', 'All')] : []),
     ];
 
-    // Adapters expect an empty directory, and `outDir` holds the pages
-    const libraryDir = join(outDir, 'library');
     await mkdir(libraryDir);
 
     const builtLibraryURL = await bundler.buildServer({
@@ -176,6 +204,27 @@ const buildSite = async (input, options) => {
   // The compiled pages, rendered once the bundles are built
   const rendering = createChannel();
 
+  /**
+   * Filters out the pages that haven't changed since the previous build.
+   *
+   * @param {AsyncIterable<Array<import('./types').PageTask>>} batches
+   * @yields {Array<import('./types').PageTask>} Each batch's pages to render
+   */
+  async function* stalePages(batches) {
+    for await (const tasks of batches) {
+      const { stale } = incremental.partition(tasks, {
+        /** @param {import('./types').PageTask} task */
+        key: task => sources.get(task),
+        /** @param {import('./types').PageTask} task */
+        files: task => pageFileName(task.data),
+      });
+
+      if (stale.length > 0) {
+        yield stale;
+      }
+    }
+  }
+
   let writing;
 
   /**
@@ -184,9 +233,31 @@ const buildSite = async (input, options) => {
    * @param {Array<import('@doc-kit/core/generators/metadata/types').MetadataEntry>} heads - Every page's metadata
    */
   const startWriting = heads => {
-    writing = bundle(heads).then(assets =>
-      createPageWriter(worker)(rendering, { template, assets })
-    );
+    writing = bundle(heads).then(async assets => {
+      // What every page depends on. The built library covers the components,
+      // their dependencies and the list of pages
+      await incremental.salt(async () => [
+        await hashDirectory(libraryDir),
+        assets,
+        template,
+      ]);
+
+      // Without `emitted`, only the files every page loads are tracked
+      incremental.record(
+        'client',
+        ...(assets.emitted ?? [
+          ...assets.scripts,
+          ...assets.preloads,
+          ...assets.stylesheets,
+          ...(assets.fonts ?? []),
+        ])
+      );
+
+      return createPageWriter(worker)(stalePages(rendering), {
+        template,
+        assets,
+      });
+    });
 
     // Awaited once every page is compiled
     writing.catch(() => {});
@@ -204,7 +275,14 @@ const buildSite = async (input, options) => {
    * as it takes by far the longest.
    */
   const writeAllPage = async () => {
-    const allTask = await compile(buildAllPage(compiled));
+    const all = buildAllPage(compiled);
+    const byApi = new Map(compiled.map(task => [task.data.api, task]));
+
+    // `all.html` changes whenever one of the pages it imports does
+    const allTask = await compile(
+      all,
+      ...all.parts.map(api => sources.get(byApi.get(api)))
+    );
 
     rendering.prepend([allTask]);
 

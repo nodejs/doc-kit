@@ -20,6 +20,13 @@ export const writeFile = (file, ...args) =>
     .then(() => fs.writeFile(file, ...args));
 
 /**
+ * @param {string} file
+ * @returns {Promise<any>}
+ */
+export const readJSON = async file =>
+  JSON.parse(await fs.readFile(file, 'utf-8'));
+
+/**
  * Writes a value as JSON
  *
  * @param {string} file
