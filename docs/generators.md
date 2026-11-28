@@ -61,6 +61,7 @@ shaped like it.
 | [Man page](./generators/man-page.md)           | `man-page`     | A man page in mdoc format (`node.1` by default), from a command-line reference page. |
 | [API links](./generators/api-links.md)         | `api-links`    | `apilinks.json`, mapping each exported API to the line defining it in the sources.   |
 | [Addon examples](./generators/addon-verify.md) | `addon-verify` | The C++ addon examples' code blocks, written out with a `binding.gyp` for the tests. |
+| [All-in-one page](./generators/html-all.md)    | `html-all`     | `all.html`, every module page's content on one page, which `html` renders.           |
 
 ## Node.js's legacy formats
 

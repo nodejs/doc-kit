@@ -32,16 +32,6 @@ export const createChannel = () => {
     },
 
     /**
-     * Adds an item before those not read yet.
-     *
-     * @param {T} item
-     */
-    prepend(item) {
-      items.unshift(item);
-      notify();
-    },
-
-    /**
      * Drops the items not read yet.
      */
     clear() {

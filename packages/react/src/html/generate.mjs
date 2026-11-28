@@ -10,9 +10,7 @@ import logger from '@doc-kit/core/logger/index.mjs';
 import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 
 import { createChannel } from '../jsx-ast/utils/channel.mjs';
-import { createSyntheticHead } from '../jsx-ast/utils/synthetic/synthetic.mjs';
 import { resolveBundler } from './bundlers/index.mjs';
-import { buildAllPage, isModulePage } from './utils/all.mjs';
 import { copyStaticAssets } from './utils/copying.mjs';
 import createProgramBuilder, { moduleFileName } from './utils/generate.mjs';
 import { createPageWriter } from './utils/render.mjs';
@@ -31,8 +29,8 @@ const htmlLogger = logger.child('html');
  * temporary directory as it arrives, so no page is held longer than that.
  * 2. Once the manifest arrives, the component library is bundled once, for the
  * server, and the client assets once; every page loads the same ones.
- * 3. `all.html`, when enabled, is a program that imports the module pages'
- * content, so it is compiled once they are.
+ * 3. A composed page (with `parts`, which come before it) imports their
+ * compiled programs, so nothing is built twice.
  * 4. The worker pool imports, renders, templates, minifies and writes the
  * pages as they are compiled, one page in memory per worker.
  *
@@ -137,20 +135,13 @@ const buildSite = async (input, options) => {
    * @returns {Promise<import('./types').ClientAssets>}
    */
   const bundle = async heads => {
-    // The sidebar, the index and the cross links need the whole set, all.html
-    // included before it is compiled
-    const datas = [
-      ...heads,
-      ...(config.generateAllPage ? [createSyntheticHead('all', 'All')] : []),
-    ];
-
     // Adapters expect an empty directory, and `outDir` holds the pages
     const libraryDir = join(outDir, 'library');
     await mkdir(libraryDir);
 
     const builtLibraryURL = await bundler.buildServer({
       entry: buildLibraryProgram(),
-      virtualImports: createVirtualImports(datas, config.virtualImports, true),
+      virtualImports: createVirtualImports(heads, config.virtualImports, true),
       outDir: libraryDir,
       config,
     });
@@ -164,7 +155,7 @@ const buildSite = async (input, options) => {
 
     const assets = await bundler.buildClient({
       entry: clientProgram,
-      virtualImports: createVirtualImports(datas, config.virtualImports, false),
+      virtualImports: createVirtualImports(heads, config.virtualImports, false),
       config,
     });
 
@@ -194,23 +185,6 @@ const buildSite = async (input, options) => {
 
   const compiled = [];
 
-  let allWritten = !config.generateAllPage;
-
-  // The module pages `all.html` is made of that aren't compiled yet
-  let missingParts;
-
-  /**
-   * Compiles `all.html` from the module pages' programs, and renders it first,
-   * as it takes by far the longest.
-   */
-  const writeAllPage = async () => {
-    const allTask = await compile(buildAllPage(compiled));
-
-    rendering.prepend([allTask]);
-
-    allWritten = true;
-  };
-
   // With one thread, rendering waits for every page to be compiled, and the
   // manifest is kept until then
   const writeWhileCompiling = getConfig().threads > 1;
@@ -235,14 +209,6 @@ const buildSite = async (input, options) => {
             manifest = item.manifest;
           }
 
-          missingParts = new Set(
-            item.manifest.filter(isModulePage).map(({ api }) => api)
-          );
-
-          for (const { data } of compiled) {
-            missingParts.delete(data.api);
-          }
-
           continue;
         }
 
@@ -250,16 +216,10 @@ const buildSite = async (input, options) => {
 
         compiled.push(task);
         tasks.push(task);
-
-        missingParts?.delete(task.data.api);
       }
 
       if (tasks.length > 0) {
         rendering.push(tasks);
-      }
-
-      if (!allWritten && missingParts?.size === 0) {
-        await writeAllPage();
       }
     }
   };
@@ -276,10 +236,6 @@ const buildSite = async (input, options) => {
       startWriting(manifest ?? compiled.map(({ data }) => data));
 
       manifest = undefined;
-    }
-
-    if (!allWritten) {
-      await writeAllPage();
     }
 
     htmlLogger.debug(`Compiled ${compiled.length} page programs`);

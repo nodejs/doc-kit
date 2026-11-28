@@ -16,8 +16,9 @@ import { processChunk } from './utils/render.mjs';
  * The configured bundler builds the component library and the client assets
  * once each; the pages are compiled, rendered, templated, minified and written
  * one at a time by the worker pool as they arrive, so memory scales with the
- * largest page rather than with the site. `all.html` is assembled from the
- * module pages' compiled content instead of being built again from scratch.
+ * largest page rather than with the site. A composed page, such as Node.js's
+ * `all.html` (see its `html-all` generator), is assembled from its parts'
+ * compiled content instead of being built again.
  *
  * This terminal generator writes to the output directory and does not return
  * an in-memory copy.
@@ -83,10 +84,6 @@ export default {
       // default layout.
       showCrossLinks: false,
     },
-
-    // Whether to write `all.html`: every module page's content on one page,
-    // assembled from the module pages rather than built again.
-    generateAllPage: true,
 
     // When omitted, the Vite adapter is loaded lazily during generation.
     bundler: undefined,

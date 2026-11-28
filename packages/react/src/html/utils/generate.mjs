@@ -114,34 +114,47 @@ export default () => {
    * metadata, table of contents and reading time reach it as those props at
    * render time — only code.
    *
-   * A composed page (`all.html`) has no content of its own: it imports the
-   * `content` of the pages it is made of, so their JSX is never rebuilt.
+   * A composed page has no content of its own: it imports its parts'
+   * `content`, so their JSX is never rebuilt. Each part renders through an
+   * element of its own, which, unlike a fragment, doesn't hold on to what it
+   * renders, so a part's elements can go once it's rendered.
    *
    * @param {import('../types').Page} page
    * @param {string} libraryURL - The `file:` URL the page imports the component library from.
    * @returns {string} The program, as JSX.
    */
   const buildPageProgram = (page, libraryURL) => {
-    const { imports, content } =
+    const { imports, declarations, content } =
       'parts' in page
         ? {
             imports: page.parts.map(
               (api, index) =>
                 `import { content as content${index} } from ${quote(`./${moduleFileName(api)}`)};`
             ),
-            content: `<>${page.parts.map((_, index) => `{content${index}()}`).join('')}</>`,
+            declarations: [
+              'const ComposedPartContent = ({ part }) => part();',
+              'const ComposedPart = ({ part }) => <ComposedPartContent part={part} />;',
+            ],
+            content: `<>${page.parts.map((_, index) => `<ComposedPart part={content${index}} />`).join('')}</>`,
           }
-        : { imports: [], content: page.content };
+        : { imports: [], declarations: [], content: page.content };
 
-    // Import only the components the page actually renders
-    const used = componentImports
-      .filter(({ name }) => content.includes(`<${name}`))
-      .map(({ name }) => name)
-      .filter(name => name !== JSX_IMPORTS.Layout.name);
+    // Import only the components the page actually renders. A composed page
+    // renders none of its own (its parts import theirs), and scanning it would
+    // take its wrappers for configured components of the same name
+    let used = [];
+
+    if (!('parts' in page)) {
+      used = componentImports
+        .filter(({ name }) => content.includes(`<${name}`))
+        .map(({ name }) => name)
+        .filter(name => name !== JSX_IMPORTS.Layout.name);
+    }
 
     return [
       `import { ${[...RUNTIME_IMPORTS, ...used].join(', ')} } from ${quote(libraryURL)};`,
       ...imports,
+      ...declarations,
       `export const content = () => ${content};`,
       `export default props => renderToStringAsync(<${JSX_IMPORTS.Layout.name} {...props}>{content()}</${JSX_IMPORTS.Layout.name}>);`,
     ].join('\n');

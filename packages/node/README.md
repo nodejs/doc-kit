@@ -1,8 +1,8 @@
 # `@node-core/doc-kit`
 
-The Node.js-specific parts of [doc-kit](https://doc-kit.nodejs.org): three
+The Node.js-specific parts of [doc-kit](https://doc-kit.nodejs.org): four
 generators for outputs only the Node.js project needs (its man page,
-`apilinks.json` and its addon example tests), and `@node-core/doc-kit/config`,
+`apilinks.json`, its addon example tests and `all.html`), and `@node-core/doc-kit/config`,
 a preset that configures the general-purpose generators the way nodejs.org builds its
 API documentation.
 
@@ -16,9 +16,9 @@ start from [Getting started](https://doc-kit.nodejs.org/getting-started).
 npm install --save-dev @doc-kit/cli @node-core/doc-kit
 ```
 
-That covers the three generators. To build the website, the search index,
-`llms.txt` or the sitemap with the preset, also install the generators that
-make them:
+That covers `man-page`, `api-links` and `addon-verify`. For `html-all`, and to
+build the website, the search index, `llms.txt` or the sitemap with the
+preset, also install the generators that make them:
 
 ```sh
 npm install --save-dev @doc-kit/generator-react
@@ -31,6 +31,7 @@ npm install --save-dev @doc-kit/generator-react
 | [`man-page`](https://doc-kit.nodejs.org/generators/man-page)         | `doc/api/cli.md`    | `node.1`, the `node` man page in mdoc format, with the options and environment variables that `cli.md` documents     |
 | [`api-links`](https://doc-kit.nodejs.org/generators/api-links)       | `lib/*.js`          | `apilinks.json`, which maps each API (such as `buffer.Buffer`) to the line on GitHub that defines it                 |
 | [`addon-verify`](https://doc-kit.nodejs.org/generators/addon-verify) | `doc/api/addons.md` | A folder per addon example (such as `02_function_arguments/`), with its C++ and JavaScript files and a `binding.gyp` |
+| [`html-all`](https://doc-kit.nodejs.org/generators/html-all)         | `doc/api/*.md`      | `all.html`, every module page's content on one page, which the `html` generator renders                              |
 
 ## Usage
 

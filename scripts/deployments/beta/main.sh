@@ -59,6 +59,7 @@ node packages/cli/bin/cli.mjs generate \
   -t json \
   -t llms-txt \
   -t section-pages \
+  -t html-all \
   -i "./$API_DIR/*.md" \
   --ignore "./$API_DIR/quic.md" \
   -o "./$OUT_DIR" \
