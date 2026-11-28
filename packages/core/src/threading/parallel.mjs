@@ -1,5 +1,7 @@
 'use strict';
 
+import { toCloneable } from 'to-cloneable';
+
 import logger from '#logger/index.mjs';
 import { isAsyncIterable } from '#utils/misc.mjs';
 
@@ -32,9 +34,8 @@ const createChunks = (count, size) => {
  * @param {unknown[]} fullInput - Full input array
  * @param {number[]} indices - Indices to process
  * @param {Object} extra - Stuff to pass to the worker
- * @param {import('../utils/configuration/types').Configuration} configuration - Serialized options
+ * @param {Partial<import('../utils/configuration/types').Configuration>} configuration - The configuration the worker gets
  * @param {string} generatorSpecifier - Resolved specifier of the generator
- * @param {string} generatorName - Name of the generator
  * @returns {ParallelTaskOptions} Task data for Piscina
  */
 const createTask = (
@@ -42,8 +43,7 @@ const createTask = (
   indices,
   extra,
   configuration,
-  generatorSpecifier,
-  generatorName
+  generatorSpecifier
 ) => {
   return {
     generatorSpecifier,
@@ -52,10 +52,7 @@ const createTask = (
     // Remap indices to 0-based for the sliced array
     itemIndices: indices.map((_, i) => i),
     extra,
-    // Only pass the needed configuration to this generator
-    configuration: {
-      [generatorName]: configuration[generatorName],
-    },
+    configuration,
   };
 };
 
@@ -77,6 +74,10 @@ export default function createParallelWorker(
   const { threads, chunkSize } = configuration;
 
   const { name } = generator;
+
+  // Only this generator's configuration, without what can't be sent to a
+  // worker, such as a bundler's functions, which only this thread uses
+  const workerConfiguration = { [name]: toCloneable(configuration[name]) };
 
   return {
     /**
@@ -165,7 +166,7 @@ export default function createParallelWorker(
           running++;
 
           const task = pool.run(
-            createTask(batch, indices, extra, configuration, specifier, name)
+            createTask(batch, indices, extra, workerConfiguration, specifier)
           );
 
           tasks.push(

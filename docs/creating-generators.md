@@ -261,8 +261,10 @@ Filtering entries is light work, but heavier work takes the same shape.
 - The items, `deps`, the results, and the generator's configuration section
   are copied between threads with the
   [structured clone algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm).
-  Functions can't be copied (passing one throws a `DataCloneError`), and class
-  instances arrive as plain objects.
+  Functions can't be copied (passing one in the items or `deps` throws a
+  `DataCloneError`), and class instances arrive as plain objects. Values in the
+  configuration that can't be copied, such as functions and `URL`s, are left
+  out of the copy a worker gets.
 - Each worker imports your module on its own, so `processChunk` sees nothing
   `generate` set up: pass what it needs in `deps`. A module only
   `processChunk` uses can be imported inside it, as the `metadata` generator
