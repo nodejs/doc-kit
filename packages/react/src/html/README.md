@@ -17,13 +17,12 @@ for the search box. The pages load their scripts as modules, so serve `out/`
 over HTTP (`npx @doc-kit/cli preview`) rather than opening it from disk.
 [Publishing your docs](https://doc-kit.nodejs.org/publishing) covers hosting.
 
-| Path                      | Contents                                                                                                                                     |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `<page>.html`             | One page per input document, at its path from the input glob's base: `docs/api/fs.md` becomes `api/fs.html`.                                 |
-| `all.html`                | Every module page's content on one page, when Node.js's [`html-all`](https://doc-kit.nodejs.org/generators/html-all) runs in the same build. |
-| `404.html`                | The not-found page, while the `jsx-ast` option `generateNotFoundPage` is on.                                                                 |
-| `assets/`                 | The client scripts, stylesheet and fonts. The Vite adapter names each after a hash of its content, so hosts can cache them.                  |
-| `<module>/<section>.html` | One page per section, when [`section-pages`](https://doc-kit.nodejs.org/generators/section-pages) runs in the same build.                    |
+| Path                      | Contents                                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `<page>.html`             | One page per input document, at its path from the input glob's base: `docs/api/fs.md` becomes `api/fs.html`.                |
+| `404.html`                | The not-found page, while the `jsx-ast` option `generateNotFoundPage` is on.                                                |
+| `assets/`                 | The client scripts, stylesheet and fonts. The Vite adapter names each after a hash of its content, so hosts can cache them. |
+| `<module>/<section>.html` | One page per section, when [`section-pages`](https://doc-kit.nodejs.org/generators/section-pages) runs in the same build.   |
 
 It then copies the paths in
 [`pathsToCopy`](https://doc-kit.nodejs.org/configuration#global-options) into
@@ -31,9 +30,8 @@ the output.
 
 A page can be a composed page: an input item with `parts`, the `api`s of the
 pages whose content it shows, which come before it in the input, and its
-`headings`. Its program imports theirs, so they are not built again, and it is
-rendered first, as it takes the longest. Node.js's `html-all` generator
-(`@node-core/doc-kit`) adds `all.html` this way.
+`headings`. Its program imports theirs, so they are not built again. Node.js's
+`html-all` generator (`@node-core/doc-kit`) adds `all.html` this way.
 
 ## Configuring
 
@@ -306,10 +304,10 @@ These variables are in scope:
 - `canonical` {string} The page's URL, from `pageURL` and `baseURL`, for a
   `<link rel="canonical">`, with `{version}` set to the release line (`v26.x`).
   An `index` page links to its directory. It's empty without a `baseURL`, and
-  on `404.html` and `all.html`.
+  on synthetic pages, such as `404.html`.
 - `root` {string} The site root, relative to the page (such as `'../'`), or
-  absolute with `useAbsoluteURLs`. On `404.html` and `all.html`, which can be
-  served from any path, it's `'/'` unless `useAbsoluteURLs` is on. Prefix your
+  absolute with `useAbsoluteURLs`. On synthetic pages, such as `404.html`, which
+  can be served from any path, it's `'/'` unless `useAbsoluteURLs` is on. Prefix your
   own files with it, as in `${root}favicon.svg`.
 - `metadata` {Object} The page's metadata, frontmatter included.
 - `config` {Object} The resolved `html` configuration.

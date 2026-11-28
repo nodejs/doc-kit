@@ -1,5 +1,5 @@
 ---
-'@doc-kit/core': minor
+'@doc-kit/core': patch
 '@doc-kit/generator-react': minor
 '@node-core/doc-kit': minor
 ---

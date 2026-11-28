@@ -20,7 +20,7 @@ describe('buildPageProgram', () => {
     const { buildPageProgram } = createProgramBuilder();
     const libraryURL = 'file:///library.mjs';
     const program = buildPageProgram(
-      { data: { api: 'all' }, headings: [], parts: ['fs'] },
+      { data: { api: 'combined' }, headings: [], parts: ['fs'] },
       libraryURL
     );
 

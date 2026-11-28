@@ -174,7 +174,7 @@ export default function createConfigSource(input, server = false) {
   const { version: configVersion, ...config } = getConfig('html');
 
   // Only the real module pages are listed in the sidebar and the index;
-  // synthetic pages (`all`, `404`) and chunk pages are reachable elsewhere.
+  // synthetic pages (such as `404`) and chunk pages are reachable elsewhere.
   const pages = input.filter(entry => !entry.synthetic && !entry.chunk);
 
   const editURL =

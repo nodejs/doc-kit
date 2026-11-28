@@ -18,19 +18,6 @@ describe('createChannel', () => {
     deepStrictEqual(items, [[1], [2]]);
   });
 
-  it('gives a prepended item before those not read yet', async () => {
-    const channel = createChannel();
-
-    channel.push([1]);
-    channel.push([2]);
-    channel.prepend([0]);
-    channel.end();
-
-    const items = await Array.fromAsync(channel);
-
-    deepStrictEqual(items, [[0], [1], [2]]);
-  });
-
   it('drops the items not read yet when cleared', async () => {
     const channel = createChannel();
 

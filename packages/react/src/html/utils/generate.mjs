@@ -114,11 +114,10 @@ export default () => {
    * metadata, table of contents and reading time reach it as those props at
    * render time — only code.
    *
-   * A composed page has no content of its own: it imports the
-   * `content` of the pages it is made of, so their JSX is never rebuilt. Each
-   * part's elements are only created as it is rendered, so they can go once
-   * it is: an element rendering a single element doesn't hold on to it, as
-   * one rendering a fragment does to its children.
+   * A composed page has no content of its own: it imports its parts'
+   * `content`, so their JSX is never rebuilt. Each part renders through an
+   * element of its own, which, unlike a fragment, doesn't hold on to what it
+   * renders, so a part's elements can go once it's rendered.
    *
    * @param {import('../types').Page} page
    * @param {string} libraryURL - The `file:` URL the page imports the component library from.

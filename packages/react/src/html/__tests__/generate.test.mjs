@@ -22,13 +22,12 @@ import { generate as generatePages } from '../generate.mjs';
 import { processChunk } from '../utils/render.mjs';
 
 /**
- * A composed page of the given pages' content, in that order, as Node.js's
- * `html-all` generator gives `all.html`.
+ * A composed page of the given pages' content, in that order.
  *
  * @param {Array<{ data: { api: string }, headings: Array<object> }>} pages
  */
-const createAllPage = pages => ({
-  data: createSyntheticHead('all', 'All'),
+const createComposedPage = pages => ({
+  data: createSyntheticHead('combined', 'Combined'),
   headings: pages.flatMap(({ headings }) => headings),
   parts: pages.map(({ data }) => data.api),
 });
@@ -212,11 +211,11 @@ describe('web generate', () => {
 
     const [zlib, fs, index] = contents.map(toPage);
 
-    await generate([zlib, fs, index, createAllPage([fs, zlib])]);
+    await generate([zlib, fs, index, createComposedPage([fs, zlib])]);
 
-    const html = await readFile(join(output, 'all.html'), 'utf8');
+    const html = await readFile(join(output, 'combined.html'), 'utf8');
 
-    assert.match(html, /<title>All \|/);
+    assert.match(html, /<title>Combined \|/);
     // Its parts' content, in its order, and nothing else
     assert.match(html, /File system body[\s\S]*Zlib body/);
     assert.doesNotMatch(html, /Index body/);
@@ -246,9 +245,9 @@ describe('web generate', () => {
 
     const pages = contents.map(toPage);
 
-    await generate([...pages, createAllPage(pages)]);
+    await generate([...pages, createComposedPage(pages)]);
 
-    const html = await readFile(join(output, 'all.html'), 'utf8');
+    const html = await readFile(join(output, 'combined.html'), 'utf8');
     const ids = [...html.matchAll(/ id="([^"]*P0-\d+[^"]*)"/g)].map(
       ([, id]) => id
     );
@@ -493,7 +492,7 @@ describe('web generate', () => {
     let zlib;
     let fs;
     let index;
-    let all;
+    let combined;
     let manifest;
 
     before(async () => {
@@ -502,8 +501,8 @@ describe('web generate', () => {
       zlib = await createPage('zlib', 'Zlib');
       fs = await createPage('fs', 'File system');
       index = await createPage('index', 'Index');
-      all = createAllPage([fs, zlib]);
-      manifest = [zlib, fs, index, all].map(({ data }) => data);
+      combined = createComposedPage([fs, zlib]);
+      manifest = [zlib, fs, index, combined].map(({ data }) => data);
     });
 
     it(
@@ -555,15 +554,15 @@ describe('web generate', () => {
       async function* batches() {
         yield [zlib];
         yield [{ manifest }];
-        yield [fs, all];
+        yield [fs, combined];
         yield [index];
       }
 
       const streamed = await build(2, batches());
-      const whole = await build(1, [[zlib, fs, all, { manifest }, index]]);
+      const whole = await build(1, [[zlib, fs, combined, { manifest }, index]]);
 
       assert.deepStrictEqual(Object.keys(whole), [
-        'all.html',
+        'combined.html',
         'fs.html',
         'index.html',
         'zlib.html',

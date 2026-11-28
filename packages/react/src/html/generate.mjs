@@ -30,7 +30,7 @@ const htmlLogger = logger.child('html');
  * 2. Once the manifest arrives, the component library is bundled once, for the
  * server, and the client assets once; every page loads the same ones.
  * 3. A composed page (with `parts`, which come before it) imports their
- * compiled programs, so nothing is built twice, and it is rendered first.
+ * compiled programs, so nothing is built twice.
  * 4. The worker pool imports, renders, templates, minifies and writes the
  * pages as they are compiled, one page in memory per worker.
  *
@@ -215,13 +215,7 @@ const buildSite = async (input, options) => {
         const task = await compile(item);
 
         compiled.push(task);
-
-        // A composed page takes by far the longest to render
-        if ('parts' in item) {
-          rendering.prepend([task]);
-        } else {
-          tasks.push(task);
-        }
+        tasks.push(task);
       }
 
       if (tasks.length > 0) {
