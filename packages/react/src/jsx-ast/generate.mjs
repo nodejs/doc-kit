@@ -4,7 +4,9 @@ import getConfig from '@doc-kit/core/utils/configuration/index.mjs';
 import { groupNodesByModule } from '@doc-kit/core/utils/generators.mjs';
 import { jsx, toJs } from 'estree-util-to-js';
 
+import { createChannel } from './utils/channel.mjs';
 import { getSortedHeadNodes } from './utils/getSortedHeadNodes.mjs';
+import { merge } from './utils/merge.mjs';
 import { buildNotFoundPage } from './utils/synthetic/404.mjs';
 
 /**
@@ -43,25 +45,71 @@ export async function processChunk(slicedInput, itemIndices) {
 /**
  * Generates per-page JSX code from API metadata.
  *
+ * Pages are emitted as they are built, in the order they arrive, the synthetic
+ * pages last. Once the input ends, `{ manifest }` lists every page's head in
+ * the site's order, without waiting for the pages still being built.
+ *
  * @type {import('./types').Generator['generate']}
  */
 export async function* generate(input, worker) {
-  // Create sliced input: each item contains head + its module's entries
-  // This avoids sending all 4700+ entries to every worker
-  const groupedModules = groupNodesByModule(input);
-  const descriptors = getSortedHeadNodes(input).map(head => ({
-    head,
-    entries: groupedModules.get(head.api),
-  }));
-
   // `all.html` is not built here: it is the module pages concatenated, so the
   // `html` generator assembles it from their content instead of building
   // every module a second time.
-  if (getConfig('jsx-ast').generateNotFoundPage) {
-    descriptors.push(buildNotFoundPage());
+  const synthetic = getConfig('jsx-ast').generateNotFoundPage
+    ? [buildNotFoundPage()]
+    : [];
+
+  const manifest = Promise.withResolvers();
+  const described = createChannel();
+
+  /**
+   * Describes each page by its head and its module's entries. It reads ahead
+   * of `worker.stream`, which waits for room before taking a batch, so the
+   * manifest is known as soon as the input ends.
+   */
+  const describe = async () => {
+    const heads = [];
+
+    try {
+      // A module's entries arrive in one batch
+      for await (const entries of input) {
+        const groupedModules = groupNodesByModule(entries);
+        const arrived = entries.filter(node => node.heading.depth === 1);
+
+        heads.push(...arrived);
+
+        // A worker gets its module's entries, not all 4700+
+        described.push(
+          arrived.map(head => ({ head, entries: groupedModules.get(head.api) }))
+        );
+      }
+
+      manifest.resolve([
+        ...getSortedHeadNodes(heads),
+        ...synthetic.map(({ head }) => head),
+      ]);
+
+      if (synthetic.length > 0) {
+        described.push(synthetic);
+      }
+    } finally {
+      described.end();
+    }
+  };
+
+  /**
+   * Yields the manifest once it is known.
+   *
+   * @returns {AsyncGenerator<Array<{ manifest: Array<object> }>>}
+   */
+  async function* announce() {
+    const heads = await manifest.promise;
+
+    yield [{ manifest: heads }];
   }
 
-  for await (const chunkResult of worker.stream(descriptors)) {
-    yield chunkResult;
-  }
+  // The input's failure reaches the output through the manifest
+  describe().catch(error => manifest.reject(error));
+
+  yield* merge(worker.stream(described), announce());
 }

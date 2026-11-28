@@ -30,6 +30,12 @@ the content — the `html` generator wraps each page in `<Layout>`, and assemble
 `all.html` from the module pages' content (see its `generateAllPage` option)
 rather than building every module a second time here.
 
+Pages are emitted as they are built, in the order their entries arrive, the
+synthetic pages last. Once every page has arrived, it also emits
+`{ manifest }`: every page's head in the site's order, the synthetic pages
+last, so the `html` generator can build what needs the whole site while pages
+are still being built.
+
 ## Index page
 
 `index.html` is generated when an `index` document is part of the input, and

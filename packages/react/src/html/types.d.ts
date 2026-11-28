@@ -1,3 +1,4 @@
+import type { MetadataEntry } from '@doc-kit/core/generators/metadata/types';
 import type { GlobalConfiguration } from '@doc-kit/core/utils/configuration/types';
 import type NavBar from '@node-core/ui-components/Containers/NavBar';
 import type SideBar from '@node-core/ui-components/Containers/Sidebar';
@@ -122,6 +123,9 @@ export type Configuration = {
 
 export type Generator = GeneratorMetadata<
   Configuration,
-  Generate<Array<PageCode>, Promise<void>>,
+  Generate<
+    AsyncIterable<Array<PageCode | { manifest: Array<MetadataEntry> }>>,
+    Promise<void>
+  >,
   ProcessChunk<PageTask, string, { template: string; assets: ClientAssets }>
 >;
