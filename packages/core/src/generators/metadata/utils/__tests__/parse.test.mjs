@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { u } from 'unist-builder';
+import { visit } from 'unist-util-visit';
 
 import { parseApiDoc } from '../parse.mjs';
 
@@ -336,6 +337,37 @@ describe('parseApiDoc', () => {
       const secondContent = results[1].content.children;
       assert.strictEqual(secondContent.length, 2);
       assert.strictEqual(secondContent[0].type, 'heading');
+    });
+  });
+
+  describe('source positions', () => {
+    it('drops position from every node of an entry', () => {
+      const tree = u('root', [
+        h('fs'),
+        stability('Stability: 2 - Stable'),
+        u('paragraph', [u('text', 'Content.')]),
+      ]);
+      const position = {
+        start: { line: 1, column: 1 },
+        end: { line: 1, column: 1 },
+      };
+
+      visit(tree, node => {
+        node.position = position;
+      });
+
+      const [entry] = parseApiDoc({ path, tree }, typeMap);
+      const positioned = [];
+
+      visit(entry.content, node => {
+        if ('position' in node) {
+          positioned.push(node.type);
+        }
+      });
+
+      assert.deepStrictEqual(positioned, []);
+      assert.ok(!('position' in entry.heading));
+      assert.ok(entry.stability && !('position' in entry.stability));
     });
   });
 });
