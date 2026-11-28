@@ -37,7 +37,8 @@ const buildLinkedChildren = (value, links) => {
 /**
  * Minimal mdast→hast handler for `typeAnnotation` nodes: one
  * `<code class="type">` whose resolved identifiers are plain `<a>` links.
- * No syntax highlighting — used by the legacy generators.
+ * No syntax highlighting — the fallback of the highlighted handler, for
+ * types that failed to parse or have nothing to link.
  *
  * @param {import('mdast-util-to-hast').State} state
  * @param {import('mdast').Node} node

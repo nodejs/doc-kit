@@ -212,10 +212,6 @@ export default {
             },
             { label: '`@doc-kit/typedoc`', link: '/packages/typedoc' },
             { label: '`@node-core/doc-kit`', link: '/packages/node' },
-            {
-              label: '`@node-core/doc-kit-legacy`',
-              link: '/packages/node-legacy',
-            },
           ],
         },
         {

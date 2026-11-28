@@ -235,9 +235,6 @@ importers:
       '@node-core/doc-kit':
         specifier: workspace:>=2.0.0
         version: link:../node
-      '@node-core/doc-kit-legacy':
-        specifier: workspace:>=1.0.0
-        version: link:../node-legacy
       '@node-core/rehype-shiki':
         specifier: ^1.5.1
         version: 1.5.1(supports-color@10.2.2)
@@ -342,18 +339,6 @@ importers:
       unist-builder:
         specifier: ^4.0.0
         version: 4.0.0
-
-  packages/node-legacy:
-    dependencies:
-      '@doc-kit/core':
-        specifier: workspace:*
-        version: link:../core
-      rehype-stringify:
-        specifier: ^10.0.1
-        version: 10.0.1
-      remark-rehype:
-        specifier: ^11.1.2
-        version: 11.1.2
 
   packages/react:
     dependencies:

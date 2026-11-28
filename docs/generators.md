@@ -62,18 +62,6 @@ shaped like it.
 | [API links](./generators/api-links.md)         | `api-links`    | `apilinks.json`, mapping each exported API to the line defining it in the sources.   |
 | [Addon examples](./generators/addon-verify.md) | `addon-verify` | The C++ addon examples' code blocks, written out with a `binding.gyp` for the tests. |
 
-## Node.js's legacy formats
-
-From [`@node-core/doc-kit-legacy`](./packages/node-legacy.md), which you
-install next to the CLI. These write the JSON files of the Node.js API docs in
-the formats Node.js's original tooling made, for Node.js and the tools that
-read them. For your own docs, use the website and JSON generators above.
-
-| Generator                                             | Target            | Output                                                                   |
-| ----------------------------------------------------- | ----------------- | ------------------------------------------------------------------------ |
-| [Legacy JSON](./generators/legacy-json.md)            | `legacy-json`     | A classic Node.js JSON file per source file, with descriptions in HTML.  |
-| [Legacy JSON bundle](./generators/legacy-json-all.md) | `legacy-json-all` | `all.json`, the sections of every legacy JSON file merged into one file. |
-
 ## Pipeline stages
 
 The generators above read from a few shared stages, which are generators too. A
