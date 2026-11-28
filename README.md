@@ -70,13 +70,12 @@ Generate API docs
 Options:
   --config-file <path>         Config file
   -i, --input <patterns...>    Input file patterns (glob)
-  -t, --target <generator...>  Target generator(s): a built-in name
-                               (json, json-all, json-simple, legacy-html,
-                               legacy-html-all, man-page, legacy-json,
+  -t, --target <generator...>  Target generator(s): a built-in name (json,
+                               json-all, json-simple, man-page, legacy-json,
                                legacy-json-all, addon-verify, api-links,
-                               orama-db, llms-txt, llms-txt-full, sitemap,
-                               html, section-pages) or an import specifier
-                               for a custom generator
+                               orama-db, llms-txt, llms-txt-full, sitemap, html,
+                               section-pages) or an import specifier for a
+                               custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory
   -p, --threads <number>       Number of threads to use (minimum: 1)
@@ -114,8 +113,7 @@ Options:
   --config-file <path>         Config file
   -i, --input <patterns...>    Input file patterns (glob)
   -t, --target <generator...>  Target generator(s): a built-in name (json,
-                               json-all, json-simple, legacy-html,
-                               legacy-html-all, man-page, legacy-json,
+                               json-all, json-simple, man-page, legacy-json,
                                legacy-json-all, addon-verify, api-links,
                                orama-db, llms-txt, llms-txt-full, sitemap, html,
                                section-pages) or an import specifier for a
@@ -143,11 +141,10 @@ Options:
 
 ### Legacy
 
-To generate a 1:1 match with the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the `legacy-html`, `legacy-json`, `legacy-html-all`, and `legacy-json-all` generators.
+To generate a 1:1 match with the JSON of the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the `legacy-json` and `legacy-json-all` generators.
 
 ```sh
 npx @doc-kit/cli generate \
-  -t legacy-html \
   -t legacy-json \
   -i "path/to/node/doc/api/*.md" \
   -o out \

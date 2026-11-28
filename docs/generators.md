@@ -65,17 +65,14 @@ shaped like it.
 ## Node.js's legacy formats
 
 From [`@node-core/doc-kit-legacy`](./packages/node-legacy.md), which you
-install next to the CLI. These write the HTML pages and JSON files of the
-Node.js API docs in the formats Node.js's original tooling made, for Node.js
-and the tools that read them. For your own docs, use the website and JSON
-generators above.
+install next to the CLI. These write the JSON files of the Node.js API docs in
+the formats Node.js's original tooling made, for Node.js and the tools that
+read them. For your own docs, use the website and JSON generators above.
 
-| Generator                                                  | Target            | Output                                                                   |
-| ---------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------ |
-| [Legacy HTML](./generators/legacy-html.md)                 | `legacy-html`     | A classic Node.js HTML page per source file, with its `assets/`.         |
-| [Legacy single-page HTML](./generators/legacy-html-all.md) | `legacy-html-all` | `all.html`, every legacy HTML page one after another.                    |
-| [Legacy JSON](./generators/legacy-json.md)                 | `legacy-json`     | A classic Node.js JSON file per source file, with descriptions in HTML.  |
-| [Legacy JSON bundle](./generators/legacy-json-all.md)      | `legacy-json-all` | `all.json`, the sections of every legacy JSON file merged into one file. |
+| Generator                                             | Target            | Output                                                                   |
+| ----------------------------------------------------- | ----------------- | ------------------------------------------------------------------------ |
+| [Legacy JSON](./generators/legacy-json.md)            | `legacy-json`     | A classic Node.js JSON file per source file, with descriptions in HTML.  |
+| [Legacy JSON bundle](./generators/legacy-json-all.md) | `legacy-json-all` | `all.json`, the sections of every legacy JSON file merged into one file. |
 
 ## Pipeline stages
 
