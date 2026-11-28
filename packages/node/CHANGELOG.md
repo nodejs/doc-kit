@@ -1,5 +1,16 @@
 # @node-core/doc-kit
 
+## 2.1.0
+
+### Minor Changes
+
+- [#1260](https://github.com/nodejs/doc-kit/pull/1260) [`7210fb7`](https://github.com/nodejs/doc-kit/commit/7210fb77aea4c00c21bfa6b762a49c40fa851d70) Thanks [@avivkeller](https://github.com/avivkeller)! - `man-page` renders `###` option groups as subsections and fixes options dropped after nested lists.
+
+### Patch Changes
+
+- Updated dependencies [[`b65d7c1`](https://github.com/nodejs/doc-kit/commit/b65d7c1389a0f016d22466b9f1517e8b2c21a6bb), [`e1cbd76`](https://github.com/nodejs/doc-kit/commit/e1cbd769869bab49ef2a8c59986d4fcdfb806815), [`265eb17`](https://github.com/nodejs/doc-kit/commit/265eb17783b13738fbca1346d076af7a7b541696), [`ad826e4`](https://github.com/nodejs/doc-kit/commit/ad826e46ffcb9b41f88e09edb2240756b0d78265), [`07858b1`](https://github.com/nodejs/doc-kit/commit/07858b11473dac2b7617b2caad78d6a7b08cb08f)]:
+  - @doc-kit/core@1.4.0
+
 ## 2.0.8
 
 ### Patch Changes

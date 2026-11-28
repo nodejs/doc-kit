@@ -1,5 +1,27 @@
 # @doc-kit/generator-react
 
+## 0.6.0
+
+### Minor Changes
+
+- [#1240](https://github.com/nodejs/doc-kit/pull/1240) [`ad826e4`](https://github.com/nodejs/doc-kit/commit/ad826e46ffcb9b41f88e09edb2240756b0d78265) Thanks [@ovflowd](https://github.com/ovflowd)! - `metadata` and `section-pages` stream their input: with more than one thread, they start on their dependency's first chunk, so parsing, metadata and section pages overlap. The generated files are unchanged.
+
+- [#1241](https://github.com/nodejs/doc-kit/pull/1241) [`caba57a`](https://github.com/nodejs/doc-kit/commit/caba57af7f24ea080641c704d877842f38b6a27c) Thanks [@ovflowd](https://github.com/ovflowd)! - `jsx-ast` and `html` stream their input, so with more than one thread, page building and rendering overlap with the generators before them. The generated files are unchanged, but `jsx-ast` now yields pages in the order their entries arrive, and once every page has arrived, a `{ manifest }` item listing their heads in the site's order, the synthetic pages last. Bundler adapters' `compile` can now be called before and while `buildServer` and `buildClient` run.
+
+### Patch Changes
+
+- [#1245](https://github.com/nodejs/doc-kit/pull/1245) [`41920cb`](https://github.com/nodejs/doc-kit/commit/41920cb4608f0c82e6473200d51daeba256234c3) Thanks [@adityareddy-dev](https://github.com/adityareddy-dev)! - Use a consistent link color for inline type annotations in light and dark themes.
+
+- [#1192](https://github.com/nodejs/doc-kit/pull/1192) [`ff4d9ad`](https://github.com/nodejs/doc-kit/commit/ff4d9ad362da64214202e4d8c8b73aab293089fe) Thanks [@ovflowd](https://github.com/ovflowd)! - Replay the presses that hydrate an island, so a code block's first click or tap switches tabs or copies the code, and an island with `interaction: true` runs the click, Enter or Space that started it loading
+
+- [#1192](https://github.com/nodejs/doc-kit/pull/1192) [`ff4d9ad`](https://github.com/nodejs/doc-kit/commit/ff4d9ad362da64214202e4d8c8b73aab293089fe) Thanks [@ovflowd](https://github.com/ovflowd)! - Scope the heading layout to API entry headings, mark the selected code tab and let tabs wrap on narrow screens, and add a canonical link and `theme-color` to the default template
+
+- [#1251](https://github.com/nodejs/doc-kit/pull/1251) [`1655cb5`](https://github.com/nodejs/doc-kit/commit/1655cb590f321137851f1bb062c0692b6b673b46) Thanks [@btea](https://github.com/btea)! - Fix the search modal crashing with `Cannot read properties of undefined (reading 'split')` when a hit has no description, such as headings without a leading paragraph in the generated `orama-db.json` index.
+
+- [#1256](https://github.com/nodejs/doc-kit/pull/1256) [`5db2f94`](https://github.com/nodejs/doc-kit/commit/5db2f94d5386efcf6f414d0b008c4a99f838bdc3) Thanks [@btea](https://github.com/btea)! - Fix a crash when a table's rows and cells are surrounded by whitespace text nodes, as `rehype-raw` 9.1.1 and later keep them. The transformer now finds the header row and the cells themselves instead of assuming they are the first children, and labels cells by their column.
+- Updated dependencies [[`b65d7c1`](https://github.com/nodejs/doc-kit/commit/b65d7c1389a0f016d22466b9f1517e8b2c21a6bb), [`e1cbd76`](https://github.com/nodejs/doc-kit/commit/e1cbd769869bab49ef2a8c59986d4fcdfb806815), [`265eb17`](https://github.com/nodejs/doc-kit/commit/265eb17783b13738fbca1346d076af7a7b541696), [`ad826e4`](https://github.com/nodejs/doc-kit/commit/ad826e46ffcb9b41f88e09edb2240756b0d78265), [`07858b1`](https://github.com/nodejs/doc-kit/commit/07858b11473dac2b7617b2caad78d6a7b08cb08f)]:
+  - @doc-kit/core@1.4.0
+
 ## 0.5.3
 
 ### Patch Changes
