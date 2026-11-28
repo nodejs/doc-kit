@@ -48,7 +48,7 @@ parentheses.
   (`global.changelog`). Without one, the output covers a single version.
 - `--index <url>` {string} URL or path of an `index.md` whose list of links
   (`* [Title](file.md)`) sets the order of the documents in the JSON bundle
-  and the legacy JSON bundle (`global.index`).
+  (`global.index`).
 - `--git-ref <ref>` {string} Git branch, tag, or commit that links into your
   repository point to, such as edit links and the JSON output's source URLs
   (`global.ref`). The website's source code links follow

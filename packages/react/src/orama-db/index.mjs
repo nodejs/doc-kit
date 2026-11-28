@@ -4,7 +4,7 @@ import { generate } from './generate.mjs';
 
 /**
  * This generator is responsible for generating the Orama database for the
- * API docs. It is based on the legacy-json generator.
+ * API docs.
  *
  * @type {import('./types').Generator}
  */

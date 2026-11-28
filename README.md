@@ -71,11 +71,10 @@ Options:
   --config-file <path>         Config file
   -i, --input <patterns...>    Input file patterns (glob)
   -t, --target <generator...>  Target generator(s): a built-in name (json,
-                               json-all, json-simple, man-page, legacy-json,
-                               legacy-json-all, addon-verify, api-links,
-                               orama-db, llms-txt, llms-txt-full, sitemap, html,
-                               section-pages) or an import specifier for a
-                               custom generator
+                               json-all, json-simple, man-page, addon-verify,
+                               api-links, orama-db, llms-txt, llms-txt-full,
+                               sitemap, html, section-pages) or an import
+                               specifier for a custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory
   -p, --threads <number>       Number of threads to use (minimum: 1)
@@ -113,11 +112,10 @@ Options:
   --config-file <path>         Config file
   -i, --input <patterns...>    Input file patterns (glob)
   -t, --target <generator...>  Target generator(s): a built-in name (json,
-                               json-all, json-simple, man-page, legacy-json,
-                               legacy-json-all, addon-verify, api-links,
-                               orama-db, llms-txt, llms-txt-full, sitemap, html,
-                               section-pages) or an import specifier for a
-                               custom generator
+                               json-all, json-simple, man-page, addon-verify,
+                               api-links, orama-db, llms-txt, llms-txt-full,
+                               sitemap, html, section-pages) or an import
+                               specifier for a custom generator
   --ignore <patterns...>       Ignore file patterns (glob)
   -o, --output <directory>     The output directory
   -p, --threads <number>       Number of threads to use (minimum: 1)
@@ -138,18 +136,6 @@ Options:
 > docs, see [Publishing your docs](https://doc-kit.nodejs.org/publishing).
 
 ## Examples
-
-### Legacy
-
-To generate a 1:1 match with the JSON of the [legacy tooling](https://github.com/nodejs/node/tree/main/tools/doc), use the `legacy-json` and `legacy-json-all` generators.
-
-```sh
-npx @doc-kit/cli generate \
-  -t legacy-json \
-  -i "path/to/node/doc/api/*.md" \
-  -o out \
-  --index path/to/node/doc/api/index.md
-```
 
 ### Redesigned
 
