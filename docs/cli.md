@@ -59,7 +59,7 @@ parentheses.
 - `--minify` {boolean} Minify the output (`global.minify`). **Default:**
   `false`.
 - `-p, --threads <n>` {number} Worker threads to use, at least 1 (`threads`).
-  **Default:** the number of CPUs, up to 4.
+  **Default:** the number of CPUs, up to 6 (`1` on riscv64).
 - `--chunk-size <n>` {number} Items each worker processes per task, at least 1
   (`chunkSize`). **Default:** `10`.
 

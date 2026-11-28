@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { cpus } from 'node:os';
+import { availableParallelism } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { isMainThread } from 'node:worker_threads';
 
@@ -80,7 +80,7 @@ export const getDefaultConfig = (generators, config) =>
       threads:
         process.arch === 'riscv64'
           ? 1
-          : Math.min(cpus().length, DEFAULT_MAX_THREADS),
+          : Math.min(availableParallelism(), DEFAULT_MAX_THREADS),
       chunkSize: DEFAULT_CHUNK_SIZE,
     })
   );

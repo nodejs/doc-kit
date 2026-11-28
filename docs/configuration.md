@@ -180,7 +180,7 @@ These sit at the top level, next to `target` and `global`:
 
 - `threads` {number} Worker threads to process with, at least 1. With `1`,
   everything runs on the main thread. **Default:** the number of CPUs, up to
-  4 (`1` on riscv64).
+  6 (`1` on riscv64).
 - `chunkSize` {number} Items each worker processes per task, at least 1.
   **Default:** `10`.
 - `discardResults` {boolean} Keep none of the requested generators' results,
